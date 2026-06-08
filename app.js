@@ -642,25 +642,36 @@ function setPromoVideo(index, { play = true } = {}) {
 
   promoVideoIndex = ((index % videos.length) + videos.length) % videos.length;
   const video = videos[promoVideoIndex];
-  player.dataset.videoId = video.id;
-  player.src = video.src;
-  player.load();
-  if (title) title.textContent = video.title;
-  if (status) status.textContent = `กำลังเล่น ${video.id}.mp4`;
+  
   updatePromoPlaylistState();
+  
+  if (player.src) {
+    player.style.transition = "opacity 0.3s ease";
+    player.style.opacity = 0;
+  }
 
-  if (play) {
-    player.muted = false;
-    const playPromise = player.play?.();
-    if (playPromise?.catch) {
-      playPromise.catch(() => {
-        player.muted = true;
-        player.play?.().catch(() => {
+  setTimeout(() => {
+    player.dataset.videoId = video.id;
+    player.src = video.src;
+    player.load();
+    if (title) title.textContent = video.title;
+    if (status) status.textContent = `กำลังเล่น ${video.id}.mp4`;
+
+    if (play) {
+      player.muted = true;
+      const playPromise = player.play?.();
+      if (playPromise?.catch) {
+        playPromise.catch(() => {
           if (status) status.textContent = "แตะคลิปเพื่อเริ่มเล่น";
         });
-      });
+      }
     }
-  }
+    
+    player.onloadeddata = () => {
+      player.style.opacity = 1;
+      player.onloadeddata = null;
+    };
+  }, player.src ? 300 : 0);
 }
 
 function playNextPromoVideo() {

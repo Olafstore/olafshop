@@ -4770,11 +4770,11 @@ dialog::backdrop {
   }
 
   .olaf-steam-item {
-    grid-template-columns: 112px minmax(0, 1fr);
+    grid-template-columns: 140px minmax(0, 1fr);
   }
 
   .olaf-steam-thumb {
-    width: 112px;
+    width: 140px;
     height: 100%;
     grid-row: 1 / 3;
     object-fit: cover;

@@ -1,0 +1,8 @@
+User-agent: *
+Disallow: /admin
+Disallow: /admin.html
+Disallow: /orders
+Disallow: /orders.html
+Disallow: /profile
+Disallow: /profile.html
+Allow: /

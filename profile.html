@@ -1,0 +1,957 @@
+<!doctype html>
+<html lang="th">
+
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="description" content="ข้อมูลส่วนตัว — OLAF SHOP" />
+  <title>บัญชีของฉัน | OLAF SHOP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://cdn.jsdelivr.net" />
+  <link rel="preconnect" href="https://wtvfgwacodfrzxapwoxj.supabase.co" />
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet" />
+  <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
+  <script src="supabase-client.js?v=20260607-stock-fix" defer></script>
+  <script src="platform-store.js?v=20260605-admin-users" defer></script>
+  <script src="image-performance.js?v=20260607-performance" defer></script>
+  <link rel="stylesheet" href="styles.css?v=20260607-performance" />
+  <style>
+    /* Profile-specific overrides */
+    body {
+      padding-top: 0;
+    }
+
+    .profile-shell {
+      min-height: 100vh;
+      background: var(--bg);
+    }
+
+    /* Profile Hero */
+    .profile-hero {
+      position: relative;
+      padding: 60px 28px 32px;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.08) 0%, rgba(99, 102, 241, 0.06) 50%, transparent 100%);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .profile-hero::before {
+      content: '';
+      position: absolute;
+      top: -100px;
+      right: -100px;
+      width: 400px;
+      height: 400px;
+      border-radius: 50%;
+      background: rgba(59, 130, 246, 0.06);
+      filter: blur(60px);
+      pointer-events: none;
+    }
+
+    .profile-hero-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 28px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .profile-avatar-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+
+    .profile-avatar {
+      width: 96px;
+      height: 96px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #3b82f6, #6366f1);
+      display: grid;
+      place-items: center;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #fff;
+      border: 3px solid rgba(59, 130, 246, 0.3);
+      box-shadow: 0 8px 32px rgba(59, 130, 246, 0.25);
+    }
+
+    .profile-avatar-badge {
+      position: absolute;
+      bottom: 2px;
+      right: 2px;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--success);
+      border: 2px solid var(--bg);
+      display: grid;
+      place-items: center;
+    }
+
+    .profile-avatar-badge svg {
+      color: #fff;
+    }
+
+    .profile-hero-info {
+      flex: 1;
+    }
+
+    .profile-hero-info .eyebrow {
+      margin-bottom: 4px;
+    }
+
+    .profile-hero-info h1 {
+      font-size: 1.8rem;
+      font-weight: 700;
+      margin-bottom: 6px;
+    }
+
+    .profile-hero-info p {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+    }
+
+    .profile-hero-actions {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-top: 16px;
+    }
+
+    /* Layout */
+    .profile-content {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 28px 28px 60px;
+      display: grid;
+      grid-template-columns: 240px 1fr;
+      gap: 24px;
+      align-items: start;
+    }
+
+    /* Sidebar nav */
+    .profile-sidebar {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      position: sticky;
+      top: 80px;
+    }
+
+    .profile-nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 200ms ease;
+      border: none;
+      background: none;
+      width: 100%;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .profile-nav-item:last-child {
+      border-bottom: 0;
+    }
+
+    .profile-nav-item:hover {
+      background: rgba(59, 130, 246, 0.06);
+      color: var(--text);
+    }
+
+    .profile-nav-item.is-active {
+      background: rgba(59, 130, 246, 0.1);
+      color: var(--brand-hover);
+      border-right: 2px solid var(--brand);
+    }
+
+    .profile-nav-item svg {
+      flex-shrink: 0;
+    }
+
+    /* Panels */
+    .profile-panel {
+      display: none;
+      animation: panelIn 0.3s ease;
+    }
+
+    .profile-panel.is-active {
+      display: block;
+    }
+
+    @keyframes panelIn {
+      from {
+        opacity: 0;
+        transform: translateY(12px);
+      }
+
+      to {
+        opacity: 1;
+        transform: none;
+      }
+    }
+
+    .panel-card {
+      background: rgba(15, 23, 42, 0.5);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      overflow: hidden;
+      margin-bottom: 18px;
+    }
+
+    .panel-card-header {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .panel-card-header h3 {
+      font-size: 1rem;
+      font-weight: 600;
+    }
+
+    .panel-card-body {
+      padding: 22px;
+    }
+
+    /* Form fields */
+    .field-group {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 16px;
+      margin-bottom: 18px;
+    }
+
+    .field-group.single {
+      grid-template-columns: 1fr;
+    }
+
+    .field-wrap {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+    }
+
+    .field-label {
+      font-size: 0.82rem;
+      font-weight: 500;
+      color: var(--text-secondary);
+    }
+
+    .field-input-wrap {
+      position: relative;
+    }
+
+    .field-icon {
+      position: absolute;
+      left: 13px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--muted);
+      pointer-events: none;
+    }
+
+    .field-input {
+      width: 100%;
+      height: 44px;
+      padding: 0 14px 0 42px;
+      background: rgba(2, 6, 23, 0.6);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--text);
+      font-size: 0.9rem;
+      font-family: inherit;
+      outline: none;
+      transition: all 200ms ease;
+    }
+
+    .field-input:focus {
+      border-color: var(--brand);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+      background: rgba(2, 6, 23, 0.8);
+    }
+
+    .field-input::placeholder {
+      color: var(--muted);
+    }
+
+    .field-input[readonly] {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    .field-input:focus-within .field-icon {
+      color: var(--brand);
+    }
+
+    /* Order cards */
+    .order-item {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 16px;
+      border-bottom: 1px solid var(--border);
+      transition: background 200ms ease;
+    }
+
+    .order-item:last-child {
+      border-bottom: 0;
+    }
+
+    .order-item:hover {
+      background: rgba(59, 130, 246, 0.04);
+    }
+
+    .order-item-id {
+      font-size: 0.78rem;
+      font-weight: 700;
+      color: var(--brand-hover);
+      font-family: monospace;
+    }
+
+    .order-item-products {
+      font-size: 0.88rem;
+      font-weight: 600;
+      margin-top: 3px;
+    }
+
+    .order-item-date {
+      font-size: 0.78rem;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .order-item-right {
+      text-align: right;
+      flex-shrink: 0;
+    }
+
+    .order-item-price {
+      font-weight: 700;
+      color: var(--brand-hover);
+      font-size: 1rem;
+    }
+
+    .status-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 999px;
+      font-size: 0.72rem;
+      font-weight: 600;
+    }
+
+    .status-badge.pending {
+      background: rgba(245, 158, 11, 0.12);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+      color: #fcd34d;
+    }
+
+    .status-badge.confirmed {
+      background: rgba(59, 130, 246, 0.12);
+      border: 1px solid rgba(59, 130, 246, 0.3);
+      color: #60a5fa;
+    }
+
+    .status-badge.delivered {
+      background: rgba(16, 185, 129, 0.12);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+    }
+
+    .status-badge.cancelled {
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #f87171;
+    }
+
+    .status-badge.waiting_admin {
+      background: rgba(99, 102, 241, 0.1);
+      border: 1px solid rgba(99, 102, 241, 0.3);
+      color: #a5b4fc;
+    }
+
+    .empty-panel {
+      text-align: center;
+      padding: 48px 24px;
+      color: var(--muted);
+    }
+
+    .empty-panel svg {
+      margin: 0 auto 12px;
+      opacity: 0.4;
+      display: block;
+    }
+
+    .empty-panel p {
+      font-size: 0.9rem;
+    }
+
+    /* Success message */
+    .save-message {
+      padding: 12px 14px;
+      border-radius: 10px;
+      font-size: 0.85rem;
+      display: none;
+      margin-top: 12px;
+    }
+
+    .save-message.success {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(16, 185, 129, 0.1);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #6ee7b7;
+    }
+
+    .save-message.error {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      color: #fca5a5;
+    }
+
+    /* Toast */
+    #toast-container {
+      position: fixed;
+      bottom: 24px;
+      right: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      pointer-events: none;
+    }
+
+    .toast {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 14px 18px;
+      border-radius: 12px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(16, 185, 129, 0.4);
+      color: var(--text);
+      font-size: 0.88rem;
+      font-weight: 500;
+      box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+      backdrop-filter: blur(20px);
+      pointer-events: all;
+      animation: toastIn 0.4s cubic-bezier(0.16, 1, 0.3, 1) both;
+      max-width: 340px;
+    }
+
+    .toast.toast-error {
+      border-color: rgba(239, 68, 68, 0.4);
+    }
+
+    .toast.is-leaving {
+      animation: toastOut 0.3s ease forwards;
+    }
+
+    @keyframes toastIn {
+      from {
+        opacity: 0;
+        transform: translateX(100%) scale(0.9)
+      }
+
+      to {
+        opacity: 1;
+        transform: none
+      }
+    }
+
+    @keyframes toastOut {
+      from {
+        opacity: 1;
+        transform: none
+      }
+
+      to {
+        opacity: 0;
+        transform: translateX(100%) scale(0.9)
+      }
+    }
+
+    @media (max-width: 768px) {
+      .profile-content {
+        grid-template-columns: 1fr;
+      }
+
+      .profile-sidebar {
+        position: static;
+      }
+
+      .profile-hero-inner {
+        flex-direction: column;
+        text-align: center;
+      }
+
+      .field-group {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="profile-shell">
+    <!-- Topbar (same as main) -->
+    <header class="topbar">
+      <a class="brand" href="index.html" aria-label="OLAF SHOP">
+        <span class="brand-mark">O</span>
+        <span>
+          <strong>OLAF SHOP</strong>
+          <small>Steam Game Store</small>
+        </span>
+      </a>
+      <nav class="main-nav">
+        <a href="index.html">หน้าแรก</a>
+        <a href="index.html#catalog">สินค้า</a>
+        <a href="orders.html">คำสั่งซื้อ</a>
+      </nav>
+      <div class="topbar-actions">
+        <!-- Register hidden in profile -->
+      </div>
+    </header>
+
+    <!-- Profile Hero -->
+    <div class="profile-hero" id="profile-hero">
+      <div class="profile-hero-inner">
+        <div class="profile-avatar-wrap">
+          <div class="profile-avatar" id="profile-avatar-letter">?</div>
+          <div class="profile-avatar-badge">
+            <i data-lucide="check" style="width:12px;height:12px"></i>
+          </div>
+        </div>
+        <div class="profile-hero-info">
+          <p class="eyebrow">Member Dashboard</p>
+          <h1 id="profile-display-name">กำลังโหลด...</h1>
+          <p id="profile-meta">กำลังโหลด...</p>
+          <div class="profile-hero-actions">
+            <button class="primary-button" type="button" id="logout-btn" style="min-height:36px; font-size:0.82rem">
+              <i data-lucide="log-out"></i>
+              ออกจากระบบ
+            </button>
+            <a class="secondary-button" href="orders.html"
+              style="min-height:36px; font-size:0.82rem; padding: 0 14px; display:inline-flex; align-items:center; gap:6px">
+              <i data-lucide="receipt-text"></i>
+              ดูออเดอร์ทั้งหมด
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Profile Content -->
+    <div class="profile-content">
+      <!-- Sidebar -->
+      <nav class="profile-sidebar" role="navigation">
+        <button class="profile-nav-item is-active" type="button" data-panel="info">
+          <i data-lucide="user" style="width:18px;height:18px"></i>
+          ข้อมูลส่วนตัว
+        </button>
+        <button class="profile-nav-item" type="button" data-panel="password">
+          <i data-lucide="key-round" style="width:18px;height:18px"></i>
+          เปลี่ยนรหัสผ่าน
+        </button>
+        <button class="profile-nav-item" type="button" data-panel="inventory">
+          <i data-lucide="package" style="width:18px;height:18px"></i>
+          คลังสินค้า (ID/Pass)
+        </button>
+        <button class="profile-nav-item" type="button" data-panel="orders">
+          <i data-lucide="shopping-bag" style="width:18px;height:18px"></i>
+          ออเดอร์ของฉัน
+        </button>
+        <button class="profile-nav-item" type="button" data-panel="reviews">
+          <i data-lucide="star" style="width:18px;height:18px"></i>
+          รีวิวของฉัน
+        </button>
+      </nav>
+
+      <!-- Panels -->
+      <div class="profile-panels">
+        <!-- Info Panel -->
+        <div class="profile-panel is-active" id="panel-info">
+          <div class="panel-card">
+            <div class="panel-card-header">
+              <h3>ข้อมูลส่วนตัว</h3>
+              <span class="stock-pill in-stock">active</span>
+            </div>
+            <div class="panel-card-body">
+              <form id="profile-form">
+                <div class="field-group">
+                  <div class="field-wrap">
+                    <label class="field-label">ชื่อผู้ใช้</label>
+                    <div class="field-input-wrap">
+                      <i data-lucide="at-sign" class="field-icon" style="width:16px;height:16px"></i>
+                      <input class="field-input" name="username" type="text" placeholder="username" required />
+                    </div>
+                  </div>
+                  <div class="field-wrap">
+                    <label class="field-label">ชื่อแสดงผล</label>
+                    <div class="field-input-wrap">
+                      <i data-lucide="user" class="field-icon" style="width:16px;height:16px"></i>
+                      <input class="field-input" name="displayName" type="text" placeholder="ชื่อแสดงผล" required />
+                    </div>
+                  </div>
+                </div>
+                <div class="field-group single">
+                  <div class="field-wrap">
+                    <label class="field-label">อีเมล (ไม่สามารถเปลี่ยนแปลง)</label>
+                    <div class="field-input-wrap">
+                      <i data-lucide="mail" class="field-icon" style="width:16px;height:16px"></i>
+                      <input class="field-input" id="profile-email" type="text" readonly />
+                    </div>
+                  </div>
+                </div>
+                <div class="field-group">
+                  <div class="field-wrap">
+                    <label class="field-label">สถานะ</label>
+                    <div class="field-input-wrap">
+                      <i data-lucide="shield-check" class="field-icon" style="width:16px;height:16px"></i>
+                      <input class="field-input" id="profile-role" type="text" readonly />
+                    </div>
+                  </div>
+                  <div class="field-wrap">
+                    <label class="field-label">ตำแหน่ง</label>
+                    <div class="field-input-wrap">
+                      <i data-lucide="badge" class="field-icon" style="width:16px;height:16px"></i>
+                      <input class="field-input" id="profile-position" type="text" readonly />
+                    </div>
+                  </div>
+                </div>
+                <button class="primary-button" type="submit">
+                  <i data-lucide="save"></i>
+                  บันทึกข้อมูล
+                </button>
+                <div class="save-message" id="info-msg"></div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Password Panel -->
+        <div class="profile-panel" id="panel-password">
+          <div class="panel-card">
+            <div class="panel-card-header">
+              <h3>เปลี่ยนรหัสผ่าน</h3>
+            </div>
+            <div class="panel-card-body">
+              <form id="password-form">
+                <div class="field-group single">
+                  <div class="field-wrap">
+                    <label class="field-label">รหัสผ่านเดิม</label>
+                    <div class="field-input-wrap">
+                      <i data-lucide="lock" class="field-icon" style="width:16px;height:16px"></i>
+                      <input class="field-input" name="oldPassword" type="password" placeholder="รหัสผ่านเดิมของคุณ"
+                        required />
+                    </div>
+                  </div>
+                  <div class="field-wrap" style="margin-top:14px">
+                    <label class="field-label">รหัสผ่านใหม่</label>
+                    <div class="field-input-wrap">
+                      <i data-lucide="key-round" class="field-icon" style="width:16px;height:16px"></i>
+                      <input class="field-input" name="newPassword" type="password" placeholder="อย่างน้อย 6 ตัวอักษร"
+                        minlength="6" required />
+                    </div>
+                  </div>
+                </div>
+                <button class="primary-button" type="submit" style="margin-top:4px">
+                  <i data-lucide="save"></i>
+                  เปลี่ยนรหัสผ่าน
+                </button>
+                <div class="save-message" id="pw-msg"></div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Inventory Panel -->
+        <div class="profile-panel" id="panel-inventory">
+          <div class="panel-card">
+            <div class="panel-card-header">
+              <h3>คลังสินค้า (ID/Pass)</h3>
+              <a href="orders.html" class="mini-button">ดูออเดอร์</a>
+            </div>
+            <div id="inventory-list"></div>
+          </div>
+        </div>
+
+        <!-- Orders Panel -->
+        <div class="profile-panel" id="panel-orders">
+          <div class="panel-card">
+            <div class="panel-card-header">
+              <h3>ออเดอร์ของฉัน</h3>
+              <a href="orders.html" class="mini-button">ดูทั้งหมด</a>
+            </div>
+            <div id="orders-list"></div>
+          </div>
+        </div>
+
+        <!-- Reviews Panel -->
+        <div class="profile-panel" id="panel-reviews">
+          <div class="panel-card">
+            <div class="panel-card-header">
+              <h3>รีวิวของฉัน</h3>
+            </div>
+            <div id="reviews-list"></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="toast-container"></div>
+
+  <script>
+    function showToast(message, type = 'success') {
+      const container = document.getElementById('toast-container');
+      const toast = document.createElement('div');
+      toast.className = `toast${type === 'error' ? ' toast-error' : ''}`;
+      toast.innerHTML = `<i data-lucide="${type === 'error' ? 'alert-circle' : 'check-circle'}" style="width:18px;height:18px"></i><span>${message}</span>`;
+      container.appendChild(toast);
+      if (window.lucide) lucide.createIcons();
+      setTimeout(() => { toast.classList.add('is-leaving'); setTimeout(() => toast.remove(), 300); }, 3500);
+    }
+
+    function formatPrice(v) {
+      return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(Number(v) || 0);
+    }
+
+    function orderStatusLabel(status) {
+      const map = {
+        pending: 'รอการชำระเงิน',
+        waiting_admin: 'รอแอดมินยืนยัน',
+        confirmed: 'ยืนยันแล้ว',
+        delivered: 'จัดส่งแล้ว',
+        cancelled: 'ยกเลิกแล้ว'
+      };
+      return map[status] || status;
+    }
+
+    function escape(v) {
+      return String(v || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
+    }
+
+    function escapeLines(v) {
+      return escape(v).replace(/\n/g, '<br>');
+    }
+
+    function productNames(order) {
+      return (order.items || [])
+        .map(item => escape(item.productName || item.name || item.productId || 'สินค้า'))
+        .join(', ') || '-';
+    }
+
+    function renderOrdersList(orders) {
+      const ordersList = document.getElementById('orders-list');
+      if (!ordersList) return;
+      if (orders.length) {
+        ordersList.innerHTML = orders.slice(0, 10).map(o => `
+            <div class="order-item">
+              <div>
+                <div class="order-item-id">${escape(o.orderNumber || o.id)}</div>
+                <div class="order-item-products">${productNames(o)}</div>
+                <div class="order-item-date">${new Date(o.createdAt).toLocaleString('th-TH')}</div>
+              </div>
+              <div class="order-item-right">
+                <div class="order-item-price">${formatPrice(o.total)}</div>
+                <span class="status-badge ${escape(o.status)}">${orderStatusLabel(o.status)}</span>
+              </div>
+            </div>
+          `).join('');
+      } else {
+        ordersList.innerHTML = `<div class="empty-panel"><i data-lucide="inbox" style="width:40px;height:40px"></i><p>ยังไม่มีออเดอร์</p></div>`;
+      }
+    }
+
+    function renderInventoryList(orders) {
+      const inventoryList = document.getElementById('inventory-list');
+      if (!inventoryList) return;
+      const inventoryOrders = orders.filter(o => ['confirmed', 'delivered'].includes(o.status));
+      if (inventoryOrders.length) {
+        inventoryList.innerHTML = inventoryOrders.slice(0, 20).map(o => {
+          const note = o.deliveredPayload || o.deliveryNote || (o.status === 'confirmed' ? 'แอดมินยืนยันแล้ว รอจัดส่งข้อมูลสินค้า' : 'รอข้อมูลจัดส่งจากแอดมิน');
+          return `
+            <div class="order-item">
+              <div>
+                <div class="order-item-id">${escape(o.orderNumber || o.id)}</div>
+                <div class="order-item-products">${productNames(o)}</div>
+                <div class="order-item-date">${escapeLines(note)}</div>
+              </div>
+              <div class="order-item-right">
+                <span class="status-badge ${escape(o.status)}">${orderStatusLabel(o.status)}</span>
+              </div>
+            </div>
+          `;
+        }).join('');
+      } else {
+        inventoryList.innerHTML = `<div class="empty-panel"><i data-lucide="package" style="width:40px;height:40px"></i><p>ยังไม่มีสินค้าในคลัง</p></div>`;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', async () => {
+      lucide.createIcons();
+      await window.OlafStore?.ready;
+
+      const user = window.OlafStore?.currentUser();
+      if (!user) {
+        const returnPath = `${window.location.pathname.split('/').pop() || 'profile.html'}${window.location.search}${window.location.hash}`;
+        window.location.href = `login.html?return=${encodeURIComponent(returnPath)}`;
+        return;
+      }
+
+      // Fill hero
+      document.getElementById('profile-avatar-letter').textContent = (user.displayName || user.username || 'U').slice(0, 1).toUpperCase();
+      document.getElementById('profile-display-name').textContent = user.displayName || user.username;
+      document.getElementById('profile-meta').textContent = `${user.email} · ${user.role} · ${user.position}`;
+
+      // Fill form
+      const form = document.getElementById('profile-form');
+      form.elements.username.value = user.username;
+      form.elements.displayName.value = user.displayName;
+      document.getElementById('profile-email').value = user.email;
+      document.getElementById('profile-role').value = user.role;
+      document.getElementById('profile-position').value = user.position;
+
+      // Render Supabase orders and inventory
+      const ordersList = document.getElementById('orders-list');
+      const inventoryList = document.getElementById('inventory-list');
+      if (ordersList) ordersList.innerHTML = `<div class="empty-panel"><i data-lucide="loader-circle" style="width:40px;height:40px"></i><p>กำลังโหลดออเดอร์</p></div>`;
+      if (inventoryList) inventoryList.innerHTML = `<div class="empty-panel"><i data-lucide="loader-circle" style="width:40px;height:40px"></i><p>กำลังโหลดคลังสินค้า</p></div>`;
+
+      try {
+        if (!window.OlafOrders?.fetchMyOrders) throw new Error('Supabase order client is not ready');
+        const orders = await window.OlafOrders.fetchMyOrders();
+        renderOrdersList(orders);
+        renderInventoryList(orders);
+        lucide.createIcons();
+      } catch (err) {
+        const message = escape(err.message || 'โหลดออเดอร์ไม่สำเร็จ');
+        if (ordersList) ordersList.innerHTML = `<div class="empty-panel"><i data-lucide="alert-circle" style="width:40px;height:40px"></i><p>${message}</p></div>`;
+        if (inventoryList) inventoryList.innerHTML = `<div class="empty-panel"><i data-lucide="alert-circle" style="width:40px;height:40px"></i><p>${message}</p></div>`;
+        lucide.createIcons();
+      }
+
+      // Render reviews
+      const reviews = (window.OlafStore?.getReviews() || []).filter(r => r.userId === user.id);
+      const reviewsList = document.getElementById('reviews-list');
+      if (reviews.length) {
+        reviewsList.innerHTML = reviews.map(r => `
+            <div class="order-item">
+              <div>
+                <div class="order-item-products">${'★'.repeat(r.rating)}${'☆'.repeat(5 - r.rating)} ${escape(r.productName)}</div>
+                <div class="order-item-date">${escape(r.title || r.body)}</div>
+              </div>
+              <div>
+                <span class="status-badge ${r.status === 'published' ? 'delivered' : 'waiting_admin'}">${escape(r.status)}</span>
+              </div>
+            </div>
+          `).join('');
+      } else {
+        reviewsList.innerHTML = `<div class="empty-panel"><i data-lucide="star" style="width:40px;height:40px"></i><p>ยังไม่มีรีวิว</p></div>`;
+        lucide.createIcons();
+      }
+
+      // Nav panel switching
+      function switchPanel(panelName) {
+        document.querySelectorAll('.profile-nav-item').forEach(b => b.classList.remove('is-active'));
+        document.querySelectorAll('.profile-panel').forEach(p => p.classList.remove('is-active'));
+        const activeBtn = document.querySelector(`[data-panel="${panelName}"]`);
+        const activePanel = document.getElementById(`panel-${panelName}`);
+        if (activeBtn) activeBtn.classList.add('is-active');
+        if (activePanel) activePanel.classList.add('is-active');
+      }
+
+      document.querySelectorAll('.profile-nav-item').forEach(btn => {
+        btn.addEventListener('click', () => {
+          switchPanel(btn.dataset.panel);
+          history.replaceState(null, '', `#${btn.dataset.panel}`);
+        });
+      });
+
+      // Handle hash deep links from external pages (e.g. profile.html#orders)
+      const hash = window.location.hash.replace('#', '');
+      if (hash && ['info', 'password', 'inventory', 'orders', 'reviews'].includes(hash)) {
+        switchPanel(hash);
+      }
+
+      // Save profile
+      form?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(form);
+        const msg = document.getElementById('info-msg');
+        try {
+          await window.OlafStore.updateUser(user.id, {
+            username: fd.get('username'),
+            displayName: fd.get('displayName')
+          });
+          msg.className = 'save-message success';
+          msg.innerHTML = `<i data-lucide="check-circle" style="width:16px;height:16px"></i><span>บันทึกข้อมูลเรียบร้อย</span>`;
+          lucide.createIcons();
+          showToast('อัปเดตข้อมูลส่วนตัวแล้ว');
+          // Update hero
+          const newUser = window.OlafStore.currentUser();
+          if (newUser) {
+            document.getElementById('profile-avatar-letter').textContent = (newUser.displayName || newUser.username || 'U').slice(0, 1).toUpperCase();
+            document.getElementById('profile-display-name').textContent = newUser.displayName || newUser.username;
+          }
+        } catch (err) {
+          msg.className = 'save-message error';
+          msg.innerHTML = `<i data-lucide="alert-circle" style="width:16px;height:16px"></i><span>${escape(err.message)}</span>`;
+          lucide.createIcons();
+          showToast(err.message, 'error');
+        }
+      });
+
+      // Change password
+      const pwForm = document.getElementById('password-form');
+      pwForm?.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const fd = new FormData(pwForm);
+        const msg = document.getElementById('pw-msg');
+        try {
+          await window.OlafStore.changePassword(user.id, fd.get('oldPassword'), fd.get('newPassword'));
+          msg.className = 'save-message success';
+          msg.innerHTML = `<i data-lucide="check-circle" style="width:16px;height:16px"></i><span>เปลี่ยนรหัสผ่านเรียบร้อย!</span>`;
+          lucide.createIcons();
+          pwForm.reset();
+          showToast('เปลี่ยนรหัสผ่านเรียบร้อยแล้ว');
+        } catch (err) {
+          msg.className = 'save-message error';
+          msg.innerHTML = `<i data-lucide="alert-circle" style="width:16px;height:16px"></i><span>${escape(err.message)}</span>`;
+          lucide.createIcons();
+          showToast(err.message, 'error');
+        }
+      });
+
+      // Logout
+      document.getElementById('logout-btn')?.addEventListener('click', () => {
+        window.OlafStore.logout();
+        showToast('ออกจากระบบแล้ว 👋');
+        setTimeout(() => { window.location.href = 'index.html'; }, 800);
+      });
+    });
+  </script>
+</body>
+
+</html>

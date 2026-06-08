@@ -4775,6 +4775,9 @@ dialog::backdrop {
 
   .olaf-steam-thumb {
     width: 112px;
+    height: 100%;
+    grid-row: 1 / 3;
+    object-fit: cover;
   }
 
   .olaf-steam-price {
@@ -10833,13 +10836,15 @@ html, body {
   }
 
   .recent-purchase-row {
-    grid-template-columns: 42px minmax(0, 1fr);
+    grid-template-columns: 76px minmax(0, 1fr);
   }
 
   .recent-purchase-thumb,
   .recent-purchase-icon {
-    width: 42px;
-    height: 42px;
+    width: 76px;
+    height: 100%;
+    grid-row: 1 / 3;
+    object-fit: cover;
   }
 
   .recent-purchase-row time {

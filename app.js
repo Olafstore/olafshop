@@ -82,9 +82,9 @@ const appConfig = {
   promptPayId: "0812345678",
   manualQrUrl: "",
   promoVideos: [
-    { id: "v1", title: "OLAF Preview 1", src: "https://www.dropbox.com/scl/fi/idgcgiqrbih50o03c9b9m/v1.mp4?rlkey=t0gq6vjnd7qb51yfb72z0p7cr&st=p1eyd1s6&raw=1" },
-    { id: "v2", title: "OLAF Preview 2", src: "https://www.dropbox.com/scl/fi/idgcgiqrbih50o03c9b9m/v1.mp4?rlkey=t0gq6vjnd7qb51yfb72z0p7cr&st=p1eyd1s6&raw=1" },
-    { id: "v3", title: "OLAF Preview 3", src: "https://www.dropbox.com/scl/fi/2ozz4ckxeszlgykdt9b4j/v3.mp4?rlkey=3k0zekfmpgowj5n08jsoox18e&st=q7hrys3l&raw=1" }
+    { id: "v1", title: "OLAF Preview 1", src: "https://www.dropbox.com/scl/fi/idgcgiqrbih50o03c9b9m/v1.mp4?rlkey=t0gq6vjnd7qb51yfb72z0p7cr&st=drz2u4vg&raw=1" },
+    { id: "v2", title: "OLAF Preview 2", src: "https://www.dropbox.com/scl/fi/dhes6hlspj4gswchqfrx1/v2.mp4?rlkey=l11noosi6stdnasayr4a4amf5&st=ljrxzysk&raw=1" },
+    { id: "v3", title: "OLAF Preview 3", src: "https://www.dropbox.com/scl/fi/2ozz4ckxeszlgykdt9b4j/v3.mp4?rlkey=3k0zekfmpgowj5n08jsoox18e&st=qmybsxn1&raw=1" }
   ],
   ...window.OLAF_CONFIG
 };
@@ -371,7 +371,7 @@ function filteredProducts() {
     const matchesCategory =
       state.selectedCategory === "all" || product.category === state.selectedCategory;
     const matchesStock = !state.stockOnly || product.stock > 0;
-    
+
     let matchesPrice = true;
     if (state.priceFilter === "under50") matchesPrice = product.price < 50;
     else if (state.priceFilter === "50to100") matchesPrice = product.price >= 50 && product.price <= 100;
@@ -703,7 +703,7 @@ function bindPromoVideoPlayer() {
   });
   player.addEventListener("click", () => {
     if (player.paused) {
-      player.play?.().catch(() => {});
+      player.play?.().catch(() => { });
     } else {
       player.pause();
     }
@@ -720,7 +720,7 @@ function bindPromoVideoPlayer() {
       e.stopPropagation();
       player.muted = !player.muted;
       if (!player.muted && player.paused) {
-        player.play?.().catch(() => {});
+        player.play?.().catch(() => { });
       }
       updateMuteIcon();
     });
@@ -798,10 +798,10 @@ function applyPayload(payload) {
     appConfig.promptPayId;
   appConfig.serviceFee = Number(
     window.OLAF_CONFIG?.serviceFee ??
-      state.store.serviceFee ??
-      state.store.payment?.serviceFee ??
-      appConfig.serviceFee ??
-      0
+    state.store.serviceFee ??
+    state.store.payment?.serviceFee ??
+    appConfig.serviceFee ??
+    0
   );
   appConfig.manualQrUrl = state.store.payment?.manualQrUrl || "";
 }
@@ -832,15 +832,15 @@ function renderAccount() {
   const label = state.currentUser ? state.currentUser.displayName || state.currentUser.username : t("account");
   const labelEl = $(selectors.accountLabel);
   if (labelEl) labelEl.textContent = label;
-  
+
   const openAuthEl = $(selectors.openAuth);
   if (openAuthEl) openAuthEl.classList.toggle("is-signed-in", Boolean(state.currentUser));
-  
+
   const registerBtn = document.querySelector(".register-button");
   if (registerBtn) {
     registerBtn.style.display = state.currentUser ? "none" : "";
   }
-  
+
   const authIcon = openAuthEl?.querySelector("svg, i");
   if (authIcon) {
     const newIcon = state.currentUser ? "user" : "log-in";
@@ -867,7 +867,7 @@ function productPreviewImages(product) {
     product.heroImage,
     product.image
   ].filter(Boolean))];
-  
+
   if (allImages.length > 1) {
     return allImages.slice(1, 4); // skip first image (cover), take next 3
   }
@@ -899,11 +899,10 @@ function renderSteamShowcaseWidget() {
               <span>${escapeHtml(tags.join(", ") || product.publisher || "Steam Game")}</span>
             </div>
             <div class="olaf-steam-price">
-              ${
-                discount
-                  ? `<span class="olaf-sale-pct">-${discount}%</span><span class="olaf-sale-price"><del>${formatPrice(product.compareAt)}</del><b>${formatPrice(product.price)}</b></span>`
-                  : `<b>${formatPrice(product.price)}</b>`
-              }
+              ${discount
+          ? `<span class="olaf-sale-pct">-${discount}%</span><span class="olaf-sale-price"><del>${formatPrice(product.compareAt)}</del><b>${formatPrice(product.price)}</b></span>`
+          : `<b>${formatPrice(product.price)}</b>`
+        }
             </div>
           </a>
           <aside class="olaf-steam-preview ${index === 0 ? "is-default" : ""}">
@@ -943,11 +942,11 @@ function renderShowcaseCategoryTabs() {
   return `
     <div class="olaf-widget-tabs" role="tablist" aria-label="หมวดสินค้าแนะนำ">
       ${tabs
-        .map((category) => {
-          const categoryId = category.id;
-          const label = category.label;
-          const isActive = state.selectedCategory === categoryId;
-          return `
+      .map((category) => {
+        const categoryId = category.id;
+        const label = category.label;
+        const isActive = state.selectedCategory === categoryId;
+        return `
             <button
               class="olaf-widget-tab ${isActive ? "is-active" : ""}"
               type="button"
@@ -956,8 +955,8 @@ function renderShowcaseCategoryTabs() {
               data-showcase-category="${escapeHtml(categoryId)}"
             >${escapeHtml(label)}</button>
           `;
-        })
-        .join("")}
+      })
+      .join("")}
     </div>
   `;
 }
@@ -971,16 +970,16 @@ function renderTrustCardsWidget() {
   return `
     <section class="olaf-trust-widget">
       ${cards
-        .map(
-          ([icon, title, text], index) => `
+      .map(
+        ([icon, title, text], index) => `
             <article class="olaf-trust-card">
               <span class="olaf-trust-icon tone-${index + 1}"><i data-lucide="${icon}"></i></span>
               <h3>${title}</h3>
               <p>${text}</p>
             </article>
           `
-        )
-        .join("")}
+      )
+      .join("")}
     </section>
   `;
 }
@@ -1006,8 +1005,8 @@ function renderLicenseCardsWidget() {
       </div>
       <div class="olaf-license-grid">
         ${cards
-          .map(
-            ([name, type, discount, price, oldPrice]) => `
+      .map(
+        ([name, type, discount, price, oldPrice]) => `
               <article class="olaf-license-card">
                 <div class="license-badges"><span>${discount}</span><b>${type}</b></div>
                 <h3>${name}</h3>
@@ -1021,8 +1020,8 @@ function renderLicenseCardsWidget() {
                 <a href="#catalog">ดูสินค้า</a>
               </article>
             `
-          )
-          .join("")}
+      )
+      .join("")}
       </div>
     </section>
   `;
@@ -1190,7 +1189,7 @@ function renderProducts() {
   $(selectors.productGrid).innerHTML = paginatedProducts.map(renderProductCard).join("");
   const emptyState = $(selectors.emptyState);
   if (emptyState) emptyState.hidden = true;
-  
+
   renderPagination(totalPages);
   createIconSet();
   hydrateImages();
@@ -1199,24 +1198,24 @@ function renderProducts() {
 function renderPagination(totalPages) {
   const container = $(selectors.paginationControls);
   if (!container) return;
-  
+
   if (totalPages <= 1) {
     container.innerHTML = "";
     return;
   }
-  
+
   let html = `<div class="pagination">`;
-  
+
   if (state.currentPage > 1) {
     html += `<button class="pagination-btn" type="button" data-page="${state.currentPage - 1}"><i data-lucide="chevron-left"></i> ย้อนกลับ</button>`;
   }
-  
+
   html += `<span class="pagination-info">หน้า ${state.currentPage} จาก ${totalPages}</span>`;
-  
+
   if (state.currentPage < totalPages) {
     html += `<button class="pagination-btn" type="button" data-page="${state.currentPage + 1}">ถัดไป <i data-lucide="chevron-right"></i></button>`;
   }
-  
+
   html += `</div>`;
   container.innerHTML = html;
 }
@@ -1250,8 +1249,8 @@ function renderMemberDashboard() {
   const userReviews = state.reviews.filter((review) => review.userId === user.id).slice(0, 8);
   const orderRows = userOrders.length
     ? userOrders
-        .map(
-          (order) => `
+      .map(
+        (order) => `
             <div class="dashboard-row">
               <div>
                 <strong>${escapeHtml(order.id)}</strong>
@@ -1260,13 +1259,13 @@ function renderMemberDashboard() {
               <b>${formatPrice(order.total)}</b>
             </div>
           `
-        )
-        .join("")
+      )
+      .join("")
     : `<div class="dashboard-row"><span>ยังไม่มีคำสั่งซื้อ</span></div>`;
   const reviewRows = userReviews.length
     ? userReviews
-        .map(
-          (review) => `
+      .map(
+        (review) => `
             <div class="dashboard-row">
               <div>
                 <strong>${"★".repeat(review.rating)} ${escapeHtml(review.productName)}</strong>
@@ -1275,8 +1274,8 @@ function renderMemberDashboard() {
               <span class="stock-pill ${review.status === "published" ? "in-stock" : "low-stock"}">${escapeHtml(review.status)}</span>
             </div>
           `
-        )
-        .join("")
+      )
+      .join("")
     : `<div class="dashboard-row"><span>ยังไม่มีรีวิว</span></div>`;
 
   $("#member-dashboard").innerHTML = `
@@ -1814,7 +1813,7 @@ function bindEvents() {
 
   const openFilterBtn = $("#open-filter-btn");
   const filterPopover = $("#filter-popover");
-  
+
   if (openFilterBtn && filterPopover) {
     openFilterBtn.addEventListener("click", (e) => {
       e.stopPropagation();

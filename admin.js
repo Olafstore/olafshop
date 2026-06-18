@@ -403,6 +403,9 @@ function redirectToStoreWithNotice(message) {
 
 function adminDeniedMessage(reason) {
   if (reason === "NO_SESSION") return "กรุณาเข้าสู่ระบบด้วยบัญชีแอดมิน";
+  if (reason === "PROFILE_MISSING") return "ไม่พบโปรไฟล์ที่ตรงกับบัญชี Auth นี้ กรุณารัน SQL ซ่อมสิทธิ์แอดมิน";
+  if (reason === "ADMIN_INACTIVE") return "บัญชีแอดมินนี้ไม่ได้อยู่ในสถานะ active";
+  if (reason === "NOT_ADMIN") return "บัญชีนี้ยังไม่ได้กำหนด role เป็น admin";
   if (reason === "ROLE_LOAD_FAILED") return "ไม่สามารถตรวจสอบสิทธิ์แอดมินได้ กรุณาลองเข้าสู่ระบบใหม่";
   if (reason === "INVALID_SESSION") return "Session หมดอายุ กรุณาเข้าสู่ระบบใหม่";
   return "บัญชีนี้ไม่มีสิทธิ์เข้าถึงระบบหลังบ้าน";
@@ -524,8 +527,9 @@ async function handleAdminLogin(event) {
 
     const admin = await checkAdminAccess();
     if (!admin) {
+      const reason = checkAdminAccess.lastAccess?.reason || "NOT_ADMIN";
       await client.auth.signOut().catch(() => {});
-      showAdminLogin("บัญชีนี้ไม่มีสิทธิ์เข้าถึงระบบหลังบ้าน");
+      showAdminLogin(adminDeniedMessage(reason));
       return;
     }
 

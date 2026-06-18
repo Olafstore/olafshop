@@ -177,7 +177,23 @@
       profileError = error;
     }
 
-    const profileState = getAdminProfileState(profile || {});
+    let profileState = getAdminProfileState(profile || {});
+    let roleRpcError = null;
+    if (!profileState.isActiveAdmin) {
+      try {
+        const { data, error } = await requireClient().rpc("get_my_role");
+        if (error) throw error;
+        if (data && typeof data === "object") {
+          const roleRpcState = getAdminProfileState(data);
+          if (roleRpcState.role || roleRpcState.status) {
+            profileState = roleRpcState;
+          }
+        }
+      } catch (error) {
+        roleRpcError = error;
+      }
+    }
+
     let rpcAllowsAdmin = false;
     let rpcError = null;
     try {
@@ -191,7 +207,7 @@
     const isAdmin = profileState.isActiveAdmin || rpcAllowsAdmin;
     const reason = isAdmin
       ? (rpcAllowsAdmin ? "ADMIN" : "ADMIN_PROFILE_FALLBACK")
-      : (profileError || rpcError ? "ROLE_LOAD_FAILED" : "NOT_ADMIN");
+      : (profileError || (rpcError && roleRpcError) ? "ROLE_LOAD_FAILED" : "NOT_ADMIN");
 
     return {
       isAdmin,
@@ -201,7 +217,7 @@
       profile,
       role: profileState.role,
       status: profileState.status,
-      error: profileError || rpcError || null
+      error: profileError || rpcError || roleRpcError || null
     };
   }
 

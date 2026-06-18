@@ -402,6 +402,7 @@ function redirectToStoreWithNotice(message) {
 }
 
 function adminDeniedMessage(reason) {
+  if (reason === "NO_SESSION") return "กรุณาเข้าสู่ระบบด้วยบัญชีแอดมิน";
   if (reason === "ROLE_LOAD_FAILED") return "ไม่สามารถตรวจสอบสิทธิ์แอดมินได้ กรุณาลองเข้าสู่ระบบใหม่";
   if (reason === "INVALID_SESSION") return "Session หมดอายุ กรุณาเข้าสู่ระบบใหม่";
   return "บัญชีนี้ไม่มีสิทธิ์เข้าถึงระบบหลังบ้าน";

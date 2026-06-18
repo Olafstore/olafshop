@@ -714,8 +714,14 @@ async function loadData() {
   state.tmQrCleared = false;
   state.pendingSiteIconDataUrl = null;
   state.siteIconCleared = false;
-  renderAll();
-  setStatus("เชื่อมต่อ Supabase หลังบ้านแล้ว");
+  const renderErrors = renderAll();
+  if (renderErrors.length) {
+    const names = renderErrors.map((item) => item.name).join(", ");
+    setStatus(`โหลดข้อมูลสินค้าแล้ว แต่บางส่วนแสดงผลไม่สำเร็จ: ${names}`);
+    showAdminToast(`ข้อมูลสินค้าพร้อมแก้ไข แต่บางส่วนของ Dashboard มีปัญหา: ${names}`, "warning", 7000);
+  } else {
+    setStatus("เชื่อมต่อ Supabase หลังบ้านแล้ว");
+  }
 }
 
 function adminDataErrorMessage(error) {
@@ -1217,29 +1223,40 @@ function stockStatus(stock) {
   return { className: "ok", label: `พร้อม ${stock}` };
 }
 
+function renderAdminSection(name, render, errors) {
+  try {
+    render();
+  } catch (error) {
+    errors.push({ name, error });
+    console.error(`Admin section render failed: ${name}`, error);
+  }
+}
+
 function renderAll() {
+  const errors = [];
   state.reviews = window.OlafStore?.getReviews() ?? [];
   state.widgets = window.OlafStore?.getWidgets() ?? [];
-  applySiteIcon(state.payload.store.siteIconUrl);
-  applyAdminBrandIcon(state.payload.store.siteIconUrl);
-  renderMetrics();
-  renderAnalyticsCharts();
-  renderProductsTable();
-  renderProductForm();
-  renderUsersTable();
-  renderUserForm();
-  renderOrdersTable();
-  renderOrderForm();
-  renderReviewsTable();
-  renderReviewForm();
-  renderWidgetsTable();
-  renderWidgetForm();
-  renderStockBoard();
-  renderPaymentForm();
-  renderDataPreview();
+  renderAdminSection("site icon", () => applySiteIcon(state.payload.store.siteIconUrl), errors);
+  renderAdminSection("admin brand", () => applyAdminBrandIcon(state.payload.store.siteIconUrl), errors);
+  renderAdminSection("metrics", renderMetrics, errors);
+  renderAdminSection("analytics charts", renderAnalyticsCharts, errors);
+  renderAdminSection("products table", renderProductsTable, errors);
+  renderAdminSection("product form", renderProductForm, errors);
+  renderAdminSection("users table", renderUsersTable, errors);
+  renderAdminSection("user form", renderUserForm, errors);
+  renderAdminSection("orders table", renderOrdersTable, errors);
+  renderAdminSection("order form", renderOrderForm, errors);
+  renderAdminSection("reviews table", renderReviewsTable, errors);
+  renderAdminSection("review form", renderReviewForm, errors);
+  renderAdminSection("widgets table", renderWidgetsTable, errors);
+  renderAdminSection("widget form", renderWidgetForm, errors);
+  renderAdminSection("stock board", renderStockBoard, errors);
+  renderAdminSection("payment form", renderPaymentForm, errors);
+  renderAdminSection("data preview", renderDataPreview, errors);
+  renderAdminSection("admin category tabs", () => renderCategoryTabs("admin-category-tabs"), errors);
+  renderAdminSection("stock category tabs", () => renderCategoryTabs("stock-category-tabs"), errors);
   createIconSet();
-  renderCategoryTabs("admin-category-tabs");
-  renderCategoryTabs("stock-category-tabs");
+  return errors;
 }
 
 function renderMetrics() {
@@ -1741,6 +1758,36 @@ function productToSupabaseRow(product, { includeId = false, includeStock = false
   return row;
 }
 
+function isMissingSteamRelatedLinksColumn(error) {
+  const code = String(error?.code || "");
+  const message = String(error?.message || "").toLowerCase();
+  return (
+    (code === "PGRST204" || code === "42703" || message.includes("schema cache")) &&
+    message.includes("steam_related_links")
+  );
+}
+
+async function writeAdminProductRow({ client, isNew, productId, row }) {
+  const execute = (payload) => {
+    if (isNew) {
+      return client.from("products").insert([payload]).select("*").single();
+    }
+    return client.from("products").update(payload).eq("id", productId).select("*").single();
+  };
+
+  let result = await execute(row);
+  let skippedSteamRelatedLinks = false;
+
+  if (result.error && isMissingSteamRelatedLinksColumn(result.error)) {
+    const compatibleRow = { ...row };
+    delete compatibleRow.steam_related_links;
+    result = await execute(compatibleRow);
+    skippedSteamRelatedLinks = true;
+  }
+
+  return { ...result, skippedSteamRelatedLinks };
+}
+
 function replaceProductInState(product) {
   const index = products().findIndex((item) => item.id === product.id);
   if (index >= 0) {
@@ -1755,6 +1802,12 @@ function replaceProductInState(product) {
 function adminProductErrorMessage(error) {
   const message = String(error?.message || "");
   const code = String(error?.code || "");
+  if (isMissingSteamRelatedLinksColumn(error)) {
+    return "ฐานข้อมูลยังไม่มีช่องลิงก์เนื้อหาเกม/DLC กรุณารัน supabase-admin-products-repair.sql";
+  }
+  if (code === "PGRST116") {
+    return "ไม่พบสินค้าที่แก้ไขหรือบัญชีแอดมินไม่มีสิทธิ์เห็นสินค้านี้ กรุณารัน supabase-admin-products-repair.sql";
+  }
   if (code === "23505" || message.toLowerCase().includes("duplicate")) return "Product ID นี้ถูกใช้แล้ว";
   if (
     message.includes("product_packages") ||
@@ -1899,27 +1952,33 @@ async function saveProductFromForm(event) {
     const client = requireSupabaseAdminClient();
     const requestedStock = isOfflineProduct ? offlineStockLines.length : Number(product.stock || 0);
     let savedProduct;
+    let skippedSteamRelatedLinks = false;
 
     if (isNew) {
       const insertRow = {
         ...productToSupabaseRow(product, { includeId: true }),
         stock: 0
       };
-      const { data, error } = await client
-        .from("products")
-        .insert([insertRow])
-        .select("*")
-        .single();
+      const result = await writeAdminProductRow({
+        client,
+        isNew: true,
+        productId: product.id,
+        row: insertRow
+      });
+      const { data, error } = result;
       if (error) throw error;
+      skippedSteamRelatedLinks = result.skippedSteamRelatedLinks;
       savedProduct = mapSupabaseProductRow(data);
     } else {
-      const { data, error } = await client
-        .from("products")
-        .update(productToSupabaseRow(product))
-        .eq("id", state.selectedProductId)
-        .select("*")
-        .single();
+      const result = await writeAdminProductRow({
+        client,
+        isNew: false,
+        productId: state.selectedProductId,
+        row: productToSupabaseRow(product)
+      });
+      const { data, error } = result;
       if (error) throw error;
+      skippedSteamRelatedLinks = result.skippedSteamRelatedLinks;
       savedProduct = mapSupabaseProductRow(data);
     }
 
@@ -1961,7 +2020,13 @@ async function saveProductFromForm(event) {
       ? new Date(savedProduct.updatedAt).toLocaleString("th-TH")
       : new Date().toLocaleString("th-TH");
     setStatus(`บันทึกข้อมูลสินค้าเรียบร้อยแล้ว ${updatedAt}`);
-    if (savedProduct?._stockFallback) {
+    if (skippedSteamRelatedLinks) {
+      showAdminToast(
+        "บันทึกสินค้าแล้ว แต่ยังไม่บันทึกลิงก์ DLC กรุณารัน supabase-admin-products-repair.sql",
+        "warning",
+        7000
+      );
+    } else if (savedProduct?._stockFallback) {
       showAdminToast("บันทึกสินค้าแล้ว แต่ stock log ต้องรัน supabase-orders-admin.sql เพิ่ม", "warning");
     } else {
       showAdminToast("บันทึกข้อมูลสินค้าเรียบร้อยแล้ว", "success");

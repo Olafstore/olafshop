@@ -622,6 +622,13 @@ function getProductBadgeClass(categoryId) {
   }[categoryId] || "pd-badge-steam";
 }
 
+function getDisplayProductName(product) {
+  const name = String(product?.name || "").trim();
+  if (!name) return "";
+  if (String(product?.category || "").toLowerCase() !== "offline") return name;
+  return /\[offline\]\s*$/i.test(name) ? name : `${name} [OFFLINE]`;
+}
+
 function translateTagToThai(tag) {
   const cleanTag = String(tag || "").trim();
   if (!cleanTag) return "";
@@ -635,6 +642,35 @@ function getDisplayTags(product, limit = 5) {
     .filter(Boolean);
   const fallback = categoryTagFallbacks[product?.category] || [];
   return [...new Set([...translated, ...fallback])].slice(0, limit);
+}
+
+function getSidebarDisplayTags(product) {
+  if (String(product?.category || "").toLowerCase() !== "offline") {
+    return getDisplayTags(product, 5);
+  }
+
+  const steamTags = [...new Set(
+    (Array.isArray(product?.tags) ? product.tags : [])
+      .map((tag) => cleanDisplayText(tag).trim())
+      .filter((tag) => tag && !/[\u0E00-\u0E7F]/.test(tag))
+  )];
+  if (!steamTags.length) return [];
+
+  const longestTag = Math.max(...steamTags.map((tag) => tag.length));
+  const maxItems = longestTag > 28 ? 3 : longestTag > 18 ? 4 : 6;
+  const characterBudget = longestTag > 28 ? 52 : longestTag > 18 ? 60 : 68;
+  const selected = [];
+  let usedCharacters = 0;
+
+  for (const tag of steamTags) {
+    const nextCost = tag.length + (selected.length ? 3 : 0);
+    if (selected.length >= maxItems) break;
+    if (selected.length > 1 && usedCharacters + nextCost > characterBudget) break;
+    selected.push(tag);
+    usedCharacters += nextCost;
+  }
+
+  return selected;
 }
 
 function cleanDisplayText(value = "") {
@@ -826,13 +862,10 @@ function buildThaiDescription(product) {
   return lines.join("\n\n");
 }
 
-function getLocalizedDescription(product) {
-  const source = cleanDisplayText(product?.description || "");
-  if (currentLang === "th") {
-    if (/[\u0E00-\u0E7F]/.test(source)) return source;
-    return buildThaiDescription(product);
-  }
-  return source || buildThaiDescription(product);
+function getAdminProductDescription(product) {
+  return String(product?.description || "")
+    .replace(/\r\n?/g, "\n")
+    .trim();
 }
 
 function normalizeSearchText(value) {
@@ -935,9 +968,9 @@ function renderSearchSuggestions(query) {
           .map(
             (product) => `
               <a class="search-suggestion-item" href="product.html?id=${encodeURIComponent(product.id)}" role="option">
-                <img ${fastImg(product.image || product.heroImage, product.name, { className: "suggestion-img" })} />
+                <img ${fastImg(product.image || product.heroImage, getDisplayProductName(product), { className: "suggestion-img" })} />
                 <span class="suggestion-info">
-                  <span class="suggestion-name">${highlightMatch(product.name, keyword)}</span>
+                  <span class="suggestion-name">${highlightMatch(getDisplayProductName(product), keyword)}</span>
                   <span class="suggestion-meta">${escapeHtml(product.publisher || getCategoryLabel(product.category))}</span>
                 </span>
                 <strong class="suggestion-price">${formatPrice(product.price)}</strong>
@@ -1196,8 +1229,10 @@ function renderProduct() {
     labelText.toUpperCase() !== badgeLabel.toUpperCase() &&
     !hasOfflineBadge
   );
+  const showOfflineSteamBadge = catId === "offline";
+  const displayProductName = getDisplayProductName(p);
 
-  const genreTags = getDisplayTags(p, 5)
+  const genreTags = getSidebarDisplayTags(p)
     .map((t) => `<span class="pd-genre-tag">${escapeHtml(t)}</span>`)
     .join("");
 
@@ -1226,7 +1261,7 @@ function renderProduct() {
 
   const gallerySection = screenshotSrcs.length > 0 ? `
     <div class="pd-hero-img" id="pd-hero-img">
-      <img id="pd-hero-main" ${fastImg(leftMainImg, p.name, { priority: true })} />
+      <img id="pd-hero-main" ${fastImg(leftMainImg, displayProductName, { priority: true })} />
     </div>
     ${screenshotSrcs.length > 1 ? `
     <div class="pd-gallery-label" style="margin-top: 16px;">
@@ -1328,11 +1363,11 @@ function renderProduct() {
     return `
       <a class="pd-related-card" href="product.html?id=${encodeURIComponent(rp.id)}">
         <div class="pd-related-img">
-          <img ${fastImg(rp.image || rp.heroImage, rp.name)} />
+          <img ${fastImg(rp.image || rp.heroImage, getDisplayProductName(rp))} />
           ${rpDiscount ? `<span class="pd-related-discount">-${rpDiscount}%</span>` : ""}
         </div>
         <div class="pd-related-body">
-          <p class="pd-related-name">${escapeHtml(rp.name)}</p>
+          <p class="pd-related-name">${escapeHtml(getDisplayProductName(rp))}</p>
           <p class="pd-related-publisher">${escapeHtml(rp.publisher || "")}</p>
           <div class="pd-related-footer">
             <strong class="pd-related-price">${formatPrice(rp.price)}</strong>
@@ -1394,7 +1429,7 @@ function renderProduct() {
   const discountBadge = renderDiscountBadge(purchase.price, purchase.compareAt);
 
   const compareEl = renderPriceCompare(purchase.compareAt, purchase.price);
-  const localizedDescription = getLocalizedDescription(p);
+  const adminDescription = getAdminProductDescription(p);
   const extrasReturnHash = isRockstarProduct(p) ? "#rockstar-products" : "#minecraft-products";
   const returnHref = extraProduct ? `more-products.html${extrasReturnHash}` : "index.html";
   const returnLabel = extraProduct ? "กลับไปหน้าสินค้าเพิ่มเติม" : "กลับไปหน้าร้านค้า";
@@ -1422,7 +1457,7 @@ function renderProduct() {
             <span class="pd-section-icon-box"><i data-lucide="file-text"></i></span>
             รายละเอียดสินค้า
           </h3>
-          <div class="pd-description">${escapeHtml(localizedDescription || "ยังไม่มีรายละเอียดสินค้า").replace(/\n/g, "<br>")}</div>
+          <div class="pd-description" data-admin-product-description>${escapeHtml(adminDescription || "ยังไม่มีรายละเอียดสินค้า").replace(/\n/g, "<br>")}</div>
         </div>
 
         <!-- Dynamic Detail Sections from Admin -->
@@ -1485,7 +1520,7 @@ function renderProduct() {
 
           <!-- Cover art -->
           <div class="pd-sidebar-cover">
-            <img ${fastImg(sidebarCoverImg, p.name, { priority: true })} />
+            <img ${fastImg(sidebarCoverImg, displayProductName, { priority: true })} />
           </div>
 
           <div class="pd-sidebar-body">
@@ -1493,11 +1528,12 @@ function renderProduct() {
             <!-- Platform badges -->
             <div class="pd-badges">
               <span class="pd-badge ${badgeClass}">${badgeLabel}</span>
+              ${showOfflineSteamBadge ? `<span class="pd-badge pd-badge-steam">STEAM</span>` : ""}
               ${showSecondaryBadge ? `<span class="pd-badge ${hasPremiumBadge ? "pd-badge-premium" : "pd-badge-steam"}">${escapeHtml(labelText)}</span>` : ""}
             </div>
 
             <!-- Title & publisher -->
-            <h1 class="pd-sidebar-title">${escapeHtml(p.name)}</h1>
+            <h1 class="pd-sidebar-title">${escapeHtml(displayProductName)}</h1>
             ${p.publisher ? `<p class="pd-sidebar-publisher">${escapeHtml(p.publisher)}</p>` : ""}
 
             <!-- Genre tags -->
@@ -1681,7 +1717,7 @@ function openOrderForm() {
   const imageUrl = productImageForCheckout(p);
   if (image) {
     image.src = imageUrl;
-    image.alt = p.name || "Product";
+    image.alt = getDisplayProductName(p) || "Product";
     image.loading = "lazy";
     image.decoding = "async";
   }
@@ -1690,7 +1726,7 @@ function openOrderForm() {
   const categoryLabel = purchase.hasPackage
     ? `แพ็คเกจ: ${purchase.packageTitle}`
     : p.label || getCategoryLabel(p.category);
-  setTextContent("[data-checkout-product-name]", p.name || "");
+  setTextContent("[data-checkout-product-name]", getDisplayProductName(p));
   setTextContent("[data-checkout-product-label]", purchase.hasPackage ? categoryLabel : categoryLabel ? `Type: ${categoryLabel}` : "Type: -");
   setTextContent("[data-checkout-product-qty]", `จำนวน: ${detailQuantity}`);
   setTextContent("[data-checkout-product-price]", formatPrice(purchase.price));

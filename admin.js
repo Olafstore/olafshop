@@ -534,8 +534,18 @@ async function handleAdminLogin(event) {
     }
 
     showAdminShell();
-    await loadData();
-    showAdminToast("เข้าสู่ระบบหลังบ้านสำเร็จ", "success");
+    try {
+      await loadData();
+      showAdminToast("เข้าสู่ระบบหลังบ้านสำเร็จ", "success");
+    } catch (loadError) {
+      console.error("Admin authenticated but dashboard data failed to load", loadError);
+      setStatus("เข้าสู่ระบบแล้ว แต่โหลดข้อมูลหลังบ้านไม่สำเร็จ");
+      showAdminToast(
+        `เข้าสู่ระบบสำเร็จ แต่โหลดข้อมูลไม่สำเร็จ: ${adminDataErrorMessage(loadError)}`,
+        "error",
+        8000
+      );
+    }
   } catch (error) {
     showAdminLogin(adminAuthErrorMessage(error));
   } finally {
@@ -706,6 +716,18 @@ async function loadData() {
   state.siteIconCleared = false;
   renderAll();
   setStatus("เชื่อมต่อ Supabase หลังบ้านแล้ว");
+}
+
+function adminDataErrorMessage(error) {
+  const code = String(error?.code || "").trim();
+  const message = String(error?.message || error || "").trim();
+  if (code === "42501" || /permission denied|row-level security/i.test(message)) {
+    return "สิทธิ์ RLS ของข้อมูลหลังบ้านยังไม่ครบ กรุณารัน supabase-fix-admin-access.sql เวอร์ชันล่าสุด";
+  }
+  if (/failed to fetch|network/i.test(message)) {
+    return "เชื่อมต่อ Supabase ไม่สำเร็จ กรุณาตรวจอินเทอร์เน็ตแล้วกดโหลดข้อมูลใหม่";
+  }
+  return [code, message].filter(Boolean).join(" - ") || "ไม่ทราบสาเหตุ";
 }
 
 function products() {
@@ -3028,28 +3050,41 @@ document.addEventListener("DOMContentLoaded", async () => {
   await window.OlafStore?.ready;
   bindEvents();
   showAdminLogin("กำลังตรวจสอบสิทธิ์แอดมิน...");
+  let admin = null;
+
   try {
-    const admin = await checkAdminAccess();
-    if (admin) {
-      showAdminShell();
-      await loadData();
-    } else {
-      const access = checkAdminAccess.lastAccess || {};
-      const reason = access.reason || "NO_SESSION";
-
-      if (reason === "NOT_ADMIN") {
-        await requireSupabaseAdminClient().auth.signOut().catch(() => {});
-      }
-
-      if (reason === "NO_SESSION" || reason === "INVALID_SESSION" || reason === "NOT_ADMIN") {
-        showAdminLogin(adminDeniedMessage(reason));
-      } else {
-        showAdminLogin(adminDeniedMessage("ROLE_LOAD_FAILED"));
-      }
-    }
+    admin = await checkAdminAccess();
   } catch (error) {
     console.error("Admin access guard failed", error);
     showAdminLogin(adminDeniedMessage("ROLE_LOAD_FAILED"));
+    createIconSet();
+    return;
+  }
+
+  if (!admin) {
+    const access = checkAdminAccess.lastAccess || {};
+    const reason = access.reason || "NO_SESSION";
+
+    if (reason === "NOT_ADMIN") {
+      await requireSupabaseAdminClient().auth.signOut().catch(() => {});
+    }
+
+    showAdminLogin(adminDeniedMessage(reason));
+    createIconSet();
+    return;
+  }
+
+  showAdminShell();
+  try {
+    await loadData();
+  } catch (error) {
+    console.error("Admin authenticated but dashboard data failed to load", error);
+    setStatus("เข้าสู่ระบบแล้ว แต่โหลดข้อมูลหลังบ้านไม่สำเร็จ");
+    showAdminToast(
+      `โหลดข้อมูลหลังบ้านไม่สำเร็จ: ${adminDataErrorMessage(error)}`,
+      "error",
+      8000
+    );
   }
   createIconSet();
 });

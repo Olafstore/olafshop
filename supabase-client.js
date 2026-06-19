@@ -270,18 +270,43 @@
     if (error) throw error;
   }
 
-  async function updateProfile({ fullName }) {
+  async function updateProfile({ username, fullName }) {
     const { data: userData, error: userError } = await requireClient().auth.getUser();
     if (userError) throw userError;
     const user = userData.user;
     if (!user) throw new Error("กรุณาเข้าสู่ระบบก่อนแก้ไขโปรไฟล์");
 
-    const updatedAt = new Date().toISOString();
-    const { data, error } = await requireClient()
+    const normalizedUsername = String(username || user.email?.split("@")[0] || "").trim();
+    const normalizedFullName = String(fullName || normalizedUsername).trim();
+    if (normalizedUsername.length < 2 || normalizedUsername.length > 50) {
+      throw new Error("ชื่อผู้ใช้ต้องมีความยาว 2–50 ตัวอักษร");
+    }
+    if (!normalizedFullName || normalizedFullName.length > 100) {
+      throw new Error("ชื่อแสดงผลต้องมีความยาว 1–100 ตัวอักษร");
+    }
+
+    const client = requireClient();
+    const rpcResult = await client.rpc("update_my_profile", {
+      p_username: normalizedUsername,
+      p_full_name: normalizedFullName
+    });
+    if (!rpcResult.error) {
+      return publicUserFrom(user, rpcResult.data || {});
+    }
+
+    const rpcMessage = String(rpcResult.error?.message || "");
+    const missingRpc =
+      rpcResult.error?.code === "PGRST202" ||
+      rpcResult.error?.code === "42883" ||
+      rpcMessage.includes("update_my_profile") ||
+      rpcMessage.toLowerCase().includes("schema cache");
+    if (!missingRpc) throw rpcResult.error;
+
+    const { data, error } = await client
       .from("profiles")
       .update({
-        full_name: fullName,
-        updated_at: updatedAt
+        username: normalizedUsername,
+        full_name: normalizedFullName
       })
       .eq("id", user.id)
       .select("id, email, username, full_name, role, position, partner_level, status, updated_at")

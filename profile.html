@@ -14,8 +14,8 @@
     rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-  <script src="supabase-client.js?v=20260607-stock-fix" defer></script>
-  <script src="platform-store.js?v=20260605-admin-users" defer></script>
+  <script src="supabase-client.js?v=20260619-profile-update-fix" defer></script> 
+  <script src="platform-store.js?v=20260619-profile-update-fix" defer></script>
   <script src="image-performance.js?v=20260607-performance" defer></script>
   <script src="site-navigation.js?v=20260618-mobile-nav" defer></script>
   <script src="notifications.js?v=20260618-profile-topbar" defer></script>
@@ -2373,6 +2373,24 @@
         lucide.createIcons();
       }
 
+      function profileUpdateErrorMessage(error) {
+        const code = String(error?.code || '');
+        const message = String(error?.message || '');
+        if (message.includes('INVALID_USERNAME')) return 'ชื่อผู้ใช้ต้องมีความยาว 2–50 ตัวอักษรและห้ามมีอักขระควบคุม';
+        if (message.includes('INVALID_FULL_NAME')) return 'ชื่อแสดงผลต้องมีความยาว 1–100 ตัวอักษร';
+        if (message.includes('PROFILE_NOT_FOUND')) return 'ไม่พบข้อมูลโปรไฟล์ของบัญชีนี้';
+        if (message.includes('AUTH_REQUIRED')) return 'กรุณาเข้าสู่ระบบใหม่ก่อนแก้ไขโปรไฟล์';
+        if (
+          code === '42501' ||
+          code === 'PGRST202' ||
+          message.includes('permission denied') ||
+          message.includes('update_my_profile')
+        ) {
+          return 'ระบบแก้ไขโปรไฟล์ยังไม่พร้อม กรุณารัน supabase-profile-update-repair.sql';
+        }
+        return message || 'บันทึกข้อมูลไม่สำเร็จ กรุณาลองใหม่';
+      }
+
       // Save profile
       form?.addEventListener('submit', async (e) => {
         e.preventDefault();
@@ -2392,10 +2410,11 @@
             applyProfileIdentity(newUser);
           }
         } catch (err) {
+          const errorMessage = profileUpdateErrorMessage(err);
           msg.className = 'save-message error';
-          msg.innerHTML = `<i data-lucide="alert-circle" style="width:16px;height:16px"></i><span>${escape(err.message)}</span>`;
+          msg.innerHTML = `<i data-lucide="alert-circle" style="width:16px;height:16px"></i><span>${escape(errorMessage)}</span>`;
           lucide.createIcons();
-          showToast(err.message, 'error');
+          showToast(errorMessage, 'error');
         }
       });
 

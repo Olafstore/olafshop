@@ -142,6 +142,7 @@
     if (!cachedUser || cachedUser.id !== id) throw new Error("กรุณาเข้าสู่ระบบก่อนแก้ไขโปรไฟล์");
     ensureAuthAvailable();
     cachedUser = await window.OlafSupabaseAuth.updateProfile({
+      username: patch.username || cachedUser.username,
       fullName: patch.fullName || patch.displayName || patch.username || cachedUser.displayName
     });
     return cachedUser;

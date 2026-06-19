@@ -110,6 +110,19 @@ const tagTranslations = new Map([
   ["choices matter", "ตัวเลือกมีผล"],
   ["controller", "รองรับจอย"],
   ["controller support", "รองรับจอย"],
+  ["full controller support", "รองรับจอยเต็มรูปแบบ"],
+  ["partial controller support", "รองรับจอยบางส่วน"],
+  ["downloadable content", "เนื้อหาเสริม"],
+  ["adjustable text size", "ปรับขนาดข้อความได้"],
+  ["camera comfort", "ปรับมุมกล้องเพื่อความสบายได้"],
+  ["chat speech-to-text", "แปลงเสียงสนทนาเป็นข้อความ"],
+  ["chat text-to-speech", "อ่านข้อความสนทนาเป็นเสียง"],
+  ["color alternatives", "ปรับรูปแบบสีได้"],
+  ["custom volume controls", "ปรับระดับเสียงแยกได้"],
+  ["adjustable difficulty", "ปรับระดับความยากได้"],
+  ["playable without timed input", "เล่นได้โดยไม่จำกัดเวลากด"],
+  ["stereo sound", "เสียงสเตอริโอ"],
+  ["surround sound", "เสียงรอบทิศทาง"],
   ["cross-platform multiplayer", "เล่นข้ามแพลตฟอร์ม"],
   ["shared/split screen", "แบ่งจอร่วมกัน"],
   ["family sharing", "แชร์คลังครอบครัว"],
@@ -443,13 +456,13 @@ function getDiscountForValues(price, compareAt) {
 
 function normalizeProductPackage(pkg, index = 0) {
   if (!pkg || typeof pkg !== "object") return null;
-  const title = String(pkg.title || pkg.name || "").trim();
+  const title = cleanDisplayText(pkg.title || pkg.name || "");
   if (!title) return null;
   return {
     id: String(pkg.id || `package-${index}`).trim(),
     title,
-    subtitle: String(pkg.subtitle || "").trim(),
-    description: String(pkg.description || "").trim(),
+    subtitle: cleanDisplayText(pkg.subtitle || ""),
+    description: cleanDisplayText(pkg.description || ""),
     price: Number(pkg.price || 0),
     compareAt: pkg.compareAt == null ? null : Number(pkg.compareAt),
     stock: Number(pkg.stock || 0),
@@ -590,7 +603,7 @@ async function refreshCurrentProduct() {
 }
 
 function getCategoryLabel(categoryId) {
-  return (
+  return cleanDisplayText(
     globalPayload?.categories?.find((category) => category.id === categoryId)?.label ||
     {
       "steam-key": "คีย์ Steam",
@@ -607,7 +620,7 @@ function getCategoryLabel(categoryId) {
 }
 
 function getProductBadgeLabel(categoryId, fallbackLabel = "") {
-  return categoryBadgeLabels[categoryId] || String(fallbackLabel || "STEAM").trim() || "STEAM";
+  return categoryBadgeLabels[categoryId] || cleanDisplayText(fallbackLabel || "STEAM") || "STEAM";
 }
 
 function getProductBadgeClass(categoryId) {
@@ -623,14 +636,14 @@ function getProductBadgeClass(categoryId) {
 }
 
 function getDisplayProductName(product) {
-  const name = String(product?.name || "").trim();
+  const name = cleanDisplayText(product?.name || "");
   if (!name) return "";
   if (String(product?.category || "").toLowerCase() !== "offline") return name;
   return /\[offline\]\s*$/i.test(name) ? name : `${name} [OFFLINE]`;
 }
 
 function translateTagToThai(tag) {
-  const cleanTag = String(tag || "").trim();
+  const cleanTag = cleanDisplayText(tag);
   if (!cleanTag) return "";
   if (/[\u0E00-\u0E7F]/.test(cleanTag)) return cleanTag;
   return tagTranslations.get(cleanTag.toLowerCase()) || "";
@@ -649,20 +662,16 @@ function getSidebarDisplayTags(product) {
     return getDisplayTags(product, 5);
   }
 
-  const steamTags = [...new Set(
-    (Array.isArray(product?.tags) ? product.tags : [])
-      .map((tag) => cleanDisplayText(tag).trim())
-      .filter((tag) => tag && !/[\u0E00-\u0E7F]/.test(tag))
-  )];
-  if (!steamTags.length) return [];
+  const thaiTags = getDisplayTags(product, 6);
+  if (!thaiTags.length) return [];
 
-  const longestTag = Math.max(...steamTags.map((tag) => tag.length));
+  const longestTag = Math.max(...thaiTags.map((tag) => tag.length));
   const maxItems = longestTag > 28 ? 3 : longestTag > 18 ? 4 : 6;
   const characterBudget = longestTag > 28 ? 52 : longestTag > 18 ? 60 : 68;
   const selected = [];
   let usedCharacters = 0;
 
-  for (const tag of steamTags) {
+  for (const tag of thaiTags) {
     const nextCost = tag.length + (selected.length ? 3 : 0);
     if (selected.length >= maxItems) break;
     if (selected.length > 1 && usedCharacters + nextCost > characterBudget) break;
@@ -695,24 +704,67 @@ function cleanDisplayText(value = "") {
     ["\u00a0", " "]
   ];
   let next = String(value || "");
-  const looksMojibake = /(?:à¸|à¹|Ã.|Â.|â€|â„¢|ã€€)/.test(next) && !/[\u0E00-\u0E7F]/.test(next);
-  if (looksMojibake) {
-    try {
-      const bytes = Uint8Array.from(Array.from(next).map((char) => char.charCodeAt(0) & 255));
-      next = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
-    } catch (error) {
-      try {
-        next = decodeURIComponent(escape(next));
-      } catch (decodeError) {
-        // keep original text if decoding is not possible
+  const mojibakePattern = /(?:à¸|à¹|Ã.|Â.|â€|â„¢|ã€€|ï¿½|�)/g;
+  const mojibakeScore = (text) => (String(text || "").match(mojibakePattern) || []).length;
+  const windows1252Bytes = new Map([
+    [0x20ac, 0x80], [0x201a, 0x82], [0x0192, 0x83], [0x201e, 0x84],
+    [0x2026, 0x85], [0x2020, 0x86], [0x2021, 0x87], [0x02c6, 0x88],
+    [0x2030, 0x89], [0x0160, 0x8a], [0x2039, 0x8b], [0x0152, 0x8c],
+    [0x017d, 0x8e], [0x2018, 0x91], [0x2019, 0x92], [0x201c, 0x93],
+    [0x201d, 0x94], [0x2022, 0x95], [0x2013, 0x96], [0x2014, 0x97],
+    [0x02dc, 0x98], [0x2122, 0x99], [0x0161, 0x9a], [0x203a, 0x9b],
+    [0x0153, 0x9c], [0x017e, 0x9e], [0x0178, 0x9f]
+  ]);
+  const toLegacyBytes = (text) => {
+    const bytes = [];
+    for (const char of Array.from(text)) {
+      const code = char.charCodeAt(0);
+      if (code <= 0xff) {
+        bytes.push(code);
+      } else if (windows1252Bytes.has(code)) {
+        bytes.push(windows1252Bytes.get(code));
+      } else {
+        return null;
       }
     }
+    return Uint8Array.from(bytes);
+  };
+
+  for (let attempt = 0; attempt < 4; attempt += 1) {
+    const currentScore = mojibakeScore(next);
+    if (!currentScore || /[\u0E00-\u0E7F]/.test(next)) break;
+
+    let decoded = next;
+    try {
+      const bytes = toLegacyBytes(next);
+      if (!bytes) break;
+      decoded = new TextDecoder("utf-8", { fatal: true }).decode(bytes);
+    } catch (error) {
+      try {
+        decoded = decodeURIComponent(escape(next));
+      } catch (decodeError) {
+        break;
+      }
+    }
+
+    if (!decoded || decoded === next || mojibakeScore(decoded) >= currentScore) break;
+    next = decoded;
   }
+
   replacements.forEach(([from, to]) => {
     next = next.split(from).join(to);
   });
-  return next.replace(/[ \t]+\n/g, "\n").replace(/\n{3,}/g, "\n\n").trim();
+  return next
+    .replace(/\uFFFD/g, "")
+    .replace(/[ \t]+\n/g, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
+
+window.OlafText = {
+  ...(window.OlafText || {}),
+  clean: cleanDisplayText
+};
 
 function translateRequirementLabel(label) {
   const normalized = cleanDisplayText(label).replace(/^[•●▪⬢■◆◇◦◉\s]+/, "").replace(/:$/, "").trim().toLowerCase();
@@ -843,8 +895,12 @@ function localizeSectionBody(body, product = null, title = "") {
 function localizeSectionTitle(title = "") {
   const cleaned = cleanDisplayText(title);
   if (currentLang !== "th") return cleaned;
-  if (/steam/i.test(cleaned) || /(?:à¸|à¹)/.test(String(title))) return "ข้อมูลจาก STEAM";
+  if (/steam/i.test(cleaned)) return "ข้อมูลจาก STEAM";
   return cleaned || "ข้อมูลสินค้า";
+}
+
+function isSteamInfoDetailSection(section) {
+  return localizeSectionTitle(section?.title || "") === "ข้อมูลจาก STEAM";
 }
 
 function buildThaiDescription(product) {
@@ -863,7 +919,7 @@ function buildThaiDescription(product) {
 }
 
 function getAdminProductDescription(product) {
-  return String(product?.description || "")
+  return cleanDisplayText(product?.description || "")
     .replace(/\r\n?/g, "\n")
     .trim();
 }
@@ -971,7 +1027,7 @@ function renderSearchSuggestions(query) {
                 <img ${fastImg(product.image || product.heroImage, getDisplayProductName(product), { className: "suggestion-img" })} />
                 <span class="suggestion-info">
                   <span class="suggestion-name">${highlightMatch(getDisplayProductName(product), keyword)}</span>
-                  <span class="suggestion-meta">${escapeHtml(product.publisher || getCategoryLabel(product.category))}</span>
+                  <span class="suggestion-meta">${escapeHtml(cleanDisplayText(product.publisher || getCategoryLabel(product.category)))}</span>
                 </span>
                 <strong class="suggestion-price">${formatPrice(product.price)}</strong>
               </a>
@@ -1039,8 +1095,8 @@ function steamRelatedSection(product) {
             <a class="pd-steam-related-card" href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer" data-steam-related-card data-appid="${escapeHtml(item.appId)}">
               <img src="${escapeHtml(item.image || `https://cdn.akamai.steamstatic.com/steam/apps/${item.appId}/header.jpg`)}" alt="" loading="lazy" decoding="async" data-steam-related-image />
               <span>
-                <small data-steam-related-type>${escapeHtml(item.type || "Steam content")}</small>
-                <strong data-steam-related-title>${escapeHtml(item.title || `กำลังโหลดข้อมูล Steam #${item.appId}`)}</strong>
+                <small data-steam-related-type>${escapeHtml(cleanDisplayText(item.type || "เนื้อหาบน Steam"))}</small>
+                <strong data-steam-related-title>${escapeHtml(cleanDisplayText(item.title || `กำลังโหลดข้อมูล Steam #${item.appId}`))}</strong>
                 <em>ดูบน Steam <i data-lucide="external-link"></i></em>
               </span>
             </a>
@@ -1220,7 +1276,7 @@ function renderProduct() {
   const catId = (p.category || "").toLowerCase();
   const badgeClass = getProductBadgeClass(p.category);
   const badgeLabel = getProductBadgeLabel(p.category, p.label);
-  const labelText = String(p.label || "").trim();
+  const labelText = cleanDisplayText(p.label || "");
   const hasOfflineBadge = badgeLabel === "OFFLINE" || catId.includes("offline");
   const hasPremiumBadge = /premium|deluxe/i.test(labelText);
   const showSecondaryBadge = Boolean(
@@ -1329,7 +1385,7 @@ function renderProduct() {
       <div class="pd-lang-chips">
         ${langList.map(lang => {
           const hasAudio = lang.startsWith('🔊');
-          const name = lang.replace(/^🔊\s*/, '');
+          const name = cleanDisplayText(lang.replace(/^🔊\s*/, ''));
           return `<span class="pd-lang-chip${hasAudio ? ' has-audio' : ''}">${hasAudio ? '<span class="pd-lang-audio">🔊</span>' : ''}<span>${escapeHtml(name)}</span></span>`;
         }).join("")}
       </div>
@@ -1368,7 +1424,7 @@ function renderProduct() {
         </div>
         <div class="pd-related-body">
           <p class="pd-related-name">${escapeHtml(getDisplayProductName(rp))}</p>
-          <p class="pd-related-publisher">${escapeHtml(rp.publisher || "")}</p>
+          <p class="pd-related-publisher">${escapeHtml(cleanDisplayText(rp.publisher || ""))}</p>
           <div class="pd-related-footer">
             <strong class="pd-related-price">${formatPrice(rp.price)}</strong>
             <span class="stock-pill ${rpStock.className}" style="font-size:0.65rem;padding:2px 7px;">${rpStock.label}</span>
@@ -1461,7 +1517,9 @@ function renderProduct() {
         </div>
 
         <!-- Dynamic Detail Sections from Admin -->
-        ${Array.isArray(p.detailSections) && p.detailSections.length > 0 ? p.detailSections.map(s => `
+        ${Array.isArray(p.detailSections) && p.detailSections.length > 0 ? p.detailSections
+          .filter((section) => !isSteamInfoDetailSection(section))
+          .map(s => `
         <div class="pd-section">
           <h3 class="pd-section-title">
             <span class="pd-section-icon-box"><i data-lucide="info"></i></span>
@@ -1534,7 +1592,7 @@ function renderProduct() {
 
             <!-- Title & publisher -->
             <h1 class="pd-sidebar-title">${escapeHtml(displayProductName)}</h1>
-            ${p.publisher ? `<p class="pd-sidebar-publisher">${escapeHtml(p.publisher)}</p>` : ""}
+            ${p.publisher ? `<p class="pd-sidebar-publisher">${escapeHtml(cleanDisplayText(p.publisher))}</p>` : ""}
 
             <!-- Genre tags -->
             ${genreTags ? `<div class="pd-genre-tags">${genreTags}</div>` : ""}
@@ -1567,8 +1625,8 @@ function renderProduct() {
                   <i data-lucide="${escapeHtml(f.icon)}"></i>
                 </div>
                 <div class="pd-feature-text">
-                  <strong>${escapeHtml(f.title)}</strong>
-                  <span>${escapeHtml(f.text)}</span>
+                  <strong>${escapeHtml(cleanDisplayText(f.title))}</strong>
+                  <span>${escapeHtml(cleanDisplayText(f.text))}</span>
                 </div>
               </div>
               `).join("") : hasOfflineBadge ? `
@@ -1586,7 +1644,7 @@ function renderProduct() {
                   <i data-lucide="cloud-off"></i>
                 </div>
                 <div class="pd-feature-text">
-                  <strong>Cloud Gaming</strong>
+                  <strong>เล่นเกมผ่านคลาวด์</strong>
                   <span>ไม่สามารถใช้งานได้</span>
                 </div>
               </div>
@@ -1605,7 +1663,7 @@ function renderProduct() {
                   <i data-lucide="cloud"></i>
                 </div>
                 <div class="pd-feature-text">
-                  <strong>Cloud Save</strong>
+                  <strong>บันทึกบนคลาวด์</strong>
                   <span>บันทึกข้อมูลลงคลาวด์ได้</span>
                 </div>
               </div>
@@ -1717,7 +1775,7 @@ function openOrderForm() {
   const imageUrl = productImageForCheckout(p);
   if (image) {
     image.src = imageUrl;
-    image.alt = getDisplayProductName(p) || "Product";
+    image.alt = getDisplayProductName(p) || "สินค้า";
     image.loading = "lazy";
     image.decoding = "async";
   }
@@ -1727,7 +1785,7 @@ function openOrderForm() {
     ? `แพ็คเกจ: ${purchase.packageTitle}`
     : p.label || getCategoryLabel(p.category);
   setTextContent("[data-checkout-product-name]", getDisplayProductName(p));
-  setTextContent("[data-checkout-product-label]", purchase.hasPackage ? categoryLabel : categoryLabel ? `Type: ${categoryLabel}` : "Type: -");
+  setTextContent("[data-checkout-product-label]", purchase.hasPackage ? categoryLabel : categoryLabel ? `ประเภท: ${cleanDisplayText(categoryLabel)}` : "ประเภท: -");
   setTextContent("[data-checkout-product-qty]", `จำนวน: ${detailQuantity}`);
   setTextContent("[data-checkout-product-price]", formatPrice(purchase.price));
   setTextContent("[data-checkout-price-subtotal]", formatPrice(subtotal));
@@ -1850,7 +1908,7 @@ async function submitOrder(formData) {
     if (orderNumberWrap) orderNumberWrap.hidden = false;
     $("#order-dialog")?.close();
     showPaymentResult(savedOrder);
-    showToast("Order created. Please upload payment slip after transfer.", "payment", 5000);
+    showToast("สร้างคำสั่งซื้อแล้ว กรุณาชำระเงินและแนบสลิป", "payment", 5000);
     return;
   } catch (error) {
     showToast(orderErrorMessage(error), "error", 5000);
@@ -1901,7 +1959,7 @@ function showPaymentResult(order) {
 
   const dialog = $("#qr-dialog");
   if (!dialog) {
-    showToast("ไม่พบหน้าต่าง QR Payment กรุณารีเฟรชหน้าเว็บ", "error");
+    showToast("ไม่พบหน้าต่างชำระเงินด้วย QR กรุณารีเฟรชหน้าเว็บ", "error");
     return;
   }
 
@@ -1919,15 +1977,15 @@ function showPaymentResult(order) {
   if (note) {
     let html = "";
     if (paymentInfo.paymentNote) {
-      html += `<div class="qr-note-alert"><i data-lucide="info" style="width:16px;height:16px;"></i> ${escapeHtml(paymentInfo.paymentNote)}</div>`;
+      html += `<div class="qr-note-alert"><i data-lucide="info" style="width:16px;height:16px;"></i> ${escapeHtml(cleanDisplayText(paymentInfo.paymentNote))}</div>`;
     }
     let accountBoxesHtml = "";
     if (paymentInfo.bankName && paymentInfo.bankAccountNumber) {
       accountBoxesHtml += `
         <div class="qr-account-box">
-          <span class="bank-name">ธนาคาร${escapeHtml(paymentInfo.bankName)}</span>
+          <span class="bank-name">ธนาคาร${escapeHtml(cleanDisplayText(paymentInfo.bankName))}</span>
           <span class="acc-number">${escapeHtml(paymentInfo.bankAccountNumber)}</span>
-          ${paymentInfo.bankAccountName ? `<span class="acc-name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">ชื่อ: ${escapeHtml(paymentInfo.bankAccountName)}</span>` : ""}
+          ${paymentInfo.bankAccountName ? `<span class="acc-name" style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%;">ชื่อ: ${escapeHtml(cleanDisplayText(paymentInfo.bankAccountName))}</span>` : ""}
         </div>
       `;
     }
@@ -1935,7 +1993,7 @@ function showPaymentResult(order) {
       accountBoxesHtml += `
         <div class="qr-account-box">
           <span class="bank-name">ทรูมันนี่วอลเล็ท</span>
-          <span class="acc-number">${escapeHtml(paymentInfo.walletName)}</span>
+          <span class="acc-number">${escapeHtml(cleanDisplayText(paymentInfo.walletName))}</span>
         </div>
       `;
     }
@@ -1995,7 +2053,7 @@ function showPaymentResult(order) {
 
 function bindPlatformSlipForm(order) {
   $("#platform-slip-file")?.addEventListener("change", (event) => {
-    const fileName = event.target.files?.[0]?.name || "Upload payment slip";
+    const fileName = event.target.files?.[0]?.name || "แนบสลิปการชำระเงิน";
     const label = $("#platform-slip-file-label");
     if (label) label.textContent = fileName;
   });
@@ -2004,7 +2062,7 @@ function bindPlatformSlipForm(order) {
     event.preventDefault();
     const file = $("#platform-slip-file")?.files?.[0];
     if (!file) {
-      showToast("Please choose a payment slip image first.", "warning");
+      showToast("กรุณาเลือกรูปสลิปการชำระเงินก่อน", "warning");
       return;
     }
 
@@ -2012,18 +2070,18 @@ function bindPlatformSlipForm(order) {
     const originalHtml = button?.innerHTML || "";
     if (button) {
       button.disabled = true;
-      button.innerHTML = '<i data-lucide="loader-circle"></i> Uploading...';
+      button.innerHTML = '<i data-lucide="loader-circle"></i> กำลังอัปโหลด...';
       createIconSet();
     }
 
     try {
       if (!window.OlafOrders?.uploadPaymentSlip) throw new Error("Slip upload client is not ready");
       await window.OlafOrders.uploadPaymentSlip({ orderId: order.id, file });
-      showToast("Payment slip uploaded. Waiting for admin review.", "payment", 5000);
+      showToast("แนบสลิปเรียบร้อยแล้ว กำลังรอแอดมินตรวจสอบ", "payment", 5000);
       window.location.href = `orders.html?order=${encodeURIComponent(order.id)}`;
     } catch (error) {
       console.error("Payment slip upload failed", error);
-      showToast(error?.message || "Payment slip upload failed.", "error", 5500);
+      showToast("อัปโหลดสลิปไม่สำเร็จ กรุณาลองใหม่", "error", 5500);
     } finally {
       if (button) {
         button.disabled = false;
@@ -2072,7 +2130,7 @@ async function uploadCurrentQrSlip(file) {
     window.location.href = `orders.html?order=${encodeURIComponent(order.id)}`;
   } catch (error) {
     console.error("QR slip upload failed", error);
-    showToast(error?.message || "อัปโหลดสลิปไม่สำเร็จ กรุณาลองใหม่", "error", 5500);
+    showToast("อัปโหลดสลิปไม่สำเร็จ กรุณาลองใหม่", "error", 5500);
   } finally {
     if (button) {
       button.disabled = false;
@@ -2154,7 +2212,7 @@ async function cancelCurrentQrOrder() {
     showToast("ยกเลิกรายการแล้ว", "info", 4000);
   } catch (error) {
     console.error("Cancel order failed", error);
-    showToast(error?.message || "ยกเลิกรายการไม่สำเร็จ", "error", 5000);
+    showToast("ยกเลิกรายการไม่สำเร็จ กรุณาลองใหม่", "error", 5000);
   } finally {
     if (button) {
       button.disabled = false;
@@ -2219,12 +2277,14 @@ function renderUserPopover() {
   const user = window.OlafStore.currentUser();
   if (!popover || !user) return;
   
+  const displayName = cleanDisplayText(user.displayName || user.username || "ผู้ใช้");
+  const email = cleanDisplayText(user.email || "");
   popover.innerHTML = `
     <div class="user-popover-header">
-      <div class="user-popover-avatar">${escapeHtml((user.displayName || user.username || "U").slice(0, 1).toUpperCase())}</div>
+      <div class="user-popover-avatar">${escapeHtml((displayName || "ผ").slice(0, 1).toUpperCase())}</div>
       <div class="user-popover-info">
-        <strong>${escapeHtml(user.displayName || user.username)}</strong>
-        <span>${escapeHtml(user.email)}</span>
+        <strong>${escapeHtml(displayName)}</strong>
+        <span>${escapeHtml(email)}</span>
       </div>
     </div>
     <div class="user-popover-menu">
@@ -2252,7 +2312,7 @@ function updateAccountChrome() {
   const user = window.OlafStore?.currentUser?.() || null;
   const accountLabelEl = $("#account-label");
   if (accountLabelEl) {
-    accountLabelEl.textContent = user ? user.displayName || user.username : "เข้าสู่ระบบ";
+    accountLabelEl.textContent = user ? cleanDisplayText(user.displayName || user.username) : "เข้าสู่ระบบ";
   }
   if (user) {
     renderUserPopover();

@@ -19,6 +19,10 @@
     });
   }
 
+  function cleanText(value = "") {
+    return window.OlafText?.clean ? window.OlafText.clean(value) : String(value || "").trim();
+  }
+
   function formatDate(value) {
     const date = value ? new Date(value) : null;
     if (!date || Number.isNaN(date.getTime())) return "";
@@ -26,12 +30,12 @@
   }
 
   function orderLabel(order) {
-    return order?.orderNumber || order?.id || "ออเดอร์";
+    return cleanText(order?.orderNumber || order?.id || "ออเดอร์");
   }
 
   function orderProductText(order) {
     const names = (order?.items || [])
-      .map((item) => item.productName || item.name || item.productId)
+      .map((item) => cleanText(item.productName || item.name || item.productId))
       .filter(Boolean);
     return names.length ? names.join(", ") : "สินค้าในออเดอร์";
   }

@@ -16,10 +16,10 @@
   <script src="supabase-client.js?v=20260618-auth-domain-fix" defer></script>
   <script src="platform-store.js?v=20260605-admin-users" defer></script>
   <script src="image-performance.js?v=20260607-performance" defer></script>
-  <script src="notifications.js?v=20260607-performance" defer></script>
+  <script src="notifications.js?v=20260619-thai-encoding-fix-v2" defer></script>
   <script src="site-navigation.js?v=20260618-mobile-nav" defer></script>
   <script src="extra-products.js?v=20260618-extra-catalog" defer></script>
-  <script src="product.js?v=20260619-offline-labels" defer></script>
+  <script src="product.js?v=20260619-thai-encoding-fix-v2" defer></script>
 </head>
 
 <body class="product-detail-page">
@@ -29,7 +29,7 @@
         <span class="brand-mark">O</span>
         <span>
           <strong>OLAF SHOP</strong>
-          <small>Steam Game Store</small>
+          <small>ร้านเกม Steam</small>
         </span>
       </a>
 
@@ -70,12 +70,12 @@
           </button>
           <div class="notification-popover" id="notification-popover" hidden>
             <div class="notification-header">
-              <h3>Notifications</h3>
+              <h3>การแจ้งเตือน</h3>
             </div>
             <div class="notification-body" id="notification-list">
               <div class="notification-empty">
                 <i data-lucide="bell"></i>
-                <p>No notifications</p>
+                <p>ยังไม่มีการแจ้งเตือน</p>
               </div>
             </div>
           </div>
@@ -123,7 +123,7 @@
             </span>
             <span class="brand-text" data-olaf-store-name>OLAF SHOP</span>
           </a>
-          <p>ขาย เช่า เกมแท้ราคาถูกทั้งระบบออฟไลน์ และออนไลน์ เชื่อถือได้ ผ่านระบบอัตโนมัติ ตลอด 24ชั่วโมง และทีมงานซัพพอร์ต 12:00 - 23:00น.</p>
+          <p>จำหน่ายเกมแท้ราคาคุ้มค่า ทั้งระบบออฟไลน์และออนไลน์ พร้อมระบบสั่งซื้อตลอด 24 ชั่วโมง และทีมงานดูแลเวลา 12:00–23:00 น.</p>
         </div>
         
         <div class="footer-links">
@@ -135,7 +135,7 @@
         </div>
         
         <div class="footer-payments">
-          <h4>Payment Methods</h4>
+          <h4>ช่องทางชำระเงิน</h4>
           <div class="payment-badges">
             <span class="payment-badge">PromptPay</span>
             <span class="payment-badge">TrueMoney Wallet</span>
@@ -144,7 +144,7 @@
       </div>
       
       <div class="footer-bottom">
-        <p>&copy; 2026 OLAF SHOP copyright reserved.</p>
+        <p>&copy; 2026 OLAF SHOP สงวนลิขสิทธิ์</p>
         <div class="footer-bottom-links">
           <a href="#">ข้อกำหนดและเงื่อนไข</a>
           <a href="#">นโยบายความเป็นส่วนตัว</a>
@@ -176,11 +176,11 @@
         <!-- Product Summary Card -->
         <div class="premium-product-card">
           <div class="premium-product-thumb">
-            <img alt="Product" loading="lazy" decoding="async" data-checkout-product-image />
+            <img alt="สินค้า" loading="lazy" decoding="async" data-checkout-product-image />
           </div>
           <div class="premium-product-info">
             <h3 data-checkout-product-name>ชื่อสินค้า</h3>
-            <span class="premium-product-label" data-checkout-product-label>Type: </span>
+            <span class="premium-product-label" data-checkout-product-label>ประเภท: </span>
             <span class="premium-product-qty" data-checkout-product-qty>จำนวน: 1</span>
           </div>
           <div class="premium-product-price" hidden>
@@ -266,7 +266,7 @@
 
         <div class="qr-image-frame">
           <div class="qr-loading" data-qr-loading>กำลังโหลด QR สำหรับชำระเงิน...</div>
-          <img alt="Payment QR" class="qr-image" loading="eager" decoding="async" fetchpriority="high" data-qr-image hidden />
+          <img alt="คิวอาร์สำหรับชำระเงิน" class="qr-image" loading="eager" decoding="async" fetchpriority="high" data-qr-image hidden />
           <div class="qr-unavailable" data-qr-unavailable hidden>ยังไม่พบ QR สำหรับช่องทางนี้</div>
         </div>
 

@@ -140,7 +140,7 @@
           ? `<span class="notification-thumb"><img src="${escapeHtml(imageUrl)}" alt="${escapeHtml(orderProductText(order))}" /></span>`
           : `<span class="notification-icon"><i data-lucide="check-circle"></i></span>`;
         return `
-        <a class="notification-item ${isUnread ? "unread" : ""} notification-delivered" href="orders.html?order=${encodeURIComponent(order.id)}" data-delivery-notification="${escapeHtml(order.id)}">
+        <a class="notification-item ${isUnread ? "unread" : ""} notification-delivered" href="profile.html?order=${encodeURIComponent(order.id)}#inventory" data-delivery-notification="${escapeHtml(order.id)}">
           ${mediaHtml}
           <span class="notification-content">
             <strong>ออเดอร์จัดส่งสำเร็จแล้ว</strong>

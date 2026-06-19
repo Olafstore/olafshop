@@ -2078,7 +2078,7 @@ function bindPlatformSlipForm(order) {
       if (!window.OlafOrders?.uploadPaymentSlip) throw new Error("Slip upload client is not ready");
       await window.OlafOrders.uploadPaymentSlip({ orderId: order.id, file });
       showToast("แนบสลิปเรียบร้อยแล้ว กำลังรอแอดมินตรวจสอบ", "payment", 5000);
-      window.location.href = `orders.html?order=${encodeURIComponent(order.id)}`;
+      window.location.href = `profile.html?order=${encodeURIComponent(order.id)}#inventory`;
     } catch (error) {
       console.error("Payment slip upload failed", error);
       showToast("อัปโหลดสลิปไม่สำเร็จ กรุณาลองใหม่", "error", 5500);
@@ -2127,7 +2127,7 @@ async function uploadCurrentQrSlip(file) {
     if (!window.OlafOrders?.uploadPaymentSlip) throw new Error("Slip upload client is not ready");
     await window.OlafOrders.uploadPaymentSlip({ orderId: order.id, file });
     showToast("แนบสลิปเรียบร้อยแล้ว รอแอดมินตรวจสอบ", "payment", 5000);
-    window.location.href = `orders.html?order=${encodeURIComponent(order.id)}`;
+    window.location.href = `profile.html?order=${encodeURIComponent(order.id)}#inventory`;
   } catch (error) {
     console.error("QR slip upload failed", error);
     showToast("อัปโหลดสลิปไม่สำเร็จ กรุณาลองใหม่", "error", 5500);
@@ -2153,7 +2153,7 @@ function viewCurrentQrOrder() {
     showToast("ไม่พบออเดอร์ล่าสุด", "warning");
     return;
   }
-  window.location.href = `orders.html?order=${encodeURIComponent(currentQrOrder.id)}`;
+  window.location.href = `profile.html?order=${encodeURIComponent(currentQrOrder.id)}#inventory`;
 }
 
 function showCancelConfirm() {
@@ -2291,7 +2291,7 @@ function renderUserPopover() {
       ${user.role === "admin" ? '<a href="olaf-control.html"><i data-lucide="shield"></i>หลังบ้าน (Admin)</a>' : ""}
       <a href="profile.html"><i data-lucide="user"></i>ข้อมูลส่วนตัว</a>
       <a href="profile.html#inventory"><i data-lucide="package"></i>คลังสินค้า (ID/Pass)</a>
-      <a href="orders.html"><i data-lucide="receipt-text"></i>ออเดอร์ของฉัน</a>
+      <a href="profile.html#orders"><i data-lucide="receipt-text"></i>ประวัติคำสั่งซื้อ</a>
       <div class="user-popover-divider"></div>
       <button type="button" class="danger-item" id="logout-button"><i data-lucide="log-out"></i>ออกจากระบบ</button>
     </div>

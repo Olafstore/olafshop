@@ -69,6 +69,45 @@
     `;
   }
 
+  function windowsProductCard(product) {
+    const stock = Number(product.stock || 0);
+    const features = (Array.isArray(product.tags) ? product.tags : []).slice(0, 4);
+    const isHighlighted = /\bpro\b/i.test(product.name || "");
+    const stockText = stock > 0
+      ? `พร้อมขาย ${stock.toLocaleString("th-TH")} ชิ้น`
+      : "รอแอดมินอัปเดตสต็อก";
+    return `
+      <article class="olaf-license-card ${isHighlighted ? "is-highlight" : ""}">
+        <div class="license-card-top">
+          <div class="license-type-badges">
+            <span class="license-type-badge">${escapeHtml(product.label || "Key")}</span>
+            ${isHighlighted ? '<span class="license-hot-badge">ยอดนิยม</span>' : ""}
+          </div>
+          <h3>${escapeHtml(product.name)}</h3>
+          <p>${escapeHtml(String(product.description || "").split("\n")[0])}</p>
+        </div>
+        <div class="license-price">
+          <strong>${formatPrice(product.price)}</strong>
+          ${product.compareAt && Number(product.compareAt) > Number(product.price)
+            ? `<del>${formatPrice(product.compareAt)}</del>`
+            : ""}
+        </div>
+        <ul>
+          ${features.map((feature) => `<li><i data-lucide="check"></i>${escapeHtml(feature)}</li>`).join("")}
+        </ul>
+        <div class="license-card-actions">
+          <a class="license-card-action" href="https://www.facebook.com/byOlafshop" target="_blank" rel="noopener noreferrer">
+            <i data-lucide="shopping-cart"></i>
+            <span>สั่งซื้อที่แอดมิน</span>
+          </a>
+          <small class="license-ready-note ${stock <= 0 ? "is-out" : ""}">
+            <i data-lucide="${stock > 0 ? "shield-check" : "clock-3"}"></i>${escapeHtml(stockText)}
+          </small>
+        </div>
+      </article>
+    `;
+  }
+
   async function loadExtraProducts() {
     const onlineProducts = window.OlafProducts?.fetchActiveProducts
       ? await window.OlafProducts.fetchActiveProducts().catch((error) => {
@@ -77,13 +116,20 @@
         })
       : [];
     const products = window.OlafExtraProducts?.mergeProducts?.(onlineProducts) || [];
+    const windowsProducts = products.filter((product) => product.category === "windows");
     const minecraftProducts = products.filter((product) =>
       String(product.category || "").startsWith("minecraft-")
     );
     const rockstarProducts = products.filter((product) => product.category === "rockstar");
 
+    const windowsGrid = $("#windows-product-grid");
     const minecraftGrid = $("#minecraft-product-grid");
     const rockstarGrid = $("#rockstar-product-grid");
+    if (windowsGrid) {
+      windowsGrid.innerHTML = windowsProducts.length
+        ? windowsProducts.map(windowsProductCard).join("")
+        : '<div class="extras-product-loading">ยังไม่มีสินค้า Windows</div>';
+    }
     if (minecraftGrid) {
       minecraftGrid.innerHTML = minecraftProducts.length
         ? minecraftProducts.map(productCard).join("")
@@ -154,7 +200,7 @@
       <div class="user-popover-menu">
         ${user.role === "admin" ? '<a href="olaf-control.html"><i data-lucide="shield"></i>หลังบ้าน (Admin)</a>' : ""}
         <a href="profile.html"><i data-lucide="user"></i>ข้อมูลส่วนตัว</a>
-        <a href="orders.html"><i data-lucide="receipt-text"></i>ออเดอร์ของฉัน</a>
+        <a href="profile.html#orders"><i data-lucide="receipt-text"></i>ประวัติคำสั่งซื้อ</a>
         <div class="user-popover-divider"></div>
         <button type="button" class="danger-item" id="extras-logout"><i data-lucide="log-out"></i>ออกจากระบบ</button>
       </div>

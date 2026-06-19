@@ -17,9 +17,9 @@
   <script src="supabase-client.js?v=20260619-profile-update-fix" defer></script> 
   <script src="platform-store.js?v=20260619-profile-update-fix" defer></script>
   <script src="image-performance.js?v=20260607-performance" defer></script>
-  <script src="site-navigation.js?v=20260618-mobile-nav" defer></script>
-  <script src="notifications.js?v=20260618-profile-topbar" defer></script>
-  <link rel="stylesheet" href="styles.css?v=20260618-user-finish" />
+  <script src="site-navigation.js?v=20260619-unified-profile-nav" defer></script>
+  <script src="notifications.js?v=20260619-profile-orders" defer></script>
+  <link rel="stylesheet" href="styles.css?v=20260619-unified-profile-nav" />
   <style>
     body {
       padding-top: 0;
@@ -1016,13 +1016,533 @@
       overflow: hidden;
     }
 
+    /* Unified account dashboard: restrained, flat and consistent with the storefront. */
+    body.profile-page {
+      background: #020817;
+    }
+
+    .profile-shell::before,
+    .profile-shell::after {
+      display: none;
+    }
+
+    .profile-content {
+      max-width: 1540px;
+      padding: 48px 24px 72px;
+      grid-template-columns: 256px minmax(0, 1fr);
+      gap: 32px;
+    }
+
+    .profile-sidebar {
+      top: 76px;
+      gap: 16px;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .profile-sidebar-card,
+    .profile-sidebar-logout,
+    .panel-card {
+      border: 1px solid #1e2a40;
+      border-radius: 12px;
+      background: #071022;
+      box-shadow: none;
+      backdrop-filter: none;
+    }
+
+    .profile-sidebar-card {
+      padding: 16px;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .profile-sidebar-user {
+      padding: 8px 8px 18px;
+      border-bottom-color: #1e2a40;
+    }
+
+    .profile-avatar {
+      width: 48px;
+      height: 48px;
+      border-radius: 50%;
+      background: #2563eb;
+      box-shadow: none;
+      font-size: 1.1rem;
+    }
+
+    .profile-avatar-badge {
+      width: 18px;
+      height: 18px;
+      border-color: #071022;
+    }
+
+    .profile-sidebar-copy h2 {
+      font-size: 0.94rem;
+    }
+
+    .profile-sidebar-copy p {
+      font-size: 0.76rem;
+      color: #91a0b8;
+    }
+
+    .profile-sidebar-nav {
+      gap: 4px;
+      padding-top: 14px;
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .profile-nav-item {
+      min-height: 42px;
+      padding: 0 12px;
+      border-radius: 8px;
+      color: #98a6bc;
+      font-size: 0.86rem;
+      font-weight: 500;
+    }
+
+    .profile-nav-item:hover {
+      color: #dbeafe;
+      background: #0d1930;
+    }
+
+    .profile-nav-item.is-active {
+      color: #60a5fa;
+      background: #0c2250;
+      box-shadow: none;
+    }
+
+    .profile-sidebar-logout {
+      min-height: 58px;
+      border-radius: 12px;
+      color: #f87171;
+      background: #071022;
+    }
+
+    .panel-card-header {
+      min-height: 96px;
+      padding: 22px 24px;
+      border-bottom-color: #1e2a40;
+    }
+
+    .panel-title-copy h3 {
+      display: flex;
+      align-items: center;
+      gap: 9px;
+      margin: 0;
+      color: #f8fafc;
+      font-size: 1.14rem;
+    }
+
+    .panel-title-copy h3 svg {
+      width: 21px;
+      height: 21px;
+      color: #3b82f6;
+    }
+
+    .panel-title-copy p {
+      margin: 3px 0 0;
+      color: #7890b1;
+      font-size: 0.78rem;
+    }
+
+    .panel-card-body {
+      padding: 24px;
+      min-width: 0;
+    }
+
+    .mini-button {
+      min-height: 36px;
+      padding: 0 12px;
+      border-radius: 8px;
+      background: #0a1427;
+      border-color: #25334b;
+      color: #b7c2d4;
+      font-weight: 500;
+    }
+
+    .inventory-toolbar {
+      grid-template-columns: minmax(0, 1fr) 160px;
+    }
+
+    .inventory-search,
+    .inventory-limit {
+      min-height: 42px;
+      border-radius: 8px;
+      border-color: #26344d;
+      background: #081226;
+    }
+
+    .inventory-count-badge {
+      width: max-content;
+      border-radius: 6px;
+      color: #94a3b8;
+      background: transparent;
+      border-color: transparent;
+      padding-left: 0;
+    }
+
+    .inventory-grid {
+      gap: 14px;
+    }
+
+    .inventory-card {
+      grid-template-columns: 64px minmax(0, 1fr);
+      gap: 14px;
+      min-height: 116px;
+      padding: 16px;
+      border-radius: 10px;
+      border-color: #1f2d45;
+      background: #050d1e;
+      box-shadow: none;
+    }
+
+    .inventory-card:hover {
+      transform: none;
+      border-color: #354764;
+      box-shadow: none;
+    }
+
+    .inventory-card-thumb,
+    .inventory-card-thumb-empty {
+      width: 64px;
+      height: 64px;
+      border-radius: 8px;
+      border-color: #26344d;
+    }
+
+    .inventory-card-title {
+      overflow: hidden;
+      color: #f8fafc;
+      font-size: 0.9rem;
+      line-height: 1.35;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .inventory-card-status {
+      color: #93c5fd;
+      font-size: 0.72rem;
+      font-weight: 500;
+    }
+
+    .inventory-card-status.status-awaiting_payment,
+    .inventory-card-status.status-pending {
+      color: #fbbf24;
+    }
+
+    .inventory-card-status.status-waiting_admin {
+      color: #a5b4fc;
+    }
+
+    .inventory-card-status.status-delivered {
+      color: #34d399;
+    }
+
+    .inventory-card-subtitle {
+      color: #75849e;
+      font-size: 0.75rem;
+    }
+
+    .inventory-card-note {
+      min-height: 0;
+      color: #70809a;
+      font-size: 0.72rem;
+      -webkit-line-clamp: 1;
+    }
+
+    .inventory-card-footer {
+      gap: 8px;
+    }
+
+    .inventory-detail-button,
+    .inventory-copy-button {
+      min-height: 34px;
+      padding: 0 11px;
+      border-radius: 7px;
+      border-color: #334155;
+      background: #0a1427;
+      color: #dbeafe;
+      box-shadow: none;
+      font-size: 0.76rem;
+      font-weight: 500;
+    }
+
+    .inventory-detail-button:hover,
+    .inventory-copy-button:hover:not(:disabled) {
+      transform: none;
+      filter: none;
+      border-color: #4b6590;
+      background: #101d34;
+    }
+
+    .status-badge {
+      padding: 4px 8px;
+      border-radius: 6px;
+      background: #101a2d;
+      border: 1px solid #2a3851;
+      color: #aab7ca;
+      font-size: 0.68rem;
+      white-space: nowrap;
+    }
+
+    .status-badge.awaiting_payment,
+    .status-badge.pending {
+      border-color: rgba(245, 158, 11, 0.28);
+      background: rgba(245, 158, 11, 0.08);
+      color: #fbbf24;
+    }
+
+    .status-badge.waiting_admin {
+      border-color: rgba(99, 102, 241, 0.3);
+      background: rgba(99, 102, 241, 0.09);
+      color: #a5b4fc;
+    }
+
+    .status-badge.confirmed {
+      border-color: rgba(59, 130, 246, 0.3);
+      background: rgba(59, 130, 246, 0.09);
+      color: #93c5fd;
+    }
+
+    .status-badge.delivered {
+      border-color: rgba(16, 185, 129, 0.28);
+      background: rgba(16, 185, 129, 0.08);
+      color: #34d399;
+    }
+
+    .profile-order-row {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      align-items: center;
+      gap: 18px;
+      padding: 17px 20px;
+      border-bottom: 1px solid #162239;
+    }
+
+    .profile-order-row:last-child {
+      border-bottom: 0;
+    }
+
+    .profile-order-meta {
+      display: grid;
+      justify-items: end;
+      gap: 5px;
+    }
+
+    .profile-order-open {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-height: 34px;
+      padding: 0 11px;
+      border: 1px solid #334155;
+      border-radius: 7px;
+      background: #0a1427;
+      color: #b7c5da;
+      font: inherit;
+      font-size: 0.74rem;
+      cursor: pointer;
+    }
+
+    .inventory-modal-dialog {
+      max-width: 760px;
+      border-radius: 12px;
+      border-color: #27354d;
+      background: #071022;
+      box-shadow: 0 28px 80px rgba(0, 0, 0, 0.58);
+    }
+
+    .inventory-order-actions {
+      display: grid;
+      gap: 13px;
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid #1e2a40;
+    }
+
+    .inventory-order-timeline {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .inventory-order-timeline span {
+      display: grid;
+      place-items: center;
+      gap: 5px;
+      min-height: 66px;
+      border: 1px solid #26344d;
+      border-radius: 8px;
+      color: #65758e;
+      background: #050d1e;
+      text-align: center;
+    }
+
+    .inventory-order-timeline span.is-complete {
+      border-color: #31598d;
+      color: #93c5fd;
+      background: #0a1931;
+    }
+
+    .inventory-order-timeline svg {
+      width: 18px;
+      height: 18px;
+    }
+
+    .inventory-order-summary {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 11px 13px;
+      border: 1px solid #26344d;
+      border-radius: 8px;
+      background: #050d1e;
+    }
+
+    .inventory-order-summary span {
+      color: #7788a2;
+    }
+
+    .inventory-order-summary strong {
+      color: #f8fafc;
+    }
+
+    .inventory-order-summary em {
+      margin-left: auto;
+      color: #93c5fd;
+      font-style: normal;
+      font-size: 0.76rem;
+    }
+
+    .inventory-slip-form {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: 10px;
+    }
+
+    .inventory-slip-form label,
+    .inventory-slip-form button,
+    .inventory-cancel-order,
+    .inventory-slip-preview {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      min-height: 40px;
+      padding: 0 13px;
+      border: 1px solid #334155;
+      border-radius: 8px;
+      background: #0a1427;
+      color: #c6d1e2;
+      font: inherit;
+      cursor: pointer;
+    }
+
+    .inventory-slip-form input {
+      display: none;
+    }
+
+    .inventory-slip-form button {
+      border-color: #31598d;
+      background: #12305c;
+      color: #dbeafe;
+    }
+
+    .inventory-cancel-order {
+      width: max-content;
+      border-color: rgba(248, 113, 113, 0.3);
+      color: #fca5a5;
+      background: rgba(127, 29, 29, 0.08);
+    }
+
+    .inventory-order-message {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin: 0;
+      padding: 11px 13px;
+      border: 1px solid #2b3a55;
+      border-radius: 8px;
+      color: #9fb0c9;
+      background: #081326;
+    }
+
+    .inventory-order-message.is-success {
+      border-color: rgba(16, 185, 129, 0.24);
+      color: #6ee7b7;
+    }
+
+    .inventory-payment-box {
+      display: grid;
+      grid-template-columns: 96px minmax(0, 1fr);
+      align-items: center;
+      gap: 14px;
+      padding: 13px;
+      border: 1px solid #26344d;
+      border-radius: 8px;
+      background: #050d1e;
+    }
+
+    .inventory-payment-box img {
+      width: 96px;
+      height: 96px;
+      padding: 5px;
+      border-radius: 7px;
+      background: #fff;
+      object-fit: contain;
+    }
+
+    .inventory-payment-box strong {
+      display: block;
+      color: #f8fafc;
+      font-size: 1rem;
+    }
+
+    .inventory-payment-box p,
+    .inventory-payment-box small {
+      display: block;
+      margin: 5px 0 0;
+      color: #8fa0b9;
+      font-size: 0.76rem;
+      line-height: 1.55;
+    }
+
+    .inventory-slip-preview {
+      width: max-content;
+      color: #93c5fd;
+      text-decoration: none;
+    }
+
     @media (max-width: 980px) {
       .profile-content {
-        grid-template-columns: 1fr;
+        display: block;
       }
 
       .profile-sidebar {
         position: static;
+        width: 100%;
+        margin-bottom: 18px;
+      }
+
+      .profile-sidebar-nav {
+        display: flex;
+        width: 100%;
+        overflow-x: auto;
+      }
+
+      .profile-sidebar-nav .profile-nav-item {
+        flex: 0 0 142px;
+      }
+
+      .profile-panels,
+      .profile-panel,
+      .panel-card,
+      .inventory-panel-body,
+      .inventory-grid {
+        width: 100%;
+        min-width: 0;
+        max-width: 100%;
       }
     }
 
@@ -1058,14 +1578,14 @@
       }
 
       .inventory-card {
-        grid-template-columns: 74px minmax(0, 1fr);
+        grid-template-columns: 64px minmax(0, 1fr);
       }
 
       .inventory-card-thumb,
       .inventory-card-thumb-empty {
-        width: 74px;
-        height: 74px;
-        border-radius: 16px;
+        width: 64px;
+        height: 64px;
+        border-radius: 8px;
       }
 
       .inventory-modal-dialog {
@@ -1089,6 +1609,16 @@
       .inventory-modal-footer {
         flex-direction: column;
         align-items: flex-start;
+      }
+
+      .profile-order-row {
+        grid-template-columns: minmax(0, 1fr) auto;
+      }
+
+      .profile-order-open {
+        grid-column: 1 / -1;
+        width: 100%;
+        justify-content: center;
       }
     }
 
@@ -1114,11 +1644,55 @@
       .profile-sidebar-logout {
         justify-content: center;
       }
+
+      .inventory-card {
+        grid-template-columns: 52px minmax(0, 1fr);
+        padding: 13px;
+      }
+
+      .inventory-card-thumb,
+      .inventory-card-thumb-empty {
+        width: 52px;
+        height: 52px;
+      }
+
+      .inventory-card-top,
+      .inventory-card-footer {
+        align-items: stretch;
+      }
+
+      .inventory-order-timeline {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .inventory-slip-form {
+        grid-template-columns: 1fr;
+      }
+
+      .inventory-cancel-order,
+      .inventory-slip-preview {
+        width: 100%;
+      }
+
+      .inventory-payment-box {
+        grid-template-columns: 76px minmax(0, 1fr);
+      }
+
+      .inventory-payment-box img {
+        width: 76px;
+        height: 76px;
+      }
+
+      .panel-card-header {
+        align-items: flex-start;
+        flex-direction: column;
+      }
     }
 
     @media (hover: none), (pointer: coarse), (max-width: 1180px) {
       .profile-page .topbar-search-wrap {
-        display: none !important;
+        display: flex !important;
+        min-width: 140px;
       }
     }
   </style>
@@ -1138,7 +1712,7 @@
         <a href="index.html">หน้าแรก</a>
         <a href="index.html#catalog">สินค้า</a>
         <a href="more-products.html">สินค้าเพิ่มเติม</a>
-        <a href="orders.html" data-i18n="navOrders">คำสั่งซื้อ</a>
+        <a href="profile.html#inventory" data-i18n="navOrders">คลังสินค้า</a>
         <a href="https://www.facebook.com/byOlafshop" target="_blank" rel="noreferrer">ติดต่อ</a>
       </nav>
       <div class="topbar-actions">
@@ -1214,10 +1788,10 @@
               <i data-lucide="log-out"></i>
               ออกจากระบบ
             </button>
-            <a class="secondary-button" href="orders.html"
+            <a class="secondary-button" href="profile.html#inventory"
               style="min-height:36px; font-size:0.82rem; padding: 0 14px; display:inline-flex; align-items:center; gap:6px">
               <i data-lucide="receipt-text"></i>
-              ดูออเดอร์ทั้งหมด
+              ดูคลังสินค้า
             </a>
           </div>
         </div>
@@ -1373,8 +1947,11 @@
         <div class="profile-panel" id="panel-inventory">
           <div class="panel-card">
             <div class="panel-card-header">
-              <h3>คลังสินค้า (ID/Pass)</h3>
-              <a href="orders.html" class="mini-button">ดูออเดอร์</a>
+              <div class="panel-title-copy">
+                <h3><i data-lucide="package-open"></i>คลังสินค้า (ID/Pass)</h3>
+                <p>ติดตามสถานะคำสั่งซื้อและรับข้อมูลสินค้าที่แอดมินจัดส่ง</p>
+              </div>
+              <button type="button" class="mini-button" data-panel-jump="orders">ประวัติคำสั่งซื้อ</button>
             </div>
             <div class="panel-card-body inventory-panel-body">
               <div class="inventory-toolbar">
@@ -1399,8 +1976,11 @@
         <div class="profile-panel" id="panel-orders">
           <div class="panel-card">
             <div class="panel-card-header">
-              <h3>ออเดอร์ของฉัน</h3>
-              <a href="orders.html" class="mini-button">ดูทั้งหมด</a>
+              <div class="panel-title-copy">
+                <h3><i data-lucide="history"></i>ประวัติคำสั่งซื้อ</h3>
+                <p>ดูรายการย้อนหลัง ยอดชำระ และสถานะล่าสุดจากแอดมิน</p>
+              </div>
+              <button type="button" class="mini-button" data-panel-jump="inventory">กลับคลังสินค้า</button>
             </div>
             <div id="orders-list"></div>
           </div>
@@ -1469,6 +2049,8 @@
         </div>
       </div>
 
+      <div class="inventory-order-actions" id="inventory-order-actions"></div>
+
       <div class="inventory-modal-footer">
         <span id="inventory-modal-footnote">หากต้องการใช้งานเพิ่มเติม แนะนำให้เก็บข้อมูลสินค้าไว้ทันที</span>
         <span id="inventory-modal-product-id">Product ID: -</span>
@@ -1494,12 +2076,14 @@
     function orderStatusLabel(status) {
       const map = {
         pending: 'รอการชำระเงิน',
-        waiting_admin: 'รอแอดมินยืนยัน',
-        confirmed: 'ยืนยันแล้ว',
-        delivered: 'จัดส่งแล้ว',
-        cancelled: 'ยกเลิกแล้ว'
+        awaiting_payment: 'รอชำระเงิน / แนบสลิป',
+        waiting_admin: 'รอแอดมินตรวจสอบ',
+        confirmed: 'ยืนยันแล้ว รอจัดส่ง',
+        delivered: 'จัดส่งสินค้าแล้ว',
+        cancelled: 'ยกเลิกแล้ว',
+        expired: 'หมดอายุ'
       };
-      return map[status] || status;
+      return map[status] || status || 'รอดำเนินการ';
     }
 
     function escape(v) {
@@ -1513,7 +2097,12 @@
     const profileState = {
       inventoryRows: [],
       inventoryLookup: new Map(),
-      activeInventory: null
+      activeInventory: null,
+      orders: [],
+      products: [],
+      storeSettings: {},
+      refreshTimer: null,
+      isRefreshing: false
     };
 
     function normalizeInventoryText(value) {
@@ -1528,6 +2117,7 @@
         'minecraft-account': 'MINECRAFT',
         'minecraft-key': 'MINECRAFT',
         rockstar: 'ROCKSTAR',
+        windows: 'WINDOWS',
         'windows-key': 'WINDOWS'
       };
       return map[normalized] || 'PRODUCT';
@@ -1541,6 +2131,7 @@
         'minecraft-account': 'Microsoft ID',
         'minecraft-key': 'Minecraft Key',
         rockstar: 'FiveM Access',
+        windows: 'Windows Key',
         'windows-key': 'Windows Key'
       };
       return map[normalized] || item.packageTitle || product.label || 'Digital Product';
@@ -1602,17 +2193,21 @@
       if (!ordersList) return;
       if (orders.length) {
         ordersList.innerHTML = orders.slice(0, 10).map(o => `
-            <div class="order-item">
-              <div>
+            <article class="profile-order-row">
+              <div class="profile-order-main">
                 <div class="order-item-id">${escape(o.orderNumber || o.id)}</div>
                 <div class="order-item-products">${productNames(o)}</div>
                 <div class="order-item-date">${new Date(o.createdAt).toLocaleString('th-TH')}</div>
               </div>
-              <div class="order-item-right">
+              <div class="profile-order-meta">
                 <div class="order-item-price">${formatPrice(o.total)}</div>
                 <span class="status-badge ${escape(o.status)}">${orderStatusLabel(o.status)}</span>
               </div>
-            </div>
+              <button class="profile-order-open" type="button" data-open-order="${escape(o.id)}">
+                <i data-lucide="arrow-up-right" style="width:15px;height:15px"></i>
+                เปิดในคลัง
+              </button>
+            </article>
           `).join('');
       } else {
         ordersList.innerHTML = `<div class="empty-panel"><i data-lucide="inbox" style="width:40px;height:40px"></i><p>ยังไม่มีออเดอร์</p></div>`;
@@ -1649,7 +2244,7 @@
     function collectInventoryRows(orders, products = []) {
       const productMap = new Map((products || []).map(product => [String(product.id || '').trim(), product]));
       const rows = (orders || [])
-        .filter(order => ['confirmed', 'delivered'].includes(order.status))
+        .filter(order => !['cancelled', 'expired'].includes(order.status))
         .flatMap(order => {
           const deliveredText = normalizeInventoryText(order.deliveredPayload || order.deliveryNote);
           const items = Array.isArray(order.items) && order.items.length
@@ -1665,11 +2260,16 @@
           return items.map((item, index) => {
             const product = productMap.get(String(item.productId || '').trim()) || {};
             const category = String(product.category || '').toLowerCase();
-            const fallbackText = order.status === 'confirmed'
-              ? 'แอดมินยืนยันแล้ว รอจัดส่งข้อมูลสินค้า'
-              : 'รอข้อมูลจัดส่งจากแอดมิน';
+            const fallbackByStatus = {
+              pending: 'สร้างคำสั่งซื้อแล้ว กรุณาชำระเงินและแนบสลิป',
+              awaiting_payment: 'รอชำระเงินและแนบสลิปให้แอดมินตรวจสอบ',
+              waiting_admin: 'แนบสลิปแล้ว กำลังรอแอดมินตรวจสอบ',
+              confirmed: 'แอดมินยืนยันแล้ว กำลังเตรียมจัดส่งสินค้า',
+              delivered: 'จัดส่งสินค้าเรียบร้อยแล้ว'
+            };
+            const fallbackText = fallbackByStatus[order.status] || 'กำลังรอดำเนินการ';
             const deliveryText = deliveredText || fallbackText;
-            const hasDetail = Boolean(deliveredText);
+            const hasDetail = order.status === 'delivered' && Boolean(deliveredText);
 
             return {
               key: `${order.id || order.orderNumber || 'order'}-${item.id || index}`,
@@ -1683,6 +2283,10 @@
               createdAt: order.createdAt || '',
               status: order.status || 'confirmed',
               statusLabel: orderStatusLabel(order.status),
+              total: Number(order.total || 0),
+              paymentMethod: order.paymentMethod || 'promptpay',
+              paymentSlipPath: order.paymentSlipPath || '',
+              paymentSlipUrl: order.paymentSlipUrl || '',
               category,
               platform: inventoryPlatformLabel(category),
               typeLabel: inventoryTypeLabel(category, product, item),
@@ -1701,8 +2305,8 @@
     }
 
     function renderInventoryCard(row) {
-      const previewText = row.hasDetail ? row.preview : 'กดดูข้อมูลสินค้าเพื่อเช็กรายละเอียดบัญชีเมื่อแอดมินจัดส่งแล้ว';
-      const availabilityText = row.hasDetail ? 'พร้อมดูข้อมูลสินค้า' : 'ยืนยันแล้ว รอส่งข้อมูลสินค้า';
+      const previewText = row.preview || 'ติดตามสถานะและรายละเอียดคำสั่งซื้อ';
+      const availabilityText = row.statusLabel;
       const imageBlock = row.productImageUrl
         ? `<div class="inventory-card-thumb"><img src="${escape(row.productImageUrl)}" alt="${escape(row.productName)}" loading="lazy" /></div>`
         : `<div class="inventory-card-thumb-empty"><i data-lucide="package" style="width:26px;height:26px"></i></div>`;
@@ -1714,7 +2318,7 @@
             <div class="inventory-card-top">
               <div>
                 <div class="inventory-card-title">${escape(row.productName)}</div>
-                <div class="inventory-card-status">${escape(availabilityText)}</div>
+                <div class="inventory-card-status status-${escape(row.status)}">${escape(availabilityText)}</div>
               </div>
               <span class="status-badge ${escape(row.status)}">${escape(row.statusLabel)}</span>
             </div>
@@ -1731,8 +2335,8 @@
             <div class="inventory-card-footer">
               <div class="inventory-card-order">#${escape(row.orderNumber)}</div>
               <button class="inventory-detail-button" type="button" data-inventory-detail="${escape(row.key)}">
-                <i data-lucide="info" style="width:16px;height:16px"></i>
-                ดูข้อมูลสินค้า
+                <i data-lucide="${row.hasDetail ? 'key-round' : 'scan-line'}" style="width:16px;height:16px"></i>
+                ${row.hasDetail ? 'ดูข้อมูลสินค้า' : 'จัดการออเดอร์'}
               </button>
             </div>
           </div>
@@ -1777,6 +2381,85 @@
       lucide.createIcons();
     }
 
+    function orderStepClass(order, step) {
+      const sequence = ['awaiting_payment', 'waiting_admin', 'confirmed', 'delivered'];
+      const aliases = { pending: 'awaiting_payment' };
+      const status = aliases[order?.status] || order?.status;
+      const currentIndex = sequence.indexOf(status);
+      return currentIndex >= sequence.indexOf(step) ? 'is-complete' : '';
+    }
+
+    function slipUploadErrorMessage(error) {
+      const message = String(error?.message || '');
+      if (message.includes('SLIP_FILE_TOO_LARGE')) return 'ไฟล์สลิปใหญ่เกิน 5MB';
+      if (message.includes('SLIP_FILE_MUST_BE_IMAGE')) return 'กรุณาแนบไฟล์รูปภาพเท่านั้น';
+      if (message.includes('ORDER_SLIP_LOCKED')) return 'ออเดอร์นี้ผ่านขั้นตอนตรวจสอบแล้ว';
+      return message || 'อัปโหลดสลิปไม่สำเร็จ กรุณาลองใหม่';
+    }
+
+    function renderInventoryOrderActions(row) {
+      const container = document.getElementById('inventory-order-actions');
+      if (!container) return;
+      const order = profileState.orders.find(item => item.id === row.orderId);
+      if (!order) {
+        container.innerHTML = '';
+        return;
+      }
+
+      const canUpload = ['pending', 'awaiting_payment'].includes(order.status);
+      const canCancel = ['pending', 'awaiting_payment', 'waiting_admin'].includes(order.status);
+      const payment = profileState.storeSettings?.payment || {};
+      const walletMethod = ['wallet', 'wallet-api', 'truemoney', 'true_money'].includes(String(order.paymentMethod || '').toLowerCase());
+      const qrUrl = walletMethod ? payment.trueMoneyQrUrl : payment.manualQrUrl;
+      const paymentAccount = [
+        payment.bankName,
+        payment.bankAccountNumber,
+        payment.bankAccountName
+      ].filter(Boolean).join(' · ');
+      const slipPreview = order.paymentSlipUrl
+        ? `<a class="inventory-slip-preview" href="${escape(order.paymentSlipUrl)}" target="_blank" rel="noreferrer"><i data-lucide="image"></i> ดูสลิปที่แนบแล้ว</a>`
+        : '';
+
+      container.innerHTML = `
+        <div class="inventory-order-timeline" aria-label="สถานะคำสั่งซื้อ">
+          <span class="${orderStepClass(order, 'awaiting_payment')}"><i data-lucide="receipt-text"></i><small>สร้างออเดอร์</small></span>
+          <span class="${orderStepClass(order, 'waiting_admin')}"><i data-lucide="scan-line"></i><small>ตรวจสลิป</small></span>
+          <span class="${orderStepClass(order, 'confirmed')}"><i data-lucide="badge-check"></i><small>ยืนยัน</small></span>
+          <span class="${orderStepClass(order, 'delivered')}"><i data-lucide="package-check"></i><small>จัดส่ง</small></span>
+        </div>
+        <div class="inventory-order-summary">
+          <span>ยอดชำระ</span>
+          <strong>${formatPrice(order.total)}</strong>
+          <em>${escape(orderStatusLabel(order.status))}</em>
+        </div>
+        ${canUpload && (qrUrl || paymentAccount) ? `
+          <div class="inventory-payment-box">
+            ${qrUrl ? `<img src="${escape(qrUrl)}" alt="QR ชำระเงิน" loading="eager" decoding="async" />` : ''}
+            <div>
+              <strong>ชำระเงิน ${formatPrice(order.total)}</strong>
+              ${paymentAccount ? `<p>${escape(paymentAccount)}</p>` : ''}
+              ${payment.paymentNote ? `<small>${escape(payment.paymentNote)}</small>` : ''}
+            </div>
+          </div>
+        ` : ''}
+        ${slipPreview}
+        ${canUpload ? `
+          <form class="inventory-slip-form" data-profile-slip-form="${escape(order.id)}">
+            <label>
+              <i data-lucide="image-plus"></i>
+              <span data-profile-slip-label>${order.paymentSlipPath ? 'เปลี่ยนไฟล์สลิป' : 'เลือกไฟล์สลิป'}</span>
+              <input type="file" accept="image/png,image/jpeg,image/webp" data-profile-slip-file />
+            </label>
+            <button type="submit"><i data-lucide="upload-cloud"></i>ส่งสลิป</button>
+          </form>
+        ` : ''}
+        ${order.status === 'waiting_admin' ? '<p class="inventory-order-message"><i data-lucide="clock-3"></i>แอดมินกำลังตรวจสอบสลิปของคุณ</p>' : ''}
+        ${order.status === 'confirmed' ? '<p class="inventory-order-message"><i data-lucide="package-open"></i>ยืนยันการชำระเงินแล้ว กำลังเตรียมข้อมูลสินค้า</p>' : ''}
+        ${order.status === 'delivered' ? '<p class="inventory-order-message is-success"><i data-lucide="circle-check-big"></i>จัดส่งสินค้าเรียบร้อยแล้ว กรุณาเก็บข้อมูลไว้ในที่ปลอดภัย</p>' : ''}
+        ${canCancel ? `<button class="inventory-cancel-order" type="button" data-profile-cancel-order="${escape(order.id)}"><i data-lucide="x-circle"></i>ยกเลิกคำสั่งซื้อ</button>` : ''}
+      `;
+    }
+
     function setInventoryModal(row) {
       const image = document.getElementById('inventory-modal-image');
       const imageFallback = document.getElementById('inventory-modal-image-fallback');
@@ -1797,6 +2480,7 @@
         ? 'แนะนำให้คัดลอกหรือเก็บข้อมูลสินค้าไว้ในที่ปลอดภัย'
         : 'เมื่อแอดมินจัดส่งข้อมูลแล้ว ปุ่มคัดลอกจะใช้งานได้ทันที';
       document.getElementById('inventory-modal-product-id').textContent = `Product ID: ${row.productId || '-'}`;
+      renderInventoryOrderActions(row);
 
       if (row.productImageUrl) {
         image.src = row.productImageUrl;
@@ -1809,8 +2493,8 @@
         imageFallback.hidden = false;
       }
 
-      copyIdButton.disabled = !row.primaryCopy;
-      copyFullButton.disabled = !normalizeInventoryText(row.deliveryText);
+      copyIdButton.disabled = !row.hasDetail || !row.primaryCopy;
+      copyFullButton.disabled = !row.hasDetail || !normalizeInventoryText(row.deliveryText);
     }
 
     function toggleInventoryModal(forceOpen = false, row = null) {
@@ -1821,6 +2505,11 @@
         profileState.activeInventory = null;
         modal.hidden = true;
         document.body.classList.remove('inventory-modal-open');
+        const currentUrl = new URL(window.location.href);
+        if (currentUrl.searchParams.has('order')) {
+          currentUrl.searchParams.delete('order');
+          history.replaceState(null, '', `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash || '#inventory'}`);
+        }
         return;
       }
 
@@ -1942,7 +2631,7 @@
           ${isAdmin ? '<a href="olaf-control.html"><i data-lucide="shield"></i>หลังบ้าน (Admin)</a>' : ''}
           <a href="profile.html"><i data-lucide="user"></i>ข้อมูลส่วนตัว</a>
           <a href="profile.html#inventory"><i data-lucide="package"></i>คลังสินค้า (ID/Pass)</a>
-          <a href="orders.html"><i data-lucide="receipt-text"></i>ออเดอร์ของฉัน</a>
+          <a href="profile.html#orders"><i data-lucide="receipt-text"></i>ประวัติคำสั่งซื้อ</a>
           <div class="user-popover-divider"></div>
           <button type="button" class="danger-item" id="topbar-logout-button"><i data-lucide="log-out"></i>ออกจากระบบ</button>
         </div>
@@ -2133,6 +2822,7 @@
       }
 
       const storeSettings = await window.OlafStoreSettings?.fetchStoreSettings?.().catch(() => null);
+      profileState.storeSettings = storeSettings || {};
       applyTopbarStoreIcon(storeSettings?.siteIconUrl);
       ensureTopbarSearchProducts().catch(() => []);
 
@@ -2286,33 +2976,101 @@
       const inventorySearch = document.getElementById('inventory-search');
       const inventoryLimit = document.getElementById('inventory-limit');
 
-      // Render Supabase orders and inventory
       const ordersList = document.getElementById('orders-list');
       const inventoryList = document.getElementById('inventory-list');
-      if (ordersList) ordersList.innerHTML = `<div class="empty-panel"><i data-lucide="loader-circle" style="width:40px;height:40px"></i><p>กำลังโหลดออเดอร์</p></div>`;
-      if (inventoryList) inventoryList.innerHTML = `<div class="empty-panel"><i data-lucide="loader-circle" style="width:40px;height:40px"></i><p>กำลังโหลดคลังสินค้า</p></div>`;
 
-      try {
-        if (!window.OlafOrders?.fetchMyOrders) throw new Error('Supabase order client is not ready');
-        const [orders, products] = await Promise.all([
-          window.OlafOrders.fetchMyOrders(),
-          window.OlafProducts?.fetchActiveProducts ? window.OlafProducts.fetchActiveProducts().catch(() => []) : Promise.resolve([])
-        ]);
-        renderOrdersList(orders);
-        collectInventoryRows(orders, products);
-        renderInventoryList();
-        lucide.createIcons();
-      } catch (err) {
-        const message = escape(err.message || 'โหลดออเดอร์ไม่สำเร็จ');
-        if (ordersList) ordersList.innerHTML = `<div class="empty-panel"><i data-lucide="alert-circle" style="width:40px;height:40px"></i><p>${message}</p></div>`;
-        if (inventoryList) inventoryList.innerHTML = `<div class="empty-panel"><i data-lucide="alert-circle" style="width:40px;height:40px"></i><p>${message}</p></div>`;
-        lucide.createIcons();
+      async function refreshProfileOrders({ quiet = false, preserveModal = true } = {}) {
+        if (profileState.isRefreshing) return;
+        profileState.isRefreshing = true;
+        if (!quiet) {
+          if (ordersList) ordersList.innerHTML = `<div class="empty-panel"><i data-lucide="loader-circle" style="width:40px;height:40px"></i><p>กำลังโหลดประวัติคำสั่งซื้อ</p></div>`;
+          if (inventoryList) inventoryList.innerHTML = `<div class="empty-panel"><i data-lucide="loader-circle" style="width:40px;height:40px"></i><p>กำลังโหลดคลังสินค้า</p></div>`;
+        }
+
+        try {
+          if (!window.OlafOrders?.fetchMyOrders) throw new Error('Supabase order client is not ready');
+          const [orders, products] = await Promise.all([
+            window.OlafOrders.fetchMyOrders(),
+            window.OlafProducts?.fetchActiveProducts
+              ? window.OlafProducts.fetchActiveProducts().catch(() => profileState.products)
+              : Promise.resolve(profileState.products)
+          ]);
+          profileState.orders = orders;
+          profileState.products = products;
+          renderOrdersList(orders);
+          collectInventoryRows(orders, products);
+          renderInventoryList();
+
+          const requestedOrderId = new URLSearchParams(window.location.search).get('order');
+          const activeOrderId = preserveModal
+            ? profileState.activeInventory?.orderId || requestedOrderId
+            : requestedOrderId;
+          const requestedRow = activeOrderId
+            ? profileState.inventoryRows.find(row => row.orderId === activeOrderId)
+            : null;
+          if (requestedRow && (profileState.activeInventory || requestedOrderId)) {
+            toggleInventoryModal(true, requestedRow);
+          }
+          lucide.createIcons();
+        } catch (err) {
+          if (!quiet) {
+            const message = escape(err.message || 'โหลดออเดอร์ไม่สำเร็จ');
+            if (ordersList) ordersList.innerHTML = `<div class="empty-panel"><i data-lucide="alert-circle" style="width:40px;height:40px"></i><p>${message}</p></div>`;
+            if (inventoryList) inventoryList.innerHTML = `<div class="empty-panel"><i data-lucide="alert-circle" style="width:40px;height:40px"></i><p>${message}</p></div>`;
+            lucide.createIcons();
+          }
+        } finally {
+          profileState.isRefreshing = false;
+        }
       }
+
+      await refreshProfileOrders({ preserveModal: false });
+      profileState.refreshTimer = window.setInterval(() => {
+        if (document.visibilityState === 'visible') refreshProfileOrders({ quiet: true });
+      }, 15000);
+      document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'visible') refreshProfileOrders({ quiet: true });
+      });
 
       inventorySearch?.addEventListener('input', () => renderInventoryList());
       inventoryLimit?.addEventListener('change', () => renderInventoryList());
 
       document.addEventListener('click', async (event) => {
+        const panelJump = event.target.closest('[data-panel-jump]');
+        if (panelJump) {
+          const panelName = switchPanel(panelJump.getAttribute('data-panel-jump'));
+          history.replaceState(null, '', `#${panelName}`);
+          return;
+        }
+
+        const openOrder = event.target.closest('[data-open-order]');
+        if (openOrder) {
+          const orderId = openOrder.getAttribute('data-open-order');
+          const row = profileState.inventoryRows.find(item => item.orderId === orderId);
+          const panelName = switchPanel('inventory');
+          history.replaceState(null, '', `?order=${encodeURIComponent(orderId)}#${panelName}`);
+          if (row) toggleInventoryModal(true, row);
+          return;
+        }
+
+        const cancelOrder = event.target.closest('[data-profile-cancel-order]');
+        if (cancelOrder) {
+          const orderId = cancelOrder.getAttribute('data-profile-cancel-order');
+          if (!window.confirm('ยืนยันยกเลิกคำสั่งซื้อนี้หรือไม่?')) return;
+          cancelOrder.disabled = true;
+          try {
+            await window.OlafOrders.cancelMyOrder(orderId);
+            toggleInventoryModal(false);
+            showToast('ยกเลิกคำสั่งซื้อเรียบร้อยแล้ว');
+            await refreshProfileOrders({ quiet: true, preserveModal: false });
+          } catch (error) {
+            showToast(error.message || 'ยกเลิกคำสั่งซื้อไม่สำเร็จ', 'error');
+          } finally {
+            cancelOrder.disabled = false;
+          }
+          return;
+        }
+
         const detailTrigger = event.target.closest('[data-inventory-detail]');
         if (detailTrigger) {
           const row = profileState.inventoryLookup.get(detailTrigger.getAttribute('data-inventory-detail'));
@@ -2342,6 +3100,45 @@
 
         if (event.target.closest('[data-inventory-close]')) {
           toggleInventoryModal(false);
+        }
+      });
+
+      document.addEventListener('change', (event) => {
+        const fileInput = event.target.closest('[data-profile-slip-file]');
+        if (!fileInput) return;
+        const label = fileInput.closest('[data-profile-slip-form]')?.querySelector('[data-profile-slip-label]');
+        if (label) label.textContent = fileInput.files?.[0]?.name || 'เลือกไฟล์สลิป';
+      });
+
+      document.addEventListener('submit', async (event) => {
+        const slipForm = event.target.closest('[data-profile-slip-form]');
+        if (!slipForm) return;
+        event.preventDefault();
+        const orderId = slipForm.getAttribute('data-profile-slip-form');
+        const file = slipForm.querySelector('[data-profile-slip-file]')?.files?.[0];
+        if (!file) {
+          showToast('กรุณาเลือกไฟล์สลิปก่อนส่ง', 'error');
+          return;
+        }
+        const submitButton = slipForm.querySelector('button[type="submit"]');
+        const originalHtml = submitButton?.innerHTML || '';
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.innerHTML = '<i data-lucide="loader-circle"></i>กำลังส่งสลิป';
+          lucide.createIcons();
+        }
+        try {
+          await window.OlafOrders.uploadPaymentSlip({ orderId, file });
+          showToast('แนบสลิปแล้ว กำลังรอแอดมินตรวจสอบ');
+          await refreshProfileOrders({ quiet: true });
+        } catch (error) {
+          showToast(slipUploadErrorMessage(error), 'error');
+        } finally {
+          if (submitButton) {
+            submitButton.disabled = false;
+            submitButton.innerHTML = originalHtml;
+            lucide.createIcons();
+          }
         }
       });
 

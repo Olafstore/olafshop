@@ -1713,7 +1713,7 @@ function renderUserPopover() {
       <div class="user-popover-menu-title">หน้าหลัก</div>
       <a href="profile.html"><i data-lucide="user"></i>ข้อมูลส่วนตัว</a>
       <a href="profile.html#inventory"><i data-lucide="package"></i>คลังสินค้า (ID/Pass)</a>
-      <a href="orders.html"><i data-lucide="list"></i>ออเดอร์ของฉัน</a>
+      <a href="profile.html#orders"><i data-lucide="list"></i>ประวัติคำสั่งซื้อ</a>
       <a href="#"><i data-lucide="ticket"></i>โค้ดส่วนลด</a>
       
       <div class="user-popover-divider"></div>

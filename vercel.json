@@ -26,6 +26,16 @@
       "source": "/olaf-control.html",
       "destination": "/olaf-control",
       "permanent": false
+    },
+    {
+      "source": "/orders",
+      "destination": "/profile#inventory",
+      "permanent": false
+    },
+    {
+      "source": "/orders.html",
+      "destination": "/profile#inventory",
+      "permanent": false
     }
   ],
   "rewrites": [
@@ -44,10 +54,6 @@
     {
       "source": "/register",
       "destination": "/register.html"
-    },
-    {
-      "source": "/orders",
-      "destination": "/orders.html"
     },
     {
       "source": "/profile",

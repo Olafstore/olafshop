@@ -7,7 +7,7 @@
   <title>สินค้าเพิ่มเติม | OLAF SHOP</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="preconnect" href="https://wtvfgwacodfrzxapwoxj.supabase.co" />
-  <link rel="stylesheet" href="styles.css?v=20260618-mobile-nav-2" />
+  <link rel="stylesheet" href="styles.css?v=20260619-extra-stock-source-fix" />
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="supabase-client.js?v=20260618-auth-domain-fix" defer></script>
@@ -15,8 +15,8 @@
   <script src="image-performance.js?v=20260607-performance" defer></script>
   <script src="notifications.js?v=20260607-performance" defer></script>
   <script src="site-navigation.js?v=20260618-mobile-nav" defer></script>
-  <script src="extra-products.js?v=20260618-extra-catalog" defer></script>
-  <script src="more-products.js?v=20260618-extra-catalog" defer></script>
+  <script src="extra-products.js?v=20260619-extra-stock-source-fix" defer></script>
+  <script src="more-products.js?v=20260619-extra-stock-source-fix-v2" defer></script>
 </head>
 <body class="extras-page">
   <div class="app-shell">
@@ -176,7 +176,7 @@
           </article>
         </div>
 
-        <div class="olaf-license-grid extras-license-grid">
+        <div class="olaf-license-grid extras-license-grid" id="windows-product-grid">
           <article class="olaf-license-card">
             <div class="license-card-top">
               <div class="license-type-badges">

@@ -2894,6 +2894,9 @@ img[data-fast-img]:not(.is-loaded):not([src^="data:image"]) {
   font-size: 0.78rem;
   font-weight: 500;
 }
+.license-ready-note.is-out {
+  color: var(--muted);
+}
 
 .license-ready-note svg {
   width: 14px;

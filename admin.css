@@ -335,6 +335,26 @@ img[data-fast-img]:not(.is-loaded):not([src^="data:image"]) {
 .stock-board { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 14px; }
 .stock-card { display: flex; flex-direction: column; justify-content: space-between; gap: 12px; padding: 14px; border: 1px solid var(--border); background: var(--bg-card); border-radius: var(--radius); transition: all 250ms ease; height: 100%; }
 .stock-card:hover { border-color: var(--border-hover); transform: translateY(-2px); box-shadow: var(--shadow); }
+.stock-card-empty {
+  min-height: 180px;
+  align-items: center;
+  justify-content: center;
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--muted);
+}
+.stock-card-empty:hover { transform: none; box-shadow: none; }
+.stock-card-empty > i { width: 30px; height: 30px; color: var(--brand); }
+.stock-card-empty strong { color: var(--text); }
+.admin-empty-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 86px;
+  color: var(--muted);
+}
+.admin-empty-state > i { width: 20px; height: 20px; color: var(--brand); }
 .stock-head { display: grid; grid-template-columns: 82px minmax(0, 1fr); gap: 12px; align-items: center; }
 .stock-buttons, .stock-set { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
 .stock-set { grid-template-columns: minmax(0, 1fr) auto; margin-top: auto; }

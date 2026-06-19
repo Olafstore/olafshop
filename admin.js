@@ -27,7 +27,8 @@ const state = {
   selectedReviewId: null,
   selectedOrderId: null,
   selectedWidgetId: null,
-  categoryFilter: "all"
+  productCategoryFilter: "all",
+  stockCategoryFilter: "all"
 };
 
 let adminSessionUser = null;
@@ -36,6 +37,15 @@ let iconRefreshQueued = false;
 const packageLoadingProductIds = new Set();
 const offlineStockLoadingProductIds = new Set();
 const ADMIN_NOTICE_KEY = "olafshop_admin_notice";
+const EXTRA_CATALOG_PRODUCT_IDS = [
+  "windows-10-home",
+  "windows-10-pro",
+  "windows-11-home",
+  "windows-11-pro",
+  "minecraft-microsoft-account",
+  "minecraft-java-bedrock-key",
+  "rockstar-fivem-account"
+];
 
 const emptyPayload = {
   updatedAt: new Date().toISOString(),
@@ -70,6 +80,7 @@ const emptyPayload = {
     { id: "steam-account", label: "ไอดียกเมล" },
     { id: "offline", label: "Steam Offline" },
     { id: "bundle", label: "แพ็กเกม" },
+    { id: "windows", label: "คีย์ Windows" },
     { id: "minecraft-account", label: "Minecraft — Microsoft ID" },
     { id: "minecraft-key", label: "Minecraft — Key" },
     { id: "rockstar", label: "Rockstar / FiveM" }
@@ -614,8 +625,13 @@ function mapSupabaseProductRow(row) {
 }
 
 function categoriesForAdminProducts(adminProducts) {
-  const categories = [...emptyPayload.categories];
-  const existing = new Set(categories.map((category) => category.id));
+  const categories = [];
+  const existing = new Set();
+  emptyPayload.categories.forEach((category) => {
+    if (!category?.id || existing.has(category.id)) return;
+    existing.add(category.id);
+    categories.push(category);
+  });
   adminProducts.forEach((product) => {
     if (product.category && !existing.has(product.category)) {
       existing.add(product.category);
@@ -715,10 +731,20 @@ async function loadData() {
   state.pendingSiteIconDataUrl = null;
   state.siteIconCleared = false;
   const renderErrors = renderAll();
+  const missingExtraProducts = EXTRA_CATALOG_PRODUCT_IDS.filter(
+    (productId) => !state.payload.products.some((product) => product.id === productId)
+  );
   if (renderErrors.length) {
     const names = renderErrors.map((item) => item.name).join(", ");
     setStatus(`โหลดข้อมูลสินค้าแล้ว แต่บางส่วนแสดงผลไม่สำเร็จ: ${names}`);
     showAdminToast(`ข้อมูลสินค้าพร้อมแก้ไข แต่บางส่วนของ Dashboard มีปัญหา: ${names}`, "warning", 7000);
+  } else if (missingExtraProducts.length) {
+    setStatus("โหลดข้อมูลแล้ว แต่สินค้าเพิ่มเติมยังไม่ครบใน Supabase");
+    showAdminToast(
+      `ไม่พบสินค้าเพิ่มเติม ${missingExtraProducts.length} รายการ กรุณารัน supabase-extra-products.sql`,
+      "warning",
+      8000
+    );
   } else {
     setStatus("เชื่อมต่อ Supabase หลังบ้านแล้ว");
   }
@@ -1506,11 +1532,15 @@ function renderCompactStockItem(product) {
   `;
 }
 
-function filteredProducts() {
+function filteredProducts(scope = "products") {
   let result = products();
-  if (state.categoryFilter !== "all") {
-    result = result.filter(p => p.category === state.categoryFilter);
+  const categoryFilter =
+    scope === "stock" ? state.stockCategoryFilter : state.productCategoryFilter;
+  if (categoryFilter !== "all") {
+    result = result.filter((product) => product.category === categoryFilter);
   }
+  if (scope === "stock") return result;
+
   const query = state.search.trim().toLowerCase();
   if (!query) return result;
   return result.filter((product) =>
@@ -1524,21 +1554,31 @@ function filteredProducts() {
 function renderCategoryTabs(containerId) {
   const container = document.getElementById(containerId);
   if (!container) return;
-  const categories = [{ id: "all", label: "ทั้งหมด" }, ...(state.payload.categories || [])];
-  
+  const scope = containerId === "stock-category-tabs" ? "stock" : "products";
+  const selectedCategory =
+    scope === "stock" ? state.stockCategoryFilter : state.productCategoryFilter;
+  const categories = [];
+  const seen = new Set();
+  [{ id: "all", label: "ทั้งหมด" }, ...(state.payload.categories || [])].forEach((category) => {
+    if (!category?.id || seen.has(category.id)) return;
+    seen.add(category.id);
+    categories.push(category);
+  });
+
   container.innerHTML = categories.map(cat => `
-    <button type="button" class="category-tab ${state.categoryFilter === cat.id ? "is-active" : ""}" data-category-filter="${escapeHtml(cat.id)}">
+    <button type="button" class="category-tab ${selectedCategory === cat.id ? "is-active" : ""}" data-category-filter="${escapeHtml(cat.id)}" data-category-scope="${scope}">
       ${escapeHtml(cat.label)}
     </button>
   `).join("");
 }
 
 function renderProductsTable() {
-  $("#products-table").innerHTML = filteredProducts()
+  const visibleProducts = filteredProducts("products");
+  $("#products-table").innerHTML = visibleProducts.length
+    ? visibleProducts
     .map((product, index) => {
       const status = stockStatus(product.stock);
       const isOffline = isOfflineProductCategory(product.category);
-      const stockCategoryLabel = managedStockCategoryLabel(product.category);
       return `
         <tr>
           <td><span style="color: var(--muted); font-weight: 500;">${index + 1}</span></td>
@@ -1569,7 +1609,17 @@ function renderProductsTable() {
         </tr>
       `;
     })
-    .join("");
+    .join("")
+    : `
+      <tr>
+        <td colspan="6">
+          <div class="admin-empty-state">
+            <i data-lucide="package-search"></i>
+            <span>ไม่พบสินค้าในหมวดหรือตัวกรองนี้</span>
+          </div>
+        </td>
+      </tr>
+    `;
 }
 
 function renderProductForm() {
@@ -1612,7 +1662,7 @@ function fillProductForm(product) {
     id: "",
     name: "",
     publisher: "",
-    category: state.categoryFilter !== "all" ? state.categoryFilter : "steam-key",
+    category: state.productCategoryFilter !== "all" ? state.productCategoryFilter : "steam-key",
     label: "",
     price: 0,
     compareAt: 0,
@@ -1630,8 +1680,6 @@ function fillProductForm(product) {
     featureBlocks: [],
     detailSections: [],
     steamRelatedLinks: [],
-    featureBlocks: [],
-    detailSections: [],
     systemRequirements: { minimum: [], recommended: [] },
     isActive: true,
     sortOrder: products().length
@@ -2504,10 +2552,13 @@ async function deleteSelectedWidget() {
 }
 
 function renderStockBoard() {
-  $("#stock-board").innerHTML = filteredProducts()
-    .map((product) => {
+  const visibleProducts = filteredProducts("stock");
+  $("#stock-board").innerHTML = visibleProducts.length
+    ? visibleProducts
+        .map((product) => {
       const status = stockStatus(product.stock);
       const isOffline = isOfflineProductCategory(product.category);
+      const stockCategoryLabel = managedStockCategoryLabel(product.category);
       return `
         <article class="stock-card">
           <div class="stock-head">
@@ -2544,8 +2595,15 @@ function renderStockBoard() {
           }
         </article>
       `;
-    })
-    .join("");
+        })
+        .join("")
+    : `
+      <article class="stock-card stock-card-empty">
+        <i data-lucide="package-search"></i>
+        <strong>ไม่พบสินค้าในหมวดนี้</strong>
+        <span>เลือก “ทั้งหมด” เพื่อดูสต็อกสินค้าทุกหมวด</span>
+      </article>
+    `;
 }
 
 async function changeStock(productId, nextStock, action) {
@@ -2912,11 +2970,16 @@ function bindEvents() {
     }
 
     if (categoryTab) {
-      state.categoryFilter = categoryTab.dataset.categoryFilter;
-      renderCategoryTabs("admin-category-tabs");
-      renderCategoryTabs("stock-category-tabs");
-      renderProductsTable();
-      renderStockBoard();
+      const scope = categoryTab.dataset.categoryScope === "stock" ? "stock" : "products";
+      if (scope === "stock") {
+        state.stockCategoryFilter = categoryTab.dataset.categoryFilter || "all";
+        renderCategoryTabs("stock-category-tabs");
+        renderStockBoard();
+      } else {
+        state.productCategoryFilter = categoryTab.dataset.categoryFilter || "all";
+        renderCategoryTabs("admin-category-tabs");
+        renderProductsTable();
+      }
       createIconSet();
       return;
     }

@@ -3,6 +3,8 @@
     "https://www.minecraft.net/content/dam/minecraftnet/games/minecraft/key-art/Hero-Image_Vanilla_Deluxe_1200x675.jpg";
   const ROCKSTAR_HERO =
     "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3240220/header.jpg";
+  const WINDOWS_IMAGE =
+    "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows11/windows11-original.svg";
 
   const categories = [
     { id: "windows", label: "Key Windows" },
@@ -12,6 +14,110 @@
 
   const products = [
     {
+      id: "windows-10-home",
+      name: "Windows 10 Home",
+      publisher: "Microsoft",
+      category: "windows",
+      label: "OEM",
+      price: 199,
+      compareAt: 4385,
+      stock: 0,
+      sold: 0,
+      rating: "",
+      delivery: "สั่งซื้อและรับคีย์ผ่านแอดมินหลังตรวจสอบการชำระเงิน",
+      warranty: "รับประกันคีย์ตามเงื่อนไขร้าน",
+      image: WINDOWS_IMAGE,
+      heroImage: WINDOWS_IMAGE,
+      tags: ["ลิขสิทธิ์แท้สำหรับใช้งานส่วนตัว", "License Key Code", "ติดตั้งได้ 1 เครื่อง", "มีแอดมินช่วยแนะนำ"],
+      description: "คีย์สำหรับเปิดใช้งาน Windows 10 Home จำนวน 1 เครื่อง สั่งซื้อและรับคีย์ผ่านแอดมิน",
+      gallery: [WINDOWS_IMAGE],
+      platformLinks: [],
+      featureBlocks: [],
+      detailSections: [],
+      steamRelatedLinks: [],
+      systemRequirements: { minimum: ["Windows 10 Home"], recommended: [] },
+      isActive: true,
+      sortOrder: 8991
+    },
+    {
+      id: "windows-10-pro",
+      name: "Windows 10 Pro",
+      publisher: "Microsoft",
+      category: "windows",
+      label: "Retail",
+      price: 199,
+      compareAt: 4890,
+      stock: 0,
+      sold: 0,
+      rating: "",
+      delivery: "สั่งซื้อและรับคีย์ผ่านแอดมินหลังตรวจสอบการชำระเงิน",
+      warranty: "รับประกันคีย์ตามเงื่อนไขร้าน",
+      image: WINDOWS_IMAGE,
+      heroImage: WINDOWS_IMAGE,
+      tags: ["รองรับฟีเจอร์ Pro ครบ", "BitLocker และ Remote Desktop", "ย้ายเครื่องได้", "เหมาะกับสายทำงาน"],
+      description: "คีย์สำหรับเปิดใช้งาน Windows 10 Professional พร้อมฟีเจอร์สำหรับการทำงาน",
+      gallery: [WINDOWS_IMAGE],
+      platformLinks: [],
+      featureBlocks: [],
+      detailSections: [],
+      steamRelatedLinks: [],
+      systemRequirements: { minimum: ["Windows 10 Pro"], recommended: [] },
+      isActive: true,
+      sortOrder: 8992
+    },
+    {
+      id: "windows-11-home",
+      name: "Windows 11 Home",
+      publisher: "Microsoft",
+      category: "windows",
+      label: "OEM",
+      price: 199,
+      compareAt: 4385,
+      stock: 0,
+      sold: 0,
+      rating: "",
+      delivery: "สั่งซื้อและรับคีย์ผ่านแอดมินหลังตรวจสอบการชำระเงิน",
+      warranty: "รับประกันคีย์ตามเงื่อนไขร้าน",
+      image: WINDOWS_IMAGE,
+      heroImage: WINDOWS_IMAGE,
+      tags: ["รองรับ Windows 11 ล่าสุด", "License Key Code", "ติดตั้งได้ 1 เครื่อง", "เหมาะกับเครื่องใหม่"],
+      description: "คีย์สำหรับเปิดใช้งาน Windows 11 Home จำนวน 1 เครื่อง เหมาะสำหรับการใช้งานทั่วไป",
+      gallery: [WINDOWS_IMAGE],
+      platformLinks: [],
+      featureBlocks: [],
+      detailSections: [],
+      steamRelatedLinks: [],
+      systemRequirements: { minimum: ["Windows 11 Home และอุปกรณ์ที่รองรับ"], recommended: [] },
+      isActive: true,
+      sortOrder: 8993
+    },
+    {
+      id: "windows-11-pro",
+      name: "Windows 11 Pro",
+      publisher: "Microsoft",
+      category: "windows",
+      label: "Retail",
+      price: 199,
+      compareAt: 4850,
+      stock: 0,
+      sold: 0,
+      rating: "",
+      delivery: "สั่งซื้อและรับคีย์ผ่านแอดมินหลังตรวจสอบการชำระเงิน",
+      warranty: "รับประกันคีย์ตามเงื่อนไขร้าน",
+      image: WINDOWS_IMAGE,
+      heroImage: WINDOWS_IMAGE,
+      tags: ["รองรับฟีเจอร์ Pro ครบ", "Hyper-V และ Windows Sandbox", "ย้ายเครื่องได้", "เหมาะกับสายมืออาชีพ"],
+      description: "คีย์สำหรับเปิดใช้งาน Windows 11 Professional พร้อมฟีเจอร์สำหรับผู้ใช้ระดับมืออาชีพ",
+      gallery: [WINDOWS_IMAGE],
+      platformLinks: [],
+      featureBlocks: [],
+      detailSections: [],
+      steamRelatedLinks: [],
+      systemRequirements: { minimum: ["Windows 11 Pro และอุปกรณ์ที่รองรับ"], recommended: [] },
+      isActive: true,
+      sortOrder: 8994
+    },
+    {
       id: "minecraft-microsoft-account",
       name: "Minecraft: Java & Bedrock Edition — Microsoft Account",
       publisher: "Minecraft / Microsoft",
@@ -19,7 +125,8 @@
       label: "PRE-ORDER",
       price: 699,
       compareAt: 999,
-      stock: 99,
+      // Fallback content is display-only. Supabase must provide real orderable stock.
+      stock: 0,
       sold: 0,
       rating: "",
       delivery: "สินค้าแบบพรีออเดอร์ แอดมินตรวจสอบและจัดส่งบัญชี Microsoft ให้ด้วยตนเอง",
@@ -71,7 +178,8 @@
       label: "PRE-ORDER KEY",
       price: 899,
       compareAt: 1190,
-      stock: 99,
+      // Fallback content is display-only. Supabase must provide real orderable stock.
+      stock: 0,
       sold: 0,
       rating: "",
       delivery: "สินค้าแบบพรีออเดอร์ แอดมินจัดส่งคีย์หลังตรวจสอบการชำระเงิน",
@@ -165,7 +273,7 @@
   ];
 
   function isExtraCategory(category) {
-    return ["minecraft-account", "minecraft-key", "rockstar"].includes(
+    return ["windows", "minecraft-account", "minecraft-key", "rockstar"].includes(
       String(category || "").trim().toLowerCase()
     );
   }

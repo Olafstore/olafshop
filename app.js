@@ -208,7 +208,7 @@ const categoryTagFallbacks = {
 };
 
 function isExtraCatalogCategory(category) {
-  return ["minecraft-account", "minecraft-key", "rockstar"].includes(
+  return ["windows", "minecraft-account", "minecraft-key", "rockstar"].includes(
     String(category || "").trim().toLowerCase()
   );
 }

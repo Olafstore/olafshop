@@ -2023,8 +2023,8 @@
       "label": "STEAM",
       "price": 89,
       "compareAt": 1600,
-      "stock": 43,
-      "sold": 154,
+      "stock": 0,
+      "sold": 155,
       "rating": "à¹à¸‡à¹ˆà¸šà¸§à¸à¹€à¸›à¹‡à¸™à¸ªà¹ˆà¸§à¸™à¸¡à¸²à¸ | 34,441 à¸£à¸µà¸§à¸´à¸§",
       "delivery": "à¸£à¸±à¸šà¹„à¸­à¸”à¸µà¸—à¸±à¸™à¸—à¸µà¸«à¸¥à¸±à¸‡à¹à¸­à¸”à¸¡à¸´à¸™à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¸ªà¸¥à¸µà¸›",
       "warranty": "à¸£à¸±à¸šà¸›à¸£à¸°à¸à¸±à¸™à¹€à¸‚à¹‰à¸²à¹ƒà¸Šà¹‰à¸‡à¸²à¸™à¸•à¸¥à¸­à¸”à¸Šà¸µà¸ž",
@@ -2041,13 +2041,15 @@
         "Steam",
         "Offline"
       ],
-      "description": "Enter the adrenaline-filled world of a modern-day guerrilla revolution. With stunning vistas, visceral gunplay, and a huge variety of gameplay experiences, there's never been a better time to join the fight.\r\n\r\nWelcome to Yara, a tropical paradise frozen in time. As the dictator of Yara, AntÃ³n Castillo is intent on restoring his nation to its former glory by any means necessary, with his son, Diego, following in his bloody footsteps. Their oppressive rule has ignited a revolution.\r\n- Play as Dani Rojas, a local Yaran, as you fight alongside a modern-day guerrilla revolution to liberate Yara. Play the full game solo or with a friend in co-op.\r\n- Explore jungles, beaches, and cities on foot, horseback, or in a wide variety of vehicles including boats and Jet Skis as you fight against Castilloâ€™s regime in the most expansive Far Cry to date.\r\n- Feel the thrill of combat with an arsenal of hundreds of weapons alongside helpful amigos like Chorizo the dog and Guapo the gator.\r\n- Enjoy all-new content and features added since launch, including four new special operations, free blockbuster crossover missions, and fan-requested updates such as New Game Plus, Completionist Aid, an extra-hard difficulty mode, and four new loadout slots.\r\nThere has never been a better time to join millions of players in Yara!",
+      "description": "Enter the adrenaline-filled world of a modern-day guerrilla revolution. With stunning vistas, visceral gunplay, and a huge variety of gameplay experiences, there's never been a better time to join the fight.\n\nWelcome to Yara, a tropical paradise frozen in time. As the dictator of Yara, AntÃ³n Castillo is intent on restoring his nation to its former glory by any means necessary, with his son, Diego, following in his bloody footsteps. Their oppressive rule has ignited a revolution.\n- Play as Dani Rojas, a local Yaran, as you fight alongside a modern-day guerrilla revolution to liberate Yara. Play the full game solo or with a friend in co-op.\n- Explore jungles, beaches, and cities on foot, horseback, or in a wide variety of vehicles including boats and Jet Skis as you fight against Castilloâ€™s regime in the most expansive Far Cry to date.\n- Feel the thrill of combat with an arsenal of hundreds of weapons alongside helpful amigos like Chorizo the dog and Guapo the gator.\n- Enjoy all-new content and features added since launch, including four new special operations, free blockbuster crossover missions, and fan-requested updates such as New Game Plus, Completionist Aid, an extra-hard difficulty mode, and four new loadout slots.\nThere has never been a better time to join millions of players in Yara!",
       "gallery": [
         "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2369390/ss_65c6467467795423bb959aa2c76ad2659f6553cd.1920x1080.jpg?t=1781619334",
         "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2369390/ss_195eb286dad05d3b9e56f22eafacce7efe9c9ebf.1920x1080.jpg?t=1781619334",
         "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2369390/ss_8bf4118728c0df8340c665329b78e428ed0a7c9f.1920x1080.jpg?t=1781619334",
         "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2369390/ss_b0fa07116df319216ac4a4e7855a4c4a1d224bd0.1920x1080.jpg?t=1781619334",
-        "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2369390/ss_d3b78bb05886f9961869b03701f5920537e0decc.1920x1080.jpg?t=1781619334"
+        "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2369390/ss_d3b78bb05886f9961869b03701f5920537e0decc.1920x1080.jpg?t=1781619334",
+        "https://store.akamai.steamstatic.com/images/storepagebackground/app/2369390?t=1781619334",
+        "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/2369390/64af0c6b70ef233bbdff1e5ffe0e397481efb3c9/header.jpg?t=1781619334"
       ],
       "platformLinks": [
         {
@@ -2064,8 +2066,16 @@
       "featureBlocks": [],
       "detailSections": [
         {
-          "body": "à¸œà¸¹à¹‰à¸ˆà¸±à¸”à¸ˆà¸³à¸«à¸™à¹ˆà¸²à¸¢: Ubisoft\nà¹à¸™à¸§à¹€à¸à¸¡: Action, Adventure\nà¹à¸—à¹‡à¸à¸«à¸¥à¸±à¸à¸šà¸™ STEAM: Action, Adventure, Single-player, Multi-player, Co-op, Online Co-op, Partial Controller Support",
+          "body": "à¸œà¸¹à¹‰à¸ˆà¸±à¸”à¸ˆà¸³à¸«à¸™à¹ˆà¸²à¸¢: Ubisoft",
           "title": "à¸‚à¹‰à¸­à¸¡à¸¹à¸¥à¸ˆà¸²à¸ STEAM"
+        },
+        {
+          "body": "",
+          "title": "à¹à¸™à¸§à¹€à¸à¸¡: Action, Adventure"
+        },
+        {
+          "body": "",
+          "title": "à¹à¸—à¹‡à¸à¸«à¸¥à¸±à¸à¸šà¸™ STEAM: Action, Adventure, Single-player, Multi-player, Co-op, Online Co-op, Partial Controller Support"
         }
       ],
       "systemRequirements": {
@@ -4409,8 +4419,8 @@
       "label": "STEAM",
       "price": 99,
       "compareAt": 0,
-      "stock": 100,
-      "sold": 1479,
+      "stock": 99,
+      "sold": 1480,
       "rating": "à¹à¸‡à¹ˆà¸šà¸§à¸à¹€à¸›à¹‡à¸™à¸­à¸¢à¹ˆà¸²à¸‡à¸¡à¸²à¸ | 12,318 à¸£à¸µà¸§à¸´à¸§",
       "delivery": "à¸£à¸±à¸šà¹„à¸­à¸”à¸µà¸—à¸±à¸™à¸—à¸µà¸«à¸¥à¸±à¸‡à¹à¸­à¸”à¸¡à¸´à¸™à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¸ªà¸¥à¸µà¸›",
       "warranty": "à¸£à¸±à¸šà¸›à¸£à¸°à¸à¸±à¸™à¹€à¸‚à¹‰à¸²à¹ƒà¸Šà¹‰à¸‡à¸²à¸™à¸•à¸¥à¸­à¸”à¸Šà¸µà¸ž",
@@ -10327,8 +10337,8 @@
       "label": "STEAM",
       "price": 99,
       "compareAt": 0,
-      "stock": 100,
-      "sold": 2055,
+      "stock": 99,
+      "sold": 2056,
       "rating": "à¹à¸‡à¹ˆà¸šà¸§à¸à¹€à¸›à¹‡à¸™à¸ªà¹ˆà¸§à¸™à¸¡à¸²à¸ | 14,298 à¸£à¸µà¸§à¸´à¸§",
       "delivery": "à¸£à¸±à¸šà¹„à¸­à¸”à¸µà¸—à¸±à¸™à¸—à¸µà¸«à¸¥à¸±à¸‡à¹à¸­à¸”à¸¡à¸´à¸™à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¸ªà¸¥à¸µà¸›",
       "warranty": "à¸£à¸±à¸šà¸›à¸£à¸°à¸à¸±à¸™à¹€à¸‚à¹‰à¸²à¹ƒà¸Šà¹‰à¸‡à¸²à¸™à¸•à¸¥à¸­à¸”à¸Šà¸µà¸ž",

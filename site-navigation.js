@@ -77,6 +77,18 @@
       header.classList.remove("is-mobile-nav-open");
       toggle.setAttribute("aria-expanded", "false");
     });
+
+    document.addEventListener("click", (event) => {
+      if (header.contains(event.target)) return;
+      header.classList.remove("is-mobile-nav-open");
+      toggle.setAttribute("aria-expanded", "false");
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape") return;
+      header.classList.remove("is-mobile-nav-open");
+      toggle.setAttribute("aria-expanded", "false");
+    });
   }
 
   function setupUniversalSearch(header) {
@@ -123,6 +135,20 @@
       setupUniversalSearch(header);
     });
     setupStickyState(headers);
+    let resizeQueued = false;
+    window.addEventListener("resize", () => {
+      if (resizeQueued) return;
+      resizeQueued = true;
+      window.requestAnimationFrame(() => {
+        resizeQueued = false;
+        if (window.innerWidth > 1120) {
+          headers.forEach((header) => {
+            header.classList.remove("is-mobile-nav-open");
+            header.querySelector(".mobile-nav-toggle")?.setAttribute("aria-expanded", "false");
+          });
+        }
+      });
+    }, { passive: true });
     window.lucide?.createIcons?.();
   }
 

@@ -1769,15 +1769,6 @@ function closeUserPopover() {
   if (popover) popover.hidden = true;
 }
 
-function renderMemberDashboard() {
-  refreshAccountState();
-  if (!state.currentUser) {
-    openAuth("login");
-    return;
-  }
-  renderUserPopover();
-}
-
 function renderFeatureCard(product) {
   const stock = getStockState(product.stock);
   return `

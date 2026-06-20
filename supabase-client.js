@@ -533,6 +533,26 @@
     };
   }
 
+  function mapInventorySummaryRow(row) {
+    if (!row) return null;
+    return {
+      productId: row.productId || row.product_id || "",
+      managedStock: row.managedStock === true || row.managed_stock === true,
+      availableCount: Number(row.availableCount ?? row.available_count ?? 0),
+      reservedCount: Number(row.reservedCount ?? row.reserved_count ?? 0),
+      deliveredCount: Number(row.deliveredCount ?? row.delivered_count ?? 0),
+      voidCount: Number(row.voidCount ?? row.void_count ?? 0),
+      soldCount: Number(row.soldCount ?? row.sold_count ?? 0),
+      isActive: row.isActive !== false && row.is_active !== false,
+      orderCount: Number(row.orderCount ?? row.order_count ?? 0),
+      orderQuantity: Number(row.orderQuantity ?? row.order_quantity ?? 0),
+      deliveredOrderQuantity: Number(row.deliveredOrderQuantity ?? row.delivered_order_quantity ?? 0),
+      cancelledOrderQuantity: Number(row.cancelledOrderQuantity ?? row.cancelled_order_quantity ?? 0),
+      lastOrderAt: row.lastOrderAt || row.last_order_at || "",
+      stockMatches: row.stockMatches !== false && row.stock_matches !== false
+    };
+  }
+
   function packageToRpcPayload(productId, pkg = {}) {
     const normalizedProductId = String(productId || pkg.productId || "").trim();
     const title = String(pkg.title || "").trim();
@@ -764,6 +784,34 @@
     const { data, error } = await requireClient().rpc("admin_replace_offline_stock_items", {
       p_product_id: normalizedProductId,
       p_items: items
+    });
+    if (error) throw error;
+    const payload = normalizeObject(data);
+    return {
+      product: mapProductRow(payload.product),
+      items: normalizeArray(payload.items).map(mapOfflineStockItemRow).filter(Boolean),
+      availableCount: Number(payload.availableCount || payload.available_count || 0)
+    };
+  }
+
+  async function adminFetchInventorySummary() {
+    const { data, error } = await requireClient().rpc("admin_inventory_summary");
+    if (error) throw error;
+    return normalizeArray(data).map(mapInventorySummaryRow).filter((item) => item?.productId);
+  }
+
+  async function adminResizeOfflineStock({ productId, stock, templateContent = "", note = "" }) {
+    const normalizedProductId = String(productId || "").trim();
+    const normalizedStock = Number(stock);
+    if (!normalizedProductId) throw new Error("PRODUCT_REQUIRED");
+    if (!Number.isInteger(normalizedStock) || normalizedStock < 0 || normalizedStock > 10000) {
+      throw new Error("INVALID_STOCK");
+    }
+    const { data, error } = await requireClient().rpc("admin_resize_offline_stock", {
+      p_product_id: normalizedProductId,
+      p_stock: normalizedStock,
+      p_template_content: String(templateContent || "").trim() || null,
+      p_note: String(note || "").trim() || "Admin resized managed stock"
     });
     if (error) throw error;
     const payload = normalizeObject(data);
@@ -1138,6 +1186,7 @@
     mapProductRow,
     mapProductPackageRow,
     mapOfflineStockItemRow,
+    mapInventorySummaryRow,
     fetchActiveProducts,
     fetchProductById,
     fetchAdminProducts,
@@ -1150,7 +1199,9 @@
     adminSaveProductPackages,
     adminDeleteProductPackage,
     adminFetchOfflineStockItems,
-    adminReplaceOfflineStockItems
+    adminReplaceOfflineStockItems,
+    adminFetchInventorySummary,
+    adminResizeOfflineStock
   };
   window.OlafAdminUsers = {
     fetchAdminUsers,

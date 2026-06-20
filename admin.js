@@ -23,12 +23,16 @@ const state = {
   widgets: [],
   productPackages: {},
   offlineStockItems: {},
+  inventorySummaries: {},
   selectedUserId: null,
   selectedReviewId: null,
   selectedOrderId: null,
   selectedWidgetId: null,
   productCategoryFilter: "all",
-  stockCategoryFilter: "all"
+  stockCategoryFilter: "all",
+  stockSearch: "",
+  stockStateFilter: "all",
+  stockActiveOnly: false
 };
 
 let adminSessionUser = null;
@@ -753,13 +757,26 @@ async function loadData() {
   state.users = adminUsers;
   state.reviews = window.OlafStore?.getReviews() ?? [];
   state.widgets = window.OlafStore?.getWidgets() ?? [];
-  state.orders = await window.OlafOrders.fetchAdminOrders().catch((error) => {
-    console.warn("Admin orders unavailable while loading products", {
-      code: error?.code,
-      message: error?.message
-    });
-    return [];
-  });
+  const [adminOrders, inventorySummaries] = await Promise.all([
+    window.OlafOrders.fetchAdminOrders().catch((error) => {
+      console.warn("Admin orders unavailable while loading products", {
+        code: error?.code,
+        message: error?.message
+      });
+      return [];
+    }),
+    window.OlafProducts?.adminFetchInventorySummary
+      ? window.OlafProducts.adminFetchInventorySummary().catch((error) => {
+          console.warn("Admin inventory summary unavailable", {
+            code: error?.code,
+            message: error?.message
+          });
+          return [];
+        })
+      : Promise.resolve([])
+  ]);
+  state.orders = adminOrders;
+  setInventorySummaries(inventorySummaries);
   const productNames = new Map(state.payload.products.map((product) => [product.id, product.name]));
   state.stockLog = (await window.OlafOrders.fetchStockMovements().catch(() => [])).map((movement) => ({
     id: movement.id,
@@ -821,6 +838,80 @@ function adminDataErrorMessage(error) {
 
 function products() {
   return state.payload.products;
+}
+
+function setInventorySummaries(rows = []) {
+  state.inventorySummaries = Object.fromEntries(
+    (rows || [])
+      .filter((row) => row?.productId)
+      .map((row) => [row.productId, row])
+  );
+}
+
+function inventorySummaryFor(productOrId) {
+  const product = typeof productOrId === "string"
+    ? products().find((item) => item.id === productOrId)
+    : productOrId;
+  if (!product) {
+    return {
+      productId: "",
+      availableCount: 0,
+      reservedCount: 0,
+      deliveredCount: 0,
+      voidCount: 0,
+      soldCount: 0,
+      isActive: false,
+      orderCount: 0,
+      orderQuantity: 0,
+      deliveredOrderQuantity: 0,
+      cancelledOrderQuantity: 0,
+      lastOrderAt: "",
+      stockMatches: true
+    };
+  }
+  return state.inventorySummaries[product.id] || {
+    productId: product.id,
+    managedStock: isOfflineProductCategory(product.category),
+    availableCount: Number(product.stock || 0),
+    reservedCount: 0,
+    deliveredCount: 0,
+    voidCount: 0,
+    soldCount: Number(product.sold || 0),
+    isActive: product.isActive !== false,
+    orderCount: 0,
+    orderQuantity: Number(product.sold || 0),
+    deliveredOrderQuantity: 0,
+    cancelledOrderQuantity: 0,
+    lastOrderAt: "",
+    stockMatches: true
+  };
+}
+
+async function refreshInventorySummaries() {
+  if (!window.OlafProducts?.adminFetchInventorySummary) {
+    setInventorySummaries([]);
+    return [];
+  }
+  const summaries = await window.OlafProducts.adminFetchInventorySummary();
+  setInventorySummaries(summaries);
+  return summaries;
+}
+
+function productOrderHistory(productId, limit = 3) {
+  return state.orders
+    .flatMap((order) =>
+      (order.items || [])
+        .filter((item) => item.productId === productId)
+        .map((item) => ({
+          orderId: order.id,
+          orderNumber: order.orderNumber || order.id,
+          status: order.status || "",
+          quantity: Number(item.quantity || 0),
+          createdAt: order.createdAt || ""
+        }))
+    )
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+    .slice(0, limit);
 }
 
 function selectedProduct() {
@@ -1145,6 +1236,7 @@ function renderOfflineStockMeta(items = [], availableOverride = null) {
   if (availableOverride != null) counts.available = Number(availableOverride) || 0;
   const countEl = $("#offline-stock-count");
   const metaEl = $("#offline-stock-meta");
+  const targetInput = $("#managed-stock-target");
   if (countEl) countEl.textContent = `${counts.available.toLocaleString("th-TH")} ชิ้นพร้อมขาย`;
   if (metaEl) {
     metaEl.innerHTML = `
@@ -1152,6 +1244,9 @@ function renderOfflineStockMeta(items = [], availableOverride = null) {
       <span>ถูกจอง ${counts.reserved.toLocaleString("th-TH")}</span>
       <span>ส่งแล้ว ${counts.delivered.toLocaleString("th-TH")}</span>
     `;
+  }
+  if (targetInput && document.activeElement !== targetInput) {
+    targetInput.value = String(counts.available);
   }
 }
 
@@ -1346,11 +1441,18 @@ function renderMetrics() {
   const totalStock = products().reduce((sum, product) => sum + product.stock, 0);
   const totalSold = products().reduce((sum, product) => sum + product.sold, 0);
   const lowStock = products().filter((product) => product.stock <= 5).length;
+  const activeProducts = products().filter((product) => product.isActive !== false).length;
+  const deliveredStock = products().reduce(
+    (sum, product) => sum + Number(inventorySummaryFor(product).deliveredCount || 0),
+    0
+  );
 
   $("#metric-products").textContent = products().length.toLocaleString("th-TH");
   $("#metric-stock").textContent = totalStock.toLocaleString("th-TH");
   $("#metric-low-stock").textContent = lowStock.toLocaleString("th-TH");
   $("#metric-sold").textContent = totalSold.toLocaleString("th-TH");
+  $("#metric-active-products").textContent = activeProducts.toLocaleString("th-TH");
+  $("#metric-delivered-stock").textContent = deliveredStock.toLocaleString("th-TH");
 
   const alerts = products()
     .filter((product) => product.stock <= 5)
@@ -1596,7 +1698,31 @@ function filteredProducts(scope = "products") {
   if (categoryFilter !== "all") {
     result = result.filter((product) => product.category === categoryFilter);
   }
-  if (scope === "stock") return result;
+  if (scope === "stock") {
+    const query = state.stockSearch.trim().toLowerCase();
+    if (query) {
+      result = result.filter((product) =>
+        [product.id, product.name, product.publisher, product.category]
+          .join(" ")
+          .toLowerCase()
+          .includes(query)
+      );
+    }
+    if (state.stockActiveOnly) {
+      result = result.filter((product) => product.isActive !== false);
+    }
+    if (state.stockStateFilter !== "all") {
+      result = result.filter((product) => {
+        const summary = inventorySummaryFor(product);
+        if (state.stockStateFilter === "in-stock") return summary.availableCount > 0;
+        if (state.stockStateFilter === "out-of-stock") return summary.availableCount <= 0;
+        if (state.stockStateFilter === "reserved") return summary.reservedCount > 0;
+        if (state.stockStateFilter === "delivered") return summary.deliveredCount > 0;
+        return true;
+      });
+    }
+    return result;
+  }
 
   const query = state.search.trim().toLowerCase();
   if (!query) return result;
@@ -1634,7 +1760,8 @@ function renderProductsTable() {
   $("#products-table").innerHTML = visibleProducts.length
     ? visibleProducts
     .map((product, index) => {
-      const status = stockStatus(product.stock);
+      const summary = inventorySummaryFor(product);
+      const status = stockStatus(summary.availableCount);
       const isOffline = isOfflineProductCategory(product.category);
       return `
         <tr>
@@ -1651,6 +1778,8 @@ function renderProductsTable() {
           <td>${escapeHtml(categoryLabel(product.category))}</td>
           <td>${formatPrice(product.price)}</td>
           <td><span class="status-pill ${status.className}">${status.label}</span></td>
+          <td>${Number(summary.soldCount || product.sold || 0).toLocaleString("th-TH")}</td>
+          <td><span class="status-pill ${product.isActive !== false ? "ok" : "danger"}">${product.isActive !== false ? "Active" : "Inactive"}</span></td>
           <td>
             <div class="row-actions">
               ${
@@ -1669,7 +1798,7 @@ function renderProductsTable() {
     .join("")
     : `
       <tr>
-        <td colspan="6">
+        <td colspan="8">
           <div class="admin-empty-state">
             <i data-lucide="package-search"></i>
             <span>ไม่พบสินค้าในหมวดหรือตัวกรองนี้</span>
@@ -1942,6 +2071,15 @@ function adminStockErrorMessage(error) {
   const message = String(error?.message || "");
   const code = String(error?.code || "");
   const lower = message.toLowerCase();
+  if (message.includes("STOCK_TEMPLATE_REQUIRED")) {
+    return "สินค้านี้ยังไม่มีข้อมูลบัญชีให้ทำสำเนา กรุณาเปิด “แก้ข้อมูลบัญชีที่ Available” แล้วใส่ข้อมูลอย่างน้อย 1 รายการก่อนเพิ่มจำนวน";
+  }
+  if (
+    message.includes("admin_resize_offline_stock") ||
+    message.includes("admin_inventory_summary")
+  ) {
+    return "กรุณารัน supabase-admin-inventory-management.sql ใน Supabase ก่อนใช้ตัวจัดการสต็อกแบบใหม่";
+  }
   if (
     code === "PGRST202" ||
     code === "42883" ||
@@ -2122,6 +2260,7 @@ async function saveProductFromForm(event) {
     }
 
     replaceProductInState(savedProduct);
+    await refreshInventorySummaries();
     state.selectedProductId = savedProduct.id;
     renderAll();
     const updatedAt = savedProduct.updatedAt
@@ -2617,45 +2756,75 @@ function renderStockBoard() {
   $("#stock-board").innerHTML = visibleProducts.length
     ? visibleProducts
         .map((product) => {
-      const status = stockStatus(product.stock);
-      const isOffline = isOfflineProductCategory(product.category);
-      const stockCategoryLabel = managedStockCategoryLabel(product.category);
-      return `
-        <article class="stock-card">
-          <div class="stock-head">
-            <img ${fastImg(product.image || product.heroImage, product.name, { className: "stock-thumb" })} />
-            <div>
-              <h3>${escapeHtml(product.name)}</h3>
-              <p>${escapeHtml(categoryLabel(product.category))}</p>
-            </div>
-          </div>
-          <span class="status-pill ${status.className}">${status.label}</span>
-          ${
-            isOffline
-              ? `
-                <div class="offline-stock-card-note">
-                  สต็อกหมวด ${escapeHtml(stockCategoryLabel)} ต้องจัดการเป็นรายการ 1 บรรทัดต่อ 1 ชิ้น
+          const summary = inventorySummaryFor(product);
+          const available = Number(summary.availableCount || 0);
+          const status = stockStatus(available);
+          const isOffline = isOfflineProductCategory(product.category);
+          const stockCategoryLabel = managedStockCategoryLabel(product.category);
+          const history = productOrderHistory(product.id);
+          return `
+            <article class="stock-card ${available <= 0 ? "is-out-of-stock" : ""}">
+              <div class="stock-head">
+                <img ${fastImg(product.image || product.heroImage, product.name, { className: "stock-thumb" })} />
+                <div>
+                  <h3 title="${escapeHtml(product.name)}">${escapeHtml(product.name)}</h3>
+                  <p>${escapeHtml(categoryLabel(product.category))} · ${escapeHtml(product.id)}</p>
+                  <div class="stock-card-badges">
+                    <span class="status-pill ${status.className}">${status.label}</span>
+                    <span class="status-pill ${product.isActive !== false ? "ok" : "danger"}">${product.isActive !== false ? "Active" : "Inactive"}</span>
+                    ${summary.stockMatches === false ? '<span class="status-pill danger">Counter mismatch</span>' : ""}
+                  </div>
                 </div>
-                <button class="primary-button" type="button" data-manage-offline-stock="${escapeHtml(product.id)}">
-                  <i data-lucide="list-plus"></i>
-                  จัดการรายการสต็อก
-                </button>
-              `
-              : `
-                <div class="stock-buttons">
-                  <button class="mini-button" type="button" data-stock-adjust="${escapeHtml(product.id)}" data-delta="1">+1</button>
-                  <button class="mini-button" type="button" data-stock-adjust="${escapeHtml(product.id)}" data-delta="5">+5</button>
-                  <button class="mini-button" type="button" data-stock-adjust="${escapeHtml(product.id)}" data-delta="10">+10</button>
-                  <button class="mini-button" type="button" data-stock-zero="${escapeHtml(product.id)}">หมด</button>
-                </div>
-                <div class="stock-set">
-                  <input type="number" min="0" step="1" value="${product.stock}" data-stock-input="${escapeHtml(product.id)}" />
-                  <button class="primary-button" type="button" data-stock-set="${escapeHtml(product.id)}">ตั้งค่า</button>
-                </div>
-              `
-          }
-        </article>
-      `;
+              </div>
+
+              <div class="stock-summary-grid">
+                <span><small>พร้อมขาย</small><strong>${available.toLocaleString("th-TH")}</strong></span>
+                <span><small>Reserved</small><strong>${Number(summary.reservedCount || 0).toLocaleString("th-TH")}</strong></span>
+                <span><small>Delivered</small><strong>${Number(summary.deliveredCount || 0).toLocaleString("th-TH")}</strong></span>
+                <span><small>Sold</small><strong>${Number(summary.soldCount || product.sold || 0).toLocaleString("th-TH")}</strong></span>
+                <span><small>Orders</small><strong>${Number(summary.orderCount || 0).toLocaleString("th-TH")}</strong></span>
+              </div>
+
+              <div class="stock-buttons">
+                <button class="mini-button" type="button" data-stock-adjust="${escapeHtml(product.id)}" data-delta="1">+1</button>
+                <button class="mini-button" type="button" data-stock-adjust="${escapeHtml(product.id)}" data-delta="5">+5</button>
+                <button class="mini-button" type="button" data-stock-adjust="${escapeHtml(product.id)}" data-delta="10">+10</button>
+                <button class="mini-button" type="button" data-stock-zero="${escapeHtml(product.id)}">หมด</button>
+              </div>
+              <div class="stock-set">
+                <input type="number" min="0" max="10000" step="1" value="${available}" data-stock-input="${escapeHtml(product.id)}" aria-label="จำนวนพร้อมขาย ${escapeHtml(product.name)}" />
+                <button class="primary-button" type="button" data-stock-set="${escapeHtml(product.id)}">ตั้งสต็อก</button>
+              </div>
+
+              ${
+                isOffline
+                  ? `
+                    <div class="offline-stock-card-note">
+                      ${escapeHtml(stockCategoryLabel)} ใช้ stock row จริง การเพิ่มจะทำสำเนาบัญชีล่าสุด ส่วน Reserved/Delivered จะไม่ถูกแก้ไข
+                    </div>
+                    <button class="ghost-button" type="button" data-manage-offline-stock="${escapeHtml(product.id)}">
+                      <i data-lucide="list-plus"></i>
+                      แก้ข้อมูลบัญชีที่ Available
+                    </button>
+                  `
+                  : ""
+              }
+
+              <div class="stock-order-history">
+                <strong>ประวัติออเดอร์ล่าสุด</strong>
+                ${
+                  history.length
+                    ? history.map((entry) => `
+                        <button type="button" data-edit-order="${escapeHtml(entry.orderId)}">
+                          <span>${escapeHtml(entry.orderNumber)}</span>
+                          <small>${Number(entry.quantity || 0).toLocaleString("th-TH")} ชิ้น · ${escapeHtml(entry.status)} · ${new Date(entry.createdAt).toLocaleDateString("th-TH")}</small>
+                        </button>
+                      `).join("")
+                    : "<small>ยังไม่มีประวัติออเดอร์สินค้านี้</small>"
+                }
+              </div>
+            </article>
+          `;
         })
         .join("")
     : `
@@ -2670,25 +2839,39 @@ function renderStockBoard() {
 async function changeStock(productId, nextStock, action) {
   const product = products().find((item) => item.id === productId);
   if (!product) return;
-  if (isOfflineProductCategory(product.category)) {
-    state.selectedProductId = productId;
-    switchPanel("products");
-    renderProductForm();
-    const stockCategoryLabel = managedStockCategoryLabel(product.category);
-    setStatus(`สินค้า ${stockCategoryLabel} ต้องเพิ่มสต็อกจากรายการ 1 บรรทัดต่อ 1 ชิ้น`);
-    showAdminToast(`กรุณาจัดการสต็อก ${stockCategoryLabel} ในฟอร์มสินค้า`, "info");
-    return;
-  }
   const stock = Math.max(0, Number(nextStock) || 0);
   try {
     validateNonNegativeInteger(stock, "สต็อก");
-    const previousStock = Number(product.stock || 0);
-    const updatedProduct = await window.OlafProducts.setAdminProductStock({
-      productId,
-      stock,
-      note: action
-    });
+    const previousStock = Number(inventorySummaryFor(product).availableCount || 0);
+    let updatedProduct;
+
+    if (isOfflineProductCategory(product.category)) {
+      if (!window.OlafProducts?.adminResizeOfflineStock) {
+        throw new Error("admin_resize_offline_stock is not ready");
+      }
+      const cachedItems = getCachedOfflineStockItems(productId) || [];
+      const templateContent =
+        cachedItems.find((item) => item.status === "available")?.content ||
+        cachedItems.find((item) => ["reserved", "delivered"].includes(item.status))?.content ||
+        "";
+      const result = await window.OlafProducts.adminResizeOfflineStock({
+        productId,
+        stock,
+        templateContent,
+        note: action
+      });
+      updatedProduct = result.product || product;
+      setCachedOfflineStockItems(productId, result.items || []);
+    } else {
+      updatedProduct = await window.OlafProducts.setAdminProductStock({
+        productId,
+        stock,
+        note: action
+      });
+    }
+
     if (updatedProduct) replaceProductInState(updatedProduct);
+    await refreshInventorySummaries();
     state.stockLog.unshift({
       id: `${productId}-${Date.now()}`,
       name: updatedProduct?.name || product.name,
@@ -2706,7 +2889,12 @@ async function changeStock(productId, nextStock, action) {
       showAdminToast("อัปเดตสต็อกแล้ว กรุณารัน supabase-orders-admin.sql เพื่อเปิด stock log", "warning");
     } else {
       setStatus("อัปเดตสต็อกออนไลน์แล้ว");
-      showAdminToast("อัปเดตสต็อกใน Supabase แล้ว", "success");
+      showAdminToast(
+        isOfflineProductCategory(product.category)
+          ? "อัปเดต stock rows จริงใน Supabase แล้ว"
+          : "อัปเดตสต็อกใน Supabase แล้ว",
+        "success"
+      );
     }
   } catch (error) {
     console.error("Supabase stock adjustment failed", {
@@ -3082,7 +3270,10 @@ function bindEvents() {
       const id = stockAdjustButton.dataset.stockAdjust;
       const product = products().find((item) => item.id === id);
       const delta = Number(stockAdjustButton.dataset.delta) || 0;
-      if (product) await changeStock(id, product.stock + delta, "เพิ่มสต็อก");
+      if (product) {
+        const currentAvailable = Number(inventorySummaryFor(product).availableCount || 0);
+        await changeStock(id, currentAvailable + delta, "เพิ่มสต็อก");
+      }
       return;
     }
 
@@ -3139,6 +3330,31 @@ function bindEvents() {
     state.search = event.target.value;
     renderProductsTable();
     createIconSet();
+  });
+
+  $("#stock-search")?.addEventListener("input", (event) => {
+    state.stockSearch = event.target.value;
+    renderStockBoard();
+    createIconSet();
+  });
+
+  $("#stock-state-filter")?.addEventListener("change", (event) => {
+    state.stockStateFilter = event.target.value || "all";
+    renderStockBoard();
+    createIconSet();
+  });
+
+  $("#stock-active-only")?.addEventListener("change", (event) => {
+    state.stockActiveOnly = event.target.checked === true;
+    renderStockBoard();
+    createIconSet();
+  });
+
+  $("#resize-managed-stock")?.addEventListener("click", async () => {
+    const product = selectedProduct();
+    if (!product || !isOfflineProductCategory(product.category)) return;
+    const target = Number($("#managed-stock-target")?.value || 0);
+    await changeStock(product.id, target, "ปรับจำนวนพร้อมขายจากหน้าจัดการสินค้า");
   });
 
   $("#category-select")?.addEventListener("change", () => {

@@ -10840,6 +10840,135 @@ details.qr-manual-transfer[open] .qr-manual-transfer-body {
   }
 }
 
+/* 2026-06-21: stable Thai typography, navigation sizing and lighter storefront rendering. */
+body.home-page {
+  font-family: "Noto Sans Thai", "Leelawadee UI", "Kanit", "Segoe UI", Tahoma, sans-serif;
+  font-weight: 400;
+  line-height: 1.58;
+  text-rendering: optimizeLegibility;
+}
+
+body.home-page h1,
+body.home-page h2,
+body.home-page h3,
+body.home-page .brand strong,
+body.home-page button,
+body.home-page .primary-button,
+body.home-page .secondary-button {
+  font-family: "Noto Sans Thai", "Leelawadee UI", "Kanit", "Segoe UI", Tahoma, sans-serif;
+}
+
+body.home-page h1,
+body.home-page h2,
+body.home-page h3 {
+  font-weight: 700;
+  line-height: 1.28;
+}
+
+body.home-page .topbar {
+  transition: background-color 180ms ease, border-color 180ms ease, box-shadow 180ms ease;
+}
+
+body.home-page .product-card {
+  contain: layout paint style;
+  transition: transform 180ms ease, border-color 180ms ease, background-color 180ms ease, box-shadow 180ms ease;
+}
+
+body.home-page .hero,
+body.home-page .stats-strip,
+body.home-page .live-store-panel {
+  contain: layout paint;
+}
+
+@media (max-width: 820px) {
+  body.home-page .topbar.site-topbar-unified {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px 10px;
+    min-height: 98px;
+    padding: 8px 12px;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+  }
+
+  body.home-page .topbar.site-topbar-unified .brand {
+    grid-column: 1;
+    width: fit-content;
+    max-width: 100%;
+    justify-self: start;
+  }
+
+  body.home-page .topbar.site-topbar-unified .mobile-nav-toggle {
+    grid-column: 2;
+    justify-self: end;
+  }
+
+  body.home-page .topbar.site-topbar-unified .topbar-actions {
+    grid-column: 1 / -1;
+    width: 100%;
+    min-width: 0;
+    justify-content: flex-end;
+    overflow: visible;
+    padding: 0;
+  }
+
+  body.home-page .site-global-search,
+  body.home-page .topbar.site-topbar-unified .topbar-search-wrap {
+    flex: 1 1 auto;
+    width: auto;
+    min-width: 0;
+    max-width: none;
+  }
+
+  body.home-page .topbar.site-topbar-unified.is-mobile-nav-open .main-nav {
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    max-height: min(60vh, 360px);
+    overflow-y: auto;
+  }
+}
+
+@media (max-width: 560px) {
+  body.home-page .topbar.site-topbar-unified {
+    min-height: 98px;
+  }
+
+  body.home-page .topbar.site-topbar-unified .brand small {
+    display: none;
+  }
+
+  body.home-page .topbar.site-topbar-unified .brand strong {
+    font-size: 0.84rem;
+  }
+
+  body.home-page .topbar.site-topbar-unified .account-button,
+  body.home-page .topbar.site-topbar-unified .icon-button,
+  body.home-page .topbar.site-topbar-unified .register-button {
+    flex: 0 0 36px;
+    width: 36px;
+    min-width: 36px;
+    min-height: 36px;
+    padding: 0;
+  }
+
+  body.home-page .topbar.site-topbar-unified .topbar-actions {
+    gap: 7px;
+  }
+
+  body.home-page .topbar.site-topbar-unified .main-nav {
+    left: 8px;
+    right: 8px;
+    padding: 8px;
+  }
+}
+
+@media (pointer: coarse) {
+  body.home-page .product-card:hover,
+  body.home-page .recent-purchase-row:hover,
+  body.home-page .discord-floating-link:hover {
+    transform: none;
+  }
+}
+
 /* Unified storefront header shared by index, product, extras and profile. */
 .topbar.site-topbar-unified {
   position: sticky;

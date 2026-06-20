@@ -329,10 +329,15 @@ async function fetchSupabaseProductPayload() {
     jsonPayloadPromise,
     window.OlafProducts.fetchProductById(productId)
   ]);
+  const jsonProduct = Array.isArray(jsonPayload?.products)
+    ? jsonPayload.products.find((item) => item?.id === productId) || null
+    : null;
   const extraFallback = window.OlafExtraProducts?.getProductById?.(productId) || null;
   const product = onlineProduct
-    ? { ...(extraFallback || {}), ...onlineProduct }
-    : extraFallback;
+    ? { ...(jsonProduct || {}), ...(extraFallback || {}), ...onlineProduct }
+    : extraFallback
+      ? { ...(jsonProduct || {}), ...extraFallback }
+      : jsonProduct;
   if (!product) {
     return {
       store: jsonPayload?.store ?? {},

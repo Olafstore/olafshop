@@ -139,6 +139,63 @@ function escapeHtml(value = "") {
   });
 }
 
+function adminDeliveryPreviewHtml(order) {
+  const raw = String(order?.deliveredPayload || order?.deliveryNote || "").trim();
+  const parsed = window.OlafDeliveryPayload?.parse?.(raw);
+  if (!parsed?.deliveries?.length || !parsed.accounts?.length) return "";
+
+  return parsed.deliveries.map((delivery, deliveryIndex) => `
+    <section class="admin-delivery-set">
+      ${parsed.deliveries.length > 1 ? `<h4>ชุดที่ ${deliveryIndex + 1}</h4>` : ""}
+      ${delivery.accounts.map((account, accountIndex) => `
+        <article class="admin-account-card admin-account-${escapeHtml(String(account.platform || "").toLowerCase())}">
+          <h5>${escapeHtml(account.platform || "ACCOUNT")}</h5>
+          ${["id", "password"].map((field) => {
+            const value = String(account[field] || "").trim();
+            if (!value) return "";
+            const label = field === "id" ? "ID" : "Password";
+            return `
+              <div class="admin-account-field">
+                <span>${label}</span>
+                <code>${escapeHtml(value)}</code>
+                <button class="mini-button" type="button" data-admin-copy-delivery="${deliveryIndex}" data-admin-copy-account="${accountIndex}" data-admin-copy-field="${field}" aria-label="คัดลอก ${escapeHtml(account.platform || "บัญชี")} ${label}">
+                  <i data-lucide="copy"></i>
+                </button>
+              </div>
+            `;
+          }).join("")}
+        </article>
+      `).join("")}
+    </section>
+  `).join("");
+}
+
+function renderAdminDeliveryPreview(order) {
+  const preview = $("#admin-delivery-preview");
+  if (!preview) return;
+  const html = adminDeliveryPreviewHtml(order);
+  preview.innerHTML = html;
+  preview.hidden = !html;
+}
+
+async function copyAdminText(value) {
+  const text = String(value || "").trim();
+  if (!text) throw new Error("ไม่พบข้อมูลที่ต้องการคัดลอก");
+  if (navigator.clipboard?.writeText) {
+    await navigator.clipboard.writeText(text);
+    return;
+  }
+  const textarea = document.createElement("textarea");
+  textarea.value = text;
+  textarea.setAttribute("readonly", "");
+  textarea.style.position = "fixed";
+  textarea.style.opacity = "0";
+  document.body.appendChild(textarea);
+  textarea.select();
+  document.execCommand("copy");
+  textarea.remove();
+}
+
 function fastImg(src, alt = "", options = {}) {
   if (window.OlafImages?.attrs) return window.OlafImages.attrs(src, alt, options);
   const loading = options.priority ? "eager" : "lazy";
@@ -1864,6 +1921,9 @@ function adminProductErrorMessage(error) {
   ) {
     return "ยังไม่ได้รัน supabase-product-packages.sql หรือสิทธิ์ package ยังไม่พร้อม";
   }
+  if (message.includes("IMPORTED_STOCK_REQUIRES_BATCH_IMPORT")) {
+    return "สินค้านี้ใช้สต็อกจาก batch import แล้ว ต้องอัปเดตผ่าน Phase 5 importer เพื่อรักษา idempotency และประวัติสต็อก";
+  }
   if (
     message.includes("offline_stock_items") ||
     message.includes("admin_fetch_offline_stock_items") ||
@@ -2402,6 +2462,7 @@ function renderOrderForm() {
   $("#delete-order").disabled = !order;
   form.elements.status.value = order?.status || "waiting_admin";
   form.elements.deliveryNote.value = order?.deliveryNote || "";
+  renderAdminDeliveryPreview(order);
   const items = order?.items?.length
     ? `
       <h3>รายการสินค้า</h3>
@@ -2945,6 +3006,25 @@ function bindEvents() {
   });
 
   document.body.addEventListener("click", async (event) => {
+    const adminCopyButton = event.target.closest("[data-admin-copy-field]");
+    if (adminCopyButton) {
+      const order = selectedOrder();
+      const raw = String(order?.deliveredPayload || order?.deliveryNote || "").trim();
+      const parsed = window.OlafDeliveryPayload?.parse?.(raw);
+      const deliveryIndex = Number(adminCopyButton.dataset.adminCopyDelivery);
+      const accountIndex = Number(adminCopyButton.dataset.adminCopyAccount);
+      const field = adminCopyButton.dataset.adminCopyField;
+      const account = parsed?.deliveries?.[deliveryIndex]?.accounts?.[accountIndex];
+      const value = window.OlafDeliveryPayload?.fieldValue?.(account, field) || "";
+      try {
+        await copyAdminText(value);
+        showAdminToast(field === "password" ? "คัดลอกรหัสผ่านแล้ว" : "คัดลอก ID แล้ว", "success");
+      } catch (error) {
+        showAdminToast(error.message || "คัดลอกไม่สำเร็จ", "error");
+      }
+      return;
+    }
+
     const editButton = event.target.closest("[data-edit-product]");
     const manageOfflineStockButton = event.target.closest("[data-manage-offline-stock]");
     const stockAdjustButton = event.target.closest("[data-stock-adjust]");

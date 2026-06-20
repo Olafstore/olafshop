@@ -17,9 +17,10 @@
   <script src="supabase-client.js?v=20260619-profile-update-fix" defer></script> 
   <script src="platform-store.js?v=20260619-profile-update-fix" defer></script>
   <script src="image-performance.js?v=20260607-performance" defer></script>
+  <script src="delivery-payload.js?v=20260620-phase5-12" defer></script>
   <script src="site-navigation.js?v=20260619-unified-profile-nav" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-  <link rel="stylesheet" href="styles.css?v=20260619-unified-profile-nav" />
+  <link rel="stylesheet" href="styles.css?v=20260620-phase5-12" />
   <style>
     body {
       padding-top: 0;
@@ -1002,6 +1003,95 @@
       color: #e2e8f0;
     }
 
+    .inventory-account-list,
+    .inventory-delivery-set {
+      display: grid;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .inventory-delivery-set h4 {
+      margin: 0;
+      color: #cbd5e1;
+      font-size: 0.8rem;
+    }
+
+    .inventory-account-card {
+      min-width: 0;
+      overflow: hidden;
+      border: 1px solid #263854;
+      border-left: 3px solid #3b82f6;
+      border-radius: 8px;
+      background: #071124;
+    }
+
+    .inventory-account-ea {
+      border-left-color: #f97316;
+    }
+
+    .inventory-account-ubisoft {
+      border-left-color: #8b5cf6;
+    }
+
+    .inventory-account-card h5 {
+      margin: 0;
+      padding: 10px 12px;
+      border-bottom: 1px solid #1e304b;
+      color: #eff6ff;
+      font-size: 0.78rem;
+      letter-spacing: 0;
+    }
+
+    .inventory-account-field {
+      display: grid;
+      grid-template-columns: 72px minmax(0, 1fr) 34px;
+      align-items: center;
+      gap: 8px;
+      min-width: 0;
+      padding: 9px 12px;
+    }
+
+    .inventory-account-field + .inventory-account-field {
+      border-top: 1px solid #16243b;
+    }
+
+    .inventory-account-field span {
+      color: #7f8da8;
+      font-size: 0.72rem;
+    }
+
+    .inventory-account-field code {
+      min-width: 0;
+      overflow-wrap: anywhere;
+      color: #e2e8f0;
+      font-size: 0.78rem;
+      white-space: normal;
+    }
+
+    .inventory-account-field button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      width: 34px;
+      height: 34px;
+      padding: 0;
+      border: 1px solid #334b70;
+      border-radius: 7px;
+      background: #0d1b32;
+      color: #bfdbfe;
+      cursor: pointer;
+    }
+
+    .inventory-account-field button:hover {
+      border-color: #60a5fa;
+      background: #122747;
+    }
+
+    .inventory-account-field button svg {
+      width: 15px;
+      height: 15px;
+    }
+
     .inventory-modal-footer {
       display: flex;
       align-items: center;
@@ -1330,6 +1420,28 @@
       gap: 5px;
     }
 
+    .profile-order-delivery {
+      grid-column: 1 / -1;
+      display: grid;
+      gap: 10px;
+      min-width: 0;
+      padding-top: 4px;
+    }
+
+    .profile-order-delivery > p {
+      margin: 0;
+      color: #93a4bf;
+      font-size: 0.76rem;
+    }
+
+    .profile-order-delivery > pre {
+      margin: 0;
+      overflow-wrap: anywhere;
+      white-space: pre-wrap;
+      color: #dbeafe;
+      font: 0.78rem/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
     .profile-order-open {
       display: inline-flex;
       align-items: center;
@@ -1637,6 +1749,11 @@
       .inventory-detail-button,
       .inventory-copy-button {
         width: 100%;
+      }
+
+      .inventory-account-field {
+        grid-template-columns: 58px minmax(0, 1fr) 34px;
+        padding: 9px 10px;
       }
 
       .inventory-detail-button,
@@ -2045,6 +2162,7 @@
       <div>
         <div class="inventory-modal-label">Product Delivery Details</div>
         <div class="inventory-detail-panel">
+          <div class="inventory-account-list" id="inventory-account-list" hidden></div>
           <pre id="inventory-modal-note">รอข้อมูลจากแอดมิน</pre>
         </div>
       </div>
@@ -2156,6 +2274,56 @@
       return String(valueMatch ? valueMatch[1] : preferred).trim();
     }
 
+    function parseDeliveredOrder(order) {
+      const rawText = order?.status === 'delivered'
+        ? normalizeInventoryText(order.deliveredPayload || order.deliveryNote)
+        : '';
+      const parsed = window.OlafDeliveryPayload?.parse
+        ? window.OlafDeliveryPayload.parse(rawText)
+        : { rawText, structured: false, deliveries: [], accounts: [], legacyText: rawText };
+      return { rawText, parsed };
+    }
+
+    function renderDeliveryAccountSections(parsed, { orderId = '' } = {}) {
+      if (!parsed?.deliveries?.length) return '';
+      return parsed.deliveries.map((delivery, deliveryIndex) => `
+        <section class="inventory-delivery-set">
+          ${parsed.deliveries.length > 1 ? `<h4>ชุดที่ ${deliveryIndex + 1}</h4>` : ''}
+          ${delivery.accounts.map((account, accountIndex) => `
+            <article class="inventory-account-card inventory-account-${escape(String(account.platform || '').toLowerCase())}">
+              <h5>${escape(account.platform || 'ACCOUNT')}</h5>
+              ${['id', 'password'].map(field => {
+                const label = field === 'id' ? 'ID' : 'Password';
+                const value = String(account[field] || '').trim();
+                if (!value) return '';
+                return `
+                  <div class="inventory-account-field">
+                    <span>${label}</span>
+                    <code>${escape(value)}</code>
+                    <button type="button" data-copy-delivery-index="${deliveryIndex}" data-copy-account-index="${accountIndex}" data-copy-field="${field}"${orderId ? ` data-copy-order-id="${escape(orderId)}"` : ''} aria-label="คัดลอก ${escape(account.platform || 'บัญชี')} ${label}">
+                      <i data-lucide="copy"></i>
+                    </button>
+                  </div>
+                `;
+              }).join('')}
+            </article>
+          `).join('')}
+        </section>
+      `).join('');
+    }
+
+    function renderOrderDelivery(order) {
+      const { rawText, parsed } = parseDeliveredOrder(order);
+      if (!rawText) return '';
+      const accountSections = renderDeliveryAccountSections(parsed, { orderId: order.id || '' });
+      return `
+        <div class="profile-order-delivery">
+          <p>ข้อมูลสินค้าที่จัดส่ง</p>
+          ${accountSections || `<pre>${escape(rawText)}</pre>`}
+        </div>
+      `;
+    }
+
     function formatInventoryDate(value) {
       const date = new Date(value || '');
       if (Number.isNaN(date.getTime())) return '-';
@@ -2203,6 +2371,7 @@
                 <div class="order-item-price">${formatPrice(o.total)}</div>
                 <span class="status-badge ${escape(o.status)}">${orderStatusLabel(o.status)}</span>
               </div>
+              ${renderOrderDelivery(o)}
               <button class="profile-order-open" type="button" data-open-order="${escape(o.id)}">
                 <i data-lucide="arrow-up-right" style="width:15px;height:15px"></i>
                 เปิดในคลัง
@@ -2246,7 +2415,15 @@
       const rows = (orders || [])
         .filter(order => !['cancelled', 'expired'].includes(order.status))
         .flatMap(order => {
-          const deliveredText = normalizeInventoryText(order.deliveredPayload || order.deliveryNote);
+          const rawDeliveredText = order.status === 'delivered'
+            ? normalizeInventoryText(order.deliveredPayload || order.deliveryNote)
+            : '';
+          const parsedDelivery = window.OlafDeliveryPayload?.parse
+            ? window.OlafDeliveryPayload.parse(rawDeliveredText)
+            : { rawText: rawDeliveredText, structured: false, deliveries: [], accounts: [], legacyText: rawDeliveredText };
+          const deliveredText = parsedDelivery.accounts?.length && window.OlafDeliveryPayload?.formatAll
+            ? window.OlafDeliveryPayload.formatAll(parsedDelivery)
+            : rawDeliveredText;
           const items = Array.isArray(order.items) && order.items.length
             ? order.items
             : [{
@@ -2291,8 +2468,9 @@
               platform: inventoryPlatformLabel(category),
               typeLabel: inventoryTypeLabel(category, product, item),
               deliveryText,
+              deliveryPayload: parsedDelivery,
               preview: inventoryPreview(deliveryText) || fallbackText,
-              primaryCopy: extractPrimaryCopy(deliveredText),
+              primaryCopy: parsedDelivery.accounts?.[0]?.id || extractPrimaryCopy(deliveredText),
               hasDetail
             };
           });
@@ -2475,7 +2653,20 @@
       document.getElementById('inventory-modal-order').textContent = `Order #${row.orderNumber || '-'}`;
       document.getElementById('inventory-modal-status').textContent = row.statusLabel || '-';
       document.getElementById('inventory-modal-date').textContent = formatInventoryDate(row.createdAt);
-      document.getElementById('inventory-modal-note').textContent = row.deliveryText || 'รอข้อมูลจัดส่งจากแอดมิน';
+      const deliveryNote = document.getElementById('inventory-modal-note');
+      const accountList = document.getElementById('inventory-account-list');
+      const accountHtml = row.hasDetail ? renderDeliveryAccountSections(row.deliveryPayload) : '';
+      if (accountHtml) {
+        accountList.innerHTML = accountHtml;
+        accountList.hidden = false;
+        deliveryNote.hidden = true;
+        deliveryNote.textContent = '';
+      } else {
+        accountList.innerHTML = '';
+        accountList.hidden = true;
+        deliveryNote.hidden = false;
+        deliveryNote.textContent = row.deliveryText || 'รอข้อมูลจัดส่งจากแอดมิน';
+      }
       document.getElementById('inventory-modal-footnote').textContent = row.hasDetail
         ? 'แนะนำให้คัดลอกหรือเก็บข้อมูลสินค้าไว้ในที่ปลอดภัย'
         : 'เมื่อแอดมินจัดส่งข้อมูลแล้ว ปุ่มคัดลอกจะใช้งานได้ทันที';
@@ -3075,6 +3266,30 @@
         if (detailTrigger) {
           const row = profileState.inventoryLookup.get(detailTrigger.getAttribute('data-inventory-detail'));
           if (row) toggleInventoryModal(true, row);
+          return;
+        }
+
+        const accountCopyTrigger = event.target.closest('[data-copy-delivery-index]');
+        if (accountCopyTrigger) {
+          const deliveryIndex = Number(accountCopyTrigger.getAttribute('data-copy-delivery-index'));
+          const accountIndex = Number(accountCopyTrigger.getAttribute('data-copy-account-index'));
+          const field = accountCopyTrigger.getAttribute('data-copy-field');
+          const orderId = accountCopyTrigger.getAttribute('data-copy-order-id');
+          const sourcePayload = orderId
+            ? parseDeliveredOrder(profileState.orders.find(order => order.id === orderId)).parsed
+            : profileState.activeInventory?.deliveryPayload;
+          const account = sourcePayload?.deliveries?.[deliveryIndex]?.accounts?.[accountIndex];
+          const value = window.OlafDeliveryPayload?.fieldValue?.(account, field) || '';
+          if (!value) {
+            showToast('ไม่พบข้อมูลที่ต้องการคัดลอก', 'error');
+            return;
+          }
+          try {
+            await copyTextToClipboard(value);
+            showToast(field === 'password' ? 'คัดลอกรหัสผ่านแล้ว' : 'คัดลอก ID แล้ว');
+          } catch (copyError) {
+            showToast(copyError.message || 'คัดลอกไม่สำเร็จ', 'error');
+          }
           return;
         }
 

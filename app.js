@@ -1798,6 +1798,7 @@ function renderFeatureCard(product) {
 function renderProductCard(product) {
   const stock = getStockState(product.stock);
   const discount = getDiscount(product);
+  const publisher = String(product.publisher || "").trim();
   const tags = getDisplayTags(product, 4)
     .map((tag) => `<span class="tag">${escapeHtml(tag)}</span>`)
     .join("");
@@ -1815,7 +1816,7 @@ function renderProductCard(product) {
         </div>
         <div>
           <h3>${escapeHtml(product.name)}</h3>
-          <p class="publisher">${escapeHtml(product.publisher)}</p>
+          <p class="publisher" title="${escapeHtml(publisher)}" aria-label="Publisher: ${escapeHtml(publisher)}" tabindex="0">${escapeHtml(publisher)}</p>
         </div>
         <div class="tags">${tags}</div>
         <div class="price-row">

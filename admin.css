@@ -1462,3 +1462,88 @@ body {
     min-width: 680px;
   }
 }
+
+/* Structured Steam Offline delivery payload */
+.admin-delivery-preview,
+.admin-delivery-set {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+}
+
+.admin-delivery-preview {
+  padding: 12px;
+  border: 1px solid rgba(71, 100, 145, 0.5);
+  border-radius: 8px;
+  background: #071022;
+}
+
+.admin-delivery-set h4 {
+  margin: 0;
+  color: #a9b8cf;
+  font-size: 0.78rem;
+}
+
+.admin-account-card {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid #263854;
+  border-left: 3px solid #3b82f6;
+  border-radius: 8px;
+  background: #091427;
+}
+
+.admin-account-ea {
+  border-left-color: #f97316;
+}
+
+.admin-account-ubisoft {
+  border-left-color: #8b5cf6;
+}
+
+.admin-account-card h5 {
+  margin: 0;
+  padding: 9px 11px;
+  border-bottom: 1px solid #1d304c;
+  color: #eef5ff;
+  font-size: 0.76rem;
+}
+
+.admin-account-field {
+  display: grid;
+  grid-template-columns: 72px minmax(0, 1fr) 34px;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding: 8px 10px;
+}
+
+.admin-account-field + .admin-account-field {
+  border-top: 1px solid #172641;
+}
+
+.admin-account-field span {
+  color: #8493ad;
+  font-size: 0.7rem;
+}
+
+.admin-account-field code {
+  min-width: 0;
+  overflow-wrap: anywhere;
+  color: #e2e8f0;
+  font-size: 0.76rem;
+  white-space: normal;
+}
+
+.admin-account-field .mini-button {
+  width: 34px;
+  min-width: 34px;
+  height: 34px;
+  padding: 0;
+}
+
+@media (max-width: 560px) {
+  .admin-account-field {
+    grid-template-columns: 56px minmax(0, 1fr) 34px;
+  }
+}

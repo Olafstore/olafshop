@@ -1585,9 +1585,10 @@ function renderProduct() {
 
             <!-- Platform badges -->
             <div class="pd-badges">
-              <span class="pd-badge ${badgeClass}">${badgeLabel}</span>
-              ${showOfflineSteamBadge ? `<span class="pd-badge pd-badge-steam">STEAM</span>` : ""}
-              ${showSecondaryBadge ? `<span class="pd-badge ${hasPremiumBadge ? "pd-badge-premium" : "pd-badge-steam"}">${escapeHtml(labelText)}</span>` : ""}
+              ${showOfflineSteamBadge
+                ? `<span class="pd-badge pd-badge-steam">STEAM</span><span class="pd-badge pd-badge-offline">OFFLINE</span>`
+                : `<span class="pd-badge ${badgeClass}">${badgeLabel}</span>`}
+              ${!showOfflineSteamBadge && showSecondaryBadge ? `<span class="pd-badge ${hasPremiumBadge ? "pd-badge-premium" : "pd-badge-steam"}">${escapeHtml(labelText)}</span>` : ""}
             </div>
 
             <!-- Title & publisher -->

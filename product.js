@@ -2203,6 +2203,10 @@ async function uploadCurrentQrSlip(file) {
     return;
   }
 
+  const qrDialog = $("#qr-dialog");
+  if (qrDialog?.open) qrDialog.close();
+  window.OlafOrderActivity?.showSlipCheck();
+
   const button = $("[data-qr-upload-slip-btn]");
   const originalHtml = button?.innerHTML || "";
   if (button) {
@@ -2213,7 +2217,6 @@ async function uploadCurrentQrSlip(file) {
 
   try {
     if (!window.OlafOrders?.uploadPaymentSlip) throw new Error("Slip upload client is not ready");
-    window.OlafOrderActivity?.showSlipCheck();
     const verifiedOrder = await window.OlafOrders.uploadPaymentSlip({ orderId: order.id, file });
     if (verifiedOrder?.verificationPending) {
       window.OlafOrderActivity?.error(

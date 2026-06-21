@@ -21,9 +21,9 @@
   <script src="platform-store.js?v=20260619-profile-update-fix" defer></script>
   <script src="image-performance.js?v=20260607-performance" defer></script>
 <script src="delivery-payload.js?v=20260620-phase1-12-final" defer></script>
-  <script src="site-navigation.js?v=20260621-kanit-responsive" defer></script>
+  <script src="site-navigation.js?v=20260621-search-polish" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-<link rel="stylesheet" href="styles.css?v=20260621-order-animation" />
+<link rel="stylesheet" href="styles.css?v=20260621-search-polish" />
   <style>
     body {
       padding-top: 0;
@@ -1896,8 +1896,11 @@
       }
     }
 
-    .inventory-modal-copy .inventory-copy-button,
-    .inventory-modal-copy .inventory-copy-button.secondary {
+    .inventory-modal-copy {
+      justify-content: flex-start;
+    }
+
+    .inventory-modal-copy .inventory-copy-button {
       flex: 0 1 150px;
       min-width: 132px;
       min-height: 40px;
@@ -1911,18 +1914,38 @@
       text-decoration: none;
     }
 
-    .inventory-modal-copy .inventory-copy-button:hover,
-    .inventory-modal-copy .inventory-copy-button.secondary:hover {
+    .inventory-modal-copy .inventory-copy-button:hover {
       border-color: rgba(245, 158, 11, 0.55);
       background: rgba(245, 158, 11, 0.16);
       color: #fde68a;
       transform: translateY(-1px);
     }
 
+    .inventory-modal-copy .inventory-copy-button.secondary {
+      flex: 0 1 150px;
+      min-width: 132px;
+      min-height: 40px;
+      border: 1px solid rgba(88, 101, 242, 0.56);
+      border-radius: 8px;
+      background: rgba(88, 101, 242, 0.16);
+      color: #c7d2fe;
+      box-shadow: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .inventory-modal-copy .inventory-copy-button.secondary:hover {
+      border-color: rgba(88, 101, 242, 0.82);
+      background: rgba(88, 101, 242, 0.28);
+      color: #eef2ff;
+      transform: translateY(-1px);
+    }
+
     @media (max-width: 560px) {
       .inventory-modal-copy {
         flex-direction: row;
-        justify-content: center;
+        justify-content: flex-start;
       }
 
       .inventory-modal-copy .inventory-copy-button,

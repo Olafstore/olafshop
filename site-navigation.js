@@ -151,6 +151,166 @@
     });
   }
 
+  let searchableProductsPromise = null;
+  let universalSearchRequest = 0;
+
+  function escapeHtml(value = "") {
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function normalizedSearchValue(value = "") {
+    return cleanDisplayText(value).trim().toLowerCase();
+  }
+
+  function productSearchHaystack(product = {}) {
+    return [
+      product.name,
+      product.publisher,
+      product.id,
+      product.category,
+      product.label,
+      ...(Array.isArray(product.tags) ? product.tags : [])
+    ]
+      .map(normalizedSearchValue)
+      .filter(Boolean)
+      .join(" ");
+  }
+
+  function productImage(product = {}) {
+    return product.image || product.heroImage || product.image_url || product.hero_image || "";
+  }
+
+  function productPrice(product = {}) {
+    const amount = Number(product.price);
+    if (!Number.isFinite(amount)) return "";
+    return new Intl.NumberFormat("th-TH", {
+      style: "currency",
+      currency: "THB",
+      maximumFractionDigits: amount % 1 ? 2 : 0
+    }).format(amount);
+  }
+
+  async function loadSearchableProducts() {
+    if (searchableProductsPromise) return searchableProductsPromise;
+
+    searchableProductsPromise = (async () => {
+      try {
+        if (window.OlafProducts?.fetchActiveProducts) {
+          const products = await window.OlafProducts.fetchActiveProducts();
+          if (Array.isArray(products) && products.length) return products;
+        }
+      } catch (error) {
+        console.warn("Topbar search is using the local product catalog.", error);
+      }
+
+      try {
+        const response = await fetch("api/products.json", { cache: "no-store" });
+        if (!response.ok) return [];
+        const payload = await response.json();
+        return Array.isArray(payload) ? payload : Array.isArray(payload?.products) ? payload.products : [];
+      } catch (error) {
+        console.warn("Unable to load products for topbar search.", error);
+        return [];
+      }
+    })();
+
+    return searchableProductsPromise;
+  }
+
+  function findSearchMatches(products, query, limit = 6) {
+    const keyword = normalizedSearchValue(query);
+    if (!keyword) return [];
+
+    return products
+      .map((product) => {
+        const name = normalizedSearchValue(product?.name);
+        const haystack = productSearchHaystack(product);
+        if (!haystack.includes(keyword)) return null;
+        return {
+          product,
+          score:
+            (name === keyword ? 100 : 0) +
+            (name.startsWith(keyword) ? 40 : 0) +
+            (name.includes(keyword) ? 20 : 0) +
+            Number(product?.sold || 0) / 10000
+        };
+      })
+      .filter(Boolean)
+      .sort((left, right) => right.score - left.score)
+      .slice(0, limit)
+      .map((entry) => entry.product);
+  }
+
+  function syncIndexCatalogSearch(query, updateUrl = false) {
+    if (currentFile() !== "index.html") return false;
+    const catalogInput = document.querySelector("#search-input");
+    if (!catalogInput) return false;
+
+    if (catalogInput.value !== query) catalogInput.value = query;
+    catalogInput.dispatchEvent(new Event("input", { bubbles: true }));
+
+    if (updateUrl) {
+      const url = new URL(window.location.href);
+      if (query) url.searchParams.set("search", query);
+      else url.searchParams.delete("search");
+      url.hash = "catalog";
+      window.history.replaceState({}, "", `${url.pathname}${url.search}${url.hash}`);
+    }
+    return true;
+  }
+
+  function hideUniversalSearchResults(wrapper) {
+    universalSearchRequest += 1;
+    const panel = wrapper.querySelector(".site-global-search-results");
+    if (!panel) return;
+    panel.hidden = true;
+    panel.innerHTML = "";
+  }
+
+  async function renderUniversalSearchResults(wrapper, query) {
+    const panel = wrapper.querySelector(".site-global-search-results");
+    const keyword = query.trim();
+    if (!panel || !keyword) {
+      hideUniversalSearchResults(wrapper);
+      return;
+    }
+
+    const requestId = ++universalSearchRequest;
+    const products = await loadSearchableProducts();
+    if (requestId !== universalSearchRequest) return;
+
+    const matches = findSearchMatches(products, keyword);
+    if (!matches.length) {
+      panel.innerHTML = `<div class="search-suggestions-empty">ไม่พบสินค้าที่ตรงกับ “${escapeHtml(keyword)}”</div>`;
+      panel.hidden = false;
+      return;
+    }
+
+    panel.innerHTML = matches
+      .map((product) => {
+        const image = productImage(product);
+        const name = cleanDisplayText(product?.name || "สินค้า");
+        const meta = cleanDisplayText(product?.publisher || product?.category || "");
+        return `
+          <a class="search-suggestion-item" href="product.html?id=${encodeURIComponent(product.id)}" role="option">
+            ${image ? `<img class="suggestion-img" src="${escapeHtml(image)}" alt="" loading="lazy" />` : ""}
+            <span class="suggestion-info">
+              <span class="suggestion-name">${escapeHtml(name)}</span>
+              <span class="suggestion-meta">${escapeHtml(meta)}</span>
+            </span>
+            <strong class="suggestion-price">${escapeHtml(productPrice(product))}</strong>
+          </a>
+        `;
+      })
+      .join("");
+    panel.hidden = false;
+  }
+
   function setupUniversalSearch(header) {
     if (header.querySelector(".topbar-search-wrap, .site-global-search")) return;
     const actions = header.querySelector(".topbar-actions");
@@ -163,12 +323,45 @@
       <button class="site-global-search-toggle" type="button" aria-label="เปิดช่องค้นหาสินค้า">
         <i data-lucide="search"></i>
       </button>
-      <input type="search" placeholder="ค้นหาเกม..." aria-label="ค้นหาสินค้า" />
+      <input type="search" placeholder="ค้นหาเกม..." aria-label="ค้นหาสินค้า" aria-autocomplete="list" aria-controls="site-global-search-results" />
+      <div class="search-suggestions site-global-search-results" id="site-global-search-results" hidden role="listbox"></div>
     `;
+    const input = wrapper.querySelector('input[type="search"]');
+    const toggle = wrapper.querySelector(".site-global-search-toggle");
+
+    input?.addEventListener("input", () => {
+      const query = input.value.trim();
+      syncIndexCatalogSearch(query);
+      renderUniversalSearchResults(wrapper, query);
+    });
+    input?.addEventListener("focus", () => {
+      renderUniversalSearchResults(wrapper, input.value);
+    });
+    toggle?.addEventListener("click", () => {
+      if (window.innerWidth <= 1180) return;
+      if (input?.value.trim()) wrapper.requestSubmit();
+      else input?.focus();
+    });
     wrapper.addEventListener("submit", (event) => {
       event.preventDefault();
-      const query = wrapper.querySelector("input")?.value.trim() || "";
-      if (query) window.location.href = `index.html?search=${encodeURIComponent(query)}#catalog`;
+      const query = input?.value.trim() || "";
+      if (!query) {
+        hideUniversalSearchResults(wrapper);
+        return;
+      }
+
+      if (syncIndexCatalogSearch(query, true)) {
+        hideUniversalSearchResults(wrapper);
+        document.querySelector("#catalog")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+      window.location.href = `index.html?search=${encodeURIComponent(query)}#catalog`;
+    });
+    document.addEventListener("click", (event) => {
+      if (!wrapper.contains(event.target)) hideUniversalSearchResults(wrapper);
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") hideUniversalSearchResults(wrapper);
     });
     actions.insertBefore(wrapper, actions.firstChild);
   }

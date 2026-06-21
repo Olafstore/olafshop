@@ -2140,11 +2140,31 @@ function bindPlatformSlipForm(order) {
 
     try {
       if (!window.OlafOrders?.uploadPaymentSlip) throw new Error("Slip upload client is not ready");
+      window.OlafOrderActivity?.showSlipCheck();
       const verifiedOrder = await window.OlafOrders.uploadPaymentSlip({ orderId: order.id, file });
+      if (verifiedOrder?.verificationPending) {
+        window.OlafOrderActivity?.error(
+          "กำลังรอการตรวจสอบ",
+          "ระบบตรวจสลิปขัดข้องชั่วคราว สลิปถูกเก็บไว้ให้แอดมินตรวจสอบ"
+        );
+      } else {
+        window.OlafOrderActivity?.success(
+          "ตรวจสลิปเรียบร้อย",
+          verifiedOrder?.status === "delivered"
+            ? "ยืนยันออเดอร์และจัดส่งสินค้า Offline แล้ว"
+            : "ยืนยันการชำระเงินแล้ว กำลังอัปเดตประวัติคำสั่งซื้อ",
+          700
+        );
+      }
       showToast(paymentSlipSuccessMessage(verifiedOrder), "payment", 5500);
+      await new Promise((resolve) => window.setTimeout(resolve, 760));
       window.location.href = `profile.html?order=${encodeURIComponent(order.id)}#inventory`;
     } catch (error) {
       console.error("Payment slip upload failed", error);
+      window.OlafOrderActivity?.error(
+        "ตรวจสลิปไม่สำเร็จ",
+        paymentSlipErrorMessage(error)
+      );
       showPaymentSlipError(error);
       if (error?.orderCancelled) {
         $("#platform-dialog")?.close();
@@ -2193,11 +2213,31 @@ async function uploadCurrentQrSlip(file) {
 
   try {
     if (!window.OlafOrders?.uploadPaymentSlip) throw new Error("Slip upload client is not ready");
+    window.OlafOrderActivity?.showSlipCheck();
     const verifiedOrder = await window.OlafOrders.uploadPaymentSlip({ orderId: order.id, file });
+    if (verifiedOrder?.verificationPending) {
+      window.OlafOrderActivity?.error(
+        "กำลังรอการตรวจสอบ",
+        "ระบบตรวจสลิปขัดข้องชั่วคราว สลิปถูกเก็บไว้ให้แอดมินตรวจสอบ"
+      );
+    } else {
+      window.OlafOrderActivity?.success(
+        "ตรวจสลิปเรียบร้อย",
+        verifiedOrder?.status === "delivered"
+          ? "ยืนยันออเดอร์และจัดส่งสินค้า Offline แล้ว"
+          : "ยืนยันการชำระเงินแล้ว กำลังอัปเดตประวัติคำสั่งซื้อ",
+        700
+      );
+    }
     showToast(paymentSlipSuccessMessage(verifiedOrder), "payment", 5500);
+    await new Promise((resolve) => window.setTimeout(resolve, 760));
     window.location.href = `profile.html?order=${encodeURIComponent(order.id)}#inventory`;
   } catch (error) {
     console.error("QR slip upload failed", error);
+    window.OlafOrderActivity?.error(
+      "ตรวจสลิปไม่สำเร็จ",
+      paymentSlipErrorMessage(error)
+    );
     showPaymentSlipError(error);
     if (error?.orderCancelled) {
       currentQrOrder = null;
@@ -2275,6 +2315,7 @@ async function cancelCurrentQrOrder() {
 
   try {
     if (!window.OlafOrders?.cancelMyOrder) throw new Error("Order cancel client is not ready");
+    window.OlafOrderActivity?.showCancel();
     await window.OlafOrders.cancelMyOrder(order.id);
     currentQrOrder = null;
     $("#qr-dialog")?.close();
@@ -2282,9 +2323,17 @@ async function cancelCurrentQrOrder() {
     if (freshProduct) {
       renderProduct();
     }
+    window.OlafOrderActivity?.success(
+      "ยกเลิกออเดอร์แล้ว",
+      "คืนสต็อกและอัปเดตคำสั่งซื้อเรียบร้อยแล้ว"
+    );
     showToast("ยกเลิกรายการแล้ว", "info", 4000);
   } catch (error) {
     console.error("Cancel order failed", error);
+    window.OlafOrderActivity?.error(
+      "ยกเลิกออเดอร์ไม่สำเร็จ",
+      "กรุณาลองใหม่อีกครั้ง"
+    );
     showToast("ยกเลิกรายการไม่สำเร็จ กรุณาลองใหม่", "error", 5000);
   } finally {
     if (button) {

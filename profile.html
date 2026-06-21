@@ -17,12 +17,13 @@
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
   <script src="slip-qr-scanner.js?v=20260621-slip-verify-v2" defer></script>
   <script src="supabase-client.js?v=20260621-slip-verify-v2" defer></script> 
+  <script src="order-action-popup.js?v=20260621-order-animation" defer></script>
   <script src="platform-store.js?v=20260619-profile-update-fix" defer></script>
   <script src="image-performance.js?v=20260607-performance" defer></script>
 <script src="delivery-payload.js?v=20260620-phase1-12-final" defer></script>
   <script src="site-navigation.js?v=20260621-kanit-responsive" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-<link rel="stylesheet" href="styles.css?v=20260621-slip-verify-v2" />
+<link rel="stylesheet" href="styles.css?v=20260621-order-animation" />
   <style>
     body {
       padding-top: 0;
@@ -977,6 +978,7 @@
     .inventory-modal-copy {
       display: flex;
       flex-wrap: wrap;
+      justify-content: center;
       gap: 10px;
       margin: 22px 0 16px;
     }
@@ -1893,6 +1895,43 @@
         min-width: 140px;
       }
     }
+
+    .inventory-modal-copy .inventory-copy-button,
+    .inventory-modal-copy .inventory-copy-button.secondary {
+      flex: 0 1 150px;
+      min-width: 132px;
+      min-height: 40px;
+      border: 1px solid rgba(245, 158, 11, 0.32);
+      border-radius: 8px;
+      background: rgba(245, 158, 11, 0.09);
+      color: #fbbf24;
+      box-shadow: none;
+      font-size: 0.8rem;
+      font-weight: 600;
+      text-decoration: none;
+    }
+
+    .inventory-modal-copy .inventory-copy-button:hover,
+    .inventory-modal-copy .inventory-copy-button.secondary:hover {
+      border-color: rgba(245, 158, 11, 0.55);
+      background: rgba(245, 158, 11, 0.16);
+      color: #fde68a;
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 560px) {
+      .inventory-modal-copy {
+        flex-direction: row;
+        justify-content: center;
+      }
+
+      .inventory-modal-copy .inventory-copy-button,
+      .inventory-modal-copy .inventory-copy-button.secondary {
+        flex: 1 1 130px;
+        width: auto;
+        max-width: 180px;
+      }
+    }
   </style>
 </head>
 
@@ -2227,7 +2266,7 @@
       <div class="inventory-modal-copy">
         <a class="inventory-copy-button" id="inventory-2fa-link" href="https://www.facebook.com/byOlafshop"
           target="_blank" rel="noopener noreferrer">
-          <i data-lucide="shield-keyhole" style="width:16px;height:16px"></i>
+          <i data-lucide="mail" style="width:16px;height:16px"></i>
           2FA
         </a>
         <a class="inventory-copy-button secondary" id="inventory-discord-link"
@@ -3374,14 +3413,29 @@
         const cancelOrder = event.target.closest('[data-profile-cancel-order]');
         if (cancelOrder) {
           const orderId = cancelOrder.getAttribute('data-profile-cancel-order');
-          if (!window.confirm('ยืนยันยกเลิกคำสั่งซื้อนี้หรือไม่?')) return;
+          const confirmed = window.OlafOrderActivity?.confirmCancel
+            ? await window.OlafOrderActivity.confirmCancel({
+                title: 'ยกเลิกคำสั่งซื้อ?',
+                message: 'ยืนยันการยกเลิกออเดอร์ ระบบจะคืนสต็อกที่จองไว้และอัปเดตประวัติให้ทันที'
+              })
+            : window.confirm('ยืนยันยกเลิกคำสั่งซื้อนี้หรือไม่?');
+          if (!confirmed) return;
           cancelOrder.disabled = true;
           try {
+            window.OlafOrderActivity?.showCancel();
             await window.OlafOrders.cancelMyOrder(orderId);
             toggleInventoryModal(false);
+            window.OlafOrderActivity?.success(
+              'ยกเลิกออเดอร์แล้ว',
+              'ระบบคืนสต็อกและอัปเดตประวัติคำสั่งซื้อเรียบร้อยแล้ว'
+            );
             showToast('ยกเลิกคำสั่งซื้อเรียบร้อยแล้ว');
             await refreshProfileOrders({ quiet: true, preserveModal: false });
           } catch (error) {
+            window.OlafOrderActivity?.error(
+              'ยกเลิกออเดอร์ไม่สำเร็จ',
+              error.message || 'กรุณาลองใหม่อีกครั้ง'
+            );
             showToast(error.message || 'ยกเลิกคำสั่งซื้อไม่สำเร็จ', 'error');
           } finally {
             cancelOrder.disabled = false;
@@ -3450,16 +3504,33 @@
           lucide.createIcons();
         }
         try {
+          window.OlafOrderActivity?.showSlipCheck();
           const verifiedOrder = await window.OlafOrders.uploadPaymentSlip({ orderId, file });
           if (verifiedOrder?.verificationPending) {
+            window.OlafOrderActivity?.error(
+              'กำลังรอการตรวจสอบ',
+              'ระบบตรวจสลิปขัดข้องชั่วคราว สลิปถูกเก็บไว้ให้แอดมินตรวจสอบ'
+            );
             showToast('แนบสลิปแล้ว แต่ API ขัดข้องชั่วคราว แอดมินสามารถตรวจสอบต่อได้');
           } else if (verifiedOrder?.status === 'delivered') {
+            window.OlafOrderActivity?.success(
+              'ตรวจสลิปเรียบร้อย',
+              'ยืนยันออเดอร์และจัดส่งสินค้า Offline แล้ว'
+            );
             showToast('ตรวจสลิปแล้ว และจัดส่งบัญชี Offline เรียบร้อย');
           } else {
+            window.OlafOrderActivity?.success(
+              'ตรวจสลิปเรียบร้อย',
+              'ยืนยันการชำระเงินและอัปเดตออเดอร์แล้ว'
+            );
             showToast('ตรวจสลิปแล้ว รอแอดมินจัดส่งสินค้า');
           }
           await refreshProfileOrders({ quiet: true });
         } catch (error) {
+          window.OlafOrderActivity?.error(
+            'ตรวจสลิปไม่สำเร็จ',
+            slipUploadErrorMessage(error)
+          );
           showSlipUploadError(error);
           if (error?.orderCancelled) {
             await refreshProfileOrders({ quiet: true });

@@ -193,7 +193,7 @@ function productImageForCheckout(product) {
   return "";
 }
 
-function showToast(message, type = "success", duration = 3500) {
+function showToast(message, type = "success", duration = 3500, action = null) {
   const container = document.querySelector("#toast-container");
   if (!container) return;
   const iconMap = {
@@ -206,7 +206,10 @@ function showToast(message, type = "success", duration = 3500) {
   const icon = iconMap[type] || "check-circle";
   const toast = document.createElement("div");
   toast.className = `toast toast-${type}`;
-  toast.innerHTML = `<i data-lucide="${icon}"></i><span>${escapeHtml(message)}</span>`;
+  const actionHtml = action?.href && action?.label
+    ? `<a class="toast-action" href="${escapeHtml(action.href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(action.label)}</a>`
+    : "";
+  toast.innerHTML = `<i data-lucide="${icon}"></i><span>${escapeHtml(message)}</span>${actionHtml}`;
   container.appendChild(toast);
   createIconSet();
   setTimeout(() => {
@@ -2060,6 +2063,58 @@ function showPaymentResult(order) {
   hydrateImages();
 }
 
+function paymentSlipErrorMessage(error) {
+  const code = String(error?.code || error?.message || "");
+  if (code === "PAYMENT_AMOUNT_INSUFFICIENT") {
+    return error?.orderCancelled
+      ? "ออเดอร์ถูกยกเลิกและคืนสต็อกแล้ว จำนวนเงินไม่เพียงพอ โปรดกดปุ่มติดต่อ"
+      : "จำนวนเงินไม่เพียงพอ โปรดกดปุ่มติดต่อ";
+  }
+  const messages = {
+    SLIP_QR_SCANNER_NOT_READY: "ระบบอ่าน QR ยังโหลดไม่เสร็จ กรุณารอสักครู่แล้วลองใหม่",
+    SLIP_QR_NOT_FOUND: "ไม่พบ QR ในรูป กรุณาใช้ภาพสลิปต้นฉบับที่เห็น QR ชัดเจน",
+    INVALID_SLIP_QR: "QR ในรูปไม่ใช่ QR ตรวจสอบสลิปที่รองรับ",
+    PAYMENT_METHOD_MISMATCH: "สลิปไม่ตรงกับช่องทางชำระเงินที่เลือก",
+    PAYMENT_AMOUNT_MISMATCH: "ยอดเงินในสลิปไม่ตรงกับยอดออเดอร์",
+    PAYMENT_TIME_MISMATCH: "เวลาชำระเงินในสลิปไม่ตรงกับช่วงเวลาของออเดอร์",
+    RECEIVER_MISMATCH: "ข้อมูลผู้รับเงินในสลิปไม่ตรงกับบัญชีของร้าน",
+    DUPLICATE_SLIP: "สลิปนี้ถูกใช้กับออเดอร์อื่นแล้ว",
+    RDCW_QUOTA_EXCEEDED: "โควต้าตรวจสลิปหมดหรือแพ็กเกจหมดอายุ กรุณาติดต่อแอดมิน",
+    RDCW_IP_NOT_ALLOWED: "ระบบตรวจสลิปยังไม่ได้อนุญาต IP ของเซิร์ฟเวอร์",
+    RDCW_TEMPORARY_ERROR: "ระบบตรวจสลิปขัดข้องชั่วคราว สลิปถูกเก็บไว้ให้แอดมินตรวจสอบ",
+    PAYMENT_VERIFY_API_UNREACHABLE: "เชื่อมต่อระบบตรวจสลิปไม่ได้ชั่วคราว สลิปถูกเก็บไว้ให้แอดมินตรวจสอบ"
+  };
+  return messages[code] || error?.message || "ตรวจสอบสลิปไม่สำเร็จ กรุณาลองใหม่";
+}
+
+function showPaymentSlipError(error) {
+  const isUnderpaid = String(error?.code || "") === "PAYMENT_AMOUNT_INSUFFICIENT";
+  showToast(
+    paymentSlipErrorMessage(error),
+    "error",
+    isUnderpaid ? 15000 : 6000,
+    isUnderpaid
+      ? {
+          label: "ติดต่อ",
+          href: OFFLINE_SUPPORT_PAGE_URL
+        }
+      : null
+  );
+}
+
+function paymentSlipSuccessMessage(order) {
+  if (order?.verificationPending) {
+    return "แนบสลิปแล้ว แต่ API ขัดข้องชั่วคราว แอดมินสามารถตรวจสอบต่อได้";
+  }
+  if (order?.status === "delivered") {
+    return "ตรวจสลิปแล้ว และจัดส่งบัญชี Offline เรียบร้อย";
+  }
+  if (order?.paymentStatus === "verified" || order?.status === "confirmed") {
+    return "ตรวจสลิปแล้ว รอแอดมินจัดส่งสินค้า";
+  }
+  return "แนบสลิปแล้ว กำลังตรวจสอบการชำระเงิน";
+}
+
 function bindPlatformSlipForm(order) {
   $("#platform-slip-file")?.addEventListener("change", (event) => {
     const fileName = event.target.files?.[0]?.name || "แนบสลิปการชำระเงิน";
@@ -2079,18 +2134,22 @@ function bindPlatformSlipForm(order) {
     const originalHtml = button?.innerHTML || "";
     if (button) {
       button.disabled = true;
-      button.innerHTML = '<i data-lucide="loader-circle"></i> กำลังอัปโหลด...';
+      button.innerHTML = '<i data-lucide="loader-circle"></i> กำลังตรวจสลิป...';
       createIconSet();
     }
 
     try {
       if (!window.OlafOrders?.uploadPaymentSlip) throw new Error("Slip upload client is not ready");
-      await window.OlafOrders.uploadPaymentSlip({ orderId: order.id, file });
-      showToast("แนบสลิปเรียบร้อยแล้ว กำลังรอแอดมินตรวจสอบ", "payment", 5000);
+      const verifiedOrder = await window.OlafOrders.uploadPaymentSlip({ orderId: order.id, file });
+      showToast(paymentSlipSuccessMessage(verifiedOrder), "payment", 5500);
       window.location.href = `profile.html?order=${encodeURIComponent(order.id)}#inventory`;
     } catch (error) {
       console.error("Payment slip upload failed", error);
-      showToast("อัปโหลดสลิปไม่สำเร็จ กรุณาลองใหม่", "error", 5500);
+      showPaymentSlipError(error);
+      if (error?.orderCancelled) {
+        $("#platform-dialog")?.close();
+        await refreshCurrentProduct().catch(() => null);
+      }
     } finally {
       if (button) {
         button.disabled = false;
@@ -2128,18 +2187,23 @@ async function uploadCurrentQrSlip(file) {
   const originalHtml = button?.innerHTML || "";
   if (button) {
     button.disabled = true;
-    button.innerHTML = '<i data-lucide="loader-circle"></i><span>กำลังอัปโหลดสลิป...</span>';
+    button.innerHTML = '<i data-lucide="loader-circle"></i><span>กำลังตรวจสลิป...</span>';
     createIconSet();
   }
 
   try {
     if (!window.OlafOrders?.uploadPaymentSlip) throw new Error("Slip upload client is not ready");
-    await window.OlafOrders.uploadPaymentSlip({ orderId: order.id, file });
-    showToast("แนบสลิปเรียบร้อยแล้ว รอแอดมินตรวจสอบ", "payment", 5000);
+    const verifiedOrder = await window.OlafOrders.uploadPaymentSlip({ orderId: order.id, file });
+    showToast(paymentSlipSuccessMessage(verifiedOrder), "payment", 5500);
     window.location.href = `profile.html?order=${encodeURIComponent(order.id)}#inventory`;
   } catch (error) {
     console.error("QR slip upload failed", error);
-    showToast("อัปโหลดสลิปไม่สำเร็จ กรุณาลองใหม่", "error", 5500);
+    showPaymentSlipError(error);
+    if (error?.orderCancelled) {
+      currentQrOrder = null;
+      $("#qr-dialog")?.close();
+      await refreshCurrentProduct().catch(() => null);
+    }
   } finally {
     if (button) {
       button.disabled = false;

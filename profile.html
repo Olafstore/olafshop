@@ -14,13 +14,15 @@
     rel="stylesheet" />
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-  <script src="supabase-client.js?v=20260619-profile-update-fix" defer></script> 
+  <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
+  <script src="slip-qr-scanner.js?v=20260621-slip-verify-v2" defer></script>
+  <script src="supabase-client.js?v=20260621-slip-verify-v2" defer></script> 
   <script src="platform-store.js?v=20260619-profile-update-fix" defer></script>
   <script src="image-performance.js?v=20260607-performance" defer></script>
 <script src="delivery-payload.js?v=20260620-phase1-12-final" defer></script>
   <script src="site-navigation.js?v=20260621-kanit-responsive" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-<link rel="stylesheet" href="styles.css?v=20260621-kanit-responsive" />
+<link rel="stylesheet" href="styles.css?v=20260621-slip-verify-v2" />
   <style>
     body {
       padding-top: 0;
@@ -28,6 +30,11 @@
         radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 30%),
         radial-gradient(circle at left top, rgba(249, 115, 22, 0.12), transparent 28%),
         linear-gradient(180deg, #050816 0%, #06101f 42%, #02050d 100%);
+    }
+
+    .profile-page,
+    .profile-page * {
+      font-family: 'Kanit', 'Segoe UI', Tahoma, sans-serif;
     }
 
     .profile-page .topbar-search-wrap {
@@ -445,7 +452,7 @@
       font-size: 0.78rem;
       font-weight: 700;
       color: var(--brand-hover);
-      font-family: monospace;
+      font-family: 'Kanit', 'Segoe UI', Tahoma, sans-serif;
     }
 
     .order-item-products {
@@ -681,7 +688,7 @@
     .inventory-card-order {
       color: #6b7a98;
       font-size: 0.76rem;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-family: 'Kanit', 'Segoe UI', Tahoma, sans-serif;
     }
 
     .inventory-detail-button {
@@ -797,6 +804,30 @@
 
     .toast.toast-error {
       border-color: rgba(239, 68, 68, 0.4);
+    }
+
+    .toast .toast-action {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 32px;
+      padding: 5px 12px;
+      border: 1px solid rgba(96, 165, 250, 0.55);
+      border-radius: 8px;
+      background: rgba(37, 99, 235, 0.18);
+      color: #bfdbfe;
+      font: inherit;
+      font-size: 0.78rem;
+      font-weight: 600;
+      text-decoration: none;
+      white-space: nowrap;
+    }
+
+    .toast .toast-action:hover,
+    .toast .toast-action:focus-visible {
+      background: rgba(37, 99, 235, 0.34);
+      border-color: #60a5fa;
+      color: #eff6ff;
     }
 
     .toast.is-leaving {
@@ -974,6 +1005,20 @@
       color: #dbeafe;
     }
 
+    .payment-verified-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 4px 8px;
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      border-radius: 999px;
+      background: rgba(16, 185, 129, 0.1);
+      color: #34d399;
+      font-size: 0.68rem;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
     .inventory-copy-button:hover:not(:disabled) {
       transform: translateY(-1px);
       filter: brightness(1.04);
@@ -1004,7 +1049,7 @@
       margin: 0;
       white-space: pre-wrap;
       word-break: break-word;
-      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-family: 'Kanit', 'Segoe UI', Tahoma, sans-serif;
       font-size: 0.84rem;
       line-height: 1.65;
       color: #e2e8f0;
@@ -1450,7 +1495,32 @@
       overflow-wrap: anywhere;
       white-space: pre-wrap;
       color: #dbeafe;
-      font: 0.78rem/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font: 0.78rem/1.6 'Kanit', sans-serif;
+    }
+
+    .profile-order-payment-alert {
+      grid-column: 1 / -1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      min-width: 0;
+      padding: 10px 12px;
+      border: 1px solid rgba(239, 68, 68, 0.35);
+      border-radius: 9px;
+      background: rgba(127, 29, 29, 0.18);
+      color: #fecaca;
+      font-size: 0.78rem;
+    }
+
+    .profile-order-payment-alert a {
+      flex: 0 0 auto;
+      padding: 5px 11px;
+      border: 1px solid rgba(96, 165, 250, 0.55);
+      border-radius: 7px;
+      color: #bfdbfe;
+      text-decoration: none;
+      white-space: nowrap;
     }
 
     .profile-order-open {
@@ -2155,14 +2225,16 @@
       </div>
 
       <div class="inventory-modal-copy">
-        <button class="inventory-copy-button" type="button" id="inventory-copy-id" data-copy-mode="id">
-          <i data-lucide="copy" style="width:16px;height:16px"></i>
-          คัดลอกไอดี/ข้อความหลัก
-        </button>
-        <button class="inventory-copy-button secondary" type="button" id="inventory-copy-full" data-copy-mode="full">
-          <i data-lucide="clipboard-copy" style="width:16px;height:16px"></i>
-          คัดลอกข้อความทั้งหมด
-        </button>
+        <a class="inventory-copy-button" id="inventory-2fa-link" href="https://www.facebook.com/byOlafshop"
+          target="_blank" rel="noopener noreferrer">
+          <i data-lucide="shield-keyhole" style="width:16px;height:16px"></i>
+          2FA
+        </a>
+        <a class="inventory-copy-button secondary" id="inventory-discord-link"
+          href="https://discord.gg/6axb2QbDHN" target="_blank" rel="noopener noreferrer">
+          <i data-lucide="message-circle" style="width:16px;height:16px"></i>
+          DISCORD
+        </a>
       </div>
 
       <div>
@@ -2183,14 +2255,17 @@
   </div>
 
   <script>
-    function showToast(message, type = 'success') {
+    function showToast(message, type = 'success', action = null) {
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
       toast.className = `toast${type === 'error' ? ' toast-error' : ''}`;
-      toast.innerHTML = `<i data-lucide="${type === 'error' ? 'alert-circle' : 'check-circle'}" style="width:18px;height:18px"></i><span>${message}</span>`;
+      const actionHtml = action?.href && action?.label
+        ? `<a class="toast-action" href="${escape(action.href)}" target="_blank" rel="noopener noreferrer">${escape(action.label)}</a>`
+        : '';
+      toast.innerHTML = `<i data-lucide="${type === 'error' ? 'alert-circle' : 'check-circle'}" style="width:18px;height:18px"></i><span>${escape(message)}</span>${actionHtml}`;
       container.appendChild(toast);
       if (window.lucide) lucide.createIcons();
-      setTimeout(() => { toast.classList.add('is-leaving'); setTimeout(() => toast.remove(), 300); }, 3500);
+      setTimeout(() => { toast.classList.add('is-leaving'); setTimeout(() => toast.remove(), 300); }, action ? 15000 : 3500);
     }
 
     function formatPrice(v) {
@@ -2201,13 +2276,18 @@
       const map = {
         pending: 'รอการชำระเงิน',
         awaiting_payment: 'รอชำระเงิน / แนบสลิป',
-        waiting_admin: 'รอแอดมินตรวจสอบ',
-        confirmed: 'ยืนยันแล้ว รอจัดส่ง',
-        delivered: 'จัดส่งสินค้าแล้ว',
+        waiting_admin: 'กำลังตรวจสอบสลิป',
+        confirmed: 'ตรวจสลิปแล้ว · รอจัดส่ง',
+        delivered: 'ตรวจสลิปแล้ว · จัดส่งแล้ว',
         cancelled: 'ยกเลิกแล้ว',
         expired: 'หมดอายุ'
       };
       return map[status] || status || 'รอดำเนินการ';
+    }
+
+    function paymentVerifiedBadge(order) {
+      if (order?.paymentStatus !== 'verified') return '';
+      return '<span class="payment-verified-badge"><i data-lucide="badge-check"></i>ตรวจสลิปแล้ว</span>';
     }
 
     function escape(v) {
@@ -2375,8 +2455,15 @@
               </div>
               <div class="profile-order-meta">
                 <div class="order-item-price">${formatPrice(o.total)}</div>
+                ${paymentVerifiedBadge(o)}
                 <span class="status-badge ${escape(o.status)}">${orderStatusLabel(o.status)}</span>
               </div>
+              ${o.paymentVerificationNote === 'PAYMENT_AMOUNT_INSUFFICIENT' ? `
+                <div class="profile-order-payment-alert">
+                  <span>จำนวนเงินไม่เพียงพอ ออเดอร์ถูกยกเลิกและคืนสต็อกแล้ว</span>
+                  <a href="https://www.facebook.com/byOlafshop" target="_blank" rel="noopener noreferrer">ติดต่อ</a>
+                </div>
+              ` : ''}
               ${renderOrderDelivery(o)}
               <button class="profile-order-open" type="button" data-open-order="${escape(o.id)}">
                 <i data-lucide="arrow-up-right" style="width:15px;height:15px"></i>
@@ -2446,9 +2533,9 @@
             const fallbackByStatus = {
               pending: 'สร้างคำสั่งซื้อแล้ว กรุณาชำระเงินและแนบสลิป',
               awaiting_payment: 'รอชำระเงินและแนบสลิปให้แอดมินตรวจสอบ',
-              waiting_admin: 'แนบสลิปแล้ว กำลังรอแอดมินตรวจสอบ',
-              confirmed: 'แอดมินยืนยันแล้ว กำลังเตรียมจัดส่งสินค้า',
-              delivered: 'จัดส่งสินค้าเรียบร้อยแล้ว'
+              waiting_admin: 'แนบสลิปแล้ว กำลังตรวจสอบผ่าน API',
+              confirmed: 'ตรวจสลิปแล้ว กำลังรอแอดมินจัดส่งสินค้า',
+              delivered: 'ตรวจสลิปแล้ว และจัดส่งสินค้าเรียบร้อยแล้ว'
             };
             const fallbackText = fallbackByStatus[order.status] || 'กำลังรอดำเนินการ';
             const deliveryText = deliveredText || fallbackText;
@@ -2468,6 +2555,9 @@
               statusLabel: orderStatusLabel(order.status),
               total: Number(order.total || 0),
               paymentMethod: order.paymentMethod || 'promptpay',
+              paymentStatus: order.paymentStatus || 'pending',
+              paymentVerifiedAt: order.paymentVerifiedAt || '',
+              paymentVerificationNote: order.paymentVerificationNote || '',
               paymentSlipPath: order.paymentSlipPath || '',
               paymentSlipUrl: order.paymentSlipUrl || '',
               category,
@@ -2574,11 +2664,46 @@
     }
 
     function slipUploadErrorMessage(error) {
+      const code = String(error?.code || '');
       const message = String(error?.message || '');
+      if (code === 'PAYMENT_AMOUNT_INSUFFICIENT') {
+        return error?.orderCancelled
+          ? 'ออเดอร์ถูกยกเลิกและคืนสต็อกแล้ว จำนวนเงินไม่เพียงพอ โปรดกดปุ่มติดต่อ'
+          : 'จำนวนเงินไม่เพียงพอ โปรดกดปุ่มติดต่อ';
+      }
+      const apiMessages = {
+        SLIP_QR_SCANNER_NOT_READY: 'ระบบอ่าน QR ยังโหลดไม่เสร็จ กรุณารอสักครู่แล้วลองใหม่',
+        SLIP_QR_NOT_FOUND: 'ไม่พบ QR ในรูป กรุณาใช้ภาพสลิปต้นฉบับที่เห็น QR ชัดเจน',
+        INVALID_SLIP_QR: 'QR ในรูปไม่ใช่ QR ตรวจสอบสลิปที่รองรับ',
+        PAYMENT_METHOD_MISMATCH: 'สลิปไม่ตรงกับช่องทางชำระเงินที่เลือก',
+        PAYMENT_AMOUNT_MISMATCH: 'ยอดเงินในสลิปไม่ตรงกับยอดออเดอร์',
+        PAYMENT_TIME_MISMATCH: 'เวลาชำระเงินในสลิปไม่ตรงกับช่วงเวลาของออเดอร์',
+        RECEIVER_MISMATCH: 'ข้อมูลผู้รับเงินในสลิปไม่ตรงกับบัญชีของร้าน',
+        DUPLICATE_SLIP: 'สลิปนี้ถูกใช้กับออเดอร์อื่นแล้ว',
+        RDCW_QUOTA_EXCEEDED: 'โควต้าตรวจสลิปหมดหรือแพ็กเกจหมดอายุ กรุณาติดต่อแอดมิน',
+        RDCW_IP_NOT_ALLOWED: 'IP ของเซิร์ฟเวอร์ยังไม่ได้รับอนุญาตใน Slip Verify',
+        RDCW_TEMPORARY_ERROR: 'API ตรวจสลิปขัดข้องชั่วคราว ระบบเก็บสลิปไว้ให้แอดมินตรวจสอบแล้ว',
+        PAYMENT_VERIFY_API_UNREACHABLE: 'เชื่อมต่อระบบตรวจสลิปไม่ได้ชั่วคราว ระบบเก็บสลิปไว้ให้แอดมินตรวจสอบแล้ว'
+      };
+      if (apiMessages[code]) return apiMessages[code];
       if (message.includes('SLIP_FILE_TOO_LARGE')) return 'ไฟล์สลิปใหญ่เกิน 5MB';
       if (message.includes('SLIP_FILE_MUST_BE_IMAGE')) return 'กรุณาแนบไฟล์รูปภาพเท่านั้น';
       if (message.includes('ORDER_SLIP_LOCKED')) return 'ออเดอร์นี้ผ่านขั้นตอนตรวจสอบแล้ว';
       return message || 'อัปโหลดสลิปไม่สำเร็จ กรุณาลองใหม่';
+    }
+
+    function showSlipUploadError(error) {
+      const isUnderpaid = String(error?.code || '') === 'PAYMENT_AMOUNT_INSUFFICIENT';
+      showToast(
+        slipUploadErrorMessage(error),
+        'error',
+        isUnderpaid
+          ? {
+              label: 'ติดต่อ',
+              href: 'https://www.facebook.com/byOlafshop'
+            }
+          : null
+      );
     }
 
     function renderInventoryOrderActions(row) {
@@ -2637,9 +2762,9 @@
             <button type="submit"><i data-lucide="upload-cloud"></i>ส่งสลิป</button>
           </form>
         ` : ''}
-        ${order.status === 'waiting_admin' ? '<p class="inventory-order-message"><i data-lucide="clock-3"></i>แอดมินกำลังตรวจสอบสลิปของคุณ</p>' : ''}
-        ${order.status === 'confirmed' ? '<p class="inventory-order-message"><i data-lucide="package-open"></i>ยืนยันการชำระเงินแล้ว กำลังเตรียมข้อมูลสินค้า</p>' : ''}
-        ${order.status === 'delivered' ? '<p class="inventory-order-message is-success"><i data-lucide="circle-check-big"></i>จัดส่งสินค้าเรียบร้อยแล้ว กรุณาเก็บข้อมูลไว้ในที่ปลอดภัย</p>' : ''}
+        ${order.status === 'waiting_admin' ? '<p class="inventory-order-message"><i data-lucide="clock-3"></i>กำลังตรวจสอบสลิปผ่าน API</p>' : ''}
+        ${order.status === 'confirmed' ? '<p class="inventory-order-message is-success"><i data-lucide="badge-check"></i>ตรวจสลิปแล้ว กำลังรอแอดมินจัดส่งสินค้า</p>' : ''}
+        ${order.status === 'delivered' ? '<p class="inventory-order-message is-success"><i data-lucide="circle-check-big"></i>ตรวจสลิปและจัดส่งสินค้า Offline เรียบร้อยแล้ว กรุณาเก็บข้อมูลไว้ในที่ปลอดภัย</p>' : ''}
         ${canCancel ? `<button class="inventory-cancel-order" type="button" data-profile-cancel-order="${escape(order.id)}"><i data-lucide="x-circle"></i>ยกเลิกคำสั่งซื้อ</button>` : ''}
       `;
     }
@@ -2647,8 +2772,6 @@
     function setInventoryModal(row) {
       const image = document.getElementById('inventory-modal-image');
       const imageFallback = document.getElementById('inventory-modal-image-fallback');
-      const copyIdButton = document.getElementById('inventory-copy-id');
-      const copyFullButton = document.getElementById('inventory-copy-full');
 
       document.getElementById('inventory-modal-platform').textContent = row.platform || 'PRODUCT';
       document.getElementById('inventory-modal-type').textContent = row.typeLabel || 'Digital Product';
@@ -2674,8 +2797,8 @@
         deliveryNote.textContent = row.deliveryText || 'รอข้อมูลจัดส่งจากแอดมิน';
       }
       document.getElementById('inventory-modal-footnote').textContent = row.hasDetail
-        ? 'แนะนำให้คัดลอกหรือเก็บข้อมูลสินค้าไว้ในที่ปลอดภัย'
-        : 'เมื่อแอดมินจัดส่งข้อมูลแล้ว ปุ่มคัดลอกจะใช้งานได้ทันที';
+        ? 'หากต้องการรหัส 2FA ให้ติดต่อ Facebook หรือ Discord ของร้าน'
+        : 'หลังตรวจสลิปแล้ว สินค้า Offline จะจัดส่งอัตโนมัติ ส่วนสินค้าอื่นแอดมินจะจัดส่งให้';
       document.getElementById('inventory-modal-product-id').textContent = `Product ID: ${row.productId || '-'}`;
       renderInventoryOrderActions(row);
 
@@ -2690,8 +2813,6 @@
         imageFallback.hidden = false;
       }
 
-      copyIdButton.disabled = !row.hasDetail || !row.primaryCopy;
-      copyFullButton.disabled = !row.hasDetail || !normalizeInventoryText(row.deliveryText);
     }
 
     function toggleInventoryModal(forceOpen = false, row = null) {
@@ -3299,26 +3420,6 @@
           return;
         }
 
-        const copyTrigger = event.target.closest('[data-copy-mode]');
-        if (copyTrigger) {
-          const activeRow = profileState.activeInventory;
-          if (!activeRow) return;
-          const mode = copyTrigger.getAttribute('data-copy-mode');
-          const textToCopy = mode === 'full' ? activeRow.deliveryText : activeRow.primaryCopy;
-          if (!textToCopy) {
-            showToast('ยังไม่มีข้อมูลให้คัดลอก', 'error');
-            return;
-          }
-
-          try {
-            await copyTextToClipboard(textToCopy);
-            showToast(mode === 'full' ? 'คัดลอกข้อความทั้งหมดแล้ว' : 'คัดลอกข้อมูลหลักแล้ว');
-          } catch (copyError) {
-            showToast(copyError.message || 'คัดลอกไม่สำเร็จ', 'error');
-          }
-          return;
-        }
-
         if (event.target.closest('[data-inventory-close]')) {
           toggleInventoryModal(false);
         }
@@ -3345,15 +3446,24 @@
         const originalHtml = submitButton?.innerHTML || '';
         if (submitButton) {
           submitButton.disabled = true;
-          submitButton.innerHTML = '<i data-lucide="loader-circle"></i>กำลังส่งสลิป';
+          submitButton.innerHTML = '<i data-lucide="loader-circle"></i>กำลังตรวจสลิป';
           lucide.createIcons();
         }
         try {
-          await window.OlafOrders.uploadPaymentSlip({ orderId, file });
-          showToast('แนบสลิปแล้ว กำลังรอแอดมินตรวจสอบ');
+          const verifiedOrder = await window.OlafOrders.uploadPaymentSlip({ orderId, file });
+          if (verifiedOrder?.verificationPending) {
+            showToast('แนบสลิปแล้ว แต่ API ขัดข้องชั่วคราว แอดมินสามารถตรวจสอบต่อได้');
+          } else if (verifiedOrder?.status === 'delivered') {
+            showToast('ตรวจสลิปแล้ว และจัดส่งบัญชี Offline เรียบร้อย');
+          } else {
+            showToast('ตรวจสลิปแล้ว รอแอดมินจัดส่งสินค้า');
+          }
           await refreshProfileOrders({ quiet: true });
         } catch (error) {
-          showToast(slipUploadErrorMessage(error), 'error');
+          showSlipUploadError(error);
+          if (error?.orderCancelled) {
+            await refreshProfileOrders({ quiet: true });
+          }
         } finally {
           if (submitButton) {
             submitButton.disabled = false;

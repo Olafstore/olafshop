@@ -1,6 +1,11 @@
 {
   "cleanUrls": false,
   "trailingSlash": false,
+  "functions": {
+    "api/verify-slip.js": {
+      "maxDuration": 30
+    }
+  },
   "redirects": [
     {
       "source": "/admin",

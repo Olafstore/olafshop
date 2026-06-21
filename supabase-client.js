@@ -861,6 +861,11 @@
       paymentMethod: row.payment_method || "promptpay",
       paymentStatus: row.payment_status || "pending",
       paymentReference: row.payment_reference || "",
+      paymentVerifiedAt: row.payment_verified_at || "",
+      paymentVerifiedProvider: row.payment_verified_provider || "",
+      paymentVerifiedReference: row.payment_verified_reference || "",
+      paymentVerifiedAmount: row.payment_verified_amount == null ? null : Number(row.payment_verified_amount),
+      paymentVerificationNote: row.payment_verification_note || "",
       paymentSlipPath: row.payment_slip_path || "",
       paymentSlipUrl: row.payment_slip_url || "",
       expiresAt: row.expires_at || "",
@@ -1046,6 +1051,10 @@
     if (!file) throw new Error("SLIP_FILE_REQUIRED");
     if (!String(file.type || "").startsWith("image/")) throw new Error("SLIP_FILE_MUST_BE_IMAGE");
     if (Number(file.size || 0) > MAX_PAYMENT_SLIP_SIZE) throw new Error("SLIP_FILE_TOO_LARGE");
+    if (!window.OlafSlipQr?.scanFile) throw new Error("SLIP_QR_SCANNER_NOT_READY");
+
+    const qrScan = await window.OlafSlipQr.scanFile(file);
+    if (!qrScan?.payload) throw new Error("SLIP_QR_NOT_FOUND");
 
     const auth = requireClient().auth;
     const { data: userData, error: userError } = await auth.getUser();
@@ -1054,6 +1063,7 @@
     if (!user) throw new Error("AUTH_REQUIRED");
 
     const path = `${user.id}/${orderId}/${Date.now()}-${safeStorageFileName(file)}`;
+    let verificationAccepted = false;
     const { error: uploadError } = await requireClient()
       .storage
       .from(PAYMENT_SLIP_BUCKET)
@@ -1070,11 +1080,71 @@
         p_slip_path: path
       });
       if (error) throw error;
-      return withPaymentSlipUrl(mapOrderRpcPayload(data));
+      const attachedOrder = await withPaymentSlipUrl(mapOrderRpcPayload(data));
+      try {
+        const verification = await verifyPaymentSlip({
+          orderId
+        });
+        verificationAccepted = true;
+        const refreshedOrder = await fetchOrderById(orderId).catch(() => attachedOrder);
+        return {
+          ...refreshedOrder,
+          verification
+        };
+      } catch (verificationError) {
+        if (verificationError?.retriable === true) {
+          return {
+            ...attachedOrder,
+            verificationPending: true,
+            verificationError: verificationError.code || "PAYMENT_VERIFICATION_FAILED"
+          };
+        }
+        throw verificationError;
+      }
     } catch (error) {
-      await requireClient().storage.from(PAYMENT_SLIP_BUCKET).remove([path]).catch(() => {});
+      if (!verificationAccepted && !error?.slipHandledByServer) {
+        await requireClient().storage.from(PAYMENT_SLIP_BUCKET).remove([path]).catch(() => {});
+      }
       throw error;
     }
+  }
+
+  async function verifyPaymentSlip({ orderId }) {
+    if (!orderId) throw new Error("ORDER_REQUIRED");
+    const { data: sessionData, error: sessionError } = await requireClient().auth.getSession();
+    if (sessionError) throw sessionError;
+    const accessToken = sessionData?.session?.access_token;
+    if (!accessToken) throw new Error("AUTH_REQUIRED");
+
+    let response;
+    try {
+      response = await fetch("/api/verify-slip", {
+        method: "POST",
+        headers: {
+          Accept: "application/json",
+          Authorization: `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        },
+        body: JSON.stringify({ orderId })
+      });
+    } catch (cause) {
+      const error = new Error("PAYMENT_VERIFY_API_UNREACHABLE", { cause });
+      error.code = "PAYMENT_VERIFY_API_UNREACHABLE";
+      error.retriable = true;
+      error.slipHandledByServer = false;
+      throw error;
+    }
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || payload?.success !== true) {
+      const error = new Error(payload?.message || "PAYMENT_VERIFICATION_FAILED");
+      error.code = payload?.code || "PAYMENT_VERIFICATION_FAILED";
+      error.slipHandledByServer = payload?.slipHandled === true;
+      error.retriable = payload?.retriable === true || !error.slipHandledByServer;
+      error.orderCancelled = payload?.orderCancelled === true;
+      error.contactUrl = String(payload?.contactUrl || "");
+      throw error;
+    }
+    return payload;
   }
 
   async function createOrder({ productId, quantity, paymentMethod, customerName, packageId }) {
@@ -1226,6 +1296,7 @@
     fetchAdminOrders,
     adminUpdateOrder,
     uploadPaymentSlip,
+    verifyPaymentSlip,
     createPaymentSlipSignedUrl,
     fetchStockMovements
   };

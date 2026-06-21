@@ -18,9 +18,9 @@
   <script src="platform-store.js?v=20260619-profile-update-fix" defer></script>
   <script src="image-performance.js?v=20260607-performance" defer></script>
 <script src="delivery-payload.js?v=20260620-phase1-12-final" defer></script>
-  <script src="site-navigation.js?v=20260619-unified-profile-nav" defer></script>
+  <script src="site-navigation.js?v=20260621-kanit-responsive" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-<link rel="stylesheet" href="styles.css?v=20260620-phase1-12-final" />
+<link rel="stylesheet" href="styles.css?v=20260621-kanit-responsive" />
   <style>
     body {
       padding-top: 0;
@@ -623,11 +623,18 @@
       gap: 12px;
     }
 
+    .inventory-card-top > div {
+      flex: 1 1 auto;
+      min-width: 0;
+    }
+
     .inventory-card-title {
       color: #fff;
       font-size: 1.04rem;
       font-weight: 700;
       line-height: 1.4;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     .inventory-card-status {
@@ -1302,12 +1309,14 @@
     }
 
     .inventory-card-title {
-      overflow: hidden;
+      overflow: visible;
       color: #f8fafc;
       font-size: 0.9rem;
       line-height: 1.35;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      text-overflow: clip;
+      white-space: normal;
+      overflow-wrap: anywhere;
+      word-break: break-word;
     }
 
     .inventory-card-status {
@@ -1367,6 +1376,8 @@
     }
 
     .status-badge {
+      flex: 0 0 auto;
+      align-self: flex-start;
       padding: 4px 8px;
       border-radius: 6px;
       background: #101a2d;
@@ -1828,7 +1839,7 @@
       <nav class="main-nav" aria-label="เมนูหลัก">
         <a href="index.html">หน้าแรก</a>
         <a href="index.html#catalog">สินค้า</a>
-        <a href="more-products.html">สินค้าเพิ่มเติม</a>
+        <a href="more-products.html">หมวดหมู่</a>
         <a href="profile.html#inventory" data-i18n="navOrders">คลังสินค้า</a>
         <a href="https://www.facebook.com/byOlafshop" target="_blank" rel="noreferrer">ติดต่อ</a>
       </nav>
@@ -1878,11 +1889,6 @@
           </button>
           <div class="user-popover" id="user-popover" hidden></div>
         </div>
-        <a class="primary-button register-button" href="register.html"
-          style="padding: 0 14px; min-height: 38px; gap: 8px;">
-          <i data-lucide="user-plus"></i>
-          <span>สมัครสมาชิก</span>
-        </a>
         <strong id="cart-count" hidden>0</strong>
       </div>
     </header>

@@ -924,9 +924,12 @@ function buildThaiDescription(product) {
 }
 
 function getAdminProductDescription(product) {
-  return cleanDisplayText(product?.description || "")
+  const cleaned = cleanDisplayText(product?.description || "")
     .replace(/\r\n?/g, "\n")
     .trim();
+  const lines = cleaned.split(/\n+/).map((line) => line.trim()).filter(Boolean);
+  if (lines.length <= 8) return cleaned;
+  return `${lines.slice(0, 8).join("\n")}\n…`;
 }
 
 function normalizeSearchText(value) {
@@ -1305,7 +1308,7 @@ function renderProduct() {
     : [];
 
   // Use ONLY gallery images as requested by the user
-  const screenshotSrcs = [...new Set(galleryArr.filter(Boolean))];
+  const screenshotSrcs = [...new Set(galleryArr.filter(Boolean))].slice(0, 6);
 
   // Main displayed image on left = first gallery image
   const leftMainImg = screenshotSrcs[0] || "";
@@ -1518,7 +1521,7 @@ function renderProduct() {
             <span class="pd-section-icon-box"><i data-lucide="file-text"></i></span>
             รายละเอียดสินค้า
           </h3>
-          <div class="pd-description" data-admin-product-description>${escapeHtml(adminDescription || "ยังไม่มีรายละเอียดสินค้า").replace(/\n/g, "<br>")}</div>
+          <div class="pd-description is-clamped" data-admin-product-description>${escapeHtml(adminDescription || "ยังไม่มีรายละเอียดสินค้า").replace(/\n/g, "<br>")}</div>
         </div>
 
         <!-- Dynamic Detail Sections from Admin -->

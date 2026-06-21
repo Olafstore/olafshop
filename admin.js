@@ -294,7 +294,7 @@ function normalizeGallery(product) {
     ...(Array.isArray(product.gallery) ? product.gallery : []),
     product.heroImage,
     product.image
-  ]);
+  ]).slice(0, 6);
 }
 
 function normalizePlatformLinks(product) {
@@ -2123,7 +2123,7 @@ function productFromForm(form) {
   const id = form.elements.id.value.trim() || slugify(name);
   const image = form.elements.image.value.trim();
   const heroImage = form.elements.heroImage.value.trim() || image;
-  const gallery = uniqueList(compactLines(form.elements.gallery.value));
+  const gallery = uniqueList(compactLines(form.elements.gallery.value)).slice(0, 6);
   const compareAtValue = form.elements.compareAt.value.trim();
   
   const category = form.elements.category.value;

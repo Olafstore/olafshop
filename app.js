@@ -307,6 +307,10 @@ function escapeHtml(value = "") {
   });
 }
 
+function cleanDisplayText(value = "") {
+  return window.OlafText?.clean?.(value) ?? String(value || "").trim();
+}
+
 function fastImg(src, alt = "", options = {}) {
   if (window.OlafImages?.attrs) return window.OlafImages.attrs(src, alt, options);
   const loading = options.priority ? "eager" : "lazy";
@@ -449,7 +453,7 @@ function getStockState(stock) {
 }
 
 function getCategoryLabel(categoryId) {
-  return state.categories.find((category) => category.id === categoryId)?.label ?? categoryId;
+  return cleanDisplayText(state.categories.find((category) => category.id === categoryId)?.label ?? categoryId);
 }
 
 function getProductBadgeLabel(categoryId, fallbackLabel = "") {
@@ -459,7 +463,7 @@ function getProductBadgeLabel(categoryId, fallbackLabel = "") {
 }
 
 function translateTagToThai(tag) {
-  const cleanTag = String(tag || "").trim();
+  const cleanTag = cleanDisplayText(tag);
   if (!cleanTag) return "";
   if (/[\u0E00-\u0E7F]/.test(cleanTag)) return cleanTag;
   const translated = tagTranslations.get(cleanTag.toLowerCase());
@@ -1012,7 +1016,7 @@ function renderPromoVideos() {
 }
 
 function deriveCategories(products, fallbackCategories = fallbackPayload.categories) {
-  const labels = new Map((fallbackCategories || []).map((category) => [category.id, category.label]));
+  const labels = new Map((fallbackCategories || []).map((category) => [category.id, cleanDisplayText(category.label)]));
   const categoryIds = [...new Set(products.map((product) => product.category).filter(Boolean))];
   return [
     { id: "all", label: labels.get("all") || "ทั้งหมด" },
@@ -1041,6 +1045,13 @@ function applyPayload(payload) {
   );
   state.products = visibleProducts.map((product) => ({
     ...product,
+    name: cleanDisplayText(product.name),
+    publisher: cleanDisplayText(product.publisher),
+    label: cleanDisplayText(product.label),
+    rating: cleanDisplayText(product.rating),
+    delivery: cleanDisplayText(product.delivery),
+    warranty: cleanDisplayText(product.warranty),
+    tags: Array.isArray(product.tags) ? product.tags.map(cleanDisplayText).filter(Boolean) : [],
     price: Number(product.price) || 0,
     compareAt: Number(product.compareAt) || 0,
     stock: Number(product.stock) || 0,
@@ -1150,13 +1161,16 @@ function renderSteamShowcaseWidget() {
       const discount = getDiscount(product);
       const images = productPreviewImages(product);
       const tags = getDisplayTags(product, 4);
+      const productName = cleanDisplayText(product.name);
+      const publisher = cleanDisplayText(product.publisher);
+      const rating = cleanDisplayText(product.rating) || "แนะนำ";
       return `
         <div class="olaf-steam-row">
           <a class="olaf-steam-item" href="${productLink(product)}">
-            <img ${fastImg(product.image || product.heroImage, product.name, { className: "olaf-steam-thumb" })} />
+            <img ${fastImg(product.image || product.heroImage, productName, { className: "olaf-steam-thumb" })} />
             <div class="olaf-steam-info">
-              <strong>${escapeHtml(product.name)}</strong>
-              <span>${escapeHtml(tags.join(", ") || product.publisher || "Steam Game")}</span>
+              <strong>${escapeHtml(productName)}</strong>
+              <span>${escapeHtml(tags.join(", ") || publisher || "Steam Game")}</span>
             </div>
             <div class="olaf-steam-price">
               ${discount
@@ -1166,13 +1180,13 @@ function renderSteamShowcaseWidget() {
             </div>
           </a>
           <aside class="olaf-steam-preview ${index === 0 ? "is-default" : ""}">
-            <h3>${escapeHtml(product.name)}</h3>
-            <p>รีวิวโดยรวม <span>${escapeHtml(product.rating || "แนะนำ")}</span> · ขายแล้ว ${Number(product.sold || 0).toLocaleString("th-TH")}</p>
+            <h3>${escapeHtml(productName)}</h3>
+            <p>รีวิวโดยรวม <span>${escapeHtml(rating)}</span> · ขายแล้ว ${Number(product.sold || 0).toLocaleString("th-TH")} ชิ้น</p>
             <div class="olaf-preview-tags">
               ${tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}
             </div>
             <div class="olaf-preview-images">
-              ${images.map((image) => `<img ${fastImg(image, `${product.name} preview`)} />`).join("")}
+              ${images.map((image) => `<img ${fastImg(image, `${productName} preview`)} />`).join("")}
             </div>
           </aside>
         </div>

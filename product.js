@@ -1164,7 +1164,8 @@ function brandedProductHero(product) {
   return "";
 }
 
-const STEAM_OFFLINE_GUIDE_URL = "https://olaf-shop.gitbook.io/manual-olaf-shop/undefined-1/undefined/pin";
+const STEAM_OFFLINE_GUIDE_URL = "https://olaf-shop.gitbook.io/manual-olaf-shop";
+const STEAM_OFFLINE_CONDITIONS_URL = "https://olaf-shop.gitbook.io/manual-olaf-shop/undefined/undefined";
 const STEAM_KEY_GUIDE_URL = "https://olaf-shop.gitbook.io/manual-olaf-shop/undefined/key-steam";
 const OFFLINE_SUPPORT_PAGE_URL = "https://www.facebook.com/byOlafshop";
 
@@ -1199,26 +1200,34 @@ function categoryGuideAccordion(product) {
       <details class="pd-arrow-accordion pd-category-guide pd-category-guide-offline">
         <summary>
           <span class="pd-arrow-summary-title">
-            <span class="pd-section-icon-box"><i data-lucide="book-open-check"></i></span>
-            คู่มือและเงื่อนไขไอดีออฟไลน์
+            <span class="pd-section-icon-box"><i data-lucide="circle-help"></i></span>
+            เงื่อนไข/คู่มือ
           </span>
-          <span class="pd-arrow-summary-meta">เปิดดูรายละเอียด <i data-lucide="chevron-down"></i></span>
+          <span class="pd-arrow-summary-meta" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
         </summary>
         <div class="pd-arrow-accordion-body">
-          <ol class="pd-usage-steps pd-guide-steps">
-            <li><span>1</span><div><strong>อ่านคู่มือก่อนเข้าเกม</strong><p>เริ่มจากคู่มือ PIN / Offline ก่อนทุกครั้ง เพื่อใช้งานบัญชีออฟไลน์ได้ตรงขั้นตอนของร้านและลดปัญหาการล็อกอินผิดวิธี</p></div></li>
-            <li><span>2</span><div><strong>ใช้งานตามเงื่อนไขสินค้า</strong><p>บัญชีประเภทออฟไลน์เหมาะสำหรับการเล่นตามเงื่อนไขของสินค้า หากเกมหรือ Steam มีขั้นตอนเพิ่มเติมให้หยุดและอ่านคู่มือก่อนดำเนินการต่อ</p></div></li>
-            <li><span>3</span><div><strong>กรณีขอรหัส 2FA</strong><p>หากระบบร้องขอรหัสยืนยันหรือมีขั้นตอนยืนยันตัวตนเพิ่ม สามารถกดปุ่มติดต่อเพจเพื่อรับ 2FA จากร้านได้ทันที</p></div></li>
-          </ol>
-          <div class="pd-guide-actions">
-            <a class="pd-guide-button" href="${STEAM_OFFLINE_GUIDE_URL}" target="_blank" rel="noopener noreferrer">
-              <i data-lucide="external-link"></i>
-              เปิดคู่มือ Steam Offline
-            </a>
-            <a class="pd-guide-button pd-guide-button-secondary" href="${OFFLINE_SUPPORT_PAGE_URL}" target="_blank" rel="noopener noreferrer">
-              <i data-lucide="messages-square"></i>
-              ติดต่อเพจรับ 2FA
-            </a>
+          <div class="pd-offline-guide-list">
+            <details open>
+              <summary>เงื่อนไขบัญชีออฟไลน์ <i data-lucide="chevron-down"></i></summary>
+              <div>
+                <p>ได้รับ ID และรหัสผ่าน Steam ของทางร้าน ไม่สามารถเปลี่ยนข้อมูลหรือรหัสผ่านได้ และรองรับการใช้งานบนคอมพิวเตอร์หรือโน้ตบุ๊กเท่านั้น</p>
+                <p>สินค้าใช้สำหรับเล่นแบบออฟไลน์ ไม่รองรับโหมดออนไลน์ ตัวเกมเป็นของแท้ อัปเดตและลง MOD ได้ตามปกติ</p>
+              </div>
+            </details>
+            <details>
+              <summary>ข้อควรรู้ก่อนสั่งซื้อ <i data-lucide="chevron-down"></i></summary>
+              <div>
+                <p>การสั่งซื้อถือว่ายอมรับเงื่อนไขของร้าน กรุณาตรวจสอบสเปกเครื่องก่อนซื้อ และสินค้าที่ชำระเงินแล้วไม่สามารถเปลี่ยนเกมหรือขอคืนเงินได้</p>
+                <a href="${STEAM_OFFLINE_CONDITIONS_URL}" target="_blank" rel="noopener noreferrer">อ่านเงื่อนไขฉบับเต็ม <i data-lucide="arrow-up-right"></i></a>
+              </div>
+            </details>
+            <details>
+              <summary>คู่มือการเข้าใช้งาน <i data-lucide="chevron-down"></i></summary>
+              <div>
+                <p>อ่านคู่มือและทำตามขั้นตอน Offline / PIN ก่อนเข้าเกมทุกครั้ง หากระบบขอรหัส 2FA หรือมีขั้นตอนที่ไม่ตรงกับคู่มือ ให้หยุดดำเนินการและติดต่อร้าน</p>
+                <a href="${STEAM_OFFLINE_GUIDE_URL}" target="_blank" rel="noopener noreferrer">เปิดคู่มือ OLAF SHOP <i data-lucide="arrow-up-right"></i></a>
+              </div>
+            </details>
           </div>
         </div>
       </details>

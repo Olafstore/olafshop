@@ -1,4 +1,9 @@
 module.exports = async function handler(request, response) {
+  response.setHeader("Access-Control-Allow-Origin", "*");
+  response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
+  response.setHeader("Access-Control-Allow-Headers", "Content-Type");
+  if (request.method === "OPTIONS") return response.status(204).end();
+
   if (request.method !== "GET") {
     response.setHeader("Allow", "GET");
     return response.status(405).json({ error: "METHOD_NOT_ALLOWED" });
@@ -37,6 +42,7 @@ module.exports = async function handler(request, response) {
       name: data.name || `Steam App ${appId}`,
       type: data.type || "",
       headerImage: data.header_image || `https://cdn.akamai.steamstatic.com/steam/apps/${appId}/header.jpg`,
+      capsuleImage: data.capsule_image || "",
       shortDescription: data.short_description || "",
       developers: Array.isArray(data.developers) ? data.developers : [],
       publishers: Array.isArray(data.publishers) ? data.publishers : [],

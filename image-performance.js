@@ -193,6 +193,22 @@
     (event) => {
       const target = event.target;
       if (target?.tagName !== "IMG" || target.dataset.fallbackApplied === "true") return;
+
+      if (target.dataset.imageFallbacks) {
+        try {
+          const candidates = JSON.parse(target.dataset.imageFallbacks);
+          const fallbackIndex = Number(target.dataset.fallbackIndex || 0);
+          const nextSource = Array.isArray(candidates) ? candidates[fallbackIndex] : "";
+          if (nextSource) {
+            target.dataset.fallbackIndex = String(fallbackIndex + 1);
+            target.src = nextSource;
+            return;
+          }
+        } catch (error) {
+          console.warn("Invalid image fallback list", error);
+        }
+      }
+
       target.dataset.fallbackApplied = "true";
       target.src = FALLBACK_IMAGE;
       target.classList.add("is-loaded");

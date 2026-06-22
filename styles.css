@@ -7363,19 +7363,24 @@ dialog::backdrop {
 
 .pd-offline-guide-list {
   display: grid;
-  gap: 6px;
+  gap: 9px;
 }
 
 .pd-offline-guide-list > details {
-  border: 0;
-  border-radius: 10px;
-  background: transparent;
-  transition: background 180ms ease;
+  border: 1px solid rgba(61, 78, 112, 0.54);
+  border-radius: 11px;
+  background: rgba(8, 15, 34, 0.72);
+  transition: background 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
 }
 
 .pd-offline-guide-list > details:hover,
 .pd-offline-guide-list > details[open] {
-  background: rgba(59, 130, 246, 0.045);
+  border-color: rgba(75, 98, 143, 0.72);
+  background: rgba(10, 19, 43, 0.9);
+}
+
+.pd-offline-guide-list > details[open] {
+  box-shadow: 0 12px 28px rgba(2, 6, 23, 0.18);
 }
 
 .pd-offline-guide-list > details > summary {
@@ -7439,6 +7444,17 @@ dialog::backdrop {
 .pd-offline-guide-list a svg {
   width: 14px;
   height: 14px;
+}
+
+[data-smooth-details] > .pd-arrow-accordion-body,
+.pd-offline-guide-list > [data-smooth-details] > div {
+  animation: none;
+  will-change: opacity, transform;
+}
+
+[data-smooth-details][data-animating="true"] {
+  pointer-events: none;
+  will-change: height;
 }
 
 .pd-category-guide-key {
@@ -7565,6 +7581,7 @@ dialog::backdrop {
 .pd-steam-related-card img {
   width: 100%;
   height: 100%;
+  aspect-ratio: 616 / 353;
   object-fit: cover;
   background: #020617;
 }

@@ -1087,11 +1087,27 @@ function steamRelatedItems(product) {
     .filter(Boolean);
 }
 
+function steamImageCandidates(appId, preferred = "") {
+  return [...new Set([
+    String(preferred || "").trim(),
+    `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appId}/header.jpg`,
+    `https://shared.fastly.steamstatic.com/store_item_assets/steam/apps/${appId}/header.jpg`,
+    `https://cdn.akamai.steamstatic.com/steam/apps/${appId}/header.jpg`,
+    `https://cdn.cloudflare.steamstatic.com/steam/apps/${appId}/header.jpg`,
+    `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appId}/capsule_616x353.jpg`
+  ].filter(Boolean))];
+}
+
+function steamRelatedImageMarkup(item) {
+  const candidates = steamImageCandidates(item.appId, item.image);
+  return `<img src="${escapeHtml(candidates[0])}" data-image-fallbacks="${escapeHtml(JSON.stringify(candidates.slice(1)))}" alt="${escapeHtml(cleanDisplayText(item.title || "เนื้อหาเสริมบน Steam"))}" loading="eager" decoding="async" fetchpriority="low" width="616" height="353" data-steam-related-image />`;
+}
+
 function steamRelatedSection(product) {
   const items = steamRelatedItems(product);
   if (!items.length) return "";
   return `
-    <details class="pd-arrow-accordion pd-steam-related" open>
+    <details class="pd-arrow-accordion pd-steam-related" open data-smooth-details>
       <summary>
         <span class="pd-arrow-summary-title">
           <span class="pd-section-icon-box"><i data-lucide="layers-3"></i></span>
@@ -1100,11 +1116,11 @@ function steamRelatedSection(product) {
         <span class="pd-arrow-summary-meta">${items.length.toLocaleString("th-TH")} รายการ <i data-lucide="chevron-down"></i></span>
       </summary>
       <div class="pd-arrow-accordion-body">
-        <p class="pd-steam-related-note">ข้อมูลชื่อและรูปดึงจากหน้าร้าน Steam ตามลิงก์ที่แอดมินกำหนด</p>
+        <p class="pd-steam-related-note">ข้อมูลเนื้อหาเสริมภายในไอดี</p>
         <div class="pd-steam-related-grid">
           ${items.map((item) => `
             <a class="pd-steam-related-card" href="${escapeHtml(item.url)}" target="_blank" rel="noreferrer" data-steam-related-card data-appid="${escapeHtml(item.appId)}">
-              <img src="${escapeHtml(item.image || `https://cdn.akamai.steamstatic.com/steam/apps/${item.appId}/header.jpg`)}" alt="" loading="lazy" decoding="async" data-steam-related-image />
+              ${steamRelatedImageMarkup(item)}
               <span>
                 <small data-steam-related-type>${escapeHtml(cleanDisplayText(item.type || "เนื้อหาบน Steam"))}</small>
                 <strong data-steam-related-title>${escapeHtml(cleanDisplayText(item.title || `กำลังโหลดข้อมูล Steam #${item.appId}`))}</strong>
@@ -1132,11 +1148,72 @@ async function hydrateSteamRelatedMetadata() {
       const image = card.querySelector("[data-steam-related-image]");
       if (title && data.name) title.textContent = data.name;
       if (type) type.textContent = data.type === "dlc" ? "DLC / ส่วนเสริม" : data.type === "game" ? "ตัวเกม" : "เนื้อหาบน Steam";
-      if (image && data.headerImage) image.src = data.headerImage;
+      if (image && data.headerImage) {
+        const candidates = steamImageCandidates(appId, data.headerImage);
+        image.dataset.fallbackIndex = "0";
+        image.dataset.imageFallbacks = JSON.stringify(candidates.slice(1));
+        delete image.dataset.fallbackApplied;
+        image.src = candidates[0];
+      }
     } catch (error) {
       console.warn(`Steam metadata unavailable for ${appId}`, error);
     }
   }));
+}
+
+function setupSmoothDetails(root = document) {
+  root.querySelectorAll("[data-smooth-details]").forEach((details) => {
+    if (details.dataset.smoothReady === "true") return;
+    const summary = details.querySelector(":scope > summary");
+    const content = details.querySelector(":scope > .pd-arrow-accordion-body, :scope > div");
+    if (!summary || !content) return;
+    details.dataset.smoothReady = "true";
+
+    summary.addEventListener("click", (event) => {
+      event.preventDefault();
+      if (details._smoothAnimation) details._smoothAnimation.cancel();
+
+      const opening = !details.open;
+      const startHeight = details.getBoundingClientRect().height;
+      if (opening) details.open = true;
+      const endHeight = opening
+        ? summary.getBoundingClientRect().height + content.scrollHeight
+        : summary.getBoundingClientRect().height;
+
+      details.style.height = `${startHeight}px`;
+      details.style.overflow = "hidden";
+      details.dataset.animating = "true";
+
+      const contentAnimation = content.animate(
+        opening
+          ? [{ opacity: 0, transform: "translateY(-7px)" }, { opacity: 1, transform: "translateY(0)" }]
+          : [{ opacity: 1, transform: "translateY(0)" }, { opacity: 0, transform: "translateY(-7px)" }],
+        { duration: opening ? 300 : 240, easing: "cubic-bezier(.22, 1, .36, 1)", fill: "both" }
+      );
+
+      const animation = details.animate(
+        [{ height: `${startHeight}px` }, { height: `${endHeight}px` }],
+        { duration: opening ? 340 : 280, easing: "cubic-bezier(.22, 1, .36, 1)" }
+      );
+      details._smoothAnimation = animation;
+
+      animation.onfinish = () => {
+        if (!opening) details.open = false;
+        contentAnimation.cancel();
+        details.style.removeProperty("height");
+        details.style.removeProperty("overflow");
+        delete details.dataset.animating;
+        details._smoothAnimation = null;
+      };
+      animation.oncancel = () => {
+        contentAnimation.cancel();
+        details.style.removeProperty("height");
+        details.style.removeProperty("overflow");
+        delete details.dataset.animating;
+        details._smoothAnimation = null;
+      };
+    });
+  });
 }
 
 function brandedProductHero(product) {
@@ -1172,7 +1249,7 @@ const OFFLINE_SUPPORT_PAGE_URL = "https://www.facebook.com/byOlafshop";
 function rockstarUsageAccordion(product) {
   if (!isRockstarProduct(product)) return "";
   return `
-    <details class="pd-arrow-accordion pd-rockstar-steps">
+    <details class="pd-arrow-accordion pd-rockstar-steps" data-smooth-details>
       <summary>
         <span class="pd-arrow-summary-title">
           <span class="pd-section-icon-box"><i data-lucide="list-checks"></i></span>
@@ -1197,7 +1274,7 @@ function categoryGuideAccordion(product) {
 
   if (category === "offline") {
     return `
-      <details class="pd-arrow-accordion pd-category-guide pd-category-guide-offline">
+      <details class="pd-arrow-accordion pd-category-guide pd-category-guide-offline" data-smooth-details>
         <summary>
           <span class="pd-arrow-summary-title">
             <span class="pd-section-icon-box"><i data-lucide="circle-help"></i></span>
@@ -1207,21 +1284,21 @@ function categoryGuideAccordion(product) {
         </summary>
         <div class="pd-arrow-accordion-body">
           <div class="pd-offline-guide-list">
-            <details open>
+            <details open data-smooth-details>
               <summary>เงื่อนไขบัญชีออฟไลน์ <i data-lucide="chevron-down"></i></summary>
               <div>
                 <p>ได้รับ ID และรหัสผ่าน Steam ของทางร้าน ไม่สามารถเปลี่ยนข้อมูลหรือรหัสผ่านได้ และรองรับการใช้งานบนคอมพิวเตอร์หรือโน้ตบุ๊กเท่านั้น</p>
                 <p>สินค้าใช้สำหรับเล่นแบบออฟไลน์ ไม่รองรับโหมดออนไลน์ ตัวเกมเป็นของแท้ อัปเดตและลง MOD ได้ตามปกติ</p>
               </div>
             </details>
-            <details>
+            <details data-smooth-details>
               <summary>ข้อควรรู้ก่อนสั่งซื้อ <i data-lucide="chevron-down"></i></summary>
               <div>
                 <p>การสั่งซื้อถือว่ายอมรับเงื่อนไขของร้าน กรุณาตรวจสอบสเปกเครื่องก่อนซื้อ และสินค้าที่ชำระเงินแล้วไม่สามารถเปลี่ยนเกมหรือขอคืนเงินได้</p>
                 <a href="${STEAM_OFFLINE_CONDITIONS_URL}" target="_blank" rel="noopener noreferrer">อ่านเงื่อนไขฉบับเต็ม <i data-lucide="arrow-up-right"></i></a>
               </div>
             </details>
-            <details>
+            <details data-smooth-details>
               <summary>คู่มือการเข้าใช้งาน <i data-lucide="chevron-down"></i></summary>
               <div>
                 <p>อ่านคู่มือและทำตามขั้นตอน Offline / PIN ก่อนเข้าเกมทุกครั้ง หากระบบขอรหัส 2FA หรือมีขั้นตอนที่ไม่ตรงกับคู่มือ ให้หยุดดำเนินการและติดต่อร้าน</p>
@@ -1236,7 +1313,7 @@ function categoryGuideAccordion(product) {
 
   if (category === "steam-key") {
     return `
-      <details class="pd-arrow-accordion pd-category-guide pd-category-guide-key">
+      <details class="pd-arrow-accordion pd-category-guide pd-category-guide-key" data-smooth-details>
         <summary>
           <span class="pd-arrow-summary-title">
             <span class="pd-section-icon-box"><i data-lucide="key-round"></i></span>
@@ -1714,6 +1791,7 @@ function renderProduct() {
 
   createIconSet();
   hydrateImages();
+  setupSmoothDetails(container);
   hydrateSteamRelatedMetadata();
 
   let galleryTimeout;

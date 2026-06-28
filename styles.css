@@ -7332,7 +7332,8 @@ dialog::backdrop {
   background: linear-gradient(180deg, rgba(8, 15, 31, 0.92), rgba(4, 9, 22, 0.92));
 }
 
-.pd-category-guide-offline {
+.pd-category-guide-offline,
+.pd-category-guide-key {
   overflow: visible;
   border: 0;
   border-radius: 0;
@@ -7344,26 +7345,31 @@ dialog::backdrop {
   color: #3b82f6;
 }
 
-.pd-category-guide-offline > summary {
+.pd-category-guide-offline > summary,
+.pd-category-guide-key > summary {
   min-height: 0;
   padding: 0 0 14px;
 }
 
-.pd-category-guide-offline .pd-section-icon-box svg {
+.pd-category-guide-offline .pd-section-icon-box svg,
+.pd-category-guide-key .pd-section-icon-box svg {
   width: 22px;
   height: 22px;
   stroke-width: 2.4;
 }
 
-.pd-category-guide-offline .pd-arrow-summary-title {
+.pd-category-guide-offline .pd-arrow-summary-title,
+.pd-category-guide-key .pd-arrow-summary-title {
   font-size: 1.15rem;
 }
 
-.pd-category-guide-offline .pd-arrow-summary-meta {
+.pd-category-guide-offline .pd-arrow-summary-meta,
+.pd-category-guide-key .pd-arrow-summary-meta {
   font-size: 0;
 }
 
-.pd-category-guide-offline > .pd-arrow-accordion-body {
+.pd-category-guide-offline > .pd-arrow-accordion-body,
+.pd-category-guide-key > .pd-arrow-accordion-body {
   padding: 0;
 }
 
@@ -7464,12 +7470,17 @@ dialog::backdrop {
 }
 
 .pd-category-guide-key {
-  border-color: rgba(59, 130, 246, 0.22);
+  margin-top: 28px;
 }
 
 .pd-category-guide-key .pd-section-icon-box,
 .pd-category-guide-key .pd-arrow-summary-meta {
   color: #60a5fa;
+}
+
+.pd-key-guide-list > details:hover,
+.pd-key-guide-list > details[open] {
+  border-color: rgba(96, 165, 250, 0.68);
 }
 
 .pd-guide-steps li {

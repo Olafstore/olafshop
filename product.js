@@ -1439,19 +1439,38 @@ function categoryGuideAccordion(product) {
             <span class="pd-section-icon-box"><i data-lucide="key-round"></i></span>
             คู่มือการเปิดใช้งาน KEY STEAM
           </span>
-          <span class="pd-arrow-summary-meta">เปิดดูรายละเอียด <i data-lucide="chevron-down"></i></span>
+          <span class="pd-arrow-summary-meta" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
         </summary>
         <div class="pd-arrow-accordion-body">
-          <ol class="pd-usage-steps pd-guide-steps">
-            <li><span>1</span><div><strong>เปิดเมนู Activate a Product</strong><p>เข้าสู่ Steam แล้วไปที่เมนู Games หรือ Add a Game จากนั้นเลือก Activate a Product on Steam</p></div></li>
-            <li><span>2</span><div><strong>กรอก KEY ที่ได้รับ</strong><p>ใส่โค้ด Steam Key จากสินค้าที่ได้รับ ตรวจสอบตัวอักษรและเครื่องหมายให้ครบถ้วนก่อนกดยืนยัน</p></div></li>
-            <li><span>3</span><div><strong>ยืนยันและติดตั้งเกม</strong><p>เมื่อระบบเปิดใช้งานสำเร็จ เกมหรือ DLC จะถูกเพิ่มเข้า Library ของคุณทันทีและพร้อมติดตั้งต่อได้เลย</p></div></li>
-          </ol>
-          <div class="pd-guide-actions">
-            <a class="pd-guide-button" href="${STEAM_KEY_GUIDE_URL}" target="_blank" rel="noopener noreferrer">
-              <i data-lucide="external-link"></i>
-              เปิดคู่มือ Steam Key
-            </a>
+          <div class="pd-offline-guide-list pd-key-guide-list">
+            <details open data-smooth-details data-accordion-group="steam-key-guide">
+              <summary>เงื่อนไขคีย์ Steam <i data-lucide="chevron-down"></i></summary>
+              <div>
+                <p>Steam Key เป็นโค้ดแท้สำหรับเปิดใช้งานบนบัญชี Steam ของลูกค้า เมื่อ Redeem สำเร็จแล้วเกมหรือ DLC จะถูกผูกกับบัญชี Steam ที่ใช้กดทันที</p>
+                <p>คีย์หนึ่งชุดใช้งานได้ครั้งเดียว กรุณาตรวจสอบบัญชี Steam ให้ถูกต้องก่อนกดยืนยัน เพราะหลังเปิดใช้งานแล้วไม่สามารถย้ายเกมไปบัญชีอื่นได้</p>
+              </div>
+            </details>
+            <details data-smooth-details data-accordion-group="steam-key-guide">
+              <summary>วิธีเปิดใช้งาน KEY STEAM <i data-lucide="chevron-down"></i></summary>
+              <div>
+                <p>เปิดโปรแกรม Steam แล้วไปที่เมนู Games หรือ Add a Game จากนั้นเลือก Activate a Product on Steam และทำตามขั้นตอนจนถึงช่องกรอกคีย์</p>
+                <p>คัดลอก KEY ที่ได้รับไปวาง ตรวจสอบตัวอักษร ตัวเลข และเครื่องหมายขีดกลางให้ครบถ้วนก่อนกดยืนยัน</p>
+              </div>
+            </details>
+            <details data-smooth-details data-accordion-group="steam-key-guide">
+              <summary>หลังเปิดใช้งานสำเร็จ <i data-lucide="chevron-down"></i></summary>
+              <div>
+                <p>เมื่อระบบยืนยันสำเร็จ สินค้าจะเข้า Library ของ Steam ทันที หากเป็น DLC ต้องมีตัวเกมหลักในบัญชี Steam เดียวกันก่อนจึงจะใช้งานเนื้อหาเสริมได้</p>
+                <p>หลังจากนั้นสามารถติดตั้งหรือดาวน์โหลดผ่าน Steam ได้ตามปกติ</p>
+              </div>
+            </details>
+            <details data-smooth-details data-accordion-group="steam-key-guide">
+              <summary>คู่มือฉบับเต็ม <i data-lucide="chevron-down"></i></summary>
+              <div>
+                <p>หากไม่เคย Redeem คีย์มาก่อน แนะนำให้อ่านคู่มือ Steam Key ก่อนกดยืนยัน เพื่อป้องกันการใช้งานผิดบัญชีหรือกรอกคีย์ผิดรูปแบบ</p>
+                <a href="${STEAM_KEY_GUIDE_URL}" target="_blank" rel="noopener noreferrer">เปิดคู่มือ Steam Key <i data-lucide="arrow-up-right"></i></a>
+              </div>
+            </details>
           </div>
         </div>
       </details>

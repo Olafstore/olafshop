@@ -16,14 +16,14 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
   <script src="slip-qr-scanner.js?v=20260621-slip-verify-v2" defer></script>
-  <script src="supabase-client.js?v=20260629-points" defer></script> 
+  <script src="supabase-client.js?v=20260629-point-ui" defer></script> 
   <script src="order-action-popup.js?v=20260621-order-animation" defer></script>
   <script src="platform-store.js?v=20260619-profile-update-fix" defer></script>
   <script src="image-performance.js?v=20260607-performance" defer></script>
 <script src="delivery-payload.js?v=20260620-phase1-12-final" defer></script>
-  <script src="site-navigation.js?v=20260621-search-polish" defer></script>
+  <script src="site-navigation.js?v=20260629-point-ui" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-<link rel="stylesheet" href="styles.css?v=20260629-points" />
+<link rel="stylesheet" href="styles.css?v=20260629-point-ui" />
   <style>
     body {
       padding-top: 0;
@@ -196,6 +196,55 @@
       white-space: nowrap;
     }
 
+    .profile-sidebar-balance-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 10px;
+      margin: -4px 0 14px;
+      padding: 9px 12px;
+      border: 1px solid rgba(96, 165, 250, 0.12);
+      border-radius: 13px;
+      background:
+        linear-gradient(135deg, rgba(15, 23, 42, 0.92), rgba(8, 13, 27, 0.86)),
+        radial-gradient(circle at right, rgba(96, 165, 250, 0.14), transparent 46%);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035);
+    }
+
+    .profile-sidebar-role-chip {
+      color: #60a5fa;
+      font-size: 0.76rem;
+      font-weight: 800;
+      letter-spacing: 0.01em;
+      text-transform: lowercase;
+    }
+
+    .profile-sidebar-point-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      min-width: 0;
+      color: #bfdbfe;
+      font-size: 0.76rem;
+      font-weight: 700;
+      text-decoration: none;
+      white-space: nowrap;
+      transition: transform 160ms ease, color 160ms ease;
+    }
+
+    .profile-sidebar-point-chip:hover,
+    .profile-sidebar-point-chip:focus-visible {
+      color: #eff6ff;
+      transform: translateY(-1px);
+      outline: none;
+    }
+
+    .profile-sidebar-point-chip svg {
+      width: 14px;
+      height: 14px;
+      color: #60a5fa;
+    }
+
     .profile-sidebar-nav {
       display: grid;
       gap: 8px;
@@ -207,12 +256,13 @@
       gap: 12px;
       align-items: center;
       margin: -4px 0 16px;
-      padding: 12px;
+      padding: 13px;
       border: 1px solid rgba(96, 165, 250, 0.24);
       border-radius: 16px;
       background:
-        radial-gradient(circle at top left, rgba(96, 165, 250, 0.18), transparent 44%),
-        rgba(8, 15, 34, 0.72);
+        radial-gradient(circle at top left, rgba(96, 165, 250, 0.24), transparent 44%),
+        linear-gradient(135deg, rgba(10, 20, 42, 0.92), rgba(8, 13, 27, 0.78));
+      box-shadow: 0 16px 32px rgba(2, 6, 23, 0.26), inset 0 1px 0 rgba(255, 255, 255, 0.045);
     }
 
     .profile-points-card[hidden] {
@@ -2113,10 +2163,17 @@
               <p id="profile-sidebar-email">กำลังโหลด...</p>
             </div>
           </div>
+          <div class="profile-sidebar-balance-row" aria-label="ข้อมูลสถานะบัญชีและพอยท์">
+            <span class="profile-sidebar-role-chip" id="profile-sidebar-role">member</span>
+            <a class="profile-sidebar-point-chip" href="#info" aria-label="Check Point">
+              <i data-lucide="coins"></i>
+              <span><b id="profile-sidebar-point-balance">0</b> Points</span>
+            </a>
+          </div>
           <div class="profile-points-card" id="profile-points-card" hidden>
             <span class="profile-points-icon"><i data-lucide="coins" style="width:18px;height:18px"></i></span>
             <div>
-              <small>Point คงเหลือ</small>
+              <small>กระเป๋า Point ของคุณ</small>
               <strong><span id="profile-point-balance">0</span> Point</strong>
             </div>
           </div>
@@ -2371,8 +2428,9 @@
       const container = document.getElementById('toast-container');
       const toast = document.createElement('div');
       toast.className = `toast${type === 'error' ? ' toast-error' : ''}`;
+      const actionTarget = action?.target || '_self';
       const actionHtml = action?.href && action?.label
-        ? `<a class="toast-action" href="${escape(action.href)}" target="_blank" rel="noopener noreferrer">${escape(action.label)}</a>`
+        ? `<a class="toast-action" href="${escape(action.href)}" target="${escape(actionTarget)}" rel="noopener noreferrer">${escape(action.label)}</a>`
         : '';
       toast.innerHTML = `<i data-lucide="${type === 'error' ? 'alert-circle' : 'check-circle'}" style="width:18px;height:18px"></i><span>${escape(message)}</span>${actionHtml}`;
       container.appendChild(toast);
@@ -2409,9 +2467,13 @@
     function renderProfilePoints(balance = profileState.pointBalance) {
       const card = document.getElementById('profile-points-card');
       const value = document.getElementById('profile-point-balance');
+      const sidebarValue = document.getElementById('profile-sidebar-point-balance');
+      const topbarValue = document.querySelector('[data-topbar-point-balance]');
       const normalized = Math.max(Number(balance || 0), 0);
       profileState.pointBalance = normalized;
       if (value) value.textContent = formatPointAmount(normalized);
+      if (sidebarValue) sidebarValue.textContent = formatPointAmount(normalized);
+      if (topbarValue) topbarValue.textContent = `${formatPointAmount(normalized)} Points`;
       if (card) card.hidden = false;
       if (window.lucide) lucide.createIcons();
     }
@@ -2602,7 +2664,7 @@
               ${String(o.paymentVerificationNote || '') === 'PAYMENT_AMOUNT_INSUFFICIENT' || String(o.paymentVerificationNote || '') === 'PAYMENT_AMOUNT_INSUFFICIENT_POINTS_CREDITED' ? `
                 <div class="profile-order-payment-alert">
                   <span>จำนวนเงินไม่เพียงพอ ออเดอร์ถูกยกเลิกและคืนสต็อกแล้ว${Number(o.pointCreditAmount || 0) > 0 ? ` · แปลงเป็น ${formatPointAmount(o.pointCreditAmount)} Point แล้ว` : ''}</span>
-                  <a href="https://www.facebook.com/byOlafshop" target="_blank" rel="noopener noreferrer">ติดต่อ</a>
+                  <a href="#info" rel="noopener noreferrer">Check Point</a>
                 </div>
               ` : ''}
               ${renderOrderDelivery(o)}
@@ -2844,8 +2906,9 @@
         'error',
         isUnderpaid
           ? {
-              label: 'ติดต่อ',
-              href: 'https://www.facebook.com/byOlafshop'
+              label: 'Check Point',
+              href: '#info',
+              target: '_self'
             }
           : null
       );
@@ -3086,7 +3149,7 @@
           </div>
           <div class="user-popover-badge-row">
             <span class="user-badge-role">${escape(user.role || 'member')}</span>
-            <span class="user-badge-points">${escape(user.position || 'Member')}</span>
+            <span class="user-badge-points" data-topbar-point-balance>${formatPointAmount(profileState.pointBalance || 0)} Points</span>
           </div>
         </div>
         <div class="user-popover-menu">
@@ -3304,6 +3367,8 @@
         document.getElementById('profile-sidebar-avatar').textContent = avatarLetter;
         document.getElementById('profile-sidebar-name').textContent = displayName;
         document.getElementById('profile-sidebar-email').textContent = member.email || '-';
+        const sidebarRole = document.getElementById('profile-sidebar-role');
+        if (sidebarRole) sidebarRole.textContent = member.role || 'member';
         syncTopbarAccountChrome(member);
       }
 

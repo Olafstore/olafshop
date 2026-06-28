@@ -7524,14 +7524,32 @@ dialog::backdrop {
 }
 
 .premium-points-card {
+  position: relative;
   display: grid;
   gap: 12px;
-  padding: 14px;
-  border: 1px solid rgba(96, 165, 250, 0.24);
-  border-radius: 16px;
+  padding: 16px;
+  border: 1px solid rgba(96, 165, 250, 0.28);
+  border-radius: 20px;
   background:
-    radial-gradient(circle at top left, rgba(96, 165, 250, 0.16), transparent 42%),
-    rgba(8, 15, 34, 0.76);
+    radial-gradient(circle at 12% 0%, rgba(96, 165, 250, 0.26), transparent 34%),
+    radial-gradient(circle at 100% 0%, rgba(168, 85, 247, 0.18), transparent 34%),
+    linear-gradient(135deg, rgba(9, 18, 39, 0.96), rgba(8, 13, 27, 0.86));
+  box-shadow: 0 18px 44px rgba(2, 6, 23, 0.34), inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  overflow: hidden;
+}
+
+.premium-points-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.055), transparent);
+  transform: translateX(-120%);
+  transition: transform 640ms cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.premium-points-card.is-active::before {
+  transform: translateX(120%);
 }
 
 .premium-points-card[hidden] {
@@ -7539,17 +7557,19 @@ dialog::backdrop {
 }
 
 .premium-points-toggle {
+  position: relative;
+  z-index: 1;
   display: grid;
-  grid-template-columns: auto 42px minmax(0, 1fr);
+  grid-template-columns: 44px minmax(0, 1fr) auto;
   gap: 12px;
   align-items: center;
   cursor: pointer;
 }
 
 .premium-points-toggle input {
-  width: 18px;
-  height: 18px;
-  accent-color: #60a5fa;
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
 }
 
 .premium-points-icon {
@@ -7558,8 +7578,14 @@ dialog::backdrop {
   height: 42px;
   place-items: center;
   border-radius: 14px;
-  background: rgba(59, 130, 246, 0.14);
-  color: #93c5fd;
+  background:
+    linear-gradient(135deg, rgba(59, 130, 246, 0.22), rgba(168, 85, 247, 0.18));
+  color: #bfdbfe;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.premium-points-copy {
+  min-width: 0;
 }
 
 .premium-points-toggle strong {
@@ -7578,6 +7604,41 @@ dialog::backdrop {
   color: #bfdbfe;
 }
 
+.premium-points-switch {
+  position: relative;
+  width: 48px;
+  height: 28px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.92);
+  box-shadow: inset 0 1px 4px rgba(0, 0, 0, 0.26);
+  transition: border-color 180ms ease, background 180ms ease, box-shadow 180ms ease;
+}
+
+.premium-points-switch::after {
+  content: "";
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  background: #64748b;
+  box-shadow: 0 6px 14px rgba(2, 6, 23, 0.34);
+  transition: transform 200ms cubic-bezier(0.16, 1, 0.3, 1), background 180ms ease;
+}
+
+.premium-points-toggle input:checked ~ .premium-points-switch {
+  border-color: rgba(96, 165, 250, 0.74);
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.64), rgba(124, 58, 237, 0.64));
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.13), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.premium-points-toggle input:checked ~ .premium-points-switch::after {
+  transform: translateX(20px);
+  background: #eff6ff;
+}
+
 .premium-points-summary {
   display: flex;
   align-items: center;
@@ -7592,6 +7653,25 @@ dialog::backdrop {
 
 .premium-points-summary strong {
   color: #7dd3fc;
+}
+
+.premium-points-final {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid rgba(125, 211, 252, 0.16);
+  border-radius: 12px;
+  background: rgba(14, 165, 233, 0.08);
+  color: #bfdbfe;
+  font-size: 0.82rem;
+}
+
+.premium-points-final b {
+  color: #f8fafc;
+  font-size: 1rem;
+  font-weight: 900;
 }
 
 .premium-points-card p {
@@ -11358,6 +11438,7 @@ details.qr-manual-transfer[open] .qr-manual-transfer-body {
 /* 2026-06-21: Kanit typography and final responsive storefront header pass. */
 html,
 body,
+body :where(:not(svg):not(path):not(use)),
 button,
 input,
 select,
@@ -13807,5 +13888,94 @@ html, body {
 
   .topbar.site-topbar-unified .site-global-search.is-search-open {
     overflow: visible;
+  }
+}
+
+/* 2026-06-29: Point polish, unified topbar search, and full-site Kanit typography. */
+html,
+body,
+button,
+input,
+select,
+textarea,
+dialog,
+.app-shell,
+.toast,
+.search-suggestion-item,
+.premium-points-card,
+.profile-order-payment-alert,
+code,
+pre,
+kbd,
+samp,
+.order-ref-number span {
+  font-family: "Kanit", "Segoe UI", Tahoma, sans-serif !important;
+}
+
+.topbar.site-topbar-unified {
+  border-radius: 0 0 24px 24px;
+}
+
+.topbar.site-topbar-unified .topbar-search-wrap.site-unified-search,
+.topbar.site-topbar-unified .site-global-search {
+  flex: 0 1 260px;
+  width: min(260px, 22vw);
+}
+
+.topbar.site-topbar-unified .topbar-search-wrap.site-unified-search .topbar-search-form,
+.topbar.site-topbar-unified .site-global-search {
+  min-height: 42px;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  border-radius: 999px;
+  background:
+    radial-gradient(circle at 20% 0%, rgba(59, 130, 246, 0.12), transparent 42%),
+    rgba(15, 23, 42, 0.82);
+}
+
+.topbar.site-topbar-unified .topbar-search-wrap.site-unified-search .topbar-search-form:hover,
+.topbar.site-topbar-unified .site-global-search:hover {
+  border-color: rgba(96, 165, 250, 0.34);
+}
+
+.toast .toast-action,
+.profile-order-payment-alert a {
+  border-color: rgba(96, 165, 250, 0.62);
+  background:
+    linear-gradient(135deg, rgba(37, 99, 235, 0.34), rgba(14, 165, 233, 0.22));
+  color: #dbeafe;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.14);
+}
+
+.toast .toast-action:hover,
+.toast .toast-action:focus-visible,
+.profile-order-payment-alert a:hover,
+.profile-order-payment-alert a:focus-visible {
+  transform: translateY(-1px);
+  border-color: #93c5fd;
+  background:
+    linear-gradient(135deg, rgba(37, 99, 235, 0.48), rgba(14, 165, 233, 0.32));
+  color: #ffffff;
+  outline: none;
+}
+
+.profile-order-payment-alert {
+  background:
+    radial-gradient(circle at left, rgba(96, 165, 250, 0.12), transparent 42%),
+    rgba(127, 29, 29, 0.16);
+}
+
+@media (max-width: 1180px) {
+  .topbar.site-topbar-unified .topbar-search-wrap.site-unified-search,
+  .topbar.site-topbar-unified .site-global-search {
+    flex: 0 0 42px;
+    width: 42px;
+    max-width: 42px;
+  }
+
+  .topbar.site-topbar-unified .topbar-search-wrap.site-unified-search.is-search-open,
+  .topbar.site-topbar-unified .site-global-search.is-search-open {
+    flex: 1 1 auto;
+    width: min(320px, calc(100vw - 104px));
+    max-width: min(320px, calc(100vw - 104px));
   }
 }

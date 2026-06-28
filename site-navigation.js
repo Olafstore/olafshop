@@ -312,7 +312,19 @@
   }
 
   function setupUniversalSearch(header) {
-    if (header.querySelector(".topbar-search-wrap, .site-global-search")) return;
+    const legacySearch = header.querySelector(".topbar-search-wrap");
+    if (legacySearch) {
+      legacySearch.classList.add("site-unified-search");
+      const input = legacySearch.querySelector('input[type="search"]');
+      const toggle = legacySearch.querySelector(".topbar-search-toggle");
+      if (input) {
+        input.placeholder = "ค้นหาเกม...";
+        input.setAttribute("aria-label", "ค้นหาสินค้า");
+      }
+      if (toggle) toggle.setAttribute("aria-label", "เปิดช่องค้นหาสินค้า");
+      return;
+    }
+    if (header.querySelector(".site-global-search")) return;
     const actions = header.querySelector(".topbar-actions");
     if (!actions) return;
 

@@ -229,8 +229,9 @@ function showToast(message, type = "success", duration = 3500, action = null) {
   const icon = iconMap[type] || "check-circle";
   const toast = document.createElement("div");
   toast.className = `toast toast-${type}`;
+  const actionTarget = action?.target || "_self";
   const actionHtml = action?.href && action?.label
-    ? `<a class="toast-action" href="${escapeHtml(action.href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(action.label)}</a>`
+    ? `<a class="toast-action" href="${escapeHtml(action.href)}" target="${escapeHtml(actionTarget)}" rel="noopener noreferrer">${escapeHtml(action.label)}</a>`
     : "";
   toast.innerHTML = `<i data-lucide="${icon}"></i><span>${escapeHtml(message)}</span>${actionHtml}`;
   container.appendChild(toast);
@@ -2015,6 +2016,7 @@ function renderCheckoutPoints() {
   const checkbox = $("[data-checkout-use-points]");
   const balanceEl = $("[data-checkout-points-balance]");
   const discountEl = $("[data-checkout-points-discount]");
+  const finalEl = $("[data-checkout-points-final]");
   const noteEl = $("[data-checkout-points-note]");
   const paymentSection = $("[data-checkout-payment-section]");
   const submitButton = $("#submit-order");
@@ -2027,14 +2029,20 @@ function renderCheckoutPoints() {
   const finalTotal = Math.max(totalBeforePoints - discount, 0);
   checkoutPointState.pointsToUse = discount;
 
-  if (card) card.hidden = !hasPoints;
+  if (card) {
+    card.hidden = !hasPoints;
+    card.classList.toggle("is-active", Boolean(checkoutPointState.enabled && discount > 0));
+  }
   if (checkbox) checkbox.checked = checkoutPointState.enabled && hasPoints;
   if (balanceEl) balanceEl.textContent = formatPointAmount(balance);
   if (discountEl) discountEl.textContent = `-${formatPrice(discount)}`;
+  if (finalEl) finalEl.textContent = formatPrice(finalTotal);
   if (noteEl) {
     noteEl.textContent = finalTotal <= 0 && discount > 0
       ? "พอยท์ครอบคลุมยอดทั้งหมด ระบบจะยืนยันออเดอร์ทันทีโดยไม่ต้องแนบสลิป"
-      : "1 Point = 1 บาท ใช้ลดราคาได้สูงสุดตามยอดคำสั่งซื้อ";
+      : discount > 0
+        ? `ใช้ ${formatPointAmount(discount)} Point ลดราคา เหลือยอดชำระ ${formatPrice(finalTotal)}`
+        : "1 Point = 1 บาท ใช้ลดราคาได้สูงสุดตามยอดคำสั่งซื้อ";
   }
 
   setTextContent("[data-checkout-total]", formatPrice(finalTotal));
@@ -2429,8 +2437,9 @@ function showPaymentSlipError(error) {
     isUnderpaid ? 15000 : 6000,
     isUnderpaid
       ? {
-          label: "ติดต่อ",
-          href: OFFLINE_SUPPORT_PAGE_URL
+          label: "Check Point",
+          href: "profile.html#info",
+          target: "_self"
         }
       : null
   );

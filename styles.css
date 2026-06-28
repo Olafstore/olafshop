@@ -7256,6 +7256,12 @@ dialog::backdrop {
   border: 1px solid var(--border);
   border-radius: 16px;
   background: rgba(15, 23, 42, 0.46);
+  transform: translateZ(0);
+  transition: border-color 220ms ease, background 220ms ease, box-shadow 220ms ease;
+}
+
+.pd-arrow-accordion[open] {
+  box-shadow: 0 16px 42px rgba(2, 6, 23, 0.18);
 }
 
 .pd-arrow-accordion summary {
@@ -7304,7 +7310,7 @@ dialog::backdrop {
 
 .pd-arrow-accordion-body {
   padding: 0 18px 18px;
-  animation: pdAccordionReveal 220ms ease both;
+  animation: pdAccordionReveal 260ms cubic-bezier(.16, 1, .3, 1) both;
 }
 
 @keyframes pdAccordionReveal {
@@ -7584,6 +7590,12 @@ dialog::backdrop {
   aspect-ratio: 616 / 353;
   object-fit: cover;
   background: #020617;
+  opacity: 0.92;
+  transition: opacity 220ms ease, transform 260ms ease;
+}
+
+.pd-steam-related-card img.is-loaded {
+  opacity: 1;
 }
 
 .pd-steam-related-card > span {

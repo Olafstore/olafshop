@@ -1,4 +1,9 @@
-module.exports = async function handler(request, response) {
+function firstImageFromHtml(value = "") {
+  const match = String(value || "").match(/<img[^>]+src=["']([^"']+)["']/i);
+  return match ? match[1].replace(/&amp;/g, "&") : "";
+}
+
+export default async function handler(request, response) {
   response.setHeader("Access-Control-Allow-Origin", "*");
   response.setHeader("Access-Control-Allow-Methods", "GET, OPTIONS");
   response.setHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -36,13 +41,15 @@ module.exports = async function handler(request, response) {
     }
 
     const data = item.data;
+    const fallbackImage = firstImageFromHtml(data.detailed_description) || firstImageFromHtml(data.about_the_game);
     response.setHeader("Cache-Control", "public, s-maxage=21600, stale-while-revalidate=86400");
     return response.status(200).json({
       appId: Number(appId),
       name: data.name || `Steam App ${appId}`,
       type: data.type || "",
-      headerImage: data.header_image || `https://cdn.akamai.steamstatic.com/steam/apps/${appId}/header.jpg`,
+      headerImage: data.header_image || fallbackImage || `https://cdn.akamai.steamstatic.com/steam/apps/${appId}/header.jpg`,
       capsuleImage: data.capsule_image || "",
+      capsuleImageV5: data.capsule_imagev5 || "",
       shortDescription: data.short_description || "",
       developers: Array.isArray(data.developers) ? data.developers : [],
       publishers: Array.isArray(data.publishers) ? data.publishers : [],
@@ -54,4 +61,4 @@ module.exports = async function handler(request, response) {
       message: String(error?.message || error)
     });
   }
-};
+}

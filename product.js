@@ -18,7 +18,18 @@ const productEndpoints = [
   "./api/products.json"
 ].filter(Boolean);
 
+const steamAppCacheEndpoints = [
+  window.OLAF_CONFIG?.steamAppCacheEndpoint,
+  "assets/steam-app-cache.json",
+  "/assets/steam-app-cache.json",
+  "./assets/steam-app-cache.json"
+].filter(Boolean);
+
+const STEAM_RELATED_PLACEHOLDER =
+  "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 616 353'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23071122'/%3E%3Cstop offset='1' stop-color='%2315284d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='616' height='353' fill='url(%23g)'/%3E%3Ccircle cx='485' cy='78' r='39' fill='%233b82f6' opacity='.28'/%3E%3Cpath d='M86 262l108-108 74 74 51-51 143 143H86z' fill='%233b82f6' opacity='.55'/%3E%3C/svg%3E";
+
 const suggestionLimit = 40;
+let steamAppCachePromise = null;
 
 const formatPrice = (v) =>
   new Intl.NumberFormat("th-TH", {
@@ -1099,15 +1110,18 @@ function steamImageCandidates(appId, preferred = "") {
 }
 
 function steamRelatedImageMarkup(item) {
-  const candidates = steamImageCandidates(item.appId, item.image);
-  return `<img src="${escapeHtml(candidates[0])}" data-image-fallbacks="${escapeHtml(JSON.stringify(candidates.slice(1)))}" alt="${escapeHtml(cleanDisplayText(item.title || "เนื้อหาเสริมบน Steam"))}" loading="eager" decoding="async" fetchpriority="low" width="616" height="353" data-steam-related-image />`;
+  const preferred = String(item.image || "").trim();
+  const candidates = steamImageCandidates(item.appId, preferred);
+  const source = preferred || STEAM_RELATED_PLACEHOLDER;
+  const fallbacks = preferred ? candidates.slice(1) : candidates;
+  return `<img src="${escapeHtml(source)}" data-image-fallbacks="${escapeHtml(JSON.stringify(fallbacks))}" alt="${escapeHtml(cleanDisplayText(item.title || "เนื้อหาเสริมบน Steam"))}" loading="eager" decoding="async" fetchpriority="low" width="616" height="353" data-steam-related-image />`;
 }
 
 function steamRelatedSection(product) {
   const items = steamRelatedItems(product);
   if (!items.length) return "";
   return `
-    <details class="pd-arrow-accordion pd-steam-related" open data-smooth-details data-accordion-group="product-info">
+    <details class="pd-arrow-accordion pd-steam-related" open data-smooth-details>
       <summary>
         <span class="pd-arrow-summary-title">
           <span class="pd-section-icon-box"><i data-lucide="layers-3"></i></span>
@@ -1134,12 +1148,84 @@ function steamRelatedSection(product) {
   `;
 }
 
+async function loadSteamAppCache() {
+  if (!steamAppCachePromise) {
+    steamAppCachePromise = (async () => {
+      for (const endpoint of [...new Set(steamAppCacheEndpoints)]) {
+        try {
+          const response = await fetch(endpoint, { cache: "force-cache" });
+          if (!response.ok) continue;
+          const payload = await response.json();
+          if (payload && typeof payload === "object") return payload;
+        } catch (error) {
+          console.warn(`Steam cache unavailable: ${endpoint}`, error);
+        }
+      }
+      return {};
+    })();
+  }
+  return steamAppCachePromise;
+}
+
+function applySteamRelatedMetadata(card, appId, data = {}) {
+  if (!card || !appId || !data || typeof data !== "object") return false;
+  const title = card.querySelector("[data-steam-related-title]");
+  const type = card.querySelector("[data-steam-related-type]");
+  const image = card.querySelector("[data-steam-related-image]");
+  let applied = false;
+
+  if (title && data.name) {
+    title.textContent = data.name;
+    applied = true;
+  }
+  if (type && data.type) {
+    type.textContent = data.type === "dlc" ? "DLC / ส่วนเสริม" : data.type === "game" ? "ตัวเกม" : "เนื้อหาบน Steam";
+    applied = true;
+  }
+  if (image && (data.headerImage || data.capsuleImage || data.capsuleImageV5)) {
+    const candidates = [...new Set([
+      data.headerImage,
+      data.capsuleImage,
+      data.capsuleImageV5,
+      ...steamImageCandidates(appId, data.headerImage)
+    ].filter(Boolean))];
+    if (candidates.length) {
+      image.dataset.fallbackIndex = "0";
+      image.dataset.imageFallbacks = JSON.stringify(candidates.slice(1));
+      delete image.dataset.fallbackApplied;
+      if (image.getAttribute("src") !== candidates[0]) {
+        image.classList.remove("is-loaded");
+        image.src = candidates[0];
+      }
+      applied = true;
+    }
+  }
+
+  return applied;
+}
+
+function trySteamRelatedImageFallbacks(card, appId) {
+  const image = card?.querySelector?.("[data-steam-related-image]");
+  if (!image || !appId || image.dataset.fallbackApplied === "true") return;
+  const candidates = steamImageCandidates(appId, "");
+  if (!candidates.length) return;
+  image.dataset.fallbackIndex = "0";
+  image.dataset.imageFallbacks = JSON.stringify(candidates.slice(1));
+  image.src = candidates[0];
+}
+
 async function hydrateSteamRelatedMetadata() {
   const cards = [...document.querySelectorAll("[data-steam-related-card]")];
+  const cache = await loadSteamAppCache();
   await Promise.all(cards.map(async (card) => {
     const appId = card.dataset.appid;
     if (!appId) return;
     try {
+      const cachedData = cache?.[appId];
+      if (cachedData) {
+        applySteamRelatedMetadata(card, appId, cachedData);
+        return;
+      }
       const endpoints = [...new Set([
         window.OLAF_CONFIG?.steamMetadataEndpoint,
         "/api/steam-app",
@@ -1159,24 +1245,14 @@ async function hydrateSteamRelatedMetadata() {
           console.warn(`Steam endpoint unavailable: ${endpoint}`, endpointError);
         }
       }
-      if (!data) return;
-      const title = card.querySelector("[data-steam-related-title]");
-      const type = card.querySelector("[data-steam-related-type]");
-      const image = card.querySelector("[data-steam-related-image]");
-      if (title && data.name) title.textContent = data.name;
-      if (type) type.textContent = data.type === "dlc" ? "DLC / ส่วนเสริม" : data.type === "game" ? "ตัวเกม" : "เนื้อหาบน Steam";
-      if (image && (data.headerImage || data.capsuleImage)) {
-        const candidates = [
-          ...steamImageCandidates(appId, data.headerImage),
-          data.capsuleImage
-        ].filter(Boolean);
-        image.dataset.fallbackIndex = "0";
-        image.dataset.imageFallbacks = JSON.stringify(candidates.slice(1));
-        delete image.dataset.fallbackApplied;
-        image.src = candidates[0];
+      if (!data) {
+        trySteamRelatedImageFallbacks(card, appId);
+        return;
       }
+      applySteamRelatedMetadata(card, appId, data);
     } catch (error) {
       console.warn(`Steam metadata unavailable for ${appId}`, error);
+      trySteamRelatedImageFallbacks(card, appId);
     }
   }));
 }
@@ -1194,9 +1270,14 @@ function animateSmoothDetails(details, opening) {
     return Promise.resolve();
   }
   if (details._smoothAnimation) details._smoothAnimation.cancel();
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
+    details.open = opening;
+    return Promise.resolve();
+  }
 
   const startHeight = details.getBoundingClientRect().height;
   if (opening) details.open = true;
+  content.style.overflow = "hidden";
   const endHeight = opening
     ? summary.getBoundingClientRect().height + content.scrollHeight
     : summary.getBoundingClientRect().height;
@@ -1207,14 +1288,14 @@ function animateSmoothDetails(details, opening) {
 
   const contentAnimation = content.animate(
     opening
-      ? [{ opacity: 0, transform: "translateY(-7px)" }, { opacity: 1, transform: "translateY(0)" }]
-      : [{ opacity: 1, transform: "translateY(0)" }, { opacity: 0, transform: "translateY(-7px)" }],
-    { duration: opening ? 300 : 240, easing: "cubic-bezier(.22, 1, .36, 1)", fill: "both" }
+      ? [{ opacity: 0, transform: "translateY(-8px) scale(.992)" }, { opacity: 1, transform: "translateY(0) scale(1)" }]
+      : [{ opacity: 1, transform: "translateY(0) scale(1)" }, { opacity: 0, transform: "translateY(-8px) scale(.992)" }],
+    { duration: opening ? 360 : 300, easing: "cubic-bezier(.16, 1, .3, 1)", fill: "both" }
   );
 
   const animation = details.animate(
     [{ height: `${startHeight}px` }, { height: `${endHeight}px` }],
-    { duration: opening ? 340 : 280, easing: "cubic-bezier(.22, 1, .36, 1)" }
+    { duration: opening ? 390 : 330, easing: "cubic-bezier(.16, 1, .3, 1)" }
   );
   details._smoothAnimation = animation;
 
@@ -1224,6 +1305,7 @@ function animateSmoothDetails(details, opening) {
       contentAnimation.cancel();
       details.style.removeProperty("height");
       details.style.removeProperty("overflow");
+      content.style.removeProperty("overflow");
       delete details.dataset.animating;
       details._smoothAnimation = null;
       resolve();

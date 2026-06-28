@@ -2,6 +2,9 @@
   "cleanUrls": false,
   "trailingSlash": false,
   "functions": {
+    "api/steam-app.js": {
+      "maxDuration": 20
+    },
     "api/verify-slip.js": {
       "maxDuration": 30
     }

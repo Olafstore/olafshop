@@ -22,7 +22,7 @@ const PUBLIC_ERROR_MESSAGES = {
   DUPLICATE_SLIP: "สลิปนี้ถูกใช้กับออเดอร์อื่นแล้ว",
   VERIFICATION_IN_PROGRESS: "ระบบกำลังตรวจสลิปนี้อยู่ กรุณารอสักครู่",
   PAYMENT_AMOUNT_MISMATCH: "ยอดเงินในสลิปไม่ตรงกับยอดออเดอร์",
-  PAYMENT_AMOUNT_INSUFFICIENT: "จำนวนเงินไม่เพียงพอ โปรดกดปุ่มติดต่อ",
+  PAYMENT_AMOUNT_INSUFFICIENT: "จำนวนเงินไม่เพียงพอ ระบบจะแปลงยอดที่ชำระเป็นพอยท์ในเว็บไซต์",
   PAYMENT_TIME_MISMATCH: "เวลาชำระเงินในสลิปไม่ตรงกับช่วงเวลาของออเดอร์",
   RECEIVER_ALLOWLIST_REQUIRED: "ยังไม่ได้ตั้งค่าชื่อหรือบัญชีผู้รับเงินสำหรับตรวจสอบ",
   RECEIVER_MISMATCH: "ข้อมูลผู้รับเงินในสลิปไม่ตรงกับบัญชีของร้าน",
@@ -167,6 +167,8 @@ async function fetchJson(url, options, errorCode = "PAYMENT_VERIFICATION_FAILED"
       "DUPLICATE_SLIP",
       "VERIFICATION_IN_PROGRESS",
       "PAYMENT_AMOUNT_MISMATCH",
+      "PAYMENT_AMOUNT_INSUFFICIENT",
+      "PAYMENT_AMOUNT_INSUFFICIENT_POINTS_CREDITED",
       "VERIFICATION_ATTEMPT_NOT_FOUND",
       "VERIFICATION_ATTEMPT_NOT_PROCESSING"
     ].find((code) => message.includes(code));
@@ -427,10 +429,7 @@ export function matchVerifiedAmount(rawAmount, expectedTotal) {
         verifiedAmount: closest
       });
     }
-    throw new VerificationError("PAYMENT_AMOUNT_MISMATCH", 422, {
-      providerPayload: { amount: rawAmount },
-      verifiedAmount: closest
-    });
+    return closest;
   }
   return matched;
 }
@@ -657,7 +656,7 @@ async function rejectUnderpaidOrder({
   }, config).catch(() => null);
   if (!rejected) return false;
   await removeSlip(order.payment_slip_path, config);
-  return true;
+  return rejected;
 }
 
 function publicOrderResult(payload) {
@@ -670,6 +669,8 @@ function publicOrderResult(payload) {
     paymentVerifiedAt: order.payment_verified_at || "",
     paymentVerifiedProvider: order.payment_verified_provider || "",
     paymentVerificationNote: order.payment_verification_note || "",
+    pointsRedeemedAmount: Number(order.points_redeemed_amount || 0),
+    pointCreditAmount: Number(payload?.pointCreditAmount ?? order.point_credit_amount ?? 0),
     autoDelivered: payload?.autoDelivered === true,
     fulfillmentPending: payload?.fulfillmentPending === true
   };
@@ -689,6 +690,7 @@ export default async function handler(request, response) {
   let order;
   let attemptId = "";
   let slipHandled = false;
+  let pointCreditAmount = 0;
   try {
     config = serverConfig();
     user = await authenticateUser(request, config);
@@ -779,7 +781,7 @@ export default async function handler(request, response) {
       verifyReceiverIdentity(normalized, channel, config);
     } catch (error) {
       if (error?.code === "PAYMENT_AMOUNT_INSUFFICIENT") {
-        slipHandled = await rejectUnderpaidOrder({
+        const rejected = await rejectUnderpaidOrder({
           attemptId,
           order,
           transactionId: payloadInfo.transactionId,
@@ -787,6 +789,10 @@ export default async function handler(request, response) {
           providerPayload: providerResponse,
           config
         });
+        slipHandled = Boolean(rejected);
+        if (Number(rejected?.pointCreditAmount || 0) > 0) {
+          pointCreditAmount = Number(rejected.pointCreditAmount);
+        }
         throw error;
       }
       if (attemptId) {
@@ -819,6 +825,8 @@ export default async function handler(request, response) {
     return responseJson(response, 200, {
       success: true,
       alreadyVerified: fulfilled?.alreadyVerified === true,
+      pointCreditAmount: Number(fulfilled?.pointCreditAmount || 0),
+      pointCredited: Number(fulfilled?.pointCreditAmount || 0) > 0,
       order: publicOrderResult(fulfilled)
     });
   } catch (error) {
@@ -847,6 +855,8 @@ export default async function handler(request, response) {
       retriable: error?.retriable === true,
       slipHandled,
       orderCancelled: code === "PAYMENT_AMOUNT_INSUFFICIENT" && slipHandled,
+      pointCreditAmount,
+      pointCredited: slipHandled && pointCreditAmount > 0,
       contactUrl: code === "PAYMENT_AMOUNT_INSUFFICIENT" ? PAYMENT_CONTACT_URL : undefined
     });
   }

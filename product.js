@@ -10,6 +10,13 @@ let qrSlipInput = null;
 let currentProductPackages = [];
 let selectedPackageId = null;
 let iconRefreshQueued = false;
+let checkoutPointState = {
+  balance: 0,
+  enabled: false,
+  pointsToUse: 0,
+  subtotal: 0,
+  totalBeforePoints: 0
+};
 
 const productEndpoints = [
   window.OLAF_CONFIG?.productsEndpoint,
@@ -37,6 +44,11 @@ const formatPrice = (v) =>
     currency: "THB",
     maximumFractionDigits: 0
   }).format(Number(v) || 0);
+
+const formatPointAmount = (v) =>
+  new Intl.NumberFormat("th-TH", {
+    maximumFractionDigits: 0
+  }).format(Math.floor(Number(v) || 0));
 
 function escapeHtml(value = "") {
   return String(value).replace(/[&<>"']/g, (char) => {
@@ -1990,6 +2002,66 @@ function renderProduct() {
 }
 
 
+function checkoutPointDiscount() {
+  if (!checkoutPointState.enabled) return 0;
+  return Math.min(
+    Math.max(Number(checkoutPointState.balance || 0), 0),
+    Math.max(Number(checkoutPointState.totalBeforePoints || 0), 0)
+  );
+}
+
+function renderCheckoutPoints() {
+  const card = $("[data-checkout-points-card]");
+  const checkbox = $("[data-checkout-use-points]");
+  const balanceEl = $("[data-checkout-points-balance]");
+  const discountEl = $("[data-checkout-points-discount]");
+  const noteEl = $("[data-checkout-points-note]");
+  const paymentSection = $("[data-checkout-payment-section]");
+  const submitButton = $("#submit-order");
+  const submitLabel = submitButton?.querySelector("span");
+
+  const balance = Math.max(Number(checkoutPointState.balance || 0), 0);
+  const totalBeforePoints = Math.max(Number(checkoutPointState.totalBeforePoints || 0), 0);
+  const hasPoints = balance > 0 && totalBeforePoints > 0;
+  const discount = checkoutPointDiscount();
+  const finalTotal = Math.max(totalBeforePoints - discount, 0);
+  checkoutPointState.pointsToUse = discount;
+
+  if (card) card.hidden = !hasPoints;
+  if (checkbox) checkbox.checked = checkoutPointState.enabled && hasPoints;
+  if (balanceEl) balanceEl.textContent = formatPointAmount(balance);
+  if (discountEl) discountEl.textContent = `-${formatPrice(discount)}`;
+  if (noteEl) {
+    noteEl.textContent = finalTotal <= 0 && discount > 0
+      ? "พอยท์ครอบคลุมยอดทั้งหมด ระบบจะยืนยันออเดอร์ทันทีโดยไม่ต้องแนบสลิป"
+      : "1 Point = 1 บาท ใช้ลดราคาได้สูงสุดตามยอดคำสั่งซื้อ";
+  }
+
+  setTextContent("[data-checkout-total]", formatPrice(finalTotal));
+  if (paymentSection) paymentSection.hidden = finalTotal <= 0 && discount > 0;
+  if (submitLabel) {
+    submitLabel.textContent = finalTotal <= 0 && discount > 0
+      ? "ใช้พอยท์สั่งซื้อทันที"
+      : "ดำเนินการชำระเงิน";
+  }
+}
+
+async function hydrateCheckoutPoints() {
+  if (!window.OlafOrders?.fetchPointBalance) {
+    renderCheckoutPoints();
+    return;
+  }
+  try {
+    const wallet = await window.OlafOrders.fetchPointBalance();
+    checkoutPointState.balance = Number(wallet?.balance || 0);
+  } catch (error) {
+    console.warn("Unable to load point balance", error);
+    checkoutPointState.balance = 0;
+  }
+  renderCheckoutPoints();
+}
+
+
 function openOrderForm() {
   const p = currentProduct;
   const purchase = getPurchaseOption(p);
@@ -2029,6 +2101,24 @@ function openOrderForm() {
   setTextContent("[data-checkout-price-subtotal]", formatPrice(subtotal));
   setTextContent("[data-checkout-fee]", formatPrice(fee));
   setTextContent("[data-checkout-total]", formatPrice(total));
+  checkoutPointState = {
+    balance: 0,
+    enabled: false,
+    pointsToUse: 0,
+    subtotal,
+    totalBeforePoints: total
+  };
+  renderCheckoutPoints();
+  hydrateCheckoutPoints();
+
+  const pointCheckbox = form.querySelector("[data-checkout-use-points]");
+  if (pointCheckbox && !pointCheckbox.dataset.pointBound) {
+    pointCheckbox.addEventListener("change", () => {
+      checkoutPointState.enabled = pointCheckbox.checked;
+      renderCheckoutPoints();
+    });
+    pointCheckbox.dataset.pointBound = "true";
+  }
 
   const orderNumberWrap = $("[data-checkout-order-container]");
   if (orderNumberWrap) orderNumberWrap.hidden = true;
@@ -2116,6 +2206,7 @@ function orderErrorMessage(error) {
   if (message.includes("AUTH_REQUIRED")) return "กรุณาเข้าสู่ระบบก่อนสั่งซื้อ";
   if (message.includes("PRODUCT_NOT_FOUND")) return "ไม่พบสินค้านี้หรือสินค้าถูกปิดชั่วคราว";
   if (message.includes("INVALID_QUANTITY")) return "จำนวนสินค้าไม่ถูกต้อง";
+  if (message.includes("POINT_BALANCE_INSUFFICIENT")) return "พอยท์คงเหลือไม่เพียงพอ กรุณารีเฟรชยอดพอยท์แล้วลองใหม่";
   return "ไม่สามารถสร้างคำสั่งซื้อได้ กรุณาลองใหม่อีกครั้ง";
 }
 
@@ -2137,7 +2228,8 @@ async function submitOrder(formData) {
       quantity: detailQuantity,
       paymentMethod: normalizePaymentMethod(formData.get("paymentMethod")),
       customerName: formData.get("customerName") || window.OlafStore.currentUser()?.displayName || window.OlafStore.currentUser()?.username || "",
-      packageId: purchase.packageId || null
+      packageId: purchase.packageId || null,
+      pointsToUse: checkoutPointState.pointsToUse || 0
     });
 
     await refreshCurrentProduct();
@@ -2145,6 +2237,20 @@ async function submitOrder(formData) {
     const orderNumberWrap = $("[data-checkout-order-container]");
     if (orderNumberWrap) orderNumberWrap.hidden = false;
     $("#order-dialog")?.close();
+    if (Number(savedOrder?.total || 0) <= 0 || savedOrder?.paymentStatus === "verified") {
+      showToast(
+        savedOrder?.status === "delivered"
+          ? "ใช้พอยท์สั่งซื้อสำเร็จ และจัดส่งสินค้า Offline แล้ว"
+          : "ใช้พอยท์สั่งซื้อสำเร็จ รอแอดมินจัดส่งสินค้า",
+        "payment",
+        5500
+      );
+      await hydrateCheckoutPoints().catch(() => null);
+      window.setTimeout(() => {
+        window.location.href = `profile.html?order=${encodeURIComponent(savedOrder.id)}#inventory`;
+      }, 900);
+      return;
+    }
     showPaymentResult(savedOrder);
     showToast("สร้างคำสั่งซื้อแล้ว กรุณาชำระเงินและแนบสลิป", "payment", 5000);
     return;
@@ -2292,9 +2398,11 @@ function showPaymentResult(order) {
 function paymentSlipErrorMessage(error) {
   const code = String(error?.code || error?.message || "");
   if (code === "PAYMENT_AMOUNT_INSUFFICIENT") {
+    const credited = Number(error?.pointCreditAmount || 0);
+    const suffix = credited > 0 ? ` ยอดที่ชำระ ${formatPrice(credited)} ถูกแปลงเป็น Point แล้ว` : " ยอดที่ชำระจะถูกแปลงเป็น Point ในเว็บไซต์";
     return error?.orderCancelled
-      ? "ออเดอร์ถูกยกเลิกและคืนสต็อกแล้ว จำนวนเงินไม่เพียงพอ โปรดกดปุ่มติดต่อ"
-      : "จำนวนเงินไม่เพียงพอ โปรดกดปุ่มติดต่อ";
+      ? `ออเดอร์ถูกยกเลิกและคืนสต็อกแล้ว จำนวนเงินไม่เพียงพอ${suffix}`
+      : `จำนวนเงินไม่เพียงพอ${suffix}`;
   }
   const messages = {
     SLIP_QR_SCANNER_NOT_READY: "ระบบอ่าน QR ยังโหลดไม่เสร็จ กรุณารอสักครู่แล้วลองใหม่",
@@ -2331,6 +2439,9 @@ function showPaymentSlipError(error) {
 function paymentSlipSuccessMessage(order) {
   if (order?.verificationPending) {
     return "แนบสลิปแล้ว แต่ API ขัดข้องชั่วคราว แอดมินสามารถตรวจสอบต่อได้";
+  }
+  if (Number(order?.pointCreditAmount || 0) > 0) {
+    return `ตรวจสลิปแล้ว ส่วนเกิน ${formatPrice(order.pointCreditAmount)} ถูกแปลงเป็น Point สะสม`;
   }
   if (order?.status === "delivered") {
     return "ตรวจสลิปแล้ว และจัดส่งบัญชี Offline เรียบร้อย";

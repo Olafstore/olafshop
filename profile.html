@@ -16,14 +16,14 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
   <script src="slip-qr-scanner.js?v=20260621-slip-verify-v2" defer></script>
-  <script src="supabase-client.js?v=20260621-slip-verify-v2" defer></script> 
+  <script src="supabase-client.js?v=20260629-points" defer></script> 
   <script src="order-action-popup.js?v=20260621-order-animation" defer></script>
   <script src="platform-store.js?v=20260619-profile-update-fix" defer></script>
   <script src="image-performance.js?v=20260607-performance" defer></script>
 <script src="delivery-payload.js?v=20260620-phase1-12-final" defer></script>
   <script src="site-navigation.js?v=20260621-search-polish" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-<link rel="stylesheet" href="styles.css?v=20260621-search-polish" />
+<link rel="stylesheet" href="styles.css?v=20260629-points" />
   <style>
     body {
       padding-top: 0;
@@ -199,6 +199,49 @@
     .profile-sidebar-nav {
       display: grid;
       gap: 8px;
+    }
+
+    .profile-points-card {
+      display: grid;
+      grid-template-columns: 42px minmax(0, 1fr);
+      gap: 12px;
+      align-items: center;
+      margin: -4px 0 16px;
+      padding: 12px;
+      border: 1px solid rgba(96, 165, 250, 0.24);
+      border-radius: 16px;
+      background:
+        radial-gradient(circle at top left, rgba(96, 165, 250, 0.18), transparent 44%),
+        rgba(8, 15, 34, 0.72);
+    }
+
+    .profile-points-card[hidden] {
+      display: none;
+    }
+
+    .profile-points-icon {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border-radius: 14px;
+      background: rgba(59, 130, 246, 0.14);
+      color: #93c5fd;
+    }
+
+    .profile-points-card small {
+      display: block;
+      color: #9fb0d1;
+      font-size: 0.75rem;
+    }
+
+    .profile-points-card strong {
+      display: block;
+      margin-top: 2px;
+      color: #eff6ff;
+      font-size: 1rem;
+      font-weight: 800;
+      line-height: 1.15;
     }
 
     .profile-nav-item {
@@ -2070,6 +2113,13 @@
               <p id="profile-sidebar-email">กำลังโหลด...</p>
             </div>
           </div>
+          <div class="profile-points-card" id="profile-points-card" hidden>
+            <span class="profile-points-icon"><i data-lucide="coins" style="width:18px;height:18px"></i></span>
+            <div>
+              <small>Point คงเหลือ</small>
+              <strong><span id="profile-point-balance">0</span> Point</strong>
+            </div>
+          </div>
           <nav class="profile-sidebar-nav" role="navigation" aria-label="เมนูโปรไฟล์">
             <button class="profile-nav-item is-active" type="button" data-panel="info">
               <i data-lucide="user" style="width:18px;height:18px"></i>
@@ -2334,6 +2384,10 @@
       return new Intl.NumberFormat('th-TH', { style: 'currency', currency: 'THB', maximumFractionDigits: 0 }).format(Number(v) || 0);
     }
 
+    function formatPointAmount(v) {
+      return new Intl.NumberFormat('th-TH', { maximumFractionDigits: 0 }).format(Math.floor(Number(v) || 0));
+    }
+
     function orderStatusLabel(status) {
       const map = {
         pending: 'รอการชำระเงิน',
@@ -2352,6 +2406,30 @@
       return '<span class="payment-verified-badge"><i data-lucide="badge-check"></i>ตรวจสลิปแล้ว</span>';
     }
 
+    function renderProfilePoints(balance = profileState.pointBalance) {
+      const card = document.getElementById('profile-points-card');
+      const value = document.getElementById('profile-point-balance');
+      const normalized = Math.max(Number(balance || 0), 0);
+      profileState.pointBalance = normalized;
+      if (value) value.textContent = formatPointAmount(normalized);
+      if (card) card.hidden = false;
+      if (window.lucide) lucide.createIcons();
+    }
+
+    async function refreshProfilePoints() {
+      if (!window.OlafOrders?.fetchPointBalance) {
+        renderProfilePoints(0);
+        return;
+      }
+      try {
+        const wallet = await window.OlafOrders.fetchPointBalance();
+        renderProfilePoints(wallet?.balance || 0);
+      } catch (error) {
+        console.warn('Unable to load point balance', error);
+        renderProfilePoints(0);
+      }
+    }
+
     function escape(v) {
       return String(v || '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' }[c]));
     }
@@ -2367,6 +2445,7 @@
       orders: [],
       products: [],
       storeSettings: {},
+      pointBalance: 0,
       refreshTimer: null,
       isRefreshing: false
     };
@@ -2520,9 +2599,9 @@
                 ${paymentVerifiedBadge(o)}
                 <span class="status-badge ${escape(o.status)}">${orderStatusLabel(o.status)}</span>
               </div>
-              ${o.paymentVerificationNote === 'PAYMENT_AMOUNT_INSUFFICIENT' ? `
+              ${String(o.paymentVerificationNote || '') === 'PAYMENT_AMOUNT_INSUFFICIENT' || String(o.paymentVerificationNote || '') === 'PAYMENT_AMOUNT_INSUFFICIENT_POINTS_CREDITED' ? `
                 <div class="profile-order-payment-alert">
-                  <span>จำนวนเงินไม่เพียงพอ ออเดอร์ถูกยกเลิกและคืนสต็อกแล้ว</span>
+                  <span>จำนวนเงินไม่เพียงพอ ออเดอร์ถูกยกเลิกและคืนสต็อกแล้ว${Number(o.pointCreditAmount || 0) > 0 ? ` · แปลงเป็น ${formatPointAmount(o.pointCreditAmount)} Point แล้ว` : ''}</span>
                   <a href="https://www.facebook.com/byOlafshop" target="_blank" rel="noopener noreferrer">ติดต่อ</a>
                 </div>
               ` : ''}
@@ -2729,9 +2808,13 @@
       const code = String(error?.code || '');
       const message = String(error?.message || '');
       if (code === 'PAYMENT_AMOUNT_INSUFFICIENT') {
+        const credited = Number(error?.pointCreditAmount || 0);
+        const suffix = credited > 0
+          ? ` ยอดที่ชำระ ${formatPrice(credited)} ถูกแปลงเป็น Point แล้ว`
+          : ' ยอดที่ชำระจะถูกแปลงเป็น Point ในเว็บไซต์';
         return error?.orderCancelled
-          ? 'ออเดอร์ถูกยกเลิกและคืนสต็อกแล้ว จำนวนเงินไม่เพียงพอ โปรดกดปุ่มติดต่อ'
-          : 'จำนวนเงินไม่เพียงพอ โปรดกดปุ่มติดต่อ';
+          ? `ออเดอร์ถูกยกเลิกและคืนสต็อกแล้ว จำนวนเงินไม่เพียงพอ${suffix}`
+          : `จำนวนเงินไม่เพียงพอ${suffix}`;
       }
       const apiMessages = {
         SLIP_QR_SCANNER_NOT_READY: 'ระบบอ่าน QR ยังโหลดไม่เสร็จ กรุณารอสักครู่แล้วลองใหม่',
@@ -3345,6 +3428,7 @@
       });
 
       applyProfileIdentity(user);
+      refreshProfilePoints();
 
       // Fill form
       const form = document.getElementById('profile-form');
@@ -3535,6 +3619,12 @@
               'ระบบตรวจสลิปขัดข้องชั่วคราว สลิปถูกเก็บไว้ให้แอดมินตรวจสอบ'
             );
             showToast('แนบสลิปแล้ว แต่ API ขัดข้องชั่วคราว แอดมินสามารถตรวจสอบต่อได้');
+          } else if (Number(verifiedOrder?.pointCreditAmount || 0) > 0) {
+            window.OlafOrderActivity?.success(
+              'ตรวจสลิปเรียบร้อย',
+              `ส่วนเกิน ${formatPrice(verifiedOrder.pointCreditAmount)} ถูกแปลงเป็น Point แล้ว`
+            );
+            showToast(`ตรวจสลิปแล้ว ส่วนเกิน ${formatPrice(verifiedOrder.pointCreditAmount)} ถูกแปลงเป็น Point`);
           } else if (verifiedOrder?.status === 'delivered') {
             window.OlafOrderActivity?.success(
               'ตรวจสลิปเรียบร้อย',
@@ -3548,7 +3638,10 @@
             );
             showToast('ตรวจสลิปแล้ว รอแอดมินจัดส่งสินค้า');
           }
-          await refreshProfileOrders({ quiet: true });
+          await Promise.all([
+            refreshProfileOrders({ quiet: true }),
+            refreshProfilePoints()
+          ]);
         } catch (error) {
           window.OlafOrderActivity?.error(
             'ตรวจสลิปไม่สำเร็จ',
@@ -3556,7 +3649,10 @@
           );
           showSlipUploadError(error);
           if (error?.orderCancelled) {
-            await refreshProfileOrders({ quiet: true });
+            await Promise.all([
+              refreshProfileOrders({ quiet: true }),
+              refreshProfilePoints()
+            ]);
           }
         } finally {
           if (submitButton) {

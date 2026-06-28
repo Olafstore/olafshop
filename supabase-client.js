@@ -866,6 +866,8 @@
       paymentVerifiedReference: row.payment_verified_reference || "",
       paymentVerifiedAmount: row.payment_verified_amount == null ? null : Number(row.payment_verified_amount),
       paymentVerificationNote: row.payment_verification_note || "",
+      pointsRedeemedAmount: Number(row.points_redeemed_amount || 0),
+      pointCreditAmount: Number(row.point_credit_amount || 0),
       paymentSlipPath: row.payment_slip_path || "",
       paymentSlipUrl: row.payment_slip_url || "",
       expiresAt: row.expires_at || "",
@@ -1142,12 +1144,24 @@
       error.retriable = payload?.retriable === true || !error.slipHandledByServer;
       error.orderCancelled = payload?.orderCancelled === true;
       error.contactUrl = String(payload?.contactUrl || "");
+      error.pointCreditAmount = Number(payload?.pointCreditAmount || 0);
+      error.pointCredited = payload?.pointCredited === true;
       throw error;
     }
     return payload;
   }
 
-  async function createOrder({ productId, quantity, paymentMethod, customerName, packageId }) {
+  async function fetchPointBalance() {
+    const { data, error } = await requireClient().rpc("get_my_point_balance");
+    if (error) throw error;
+    return {
+      balance: Number(data?.balance || 0),
+      lifetimeEarned: Number(data?.lifetimeEarned ?? data?.lifetime_earned ?? 0),
+      lifetimeSpent: Number(data?.lifetimeSpent ?? data?.lifetime_spent ?? 0)
+    };
+  }
+
+  async function createOrder({ productId, quantity, paymentMethod, customerName, packageId, pointsToUse = 0 }) {
     const payload = {
       p_product_id: productId,
       p_quantity: Number(quantity || 1),
@@ -1155,6 +1169,10 @@
       p_customer_name: customerName || ""
     };
     if (packageId) payload.p_package_id = packageId;
+    const normalizedPoints = Number(pointsToUse || 0);
+    if (Number.isFinite(normalizedPoints) && normalizedPoints > 0) {
+      payload.p_points_to_use = normalizedPoints;
+    }
 
     const { data, error } = await requireClient().rpc("create_order", payload);
     if (error) throw error;
@@ -1298,6 +1316,7 @@
     uploadPaymentSlip,
     verifyPaymentSlip,
     createPaymentSlipSignedUrl,
-    fetchStockMovements
+    fetchStockMovements,
+    fetchPointBalance
   };
 })();

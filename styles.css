@@ -7523,6 +7523,82 @@ dialog::backdrop {
   box-shadow: 0 16px 28px rgba(154, 52, 18, 0.2);
 }
 
+.premium-points-card {
+  display: grid;
+  gap: 12px;
+  padding: 14px;
+  border: 1px solid rgba(96, 165, 250, 0.24);
+  border-radius: 16px;
+  background:
+    radial-gradient(circle at top left, rgba(96, 165, 250, 0.16), transparent 42%),
+    rgba(8, 15, 34, 0.76);
+}
+
+.premium-points-card[hidden] {
+  display: none;
+}
+
+.premium-points-toggle {
+  display: grid;
+  grid-template-columns: auto 42px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  cursor: pointer;
+}
+
+.premium-points-toggle input {
+  width: 18px;
+  height: 18px;
+  accent-color: #60a5fa;
+}
+
+.premium-points-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border-radius: 14px;
+  background: rgba(59, 130, 246, 0.14);
+  color: #93c5fd;
+}
+
+.premium-points-toggle strong {
+  display: block;
+  color: #f8fafc;
+  font-size: 0.92rem;
+}
+
+.premium-points-toggle small,
+.premium-points-card p {
+  color: #9fb0d1;
+  font-size: 0.78rem;
+}
+
+.premium-points-toggle b {
+  color: #bfdbfe;
+}
+
+.premium-points-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(15, 23, 42, 0.72);
+  color: #cbd5e1;
+  font-size: 0.86rem;
+}
+
+.premium-points-summary strong {
+  color: #7dd3fc;
+}
+
+.premium-points-card p {
+  margin: 0;
+  line-height: 1.55;
+}
+
 .pd-usage-steps {
   display: grid;
   gap: 10px;

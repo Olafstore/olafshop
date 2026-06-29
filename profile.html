@@ -842,6 +842,203 @@
       font-size: 0.9rem;
     }
 
+    .profile-loading-panel {
+      position: relative;
+      display: grid;
+      min-height: 220px;
+      place-items: center;
+      align-content: center;
+      gap: 14px;
+      padding: 42px 24px;
+      overflow: hidden;
+      border: 1px solid rgba(96, 165, 250, 0.14);
+      border-radius: 22px;
+      background:
+        radial-gradient(circle at 50% 0%, rgba(96, 165, 250, 0.16), transparent 48%),
+        linear-gradient(135deg, rgba(8, 13, 28, 0.72), rgba(15, 23, 42, 0.5));
+      color: #cbd5e1;
+      text-align: center;
+    }
+
+    .profile-loading-panel::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background:
+        linear-gradient(110deg, transparent 0%, rgba(96, 165, 250, 0.08) 34%, transparent 62%);
+      transform: translateX(-100%);
+      animation: profileLoadingSheen 1.7s ease-in-out infinite;
+      pointer-events: none;
+    }
+
+    .profile-loading-orb {
+      position: relative;
+      display: grid;
+      width: 54px;
+      height: 54px;
+      place-items: center;
+      border: 1px solid rgba(96, 165, 250, 0.26);
+      border-radius: 18px;
+      background:
+        radial-gradient(circle at 35% 25%, rgba(147, 197, 253, 0.28), transparent 36%),
+        rgba(37, 99, 235, 0.12);
+      color: #bfdbfe;
+      box-shadow: 0 18px 42px rgba(37, 99, 235, 0.16);
+    }
+
+    .profile-loading-orb::after {
+      content: '';
+      position: absolute;
+      inset: -5px;
+      border: 1px solid rgba(96, 165, 250, 0.32);
+      border-top-color: rgba(255, 255, 255, 0.92);
+      border-radius: 21px;
+      animation: profileSpin 0.9s linear infinite;
+    }
+
+    .profile-loading-orb svg,
+    .profile-loading-orb i,
+    .profile-mini-spinner svg,
+    .profile-mini-spinner i {
+      width: 21px;
+      height: 21px;
+    }
+
+    .profile-loading-copy {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      gap: 5px;
+    }
+
+    .profile-loading-copy strong {
+      color: #f8fafc;
+      font-size: 0.98rem;
+    }
+
+    .profile-loading-copy span {
+      color: #94a3b8;
+      font-size: 0.82rem;
+    }
+
+    .profile-loading-dots {
+      display: inline-flex;
+      justify-content: center;
+      gap: 5px;
+      margin-top: 4px;
+    }
+
+    .profile-loading-dots i {
+      width: 6px;
+      height: 6px;
+      border-radius: 999px;
+      background: #60a5fa;
+      box-shadow: 0 0 12px rgba(96, 165, 250, 0.5);
+      animation: profileDotPulse 0.9s ease-in-out infinite;
+    }
+
+    .profile-loading-dots i:nth-child(2) {
+      animation-delay: 0.12s;
+    }
+
+    .profile-loading-dots i:nth-child(3) {
+      animation-delay: 0.24s;
+    }
+
+    .profile-loading-skeletons {
+      position: relative;
+      z-index: 1;
+      display: grid;
+      width: min(360px, 100%);
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .profile-loading-skeletons span {
+      height: 10px;
+      border-radius: 999px;
+      background:
+        linear-gradient(90deg, rgba(30, 41, 59, 0.58), rgba(96, 165, 250, 0.18), rgba(30, 41, 59, 0.58));
+      background-size: 220% 100%;
+      animation: profileSkeleton 1.25s linear infinite;
+    }
+
+    .profile-loading-skeletons span:nth-child(2) {
+      width: 82%;
+      animation-delay: 0.08s;
+    }
+
+    .profile-loading-skeletons span:nth-child(3) {
+      width: 62%;
+      animation-delay: 0.16s;
+    }
+
+    .profile-mini-spinner {
+      display: inline-grid;
+      width: 18px;
+      height: 18px;
+      place-items: center;
+      color: #bfdbfe;
+      vertical-align: -3px;
+    }
+
+    .profile-mini-spinner svg,
+    .profile-mini-spinner i {
+      animation: profileSpin 0.85s linear infinite;
+    }
+
+    .inventory-count-badge.is-loading {
+      border-color: rgba(96, 165, 250, 0.34);
+      color: #dbeafe;
+      box-shadow: 0 0 18px rgba(37, 99, 235, 0.13);
+    }
+
+    .inventory-count-badge.is-loading::before {
+      content: '';
+      width: 10px;
+      height: 10px;
+      border: 2px solid rgba(96, 165, 250, 0.24);
+      border-top-color: #bfdbfe;
+      border-radius: 50%;
+      animation: profileSpin 0.8s linear infinite;
+    }
+
+    .profile-panel.is-refreshing .panel-card {
+      box-shadow:
+        0 0 0 1px rgba(96, 165, 250, 0.08),
+        0 18px 46px rgba(37, 99, 235, 0.08);
+    }
+
+    @keyframes profileSpin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    @keyframes profileDotPulse {
+      0%, 100% {
+        opacity: 0.35;
+        transform: translateY(0) scale(0.88);
+      }
+
+      50% {
+        opacity: 1;
+        transform: translateY(-4px) scale(1);
+      }
+    }
+
+    @keyframes profileSkeleton {
+      to {
+        background-position-x: -220%;
+      }
+    }
+
+    @keyframes profileLoadingSheen {
+      45%, 100% {
+        transform: translateX(100%);
+      }
+    }
+
     .save-message {
       padding: 12px 14px;
       border-radius: 10px;
@@ -2501,6 +2698,30 @@
       return escape(v).replace(/\n/g, '<br>');
     }
 
+    function profileLoadingMarkup(title = 'กำลังโหลดข้อมูล', detail = 'ระบบกำลังดึงข้อมูลล่าสุดให้คุณ', icon = 'loader-circle') {
+      return `
+        <div class="profile-loading-panel" role="status" aria-live="polite">
+          <span class="profile-loading-orb"><i data-lucide="${escape(icon)}"></i></span>
+          <span class="profile-loading-copy">
+            <strong>${escape(title)}</strong>
+            <span>${escape(detail)}</span>
+            <span class="profile-loading-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          </span>
+          <span class="profile-loading-skeletons" aria-hidden="true"><span></span><span></span><span></span></span>
+        </div>
+      `;
+    }
+
+    function setProfileLoadingState(active, { quiet = false } = {}) {
+      document.getElementById('panel-inventory')?.classList.toggle('is-refreshing', active);
+      document.getElementById('panel-orders')?.classList.toggle('is-refreshing', active);
+      const countPill = document.getElementById('inventory-count-pill');
+      if (countPill) {
+        countPill.classList.toggle('is-loading', active);
+        if (active && !quiet) countPill.textContent = 'กำลังโหลด';
+      }
+    }
+
     const profileState = {
       inventoryRows: [],
       inventoryLookup: new Map(),
@@ -3524,9 +3745,11 @@
       async function refreshProfileOrders({ quiet = false, preserveModal = true } = {}) {
         if (profileState.isRefreshing) return;
         profileState.isRefreshing = true;
+        setProfileLoadingState(true, { quiet });
         if (!quiet) {
-          if (ordersList) ordersList.innerHTML = `<div class="empty-panel"><i data-lucide="loader-circle" style="width:40px;height:40px"></i><p>กำลังโหลดประวัติคำสั่งซื้อ</p></div>`;
-          if (inventoryList) inventoryList.innerHTML = `<div class="empty-panel"><i data-lucide="loader-circle" style="width:40px;height:40px"></i><p>กำลังโหลดคลังสินค้า</p></div>`;
+          if (ordersList) ordersList.innerHTML = profileLoadingMarkup('กำลังโหลดประวัติคำสั่งซื้อ', 'กำลังตรวจสอบรายการล่าสุดจากระบบ', 'history');
+          if (inventoryList) inventoryList.innerHTML = profileLoadingMarkup('กำลังโหลดคลังสินค้า', 'กำลังเตรียม ID / Pass และสถานะล่าสุด', 'package-open');
+          lucide.createIcons();
         }
 
         try {
@@ -3563,6 +3786,7 @@
           }
         } finally {
           profileState.isRefreshing = false;
+          setProfileLoadingState(false, { quiet });
         }
       }
 

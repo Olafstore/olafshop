@@ -167,10 +167,10 @@
               <div class="site-cart-summary-row"><span>ยอดสินค้า</span><strong data-site-cart-subtotal>฿0</strong></div>
               <label class="site-cart-points" data-site-cart-points hidden>
                 <input type="checkbox" data-site-cart-use-points />
-                <span><i data-lucide="coins"></i></span>
+                <span class="site-cart-points-icon"><i data-lucide="coins"></i></span>
                 <span class="site-cart-points-copy">
-                  <b>ใช้ Point ลดราคา</b>
-                  <small>คงเหลือ <em data-site-cart-point-balance>0</em> Point</small>
+                  <b>ใช้ Point</b>
+                  <small>ลดราคา · คงเหลือ <em data-site-cart-point-balance>0</em> Point</small>
                 </span>
                 <i class="site-cart-points-check" data-lucide="check"></i>
               </label>
@@ -191,7 +191,7 @@
               </div>
               <div class="site-cart-action-row">
                 <button class="primary-button site-cart-checkout" type="button" data-site-cart-checkout>
-                  <i data-lucide="receipt"></i>
+                  <i data-lucide="clipboard-check"></i>
                   สร้างคำสั่งซื้อ
                 </button>
                 <button class="secondary-button site-cart-continue" type="button" data-site-cart-close>

@@ -7,14 +7,14 @@
     <title>หลังบ้าน | OLAF SHOP</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="preconnect" href="https://wtvfgwacodfrzxapwoxj.supabase.co" />
-    <link rel="stylesheet" href="admin.css?v=20260630-admin-user-point-password" />
+    <link rel="stylesheet" href="admin.css?v=20260630-admin-pro-finance" />
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="supabase-client.js?v=20260630-admin-user-point-password" defer></script>
+    <script src="supabase-client.js?v=20260630-admin-pro-finance" defer></script>
     <script src="platform-store.js?v=20260605-admin-users" defer></script>
     <script src="image-performance.js?v=20260607-performance" defer></script>
 <script src="delivery-payload.js?v=20260620-phase1-12-final" defer></script>
-    <script src="admin.js?v=20260630-admin-user-point-password" defer></script>
+    <script src="admin.js?v=20260630-admin-pro-finance" defer></script>
   </head>
   <body>
     <section class="admin-login-screen" id="admin-login-screen">
@@ -192,6 +192,37 @@
               <strong id="metric-orders">0</strong>
               <small>ประวัติคำสั่งซื้อในระบบ</small>
             </article>
+          </div>
+
+          <div class="admin-pro-overview">
+            <section class="admin-card admin-command-card">
+              <div class="card-heading">
+                <div>
+                  <h2>Command Center</h2>
+                  <span>งานสำคัญที่แอดมินควรจัดการก่อน</span>
+                </div>
+                <span class="status-pill warn" id="dashboard-command-count">0 งาน</span>
+              </div>
+              <div class="admin-command-list" id="dashboard-command-list"></div>
+            </section>
+            <section class="admin-card">
+              <div class="card-heading">
+                <div>
+                  <h2>Top Customers</h2>
+                  <span>ลูกค้าที่มียอดซื้อสูงสุด</span>
+                </div>
+              </div>
+              <div class="admin-rank-list" id="dashboard-top-customers"></div>
+            </section>
+            <section class="admin-card">
+              <div class="card-heading">
+                <div>
+                  <h2>Payment Health</h2>
+                  <span>ภาพรวมสลิปและ point</span>
+                </div>
+              </div>
+              <div class="admin-health-grid" id="dashboard-payment-health"></div>
+            </section>
           </div>
 
           <div class="admin-grid two-cols">
@@ -663,6 +694,29 @@
               <span>ใช้ Point แล้ว</span>
               <strong id="finance-point-spent">0</strong>
               <small>ยอด point ที่ลูกค้านำไปลดราคา</small>
+            </article>
+          </div>
+
+          <div class="finance-insight-grid">
+            <article class="finance-insight-card">
+              <span>ยอดขายวันนี้</span>
+              <strong id="finance-today-revenue">฿0</strong>
+              <small id="finance-today-orders">0 ออเดอร์วันนี้</small>
+            </article>
+            <article class="finance-insight-card">
+              <span>รอจัดการ</span>
+              <strong id="finance-pending-orders">0</strong>
+              <small>รอตรวจสลิป / รอแอดมินส่งของ</small>
+            </article>
+            <article class="finance-insight-card">
+              <span>สลิปตรวจผ่าน</span>
+              <strong id="finance-verified-slips">0</strong>
+              <small>รายการ payment verification สำเร็จ</small>
+            </article>
+            <article class="finance-insight-card">
+              <span>เงินแปลงเป็น Point</span>
+              <strong id="finance-credit-points">0 P</strong>
+              <small>เงินเกิน/เงินไม่พอที่เข้า wallet</small>
             </article>
           </div>
 

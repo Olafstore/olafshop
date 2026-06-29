@@ -1330,7 +1330,10 @@
     return {
       id: row.id || "",
       orderId: row.orderId || row.order_id || "",
+      orderNumber: row.orderNumber || row.order_number || "",
       userId: row.userId || row.user_id || "",
+      email: row.email || "",
+      customerName: row.customerName || row.customer_name || "",
       provider: row.provider || "",
       status: row.status || "",
       payloadType: row.payloadType || row.payload_type || "",

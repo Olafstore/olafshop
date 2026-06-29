@@ -146,6 +146,44 @@ const formatAdminDateTime = (value) => {
   });
 };
 
+function animateAdminNumber(selector, targetValue, formatter = (value) => value.toLocaleString("th-TH"), duration = 850) {
+  const element = typeof selector === "string" ? $(selector) : selector;
+  if (!element) return;
+  const target = Number(targetValue || 0);
+  const safeTarget = Number.isFinite(target) ? target : 0;
+  const formattedFinal = formatter(safeTarget);
+  const prefersReducedMotion = window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches;
+  if (prefersReducedMotion || duration <= 0) {
+    element.textContent = formattedFinal;
+    element.dataset.adminCountValue = String(safeTarget);
+    return;
+  }
+  const previousTarget = Number(element.dataset.adminCountValue);
+  const start = Number.isFinite(previousTarget) && previousTarget !== safeTarget ? previousTarget : 0;
+  const startedAt = performance.now();
+  element.dataset.adminCountValue = String(safeTarget);
+  element.classList.add("is-counting");
+
+  const tick = (now) => {
+    const progress = Math.min(1, (now - startedAt) / duration);
+    const eased = 1 - Math.pow(1 - progress, 3);
+    const current = start + (safeTarget - start) * eased;
+    element.textContent = formatter(current);
+    if (progress < 1) {
+      requestAnimationFrame(tick);
+    } else {
+      element.textContent = formattedFinal;
+      element.classList.remove("is-counting");
+    }
+  };
+  requestAnimationFrame(tick);
+}
+
+function setTextSafe(selector, value) {
+  const element = $(selector);
+  if (element) element.textContent = value;
+}
+
 function ratingValue(value) {
   return Math.max(0, Math.min(5, Number(value) || 0));
 }
@@ -1508,15 +1546,16 @@ function renderMetrics() {
   );
   const finance = financeSummary();
 
-  $("#metric-products").textContent = products().length.toLocaleString("th-TH");
-  $("#metric-stock").textContent = totalStock.toLocaleString("th-TH");
-  $("#metric-low-stock").textContent = lowStock.toLocaleString("th-TH");
-  $("#metric-sold").textContent = totalSold.toLocaleString("th-TH");
-  $("#metric-active-products").textContent = activeProducts.toLocaleString("th-TH");
-  $("#metric-delivered-stock").textContent = deliveredStock.toLocaleString("th-TH");
-  if ($("#metric-revenue")) $("#metric-revenue").textContent = formatPrice(finance.totalRevenue);
-  if ($("#metric-point-balance")) $("#metric-point-balance").textContent = formatPointAmount(finance.pointBalance);
-  if ($("#metric-orders")) $("#metric-orders").textContent = finance.orderCount.toLocaleString("th-TH");
+  animateAdminNumber("#metric-products", products().length);
+  animateAdminNumber("#metric-stock", totalStock);
+  animateAdminNumber("#metric-low-stock", lowStock);
+  animateAdminNumber("#metric-sold", totalSold);
+  animateAdminNumber("#metric-active-products", activeProducts);
+  animateAdminNumber("#metric-delivered-stock", deliveredStock);
+  animateAdminNumber("#metric-revenue", finance.totalRevenue, (value) => formatPrice(value));
+  animateAdminNumber("#metric-point-balance", finance.pointBalance, (value) => formatPointAmount(value));
+  animateAdminNumber("#metric-orders", finance.orderCount);
+  renderDashboardCommandCenter(finance, { lowStock, totalStock, deliveredStock });
 
   const alerts = products()
     .filter((product) => product.stock <= 5)
@@ -1542,6 +1581,114 @@ function renderMetrics() {
         )
         .join("")
     : `<div class="compact-item"><div><h3>ยังไม่มีประวัติ</h3><p>การเพิ่มหรือลดสต็อกจะแสดงที่นี่</p></div></div>`;
+}
+
+function renderDashboardCommandCenter(finance, stockInfo = {}) {
+  const pendingSlip = state.orders.filter((order) => ["awaiting_payment", "waiting_admin"].includes(order.status)).length;
+  const waitingDelivery = state.orders.filter((order) => order.status === "confirmed").length;
+  const lowStock = Number(stockInfo.lowStock || 0);
+  const rejectedSlip = state.finance.paymentVerifications.filter((item) => ["rejected", "provider_error"].includes(item.status)).length;
+  const tasks = [
+    {
+      label: "รอตรวจสลิป",
+      value: pendingSlip,
+      detail: "ออเดอร์ที่ลูกค้าอาจแนบสลิปหรือรอระบบตรวจ",
+      icon: "receipt-text",
+      panel: "orders",
+      tone: pendingSlip ? "warn" : "ok"
+    },
+    {
+      label: "รอจัดส่ง",
+      value: waitingDelivery,
+      detail: "ออเดอร์ตรวจสลิปแล้ว แต่ยังรอแอดมินส่งสินค้า",
+      icon: "package-check",
+      panel: "orders",
+      tone: waitingDelivery ? "warn" : "ok"
+    },
+    {
+      label: "สต็อกใกล้หมด",
+      value: lowStock,
+      detail: "สินค้าที่ควรเช็คสต็อกก่อนขายต่อ",
+      icon: "triangle-alert",
+      panel: "stock",
+      tone: lowStock ? "danger" : "ok"
+    },
+    {
+      label: "สลิปมีปัญหา",
+      value: rejectedSlip,
+      detail: "รายการตรวจสลิปที่ถูกปฏิเสธหรือ provider error",
+      icon: "shield-alert",
+      panel: "finance",
+      tone: rejectedSlip ? "danger" : "ok"
+    }
+  ];
+  const actionable = tasks.reduce((sum, task) => sum + Number(task.value || 0), 0);
+  setTextSafe("#dashboard-command-count", `${actionable.toLocaleString("th-TH")} งาน`);
+
+  const list = $("#dashboard-command-list");
+  if (list) {
+    list.innerHTML = tasks
+      .map(
+        (task) => `
+          <button class="admin-command-item ${task.tone}" type="button" data-dashboard-panel="${escapeHtml(task.panel)}">
+            <span class="admin-command-icon"><i data-lucide="${escapeHtml(task.icon)}"></i></span>
+            <span>
+              <strong>${escapeHtml(task.label)}</strong>
+              <small>${escapeHtml(task.detail)}</small>
+            </span>
+            <b>${Number(task.value || 0).toLocaleString("th-TH")}</b>
+          </button>
+        `
+      )
+      .join("");
+  }
+
+  const topCustomers = financeWalletRows().filter((wallet) => wallet.totalSpent > 0).slice(0, 5);
+  const topList = $("#dashboard-top-customers");
+  if (topList) {
+    topList.innerHTML = topCustomers.length
+      ? topCustomers
+          .map(
+            (wallet, index) => `
+              <div class="admin-rank-item">
+                <span>#${index + 1}</span>
+                <div>
+                  <strong>${escapeHtml(adminUserLabel(wallet))}</strong>
+                  <small>${escapeHtml(wallet.email || wallet.username || "-")}</small>
+                </div>
+                <b>${formatPrice(wallet.totalSpent)}</b>
+              </div>
+            `
+          )
+          .join("")
+      : `<div class="admin-rank-empty">ยังไม่มีข้อมูลยอดซื้อลูกค้า</div>`;
+  }
+
+  const verified = state.finance.paymentVerifications.filter((item) => item.status === "verified").length;
+  const creditPoints = financeTransactions()
+    .filter((tx) => String(tx.type || "").startsWith("credit"))
+    .reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+  const todayOrders = state.orders.filter((order) => orderMatchesFinancePeriod(order, "day"));
+  const todayRevenue = todayOrders.filter(isRevenueOrder).reduce((sum, order) => sum + Number(order.total || 0), 0);
+  const health = $("#dashboard-payment-health");
+  if (health) {
+    health.innerHTML = [
+      ["รายได้วันนี้", formatPrice(todayRevenue), "chart-line"],
+      ["สลิปผ่าน", verified.toLocaleString("th-TH"), "badge-check"],
+      ["Point เครดิต", `${formatPointAmount(creditPoints)} P`, "coins"],
+      ["ออเดอร์วันนี้", todayOrders.length.toLocaleString("th-TH"), "shopping-bag"]
+    ]
+      .map(
+        ([label, value, icon]) => `
+          <div class="admin-health-item">
+            <i data-lucide="${icon}"></i>
+            <span>${label}</span>
+            <strong>${value}</strong>
+          </div>
+        `
+      )
+      .join("");
+  }
 }
 
 function chartRgba(hex, alpha) {
@@ -2852,18 +2999,66 @@ function financeTransactions() {
 
 function renderFinancePanel() {
   const summary = financeSummary();
-  const setText = (selector, value) => {
-    const element = $(selector);
-    if (element) element.textContent = value;
-  };
-
-  setText("#finance-total-revenue", formatPrice(summary.totalRevenue));
-  setText("#finance-point-balance", `${formatPointAmount(summary.pointBalance)} Points`);
-  setText("#finance-point-earned", `${formatPointAmount(summary.pointEarned)} Points`);
-  setText("#finance-point-spent", `${formatPointAmount(summary.pointSpent)} Points`);
+  animateAdminNumber("#finance-total-revenue", summary.totalRevenue, (value) => formatPrice(value));
+  animateAdminNumber("#finance-point-balance", summary.pointBalance, (value) => `${formatPointAmount(value)} Points`);
+  animateAdminNumber("#finance-point-earned", summary.pointEarned, (value) => `${formatPointAmount(value)} Points`);
+  animateAdminNumber("#finance-point-spent", summary.pointSpent, (value) => `${formatPointAmount(value)} Points`);
+  renderFinanceInsights();
+  ensureFinanceAuditCard();
   renderFinanceWalletsTable();
   renderFinanceTransactionsTable();
   renderFinanceOrdersTable();
+  renderFinanceVerificationTable();
+}
+
+function renderFinanceInsights() {
+  const todayOrders = state.orders.filter((order) => orderMatchesFinancePeriod(order, "day"));
+  const todayRevenue = todayOrders.filter(isRevenueOrder).reduce((sum, order) => sum + Number(order.total || 0), 0);
+  const pendingOrders = state.orders.filter((order) => ["awaiting_payment", "waiting_admin", "confirmed"].includes(order.status)).length;
+  const verifiedSlips = state.finance.paymentVerifications.filter((item) => item.status === "verified").length;
+  const creditPoints = financeTransactions()
+    .filter((tx) => String(tx.type || "").startsWith("credit"))
+    .reduce((sum, tx) => sum + Number(tx.amount || 0), 0);
+
+  animateAdminNumber("#finance-today-revenue", todayRevenue, (value) => formatPrice(value));
+  setTextSafe("#finance-today-orders", `${todayOrders.length.toLocaleString("th-TH")} ออเดอร์วันนี้`);
+  animateAdminNumber("#finance-pending-orders", pendingOrders);
+  animateAdminNumber("#finance-verified-slips", verifiedSlips);
+  animateAdminNumber("#finance-credit-points", creditPoints, (value) => `${formatPointAmount(value)} P`);
+}
+
+function ensureFinanceAuditCard() {
+  if ($("#finance-verifications-table")) return;
+  const grid = $(".finance-grid");
+  if (!grid) return;
+  grid.insertAdjacentHTML(
+    "beforeend",
+    `
+      <section class="admin-card finance-audit-card">
+        <div class="card-heading">
+          <div>
+            <h2>Slip Verification Audit</h2>
+            <span id="finance-verifications-count">0 รายการ</span>
+          </div>
+        </div>
+        <div class="table-wrap">
+          <table class="admin-table finance-table compact-finance-table">
+            <thead>
+              <tr>
+                <th>เวลา</th>
+                <th>Order</th>
+                <th>ช่องทาง</th>
+                <th>ยอดตรวจ</th>
+                <th>สถานะ</th>
+                <th>Ref / Error</th>
+              </tr>
+            </thead>
+            <tbody id="finance-verifications-table"></tbody>
+          </table>
+        </div>
+      </section>
+    `
+  );
 }
 
 function renderFinanceWalletsTable() {
@@ -2901,7 +3096,7 @@ function renderFinanceWalletsTable() {
     : `<tr><td colspan="7">ยังไม่พบข้อมูลลูกค้าหรือ Point</td></tr>`;
 }
 
-function renderFinanceTransactionsTable() {
+function renderFinanceTransactionsTableLegacy() {
   const rows = financeTransactions();
   const table = $("#finance-transactions-table");
   if (!table) return;
@@ -2932,7 +3127,7 @@ function renderFinanceTransactionsTable() {
     : `<tr><td colspan="4">ยังไม่มีประวัติ Point ตามเงื่อนไขที่เลือก</td></tr>`;
 }
 
-function renderFinanceOrdersTable() {
+function renderFinanceOrdersTableLegacy() {
   const users = financeUserMap();
   const rows = state.orders
     .filter((order) => orderMatchesFinancePeriod(order))
@@ -2988,6 +3183,223 @@ function renderFinanceOrdersTable() {
         )
         .join("")
     : `<tr><td colspan="4">ยังไม่มีประวัติซื้อสินค้าตามคำค้นหา</td></tr>`;
+}
+
+function financeOrderItemSummary(order) {
+  const items = Array.isArray(order?.items) ? order.items : [];
+  if (!items.length) return { title: "-", detail: "0 รายการ" };
+  const title = items
+    .slice(0, 3)
+    .map((item) => `${item.productName || item.name || item.productId || "สินค้า"}${Number(item.quantity || 0) > 1 ? ` x${item.quantity}` : ""}`)
+    .join(", ");
+  const more = items.length > 3 ? ` +${items.length - 3} รายการ` : "";
+  return {
+    title: `${title}${more}`,
+    detail: `${items.length.toLocaleString("th-TH")} รายการ`
+  };
+}
+
+function paymentStatusClass(status) {
+  if (status === "verified") return "ok";
+  if (status === "failed" || status === "rejected") return "danger";
+  return "warn";
+}
+
+function renderFinanceTransactionsTable() {
+  const rows = financeTransactions();
+  const table = $("#finance-transactions-table");
+  if (!table) return;
+  const head = table.closest("table")?.querySelector("thead");
+  if (head) {
+    head.innerHTML = `
+      <tr>
+        <th>วันที่</th>
+        <th>รายการ</th>
+        <th>User</th>
+        <th>Order</th>
+        <th>ยอด Point</th>
+        <th>คงเหลือ</th>
+        <th>หมายเหตุ</th>
+      </tr>
+    `;
+  }
+  const count = $("#finance-activity-count");
+  if (count) count.textContent = `${rows.length.toLocaleString("th-TH")} รายการ`;
+  table.innerHTML = rows.length
+    ? rows
+        .slice(0, 240)
+        .map(
+          (tx) => `
+            <tr class="finance-detail-row">
+              <td>
+                <strong>${formatAdminDateTime(tx.createdAt)}</strong>
+                <span>${escapeHtml(tx.id || "-")}</span>
+              </td>
+              <td>
+                <span class="status-pill ${pointTypeClass(tx.type)}">${escapeHtml(pointTypeLabel(tx.type))}</span>
+                <span>${escapeHtml(tx.paymentVerificationId || "")}</span>
+              </td>
+              <td>
+                <div class="finance-mini-user">
+                  <strong>${escapeHtml(tx.userName || "Customer")}</strong>
+                  <span>${escapeHtml(tx.email || tx.userId || "-")}</span>
+                </div>
+              </td>
+              <td>
+                ${
+                  tx.orderId
+                    ? `<button class="mini-button finance-link-button" type="button" data-edit-order="${escapeHtml(tx.orderId)}">${escapeHtml(tx.orderNumber || tx.orderId)}</button>`
+                    : `<span>-</span>`
+                }
+              </td>
+              <td class="numeric"><strong>${formatPointAmount(tx.amount)} P</strong></td>
+              <td class="numeric">${tx.balanceAfter == null ? "-" : `${formatPointAmount(tx.balanceAfter)} P`}</td>
+              <td><span>${escapeHtml(tx.note || tx.metadata?.source || "-")}</span></td>
+            </tr>
+          `
+        )
+        .join("")
+    : `<tr><td colspan="7">ยังไม่มีประวัติ Point ตามเงื่อนไขที่เลือก</td></tr>`;
+}
+
+function renderFinanceOrdersTable() {
+  const users = financeUserMap();
+  const rows = state.orders
+    .filter((order) => orderMatchesFinancePeriod(order))
+    .map((order) => ({
+      ...order,
+      user: userForOrder(order, users),
+      itemSummary: financeOrderItemSummary(order)
+    }))
+    .filter((order) =>
+      financeMatches([
+        order.orderNumber,
+        order.id,
+        order.user.displayName,
+        order.user.email,
+        order.customerName,
+        order.itemSummary.title,
+        order.status,
+        order.paymentStatus,
+        order.paymentMethod
+      ])
+    )
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  const table = $("#finance-orders-table");
+  if (!table) return;
+  const head = table.closest("table")?.querySelector("thead");
+  if (head) {
+    head.innerHTML = `
+      <tr>
+        <th>Order / วันที่</th>
+        <th>User</th>
+        <th>สินค้า</th>
+        <th>ชำระเงิน</th>
+        <th>Point</th>
+        <th>ยอด / สถานะ</th>
+        <th>จัดการ</th>
+      </tr>
+    `;
+  }
+  const count = $("#finance-orders-count");
+  const periodRevenue = rows.filter(isRevenueOrder).reduce((sum, order) => sum + Number(order.total || 0), 0);
+  if (count) count.textContent = `${rows.length.toLocaleString("th-TH")} ออเดอร์ · ${financePeriodLabel()} · ${formatPrice(periodRevenue)}`;
+  table.innerHTML = rows.length
+    ? rows
+        .slice(0, 240)
+        .map(
+          (order) => `
+            <tr class="finance-detail-row">
+              <td>
+                <strong>${escapeHtml(order.orderNumber || order.id)}</strong>
+                <span>${formatAdminDateTime(order.createdAt)}</span>
+              </td>
+              <td>
+                <div class="finance-mini-user">
+                  <strong>${escapeHtml(adminUserLabel(order.user))}</strong>
+                  <span>${escapeHtml(order.user.email || order.customerEmail || "-")}</span>
+                </div>
+              </td>
+              <td>
+                <strong>${escapeHtml(order.itemSummary.title)}</strong>
+                <span>${escapeHtml(order.itemSummary.detail)}</span>
+              </td>
+              <td>
+                <span class="status-pill ${paymentStatusClass(order.paymentStatus)}">${escapeHtml(order.paymentStatus || "pending")}</span>
+                <span>${escapeHtml(order.paymentMethod || "-")} ${order.paymentVerifiedAt ? `· ${formatAdminDateTime(order.paymentVerifiedAt)}` : ""}</span>
+              </td>
+              <td>
+                <strong>${formatPointAmount(order.pointsRedeemedAmount || 0)} P</strong>
+                <span>เครดิต ${formatPointAmount(order.pointCreditAmount || 0)} P</span>
+              </td>
+              <td>
+                <strong>${formatPrice(order.total)}</strong>
+                <span class="status-pill ${orderStatusClass(order.status)}">${escapeHtml(order.status || "-")}</span>
+              </td>
+              <td>
+                <button class="mini-button finance-link-button" type="button" data-edit-order="${escapeHtml(order.id)}">
+                  <i data-lucide="pencil"></i>
+                  จัดการ
+                </button>
+              </td>
+            </tr>
+          `
+        )
+        .join("")
+    : `<tr><td colspan="7">ยังไม่มีประวัติซื้อสินค้าตามคำค้นหา</td></tr>`;
+}
+
+function renderFinanceVerificationTable() {
+  const table = $("#finance-verifications-table");
+  if (!table) return;
+  const rows = [...state.finance.paymentVerifications]
+    .filter((row) =>
+      financeMatches([
+        row.orderNumber,
+        row.orderId,
+        row.userId,
+        row.email,
+        row.customerName,
+        row.status,
+        row.provider,
+        row.providerTransactionId,
+        row.errorCode
+      ])
+    )
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  setTextSafe("#finance-verifications-count", `${rows.length.toLocaleString("th-TH")} รายการ`);
+  table.innerHTML = rows.length
+    ? rows
+        .slice(0, 180)
+        .map(
+          (row) => `
+            <tr class="finance-detail-row">
+              <td>
+                <strong>${formatAdminDateTime(row.createdAt)}</strong>
+                <span>${row.transferredAt ? `โอน ${formatAdminDateTime(row.transferredAt)}` : "-"}</span>
+              </td>
+              <td>
+                ${
+                  row.orderId
+                    ? `<button class="mini-button finance-link-button" type="button" data-edit-order="${escapeHtml(row.orderId)}">${escapeHtml(row.orderNumber || row.orderId)}</button>`
+                    : `<span>-</span>`
+                }
+              </td>
+              <td>
+                <strong>${escapeHtml(row.payloadType || "-")}</strong>
+                <span>${escapeHtml(row.provider || "-")}</span>
+              </td>
+              <td class="numeric">${row.verifiedAmount == null ? "-" : formatPrice(row.verifiedAmount)}</td>
+              <td><span class="status-pill ${row.status === "verified" ? "ok" : row.status === "rejected" ? "danger" : "warn"}">${escapeHtml(row.status || "-")}</span></td>
+              <td>
+                <strong>${escapeHtml(row.providerTransactionId || row.errorCode || "-")}</strong>
+                <span>${escapeHtml(row.receiverName || row.email || "")}</span>
+              </td>
+            </tr>
+          `
+        )
+        .join("")
+    : `<tr><td colspan="6">ยังไม่มีประวัติตรวจสลิปตามคำค้นหา</td></tr>`;
 }
 
 function renderReviewsTable() {
@@ -3744,6 +4156,7 @@ function bindEvents() {
     const resetPasswordButton = event.target.closest("[data-reset-pw]");
     const editReviewButton = event.target.closest("[data-edit-review]");
     const editOrderButton = event.target.closest("[data-edit-order]");
+    const dashboardPanelButton = event.target.closest("[data-dashboard-panel]");
     const editWidgetButton = event.target.closest("[data-edit-widget]");
     const addPackageButton = event.target.closest("#add-product-package");
     const deletePackageButton = event.target.closest("[data-package-delete]");
@@ -3751,6 +4164,12 @@ function bindEvents() {
 
     if (addPackageButton) {
       addPackageDraftToEditor();
+      return;
+    }
+
+    if (dashboardPanelButton) {
+      switchPanel(dashboardPanelButton.dataset.dashboardPanel || "dashboard");
+      createIconSet();
       return;
     }
 

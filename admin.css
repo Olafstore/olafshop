@@ -2272,3 +2272,344 @@ body {
     text-align: left;
   }
 }
+
+/* 2026-06-30 full-page finance tabs, pagination, product editor blocks and mobile admin polish */
+.finance-subnav {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin: 0 0 18px;
+  padding: 8px;
+  border: 1px solid rgba(96, 165, 250, 0.14);
+  border-radius: 18px;
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.84), rgba(2, 6, 23, 0.54)),
+    radial-gradient(circle at 12% 0%, rgba(96, 165, 250, 0.12), transparent 36%);
+}
+
+.finance-subnav button {
+  display: inline-flex;
+  min-height: 46px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: 1px solid transparent;
+  border-radius: 14px;
+  background: transparent;
+  color: var(--muted);
+  font: inherit;
+  cursor: pointer;
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease, color 180ms ease, box-shadow 180ms ease;
+}
+
+.finance-subnav button:hover,
+.finance-subnav button.is-active {
+  border-color: rgba(96, 165, 250, 0.32);
+  background: rgba(59, 130, 246, 0.12);
+  color: #dbeafe;
+  box-shadow: 0 14px 34px rgba(37, 99, 235, 0.12);
+  transform: translateY(-1px);
+}
+
+.finance-subnav button svg {
+  width: 18px;
+  height: 18px;
+}
+
+.finance-grid {
+  display: block;
+}
+
+.finance-grid > [data-finance-panel] {
+  display: none;
+  width: 100%;
+  animation: adminPanelFade 220ms ease both;
+}
+
+.finance-grid > [data-finance-panel].is-active {
+  display: block;
+}
+
+@keyframes adminPanelFade {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.finance-grid .admin-card {
+  min-height: 520px;
+}
+
+.finance-grid .table-wrap {
+  max-height: min(68vh, 740px);
+  overflow: auto;
+  border: 1px solid rgba(148, 163, 184, 0.10);
+  border-radius: 16px;
+}
+
+.finance-grid .admin-table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+  background: rgba(8, 13, 28, 0.98);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+.finance-pagination {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.13);
+  border-radius: 16px;
+  background: rgba(2, 6, 23, 0.30);
+}
+
+.finance-page-info,
+.finance-page-buttons,
+.finance-page-size {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.finance-page-info strong {
+  color: #dbeafe;
+}
+
+.finance-page-info span,
+.finance-page-size span,
+.finance-page-buttons span {
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+}
+
+.finance-page-size select {
+  min-height: 34px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.86);
+  color: var(--text);
+  padding: 0 30px 0 10px;
+}
+
+.finance-page-buttons .mini-button {
+  min-height: 36px;
+}
+
+.admin-panel[data-panel="products"] .products-grid > .admin-card:first-child {
+  min-width: 0;
+}
+
+.admin-panel[data-panel="products"] .products-grid > .admin-card:first-child .table-wrap {
+  border-radius: 18px;
+}
+
+.admin-panel[data-panel="products"] .products-grid > .admin-card:first-child .admin-table {
+  border-spacing: 0 10px;
+  border-collapse: separate;
+}
+
+.admin-panel[data-panel="products"] .products-grid > .admin-card:first-child .admin-table tbody tr {
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.86), rgba(2, 6, 23, 0.54)),
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.08), transparent 40%);
+  box-shadow: 0 0 0 1px rgba(148, 163, 184, 0.10) inset;
+  transition: transform 180ms ease, box-shadow 180ms ease;
+}
+
+.admin-panel[data-panel="products"] .products-grid > .admin-card:first-child .admin-table tbody tr:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 18px 36px rgba(0, 0, 0, 0.22), 0 0 0 1px rgba(96, 165, 250, 0.20) inset;
+}
+
+.admin-panel[data-panel="products"] .products-grid > .admin-card:first-child .admin-table tbody td:first-child {
+  border-radius: 16px 0 0 16px;
+}
+
+.admin-panel[data-panel="products"] .products-grid > .admin-card:first-child .admin-table tbody td:last-child {
+  border-radius: 0 16px 16px 0;
+}
+
+#product-form {
+  gap: 14px;
+}
+
+#product-form > label,
+#product-form > .form-row,
+#product-form > .offline-stock-editor,
+#product-form > .package-editor {
+  padding: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 16px;
+  background:
+    linear-gradient(135deg, rgba(15, 23, 42, 0.72), rgba(2, 6, 23, 0.34)),
+    radial-gradient(circle at 100% 0%, rgba(96, 165, 250, 0.06), transparent 34%);
+}
+
+#product-form > .form-row {
+  align-items: stretch;
+}
+
+#product-form > .form-row > label {
+  padding: 0;
+  border: 0;
+  background: transparent;
+}
+
+#product-form input,
+#product-form select,
+#product-form textarea {
+  border-radius: 12px;
+}
+
+#product-form .form-actions {
+  position: sticky;
+  bottom: 0;
+  z-index: 6;
+  padding: 12px;
+  border: 1px solid rgba(96, 165, 250, 0.14);
+  border-radius: 16px;
+  background: rgba(8, 13, 28, 0.92);
+  backdrop-filter: blur(14px);
+  -webkit-backdrop-filter: blur(14px);
+}
+
+@media (max-width: 1180px) {
+  .finance-subnav {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .admin-sidebar {
+    background: rgba(2, 6, 23, 0.94);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .admin-nav {
+    gap: 10px;
+    padding-bottom: 10px;
+  }
+
+  .admin-nav button {
+    min-width: 128px;
+    min-height: 44px;
+    border-radius: 999px;
+    white-space: nowrap;
+  }
+
+  .finance-subnav {
+    display: flex;
+    overflow-x: auto;
+    scroll-snap-type: x proximity;
+    scrollbar-width: none;
+  }
+
+  .finance-subnav::-webkit-scrollbar {
+    display: none;
+  }
+
+  .finance-subnav button {
+    flex: 0 0 auto;
+    min-width: 170px;
+    scroll-snap-align: start;
+  }
+
+  .finance-grid .admin-card {
+    min-height: 0;
+  }
+
+  .finance-grid .table-wrap {
+    max-height: none;
+  }
+
+  .finance-pagination {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .finance-page-buttons {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .finance-page-buttons .mini-button {
+    flex: 1;
+  }
+
+  .admin-panel[data-panel="products"] .products-grid > .admin-card:first-child .admin-table,
+  .admin-panel[data-panel="products"] .products-grid > .admin-card:first-child .admin-table thead,
+  .admin-panel[data-panel="products"] .products-grid > .admin-card:first-child .admin-table tbody,
+  .admin-panel[data-panel="products"] .products-grid > .admin-card:first-child .admin-table tr,
+  .admin-panel[data-panel="products"] .products-grid > .admin-card:first-child .admin-table td {
+    display: block;
+    min-width: 0;
+  }
+
+  .admin-panel[data-panel="products"] .products-grid > .admin-card:first-child .admin-table thead {
+    display: none;
+  }
+
+  .admin-panel[data-panel="products"] .products-grid > .admin-card:first-child .admin-table tbody tr {
+    margin-bottom: 12px;
+    padding: 12px;
+    border-radius: 18px;
+  }
+
+  .admin-panel[data-panel="products"] .products-grid > .admin-card:first-child .admin-table tbody td {
+    border: 0;
+    padding: 7px 0;
+  }
+
+  .admin-panel[data-panel="products"] .products-grid > .admin-card:first-child .admin-table tbody td:first-child,
+  .admin-panel[data-panel="products"] .products-grid > .admin-card:first-child .admin-table tbody td:last-child {
+    border-radius: 0;
+  }
+
+  .admin-panel[data-panel="products"] .products-grid > .admin-card:first-child .row-actions {
+    justify-content: stretch;
+  }
+
+  .admin-panel[data-panel="products"] .products-grid > .admin-card:first-child .row-actions .mini-button {
+    flex: 1;
+  }
+
+  #product-form .form-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 520px) {
+  .admin-main {
+    padding: 10px;
+  }
+
+  .admin-header {
+    gap: 12px;
+  }
+
+  .admin-actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    width: 100%;
+  }
+
+  .finance-summary-grid,
+  .finance-insight-grid {
+    gap: 10px;
+  }
+
+  .finance-subnav button {
+    min-width: 150px;
+  }
+}

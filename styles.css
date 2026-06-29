@@ -10289,6 +10289,259 @@ details.qr-manual-transfer[open] .qr-manual-transfer-body {
   }
 }
 
+/* 2026-06-30 mobile navigation/cart reliability pass */
+.topbar.site-topbar-unified {
+  isolation: isolate;
+}
+
+.topbar.site-topbar-unified .main-nav a {
+  border-radius: 12px;
+  transition: color 180ms ease, background 180ms ease, transform 180ms ease, box-shadow 180ms ease;
+}
+
+.topbar.site-topbar-unified .main-nav a.is-active {
+  color: #dbeafe;
+  text-shadow: 0 0 16px rgba(96, 165, 250, 0.55);
+  background: rgba(37, 99, 235, 0.10);
+  box-shadow: inset 0 -1px 0 rgba(96, 165, 250, 0.28);
+}
+
+.topbar.site-topbar-unified .site-cart-button {
+  position: relative;
+  overflow: visible;
+}
+
+.topbar.site-topbar-unified .site-cart-button .site-cart-count {
+  position: absolute;
+  top: -7px;
+  right: -7px;
+  display: grid;
+  min-width: 19px;
+  height: 19px;
+  place-items: center;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #ef4444, #f97316);
+  color: #fff;
+  font-size: 0.68rem;
+  font-weight: 800;
+  line-height: 1;
+  pointer-events: none;
+  z-index: 5;
+}
+
+@media (max-width: 1180px) {
+  .topbar.site-topbar-unified,
+  body.home-page .topbar.site-topbar-unified {
+    min-height: 54px !important;
+    grid-template-columns: auto minmax(0, 1fr);
+    gap: 8px;
+  }
+
+  .topbar.site-topbar-unified .mobile-nav-toggle,
+  body.home-page .topbar.site-topbar-unified .mobile-nav-toggle {
+    width: auto;
+    min-width: 42px;
+    border-radius: 999px;
+  }
+
+  .topbar.site-topbar-unified .main-nav,
+  body.home-page .topbar.site-topbar-unified .main-nav {
+    left: 10px;
+    right: 10px;
+    top: calc(100% + 8px);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    padding: 12px;
+    border: 1px solid rgba(96, 165, 250, 0.18);
+    border-radius: 20px;
+    background:
+      linear-gradient(145deg, rgba(8, 13, 28, 0.98), rgba(2, 6, 23, 0.94)),
+      radial-gradient(circle at 14% 0%, rgba(96, 165, 250, 0.16), transparent 34%);
+    box-shadow: 0 26px 70px rgba(0, 0, 0, 0.54);
+    backdrop-filter: blur(18px);
+    -webkit-backdrop-filter: blur(18px);
+  }
+
+  .topbar.site-topbar-unified .main-nav a,
+  body.home-page .topbar.site-topbar-unified .main-nav a {
+    min-height: 46px;
+    justify-content: center;
+    border: 1px solid rgba(148, 163, 184, 0.10);
+    background: rgba(15, 23, 42, 0.52);
+    text-align: center;
+  }
+
+  .topbar.site-topbar-unified .topbar-actions,
+  body.home-page .topbar.site-topbar-unified .topbar-actions {
+    overflow: visible;
+  }
+}
+
+@media (max-width: 620px) {
+  .topbar.site-topbar-unified,
+  body.home-page .topbar.site-topbar-unified {
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 8px 10px;
+  }
+
+  .topbar.site-topbar-unified .mobile-nav-toggle span {
+    display: none;
+  }
+
+  .topbar.site-topbar-unified .topbar-actions,
+  body.home-page .topbar.site-topbar-unified .topbar-actions {
+    gap: 7px;
+    justify-content: flex-end;
+    min-width: 0;
+  }
+
+  .topbar.site-topbar-unified .site-global-search,
+  .topbar.site-topbar-unified .topbar-search-wrap,
+  .profile-page .topbar.site-topbar-unified .topbar-search-wrap {
+    flex: 0 0 38px !important;
+    width: 38px !important;
+    min-width: 38px !important;
+    max-width: 38px;
+    border-radius: 999px;
+  }
+
+  .topbar.site-topbar-unified .site-global-search.is-search-open,
+  .topbar.site-topbar-unified .topbar-search-wrap.is-search-open,
+  .profile-page .topbar.site-topbar-unified .topbar-search-wrap.is-search-open {
+    flex: 1 1 auto !important;
+    width: min(270px, calc(100vw - 116px)) !important;
+    max-width: min(270px, calc(100vw - 116px));
+  }
+
+  .topbar.site-topbar-unified .topbar-actions > .register-button {
+    display: none;
+  }
+
+  dialog.site-cart-dialog {
+    width: 100vw !important;
+    max-width: 100vw !important;
+    height: min(92dvh, 760px) !important;
+    max-height: min(92dvh, 760px) !important;
+    margin: auto 0 0 !important;
+    border-width: 1px 0 0 !important;
+    border-radius: 24px 24px 0 0 !important;
+  }
+
+  dialog.site-cart-dialog[open] .site-cart-shell {
+    height: 100%;
+    animation: slideUpSheet 240ms cubic-bezier(0.2, 0.9, 0.2, 1) both;
+  }
+
+  .site-cart-head {
+    position: sticky;
+    top: 0;
+    z-index: 4;
+    padding: 14px;
+  }
+
+  .site-cart-head .eyebrow,
+  .site-cart-head span[data-cart-head-note] {
+    display: none;
+  }
+
+  .site-cart-head h2 {
+    font-size: 1.08rem;
+  }
+
+  .site-cart-body {
+    display: grid;
+    height: calc(100% - 74px);
+    grid-template-columns: 1fr !important;
+    gap: 12px;
+    padding: 12px;
+    overflow: auto;
+  }
+
+  .site-cart-items-panel,
+  .site-cart-summary-card,
+  .site-cart-payment-result {
+    border-radius: 18px;
+  }
+
+  .site-cart-section-head {
+    align-items: flex-start;
+  }
+
+  .site-cart-section-head span,
+  .site-cart-summary-head small {
+    display: none;
+  }
+
+  .site-cart-items {
+    max-height: none !important;
+    min-height: 0;
+    overflow: visible;
+    padding-right: 0;
+  }
+
+  .site-cart-item {
+    grid-template-columns: 84px minmax(0, 1fr);
+    gap: 10px;
+    padding: 10px;
+  }
+
+  .site-cart-item-media {
+    width: 84px;
+  }
+
+  .site-cart-item-main h3 {
+    font-size: 0.9rem;
+    -webkit-line-clamp: 2;
+  }
+
+  .site-cart-item-actions {
+    grid-column: 1 / -1;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    width: 100%;
+    justify-items: stretch;
+  }
+
+  .site-cart-qty-control {
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  .site-cart-remove {
+    min-width: 86px;
+  }
+
+  .site-cart-summary {
+    position: static;
+  }
+
+  .site-cart-payment-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .site-cart-action-row,
+  .site-cart-result-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .site-cart-checkout,
+  .site-cart-continue,
+  .site-cart-result-actions .primary-button,
+  .site-cart-result-actions .secondary-button {
+    width: 100%;
+  }
+}
+
+@supports not (height: 100dvh) {
+  @media (max-width: 620px) {
+    dialog.site-cart-dialog {
+      height: min(92vh, 760px) !important;
+      max-height: min(92vh, 760px) !important;
+    }
+  }
+}
+
 /* ─────────────────────────────────────────────
    BREAKPOINT: 560px — Medium phone
    ───────────────────────────────────────────── */

@@ -33,6 +33,13 @@ const state = {
   financeSearch: "",
   financeTypeFilter: "all",
   financeOrderPeriod: "all",
+  financeActivePage: "wallets",
+  financePagination: {
+    wallets: { page: 1, pageSize: 20 },
+    transactions: { page: 1, pageSize: 20 },
+    orders: { page: 1, pageSize: 20 },
+    verifications: { page: 1, pageSize: 20 }
+  },
   selectedUserId: null,
   selectedReviewId: null,
   selectedOrderId: null,
@@ -2908,6 +2915,90 @@ function financeMatches(values) {
   return values.some((value) => String(value || "").toLowerCase().includes(term));
 }
 
+function financePager(key) {
+  if (!state.financePagination[key]) state.financePagination[key] = { page: 1, pageSize: 20 };
+  const pager = state.financePagination[key];
+  const safeSize = [20, 50, 100].includes(Number(pager.pageSize)) ? Number(pager.pageSize) : 20;
+  pager.pageSize = safeSize;
+  pager.page = Math.max(1, Number(pager.page || 1));
+  return pager;
+}
+
+function resetFinancePage(key = null) {
+  if (key) {
+    financePager(key).page = 1;
+    return;
+  }
+  Object.keys(state.financePagination).forEach((name) => {
+    financePager(name).page = 1;
+  });
+}
+
+function paginateRows(key, rows) {
+  const pager = financePager(key);
+  const total = rows.length;
+  const totalPages = Math.max(1, Math.ceil(total / pager.pageSize));
+  pager.page = Math.min(Math.max(1, pager.page), totalPages);
+  const start = (pager.page - 1) * pager.pageSize;
+  return {
+    rows: rows.slice(start, start + pager.pageSize),
+    total,
+    totalPages,
+    page: pager.page,
+    pageSize: pager.pageSize,
+    start,
+    end: Math.min(start + pager.pageSize, total)
+  };
+}
+
+function renderFinancePagination(key, total, page, totalPages, start, end) {
+  const table = $(`#finance-${key === "wallets" ? "wallets" : key === "transactions" ? "transactions" : key === "orders" ? "orders" : "verifications"}-table`);
+  const wrap = table?.closest(".table-wrap");
+  if (!wrap) return;
+  let controls = wrap.nextElementSibling;
+  if (!controls?.classList?.contains("finance-pagination")) {
+    controls = document.createElement("div");
+    controls.className = "finance-pagination";
+    wrap.insertAdjacentElement("afterend", controls);
+  }
+  const pager = financePager(key);
+  controls.innerHTML = `
+    <div class="finance-page-info">
+      <strong>${total ? `${(start + 1).toLocaleString("th-TH")} - ${end.toLocaleString("th-TH")}` : "0"}</strong>
+      <span>จาก ${total.toLocaleString("th-TH")} รายการ</span>
+    </div>
+    <label class="finance-page-size">
+      <span>แถวต่อหน้า</span>
+      <select data-finance-page-size="${escapeHtml(key)}">
+        ${[20, 50, 100].map((size) => `<option value="${size}" ${pager.pageSize === size ? "selected" : ""}>${size}</option>`).join("")}
+      </select>
+    </label>
+    <div class="finance-page-buttons">
+      <button class="mini-button" type="button" data-finance-page-move="${escapeHtml(key)}" data-direction="-1" ${page <= 1 ? "disabled" : ""}>
+        <i data-lucide="chevron-left"></i>
+        ก่อนหน้า
+      </button>
+      <span>หน้า ${page.toLocaleString("th-TH")} / ${totalPages.toLocaleString("th-TH")}</span>
+      <button class="mini-button" type="button" data-finance-page-move="${escapeHtml(key)}" data-direction="1" ${page >= totalPages ? "disabled" : ""}>
+        ถัดไป
+        <i data-lucide="chevron-right"></i>
+      </button>
+    </div>
+  `;
+}
+
+function syncFinanceSubpages() {
+  const active = state.financeActivePage || "wallets";
+  $$(".finance-subnav button[data-finance-page]").forEach((button) => {
+    const selected = button.dataset.financePage === active;
+    button.classList.toggle("is-active", selected);
+    button.setAttribute("aria-selected", String(selected));
+  });
+  $$("[data-finance-panel]").forEach((panel) => {
+    panel.classList.toggle("is-active", panel.dataset.financePanel === active);
+  });
+}
+
 function userForOrder(order, users = financeUserMap()) {
   const user = users.get(order?.userId || "") || {};
   return {
@@ -3009,6 +3100,7 @@ function renderFinancePanel() {
   renderFinanceTransactionsTable();
   renderFinanceOrdersTable();
   renderFinanceVerificationTable();
+  syncFinanceSubpages();
 }
 
 function renderFinanceInsights() {
@@ -3034,7 +3126,7 @@ function ensureFinanceAuditCard() {
   grid.insertAdjacentHTML(
     "beforeend",
     `
-      <section class="admin-card finance-audit-card">
+      <section class="admin-card finance-audit-card" data-finance-panel="verifications">
         <div class="card-heading">
           <div>
             <h2>Slip Verification Audit</h2>
@@ -3065,12 +3157,13 @@ function renderFinanceWalletsTable() {
   const rows = financeWalletRows().filter((wallet) =>
     financeMatches([wallet.displayName, wallet.username, wallet.email, wallet.role, wallet.status])
   );
+  const page = paginateRows("wallets", rows);
   const table = $("#finance-wallets-table");
   if (!table) return;
   const count = $("#finance-wallet-count");
   if (count) count.textContent = `${rows.length.toLocaleString("th-TH")} users`;
-  table.innerHTML = rows.length
-    ? rows
+  table.innerHTML = page.rows.length
+    ? page.rows
         .map(
           (wallet) => `
             <tr>
@@ -3094,6 +3187,7 @@ function renderFinanceWalletsTable() {
         )
         .join("")
     : `<tr><td colspan="7">ยังไม่พบข้อมูลลูกค้าหรือ Point</td></tr>`;
+  renderFinancePagination("wallets", page.total, page.page, page.totalPages, page.start, page.end);
 }
 
 function renderFinanceTransactionsTableLegacy() {
@@ -3207,6 +3301,7 @@ function paymentStatusClass(status) {
 
 function renderFinanceTransactionsTable() {
   const rows = financeTransactions();
+  const page = paginateRows("transactions", rows);
   const table = $("#finance-transactions-table");
   if (!table) return;
   const head = table.closest("table")?.querySelector("thead");
@@ -3225,9 +3320,8 @@ function renderFinanceTransactionsTable() {
   }
   const count = $("#finance-activity-count");
   if (count) count.textContent = `${rows.length.toLocaleString("th-TH")} รายการ`;
-  table.innerHTML = rows.length
-    ? rows
-        .slice(0, 240)
+  table.innerHTML = page.rows.length
+    ? page.rows
         .map(
           (tx) => `
             <tr class="finance-detail-row">
@@ -3260,6 +3354,7 @@ function renderFinanceTransactionsTable() {
         )
         .join("")
     : `<tr><td colspan="7">ยังไม่มีประวัติ Point ตามเงื่อนไขที่เลือก</td></tr>`;
+  renderFinancePagination("transactions", page.total, page.page, page.totalPages, page.start, page.end);
 }
 
 function renderFinanceOrdersTable() {
@@ -3285,6 +3380,7 @@ function renderFinanceOrdersTable() {
       ])
     )
     .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  const page = paginateRows("orders", rows);
   const table = $("#finance-orders-table");
   if (!table) return;
   const head = table.closest("table")?.querySelector("thead");
@@ -3304,9 +3400,8 @@ function renderFinanceOrdersTable() {
   const count = $("#finance-orders-count");
   const periodRevenue = rows.filter(isRevenueOrder).reduce((sum, order) => sum + Number(order.total || 0), 0);
   if (count) count.textContent = `${rows.length.toLocaleString("th-TH")} ออเดอร์ · ${financePeriodLabel()} · ${formatPrice(periodRevenue)}`;
-  table.innerHTML = rows.length
-    ? rows
-        .slice(0, 240)
+  table.innerHTML = page.rows.length
+    ? page.rows
         .map(
           (order) => `
             <tr class="finance-detail-row">
@@ -3347,6 +3442,7 @@ function renderFinanceOrdersTable() {
         )
         .join("")
     : `<tr><td colspan="7">ยังไม่มีประวัติซื้อสินค้าตามคำค้นหา</td></tr>`;
+  renderFinancePagination("orders", page.total, page.page, page.totalPages, page.start, page.end);
 }
 
 function renderFinanceVerificationTable() {
@@ -3367,10 +3463,10 @@ function renderFinanceVerificationTable() {
       ])
     )
     .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  const page = paginateRows("verifications", rows);
   setTextSafe("#finance-verifications-count", `${rows.length.toLocaleString("th-TH")} รายการ`);
-  table.innerHTML = rows.length
-    ? rows
-        .slice(0, 180)
+  table.innerHTML = page.rows.length
+    ? page.rows
         .map(
           (row) => `
             <tr class="finance-detail-row">
@@ -3400,6 +3496,7 @@ function renderFinanceVerificationTable() {
         )
         .join("")
     : `<tr><td colspan="6">ยังไม่มีประวัติตรวจสลิปตามคำค้นหา</td></tr>`;
+  renderFinancePagination("verifications", page.total, page.page, page.totalPages, page.start, page.end);
 }
 
 function renderReviewsTable() {
@@ -4157,6 +4254,8 @@ function bindEvents() {
     const editReviewButton = event.target.closest("[data-edit-review]");
     const editOrderButton = event.target.closest("[data-edit-order]");
     const dashboardPanelButton = event.target.closest("[data-dashboard-panel]");
+    const financePageButton = event.target.closest("[data-finance-page]");
+    const financePageMoveButton = event.target.closest("[data-finance-page-move]");
     const editWidgetButton = event.target.closest("[data-edit-widget]");
     const addPackageButton = event.target.closest("#add-product-package");
     const deletePackageButton = event.target.closest("[data-package-delete]");
@@ -4169,6 +4268,22 @@ function bindEvents() {
 
     if (dashboardPanelButton) {
       switchPanel(dashboardPanelButton.dataset.dashboardPanel || "dashboard");
+      createIconSet();
+      return;
+    }
+
+    if (financePageButton) {
+      state.financeActivePage = financePageButton.dataset.financePage || "wallets";
+      syncFinanceSubpages();
+      createIconSet();
+      return;
+    }
+
+    if (financePageMoveButton) {
+      const key = financePageMoveButton.dataset.financePageMove;
+      const direction = Number(financePageMoveButton.dataset.direction || 0);
+      financePager(key).page += direction;
+      renderFinancePanel();
       createIconSet();
       return;
     }
@@ -4267,6 +4382,17 @@ function bindEvents() {
     }
   });
 
+  document.body.addEventListener("change", (event) => {
+    const pageSizeSelect = event.target.closest("[data-finance-page-size]");
+    if (!pageSizeSelect) return;
+    const key = pageSizeSelect.dataset.financePageSize;
+    const nextSize = Number(pageSizeSelect.value || 20);
+    financePager(key).pageSize = [20, 50, 100].includes(nextSize) ? nextSize : 20;
+    resetFinancePage(key);
+    renderFinancePanel();
+    createIconSet();
+  });
+
   $("#admin-search").addEventListener("input", (event) => {
     state.search = event.target.value;
     renderProductsTable();
@@ -4293,18 +4419,21 @@ function bindEvents() {
 
   $("#finance-search")?.addEventListener("input", (event) => {
     state.financeSearch = event.target.value;
+    resetFinancePage();
     renderFinancePanel();
     createIconSet();
   });
 
   $("#finance-type-filter")?.addEventListener("change", (event) => {
     state.financeTypeFilter = event.target.value || "all";
+    resetFinancePage("transactions");
     renderFinancePanel();
     createIconSet();
   });
 
   $("#finance-order-period")?.addEventListener("change", (event) => {
     state.financeOrderPeriod = event.target.value || "all";
+    resetFinancePage("orders");
     renderFinancePanel();
     createIconSet();
   });

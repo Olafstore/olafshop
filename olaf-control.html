@@ -7,14 +7,14 @@
     <title>หลังบ้าน | OLAF SHOP</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="preconnect" href="https://wtvfgwacodfrzxapwoxj.supabase.co" />
-    <link rel="stylesheet" href="admin.css?v=20260630-admin-pro-finance" />
+    <link rel="stylesheet" href="admin.css?v=20260630-admin-finance-pages" />
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="supabase-client.js?v=20260630-admin-pro-finance" defer></script>
     <script src="platform-store.js?v=20260605-admin-users" defer></script>
     <script src="image-performance.js?v=20260607-performance" defer></script>
 <script src="delivery-payload.js?v=20260620-phase1-12-final" defer></script>
-    <script src="admin.js?v=20260630-admin-pro-finance" defer></script>
+    <script src="admin.js?v=20260630-admin-finance-pages" defer></script>
   </head>
   <body>
     <section class="admin-login-screen" id="admin-login-screen">
@@ -720,8 +720,27 @@
             </article>
           </div>
 
+          <div class="finance-subnav" role="tablist" aria-label="หัวข้อการเงินลูกค้า">
+            <button class="is-active" type="button" role="tab" aria-selected="true" data-finance-page="wallets">
+              <i data-lucide="wallet-cards"></i>
+              การเงินลูกค้า
+            </button>
+            <button type="button" role="tab" aria-selected="false" data-finance-page="orders">
+              <i data-lucide="shopping-bag"></i>
+              ประวัติซื้อสินค้า
+            </button>
+            <button type="button" role="tab" aria-selected="false" data-finance-page="transactions">
+              <i data-lucide="coins"></i>
+              ประวัติเติมเงิน / Point
+            </button>
+            <button type="button" role="tab" aria-selected="false" data-finance-page="verifications">
+              <i data-lucide="scan-search"></i>
+              ตรวจสลิป
+            </button>
+          </div>
+
           <div class="admin-grid finance-grid">
-            <section class="admin-card finance-card-wide">
+            <section class="admin-card finance-card-wide is-active" data-finance-panel="wallets">
               <div class="card-heading">
                 <div>
                   <h2>บัญชีลูกค้าและยอด Point</h2>
@@ -750,7 +769,7 @@
               </div>
             </section>
 
-            <section class="admin-card">
+            <section class="admin-card" data-finance-panel="transactions">
               <div class="card-heading">
                 <div>
                   <h2>ประวัติเติมเงิน / Point</h2>
@@ -781,7 +800,7 @@
               </div>
             </section>
 
-            <section class="admin-card">
+            <section class="admin-card" data-finance-panel="orders">
               <div class="card-heading">
                 <div>
                   <h2>ประวัติซื้อสินค้า</h2>

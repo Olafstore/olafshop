@@ -1417,7 +1417,7 @@ function categoryGuideAccordion(product) {
         </div>
         <div class="pd-arrow-accordion-body">
           <div class="pd-offline-guide-list">
-            <details open data-smooth-details data-accordion-group="offline-guide">
+            <details data-smooth-details data-accordion-group="offline-guide">
               <summary>เงื่อนไขบัญชีออฟไลน์ <i data-lucide="chevron-down"></i></summary>
               <div>
                 <p>ได้รับ ID และรหัสผ่าน Steam ของทางร้าน ไม่สามารถเปลี่ยนข้อมูลหรือรหัสผ่านได้ และรองรับการใช้งานบนคอมพิวเตอร์หรือโน้ตบุ๊กเท่านั้น</p>
@@ -1456,7 +1456,7 @@ function categoryGuideAccordion(product) {
         </div>
         <div class="pd-arrow-accordion-body">
           <div class="pd-offline-guide-list pd-key-guide-list">
-            <details open data-smooth-details data-accordion-group="steam-key-guide">
+            <details data-smooth-details data-accordion-group="steam-key-guide">
               <summary>เงื่อนไขคีย์ Steam <i data-lucide="chevron-down"></i></summary>
               <div>
                 <p>Steam Key เป็นโค้ดแท้สำหรับเปิดใช้งานบนบัญชี Steam ของลูกค้า เมื่อ Redeem สำเร็จแล้วเกมหรือ DLC จะถูกผูกกับบัญชี Steam ที่ใช้กดทันที</p>

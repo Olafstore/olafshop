@@ -1407,14 +1407,14 @@ function categoryGuideAccordion(product) {
 
   if (category === "offline") {
     return `
-      <details class="pd-arrow-accordion pd-category-guide pd-category-guide-offline" data-smooth-details data-accordion-group="product-info">
-        <summary>
+      <section class="pd-arrow-accordion pd-category-guide pd-category-guide-panel pd-category-guide-offline">
+        <div class="pd-guide-panel-head">
           <span class="pd-arrow-summary-title">
             <span class="pd-section-icon-box"><i data-lucide="circle-help"></i></span>
             เงื่อนไข/คู่มือ
           </span>
-          <span class="pd-arrow-summary-meta" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-        </summary>
+          <span class="pd-arrow-summary-meta">อ่านก่อนใช้งาน</span>
+        </div>
         <div class="pd-arrow-accordion-body">
           <div class="pd-offline-guide-list">
             <details open data-smooth-details data-accordion-group="offline-guide">
@@ -1440,20 +1440,20 @@ function categoryGuideAccordion(product) {
             </details>
           </div>
         </div>
-      </details>
+      </section>
     `;
   }
 
   if (category === "steam-key") {
     return `
-      <details class="pd-arrow-accordion pd-category-guide pd-category-guide-key" data-smooth-details data-accordion-group="product-info">
-        <summary>
+      <section class="pd-arrow-accordion pd-category-guide pd-category-guide-panel pd-category-guide-key">
+        <div class="pd-guide-panel-head">
           <span class="pd-arrow-summary-title">
             <span class="pd-section-icon-box"><i data-lucide="key-round"></i></span>
             คู่มือการเปิดใช้งาน KEY STEAM
           </span>
-          <span class="pd-arrow-summary-meta" aria-hidden="true"><i data-lucide="chevron-down"></i></span>
-        </summary>
+          <span class="pd-arrow-summary-meta">ใช้ข้อมูลของคีย์ Steam</span>
+        </div>
         <div class="pd-arrow-accordion-body">
           <div class="pd-offline-guide-list pd-key-guide-list">
             <details open data-smooth-details data-accordion-group="steam-key-guide">
@@ -1486,7 +1486,7 @@ function categoryGuideAccordion(product) {
             </details>
           </div>
         </div>
-      </details>
+      </section>
     `;
   }
 
@@ -1661,6 +1661,8 @@ function renderProduct() {
   const relatedProducts = [...sameCategoryProducts, ...samePublisherProducts, ...fallbackProducts]
     .filter((rp, index, arr) => arr.findIndex((item) => item.id === rp.id) === index)
     .slice(0, 6);
+  const categoryGuideSection = categoryGuideAccordion(p);
+  const rockstarGuideSection = rockstarUsageAccordion(p);
 
   const relatedCards = relatedProducts.map((rp) => {
     const rpStock = getStockState(rp.stock);
@@ -1778,8 +1780,6 @@ function renderProduct() {
         </div>
         `).join("") : ""}
 
-        ${rockstarUsageAccordion(p)}
-        ${categoryGuideAccordion(p)}
         ${steamRelatedSection(p)}
 
         <!-- Product info rows -->
@@ -1816,6 +1816,9 @@ function renderProduct() {
         </div>
 
         ${sysReqSection}
+
+        ${rockstarGuideSection}
+        ${categoryGuideSection}
 
         ${langSection}
 
@@ -2011,14 +2014,18 @@ function renderProduct() {
       showToast("สินค้าหมดชั่วคราว", "warning");
       return;
     }
-    window.OlafCart?.add?.({
+    if (!window.OlafCart?.add) {
+      showToast("ระบบตะกร้ายังไม่พร้อม กรุณารีเฟรชหน้าเว็บ", "error");
+      return;
+    }
+    window.OlafCart.add({
       productId: currentProduct.id,
       packageId: purchase.packageId || null,
       name: purchase.hasPackage
         ? `${getDisplayProductName(currentProduct)} — ${purchase.packageTitle || "แพ็คเกจ"}`
         : getDisplayProductName(currentProduct),
       image: productImageForCheckout(currentProduct),
-      category: purchase.hasPackage ? "แพ็คเกจ" : categoryLabel(currentProduct),
+      category: purchase.hasPackage ? "แพ็คเกจ" : getCategoryLabel(currentProduct.category),
       packageTitle: purchase.packageTitle || "",
       price: purchase.price,
       stock: purchase.stock,
@@ -2785,7 +2792,10 @@ function renderUserPopover() {
     </div>
     <div class="user-popover-badge-row">
       <span class="user-badge-role">${escapeHtml(user.role || "member")}</span>
-      <a class="user-badge-points" href="profile.html#info" data-topbar-point-balance>${formatPointAmount(0)} Points</a>
+      <a class="user-badge-points" href="profile.html#info" data-topbar-point-balance>
+        <i data-lucide="coins"></i>
+        <span>${formatPointAmount(0)} Points</span>
+      </a>
     </div>
     <div class="user-popover-menu">
       ${user.role === "admin" ? '<a href="olaf-control.html"><i data-lucide="shield"></i>หลังบ้าน (Admin)</a>' : ""}
@@ -2815,7 +2825,9 @@ async function refreshTopbarPointBalance() {
     const wallet = await window.OlafOrders.fetchPointBalance();
     const label = `${formatPointAmount(wallet?.balance || 0)} Points`;
     document.querySelectorAll("[data-topbar-point-balance]").forEach((item) => {
-      item.textContent = label;
+      const labelEl = item.querySelector("span");
+      if (labelEl) labelEl.textContent = label;
+      else item.textContent = label;
     });
   } catch (error) {
     console.warn("Unable to load topbar point balance", error);
@@ -2824,12 +2836,20 @@ async function refreshTopbarPointBalance() {
 
 function updateAccountChrome() {
   const user = window.OlafStore?.currentUser?.() || null;
+  const accountButton = $("#open-auth");
+  if (accountButton) {
+    accountButton.classList.remove("is-auth-loading");
+    accountButton.removeAttribute("aria-busy");
+  }
   const accountLabelEl = $("#account-label");
   if (accountLabelEl) {
     accountLabelEl.textContent = user ? cleanDisplayText(user.displayName || user.username) : "เข้าสู่ระบบ";
   }
   if (user) {
     renderUserPopover();
+  } else {
+    const popover = document.querySelector("#user-popover");
+    if (popover) popover.innerHTML = "";
   }
   const registerBtn = document.querySelector(".register-button");
   if (registerBtn) registerBtn.style.display = user ? "none" : "";
@@ -2854,7 +2874,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   await loadStore();
-  updateAccountChrome();
   renderProduct();
 
   document.querySelectorAll("[data-lang-option]").forEach((button) => {
@@ -2917,6 +2936,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     e.stopPropagation();
     closeLanguageMenu();
     closeNotificationMenu();
+    if (e.currentTarget?.classList?.contains("is-auth-loading")) {
+      showToast("กำลังตรวจสอบบัญชี กรุณารอสักครู่", "info");
+      return;
+    }
     if (window.OlafStore.currentUser()) {
       const popover = document.querySelector("#user-popover");
       if (popover) {

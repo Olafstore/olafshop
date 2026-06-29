@@ -128,40 +128,76 @@
     dialog = document.createElement("dialog");
     dialog.className = "site-cart-dialog";
     dialog.id = CART_DIALOG_ID;
+    dialog.setAttribute("aria-label", "ตะกร้าสินค้า");
     dialog.innerHTML = `
       <div class="site-cart-shell">
         <div class="site-cart-head">
-          <div>
-            <p class="eyebrow">Cart Checkout</p>
-            <h2>ตะกร้าสินค้า</h2>
-            <span data-cart-head-note>รวมสินค้าและใช้ Point ลดราคาได้ในรายการเดียว</span>
+          <div class="site-cart-title-wrap">
+            <span class="site-cart-icon-bubble"><i data-lucide="shopping-bag"></i></span>
+            <div>
+              <p class="eyebrow">OLAF CART</p>
+              <h2>ตะกร้าสินค้า</h2>
+              <span data-cart-head-note>รวมสินค้า ใช้ Point ลดราคา และชำระผ่านระบบเดิมได้ในรายการเดียว</span>
+            </div>
           </div>
           <button class="dialog-close" type="button" data-site-cart-close aria-label="ปิดตะกร้า">
             <i data-lucide="x"></i>
           </button>
         </div>
         <div class="site-cart-body">
-          <section class="site-cart-items" data-site-cart-items></section>
+          <section class="site-cart-items-panel">
+            <div class="site-cart-section-head">
+              <div>
+                <strong>รายการสินค้า</strong>
+                <span>ตรวจจำนวนและแพ็คเกจก่อนสร้างคำสั่งซื้อ</span>
+              </div>
+              <em data-site-cart-count-label>0 รายการ</em>
+            </div>
+            <div class="site-cart-items" data-site-cart-items></div>
+          </section>
           <aside class="site-cart-summary">
             <div class="site-cart-summary-card">
+              <div class="site-cart-summary-head">
+                <span class="site-cart-summary-icon"><i data-lucide="receipt-text"></i></span>
+                <div>
+                  <strong>สรุปคำสั่งซื้อ</strong>
+                  <small>Point จะหักตอนกดสร้างคำสั่งซื้อ</small>
+                </div>
+              </div>
               <div class="site-cart-summary-row"><span>ยอดสินค้า</span><strong data-site-cart-subtotal>฿0</strong></div>
               <label class="site-cart-points" data-site-cart-points hidden>
                 <input type="checkbox" data-site-cart-use-points />
                 <span><i data-lucide="coins"></i></span>
-                <b>ใช้ Point ลดราคา</b>
-                <small>คงเหลือ <em data-site-cart-point-balance>0</em> Point</small>
+                <span class="site-cart-points-copy">
+                  <b>ใช้ Point ลดราคา</b>
+                  <small>คงเหลือ <em data-site-cart-point-balance>0</em> Point</small>
+                </span>
+                <i class="site-cart-points-check" data-lucide="check"></i>
               </label>
               <div class="site-cart-summary-row"><span>ส่วนลด Point</span><strong data-site-cart-point-discount>-฿0</strong></div>
               <div class="site-cart-summary-row total-line"><span>ยอดชำระ</span><strong data-site-cart-total>฿0</strong></div>
               <div class="site-cart-payment" data-site-cart-payment>
-                <span>ช่องทางชำระเงิน</span>
-                <label><input type="radio" name="siteCartPayment" value="promptpay" checked /> PromptPay QR</label>
-                <label><input type="radio" name="siteCartPayment" value="wallet" /> Wallet / TrueMoney</label>
+                <span class="site-cart-payment-title">ช่องทางชำระเงิน</span>
+                <div class="site-cart-payment-grid">
+                  <label>
+                    <input type="radio" name="siteCartPayment" value="promptpay" checked />
+                    <span><i data-lucide="qr-code"></i><b>PromptPay QR</b><small>แอปธนาคาร</small></span>
+                  </label>
+                  <label>
+                    <input type="radio" name="siteCartPayment" value="wallet" />
+                    <span><i data-lucide="wallet"></i><b>Wallet</b><small>TrueMoney</small></span>
+                  </label>
+                </div>
               </div>
-              <button class="primary-button site-cart-checkout" type="button" data-site-cart-checkout>
-                <i data-lucide="receipt"></i>
-                สร้างคำสั่งซื้อ
-              </button>
+              <div class="site-cart-action-row">
+                <button class="primary-button site-cart-checkout" type="button" data-site-cart-checkout>
+                  <i data-lucide="receipt"></i>
+                  สร้างคำสั่งซื้อ
+                </button>
+                <button class="secondary-button site-cart-continue" type="button" data-site-cart-close>
+                  เลือกสินค้าต่อ
+                </button>
+              </div>
               <p class="site-cart-note">Offline จะจัดส่งอัตโนมัติหลังสลิปผ่าน ส่วนสินค้าอื่นรอแอดมินจัดส่ง</p>
             </div>
             <div class="site-cart-payment-result" data-site-cart-payment-result hidden></div>
@@ -210,8 +246,11 @@
     const sub = subtotal(items);
     const discount = pointDiscount(items);
     const total = Math.max(sub - discount, 0);
+    const count = items.reduce((sum, item) => sum + item.quantity, 0);
 
     if (!list) return;
+    const countLabel = $("[data-site-cart-count-label]", dialog);
+    if (countLabel) countLabel.textContent = `${point(count)} รายการ`;
     if (!items.length) {
       list.innerHTML = `
         <div class="site-cart-empty">
@@ -225,17 +264,25 @@
         const key = cartKey(item);
         return `
           <article class="site-cart-item">
-            <img src="${escapeHtml(item.image || "https://placehold.co/160x90/0f172a/93c5fd?text=OLAF")}" alt="" loading="lazy" />
+            <div class="site-cart-item-media">
+              <img src="${escapeHtml(item.image || "https://placehold.co/160x90/0f172a/93c5fd?text=OLAF")}" alt="" loading="lazy" />
+            </div>
             <div class="site-cart-item-main">
               <h3>${escapeHtml(item.name)}</h3>
-              <p>${escapeHtml(item.packageTitle || item.category || "สินค้า")} · ${money(item.price)} x ${item.quantity}</p>
+              <p>${escapeHtml(item.packageTitle || item.category || "สินค้า")}</p>
+              <div class="site-cart-item-meta">
+                <span>${money(item.price)} / ชิ้น</span>
+                <span>สต็อก ${point(item.stock || 0)}</span>
+              </div>
               <strong>${money(item.price * item.quantity)}</strong>
             </div>
             <div class="site-cart-item-actions">
-              <button type="button" class="quantity-button" data-site-cart-decrease="${escapeHtml(key)}" data-quantity="${item.quantity}"><i data-lucide="minus"></i></button>
-              <span>${item.quantity}</span>
-              <button type="button" class="quantity-button" data-site-cart-increase="${escapeHtml(key)}" data-quantity="${item.quantity}"><i data-lucide="plus"></i></button>
-              <button type="button" class="quantity-button" data-site-cart-remove="${escapeHtml(key)}"><i data-lucide="trash-2"></i></button>
+              <div class="site-cart-qty-control">
+                <button type="button" class="quantity-button" data-site-cart-decrease="${escapeHtml(key)}" data-quantity="${item.quantity}" aria-label="ลดจำนวน"><i data-lucide="minus"></i></button>
+                <span>${item.quantity}</span>
+                <button type="button" class="quantity-button" data-site-cart-increase="${escapeHtml(key)}" data-quantity="${item.quantity}" aria-label="เพิ่มจำนวน"><i data-lucide="plus"></i></button>
+              </div>
+              <button type="button" class="site-cart-remove" data-site-cart-remove="${escapeHtml(key)}" aria-label="ลบสินค้า"><i data-lucide="trash-2"></i><span>ลบ</span></button>
             </div>
           </article>
         `;
@@ -246,6 +293,7 @@
     const pointInput = $("[data-site-cart-use-points]", dialog);
     if (pointsCard) pointsCard.hidden = !(pointState.balance > 0 && sub > 0);
     if (pointInput) pointInput.checked = Boolean(pointState.enabled && pointState.balance > 0);
+    if (pointsCard) pointsCard.classList.toggle("is-active", Boolean(pointState.enabled && discount > 0));
     const payment = $("[data-site-cart-payment]", dialog);
     if (payment) payment.hidden = total <= 0 && discount > 0;
     $("[data-site-cart-subtotal]", dialog).textContent = money(sub);

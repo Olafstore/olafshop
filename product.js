@@ -1866,6 +1866,10 @@ function renderProduct() {
               <i data-lucide="${isMinecraftProduct(p) ? "clock-3" : "shopping-cart"}"></i>
               ${buyButtonText}
             </button>
+            <button class="pd-add-cart-btn" type="button" id="btn-add-cart" ${!canAdd ? "disabled" : ""}>
+              <i data-lucide="shopping-bag"></i>
+              เพิ่มลงตะกร้า
+            </button>
 
             <!-- Feature info row -->
             <div class="pd-features-row">
@@ -1999,6 +2003,27 @@ function renderProduct() {
     const fee = 0;
     const total = subtotal + fee;
     openOrderConfirmDialog(subtotal, total);
+  });
+
+  $("#btn-add-cart")?.addEventListener("click", () => {
+    const purchase = getPurchaseOption(currentProduct);
+    if (!currentProduct || purchase.stock <= 0) {
+      showToast("สินค้าหมดชั่วคราว", "warning");
+      return;
+    }
+    window.OlafCart?.add?.({
+      productId: currentProduct.id,
+      packageId: purchase.packageId || null,
+      name: purchase.hasPackage
+        ? `${getDisplayProductName(currentProduct)} — ${purchase.packageTitle || "แพ็คเกจ"}`
+        : getDisplayProductName(currentProduct),
+      image: productImageForCheckout(currentProduct),
+      category: purchase.hasPackage ? "แพ็คเกจ" : categoryLabel(currentProduct),
+      packageTitle: purchase.packageTitle || "",
+      price: purchase.price,
+      stock: purchase.stock,
+      quantity: detailQuantity
+    });
   });
 }
 

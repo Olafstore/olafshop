@@ -2,7 +2,8 @@
   const keys = {
     reviews: "olafshop_reviews",
     widgets: "olafshop_widgets",
-    widgetSeeded: "olafshop_widgets_seeded_v3"
+    widgetSeeded: "olafshop_widgets_seeded_v3",
+    userCache: "olafshop_user_cache_v1"
   };
 
   const legacyAuthKeys = ["olafshop_users", "olafshop_session"];
@@ -39,7 +40,7 @@
     }
   ];
 
-  let cachedUser = null;
+  let cachedUser = readCachedUser();
 
   function clone(value) {
     return JSON.parse(JSON.stringify(value));
@@ -66,6 +67,27 @@
     localStorage.setItem(key, JSON.stringify(value));
   }
 
+  function readCachedUser() {
+    try {
+      const raw = sessionStorage.getItem(keys.userCache);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      if (!parsed?.id || !parsed?.email) return null;
+      return parsed;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function writeCachedUser(user) {
+    try {
+      if (user?.id) sessionStorage.setItem(keys.userCache, JSON.stringify(user));
+      else sessionStorage.removeItem(keys.userCache);
+    } catch (error) {
+      console.warn("Unable to persist user cache", error);
+    }
+  }
+
   function clearLegacyCustomerAuth() {
     legacyAuthKeys.forEach((key) => localStorage.removeItem(key));
   }
@@ -89,13 +111,13 @@
       return null;
     }
     cachedUser = await window.OlafSupabaseAuth.getCurrentUser();
+    writeCachedUser(cachedUser);
     return cachedUser;
   }
 
   const ready = refreshCurrentUser().catch((error) => {
     console.warn("Supabase auth initialization failed", error);
-    cachedUser = null;
-    return null;
+    return cachedUser;
   });
 
   function currentUser() {
@@ -110,6 +132,7 @@
       password: String(input.password || ""),
       fullName
     });
+    writeCachedUser(cachedUser);
     return cachedUser;
   }
 
@@ -119,6 +142,7 @@
       email: String(email || "").trim().toLowerCase(),
       password: String(password || "")
     });
+    writeCachedUser(cachedUser);
     return cachedUser;
   }
 
@@ -135,6 +159,7 @@
       await window.OlafSupabaseAuth.signOut();
     }
     cachedUser = null;
+    writeCachedUser(null);
     clearLegacyCustomerAuth();
   }
 
@@ -145,6 +170,7 @@
       username: patch.username || cachedUser.username,
       fullName: patch.fullName || patch.displayName || patch.username || cachedUser.displayName
     });
+    writeCachedUser(cachedUser);
     return cachedUser;
   }
 
@@ -189,6 +215,7 @@
       oldPassword,
       newPassword
     });
+    writeCachedUser(cachedUser);
     return cachedUser;
   }
 

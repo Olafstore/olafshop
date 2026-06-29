@@ -14,7 +14,13 @@
 
   const client =
     isConfigured && window.supabase?.createClient
-      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY)
+      ? window.supabase.createClient(SUPABASE_URL, SUPABASE_PUBLISHABLE_KEY, {
+          auth: {
+            persistSession: true,
+            autoRefreshToken: true,
+            detectSessionInUrl: true
+          }
+        })
       : null;
 
   function requireClient() {
@@ -1179,6 +1185,32 @@
     return withPaymentSlipUrl(mapOrderRpcPayload(data));
   }
 
+  async function createCartOrder({ items, paymentMethod, customerName, pointsToUse = 0 }) {
+    const normalizedItems = normalizeArray(items)
+      .map((item) => ({
+        product_id: item.productId || item.product_id || item.id || "",
+        quantity: Math.max(1, Number(item.quantity || 1)),
+        package_id: item.packageId || item.package_id || null
+      }))
+      .filter((item) => item.product_id);
+
+    if (!normalizedItems.length) throw new Error("CART_ITEMS_REQUIRED");
+
+    const payload = {
+      p_items: normalizedItems,
+      p_payment_method: paymentMethod || "promptpay",
+      p_customer_name: customerName || ""
+    };
+    const normalizedPoints = Number(pointsToUse || 0);
+    if (Number.isFinite(normalizedPoints) && normalizedPoints > 0) {
+      payload.p_points_to_use = normalizedPoints;
+    }
+
+    const { data, error } = await requireClient().rpc("create_cart_order", payload);
+    if (error) throw error;
+    return withPaymentSlipUrl(mapOrderRpcPayload(data));
+  }
+
   async function fetchMyOrders() {
     const { data, error } = await requireClient()
       .from("orders")
@@ -1307,6 +1339,7 @@
   window.OlafOrders = {
     mapOrderRow,
     createOrder,
+    createCartOrder,
     fetchMyOrders,
     fetchOrderById,
     cancelMyOrder,

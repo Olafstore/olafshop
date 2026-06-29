@@ -130,6 +130,7 @@ const state = {
   cart: new Map(),
   detailQuantity: 1,
   currentUser: null,
+  authReady: false,
   orders: [],
   recentPurchases: [],
   recentPurchasesLoading: true,
@@ -1111,19 +1112,44 @@ function renderAll() {
 }
 
 function renderAccount() {
-  const label = state.currentUser ? state.currentUser.displayName || state.currentUser.username : t("account");
+  const openAuthEl = $(selectors.openAuth);
   const labelEl = $(selectors.accountLabel);
+  const registerBtn = document.querySelector(".register-button");
+  const authIcon = openAuthEl?.querySelector("svg, i");
+
+  if (!state.authReady) {
+    if (labelEl) labelEl.textContent = "กำลังโหลดข้อมูล";
+    if (openAuthEl) {
+      openAuthEl.classList.add("is-auth-loading");
+      openAuthEl.setAttribute("aria-busy", "true");
+    }
+    if (registerBtn) registerBtn.style.display = "none";
+    if (authIcon) {
+      if (authIcon.tagName.toLowerCase() === "svg") {
+        const newI = document.createElement("i");
+        newI.setAttribute("data-lucide", "loader-circle");
+        authIcon.replaceWith(newI);
+      } else {
+        authIcon.setAttribute("data-lucide", "loader-circle");
+      }
+    }
+    if (window.lucide) window.lucide.createIcons();
+    return;
+  }
+
+  const label = state.currentUser ? state.currentUser.displayName || state.currentUser.username : t("account");
   if (labelEl) labelEl.textContent = label;
 
-  const openAuthEl = $(selectors.openAuth);
-  if (openAuthEl) openAuthEl.classList.toggle("is-signed-in", Boolean(state.currentUser));
+  if (openAuthEl) {
+    openAuthEl.classList.remove("is-auth-loading");
+    openAuthEl.removeAttribute("aria-busy");
+    openAuthEl.classList.toggle("is-signed-in", Boolean(state.currentUser));
+  }
 
-  const registerBtn = document.querySelector(".register-button");
   if (registerBtn) {
     registerBtn.style.display = state.currentUser ? "none" : "";
   }
 
-  const authIcon = openAuthEl?.querySelector("svg, i");
   if (authIcon) {
     const newIcon = state.currentUser ? "user" : "log-in";
     if (authIcon.tagName.toLowerCase() === "svg") {
@@ -2541,6 +2567,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   applySearchFromUrl();
 
   await authReady;
+  state.authReady = true;
   refreshAccountState();
   renderAccount();
   renderCart();

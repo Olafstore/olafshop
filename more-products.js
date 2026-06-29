@@ -221,10 +221,27 @@
 
   function updateAccountChrome() {
     const user = window.OlafStore?.currentUser?.() || null;
+    const accountButton = $("#open-auth");
+    if (accountButton) {
+      accountButton.classList.remove("is-auth-loading");
+      accountButton.removeAttribute("aria-busy");
+      accountButton.classList.toggle("is-signed-in", Boolean(user));
+    }
     const label = $("#account-label");
     if (label) label.textContent = user ? user.displayName || user.username : "เข้าสู่ระบบ";
     const register = document.querySelector(".register-button");
-    if (register) register.hidden = Boolean(user);
+    if (register) register.style.display = user ? "none" : "";
+    const authIcon = accountButton?.querySelector("svg, i");
+    if (authIcon) {
+      const nextIcon = user ? "user" : "log-in";
+      if (authIcon.tagName.toLowerCase() === "svg") {
+        const iconNode = document.createElement("i");
+        iconNode.setAttribute("data-lucide", nextIcon);
+        authIcon.replaceWith(iconNode);
+      } else {
+        authIcon.setAttribute("data-lucide", nextIcon);
+      }
+    }
     if (user) renderUserPopover(user);
     refreshIcons();
   }

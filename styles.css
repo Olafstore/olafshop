@@ -16129,3 +16129,95 @@ html {
     width: 42px;
   }
 }
+
+/* 2026-06-29: auth loading + official footer payment polish. */
+.account-button.is-auth-loading {
+  pointer-events: none;
+  opacity: 0.88;
+}
+
+.account-button.is-auth-loading span {
+  font-weight: 400;
+}
+
+.site-footer {
+  font-weight: 400;
+}
+
+.site-footer strong,
+.site-footer h4,
+.site-footer .brand-text {
+  font-weight: 500;
+}
+
+.site-footer p,
+.site-footer a,
+.site-footer small,
+.site-footer span,
+.payment-badge {
+  font-weight: 300;
+}
+
+.footer-payments {
+  justify-self: end;
+  text-align: right;
+}
+
+.footer-payments h4 {
+  font-size: 0.95rem;
+  font-weight: 500;
+  letter-spacing: 0.01em;
+}
+
+.payment-badges {
+  justify-content: flex-end;
+}
+
+.payment-badge {
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.62);
+  color: #cbd5e1;
+  letter-spacing: 0.01em;
+}
+
+.footer-bottom {
+  position: relative;
+  padding-bottom: 18px;
+  font-weight: 300;
+}
+
+.footer-bottom::after {
+  content: "OLAF SHOP DIGITAL STORE · SECURE CHECKOUT";
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  color: rgba(148, 163, 184, 0.58);
+  font-size: 0.64rem;
+  font-weight: 300;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .footer-payments,
+  .footer-bottom {
+    justify-self: stretch;
+    text-align: left;
+  }
+
+  .payment-badges {
+    justify-content: flex-start;
+  }
+
+  .footer-bottom {
+    padding-bottom: 0;
+  }
+
+  .footer-bottom::after {
+    position: static;
+    display: block;
+    margin-top: 6px;
+    white-space: normal;
+  }
+}

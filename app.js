@@ -285,6 +285,9 @@ const formatPrice = (value) =>
     maximumFractionDigits: 0
   }).format(value);
 
+const formatPointAmount = (value) =>
+  new Intl.NumberFormat("th-TH", { maximumFractionDigits: 0 }).format(Math.floor(Number(value) || 0));
+
 function ratingValue(value) {
   return Math.max(0, Math.min(5, Number(value) || 0));
 }
@@ -1720,7 +1723,7 @@ function renderUserPopover() {
       </div>
       <div class="user-popover-badge-row">
         <span class="user-badge-role">${escapeHtml(user.role || 'Member')}</span>
-        <span class="user-badge-points">0 Points</span>
+        <a class="user-badge-points" href="profile.html#info" data-topbar-point-balance>${formatPointAmount(0)} Points</a>
       </div>
     </div>
     <div class="user-popover-menu">
@@ -1737,6 +1740,20 @@ function renderUserPopover() {
   `;
   popover.hidden = false;
   createIconSet();
+  refreshTopbarPointBalance().catch(() => null);
+}
+
+async function refreshTopbarPointBalance() {
+  if (!window.OlafOrders?.fetchPointBalance) return;
+  try {
+    const wallet = await window.OlafOrders.fetchPointBalance();
+    const label = `${formatPointAmount(wallet?.balance || 0)} Points`;
+    document.querySelectorAll("[data-topbar-point-balance]").forEach((item) => {
+      item.textContent = label;
+    });
+  } catch (error) {
+    console.warn("Unable to load topbar point balance", error);
+  }
 }
 
 function showUserPopoverSection(section) {

@@ -2165,7 +2165,7 @@
           </div>
           <div class="profile-sidebar-balance-row" aria-label="ข้อมูลสถานะบัญชีและพอยท์">
             <span class="profile-sidebar-role-chip" id="profile-sidebar-role">member</span>
-            <a class="profile-sidebar-point-chip" href="#info" aria-label="Check Point">
+            <a class="profile-sidebar-point-chip" href="#info" aria-label="Check Point" data-refresh-points>
               <i data-lucide="coins"></i>
               <span><b id="profile-sidebar-point-balance">0</b> Points</span>
             </a>
@@ -2464,19 +2464,19 @@
       return '<span class="payment-verified-badge"><i data-lucide="badge-check"></i>ตรวจสลิปแล้ว</span>';
     }
 
-    function renderProfilePoints(balance = profileState.pointBalance) {
-      const card = document.getElementById('profile-points-card');
-      const value = document.getElementById('profile-point-balance');
-      const sidebarValue = document.getElementById('profile-sidebar-point-balance');
-      const topbarValue = document.querySelector('[data-topbar-point-balance]');
-      const normalized = Math.max(Number(balance || 0), 0);
-      profileState.pointBalance = normalized;
-      if (value) value.textContent = formatPointAmount(normalized);
-      if (sidebarValue) sidebarValue.textContent = formatPointAmount(normalized);
-      if (topbarValue) topbarValue.textContent = `${formatPointAmount(normalized)} Points`;
-      if (card) card.hidden = false;
-      if (window.lucide) lucide.createIcons();
-    }
+      function renderProfilePoints(balance = profileState.pointBalance) {
+        const card = document.getElementById('profile-points-card');
+        const value = document.getElementById('profile-point-balance');
+        const sidebarValue = document.getElementById('profile-sidebar-point-balance');
+        const topbarValues = document.querySelectorAll('[data-topbar-point-balance]');
+        const normalized = Math.max(Number(balance || 0), 0);
+        profileState.pointBalance = normalized;
+        if (value) value.textContent = formatPointAmount(normalized);
+        if (sidebarValue) sidebarValue.textContent = formatPointAmount(normalized);
+        topbarValues.forEach((item) => { item.textContent = `${formatPointAmount(normalized)} Points`; });
+        if (card) card.hidden = false;
+        if (window.lucide) lucide.createIcons();
+      }
 
     async function refreshProfilePoints() {
       if (!window.OlafOrders?.fetchPointBalance) {
@@ -3149,7 +3149,7 @@
           </div>
           <div class="user-popover-badge-row">
             <span class="user-badge-role">${escape(user.role || 'member')}</span>
-            <span class="user-badge-points" data-topbar-point-balance>${formatPointAmount(profileState.pointBalance || 0)} Points</span>
+            <a class="user-badge-points" href="#info" data-topbar-point-balance data-refresh-points>${formatPointAmount(profileState.pointBalance || 0)} Points</a>
           </div>
         </div>
         <div class="user-popover-menu">
@@ -3433,6 +3433,18 @@
         closeTopbarMenus('user');
         userPopover.hidden = !nextOpen;
         event.currentTarget.classList.toggle('is-active', nextOpen);
+        if (nextOpen) refreshProfilePoints().catch(() => null);
+      });
+
+      document.addEventListener('click', async (event) => {
+        const trigger = event.target.closest('[data-refresh-points]');
+        if (!trigger) return;
+        event.preventDefault();
+        closeTopbarMenus();
+        const panelName = switchPanel('info');
+        history.replaceState(null, '', `#${panelName}`);
+        await refreshProfilePoints();
+        showToast(`Point คงเหลือ ${formatPointAmount(profileState.pointBalance)} Point`, 'success');
       });
 
       topbarSearchInput?.addEventListener('input', async (event) => {

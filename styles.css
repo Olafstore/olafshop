@@ -13964,6 +13964,144 @@ samp,
     rgba(127, 29, 29, 0.16);
 }
 
+.topbar.site-topbar-unified .main-nav a,
+.main-nav a {
+  position: relative;
+  min-width: 0;
+  min-height: auto;
+  padding: 4px 6px;
+  border: 0 !important;
+  border-radius: 0;
+  background: transparent !important;
+  box-shadow: none !important;
+  color: #8b96ad;
+  font-weight: 500;
+  text-shadow: none;
+}
+
+.topbar.site-topbar-unified .main-nav a::after,
+.main-nav a::after {
+  content: "";
+  position: absolute;
+  right: 6px;
+  bottom: -7px;
+  left: 6px;
+  height: 2px;
+  border-radius: 999px;
+  background: linear-gradient(90deg, #60a5fa, #2563eb);
+  opacity: 0;
+  transform: scaleX(0.45);
+  transition: opacity 180ms ease, transform 180ms ease;
+}
+
+.topbar.site-topbar-unified .main-nav a:hover,
+.topbar.site-topbar-unified .main-nav a.is-active,
+.main-nav a:hover,
+.main-nav a.is-active {
+  color: #f8fbff;
+  background: transparent !important;
+  text-shadow:
+    0 0 12px rgba(96, 165, 250, 0.68),
+    0 0 26px rgba(37, 99, 235, 0.32);
+}
+
+.topbar.site-topbar-unified .main-nav a.is-active::after,
+.main-nav a.is-active::after {
+  opacity: 1;
+  transform: scaleX(1);
+}
+
+.topbar.site-topbar-unified .topbar-actions {
+  gap: 10px;
+}
+
+.topbar.site-topbar-unified .icon-button,
+.topbar.site-topbar-unified .account-button,
+.topbar.site-topbar-unified .register-button,
+.topbar.site-topbar-unified .primary-button {
+  min-height: 38px;
+  border-radius: 10px;
+  box-shadow: none;
+}
+
+.topbar.site-topbar-unified .icon-button {
+  width: 34px;
+  min-height: 34px;
+  border: 0;
+  background: transparent;
+  color: #a5b4cf;
+}
+
+.topbar.site-topbar-unified .icon-button:hover,
+.topbar.site-topbar-unified .icon-button.is-active,
+.topbar.site-topbar-unified .account-button:hover {
+  border-color: rgba(96, 165, 250, 0.28);
+  background: rgba(15, 23, 42, 0.72);
+  color: #eaf2ff;
+  text-shadow: 0 0 14px rgba(96, 165, 250, 0.38);
+}
+
+.topbar.site-topbar-unified .account-button {
+  min-height: 38px;
+  padding: 0 14px;
+  border: 1px solid rgba(71, 85, 105, 0.62);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.44);
+  color: #dbe7ff;
+}
+
+.topbar.site-topbar-unified .register-button,
+.topbar.site-topbar-unified .primary-button.register-button {
+  min-height: 38px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 9px;
+  background: linear-gradient(135deg, #2563eb, #1d4ed8);
+  color: #fff;
+  box-shadow: 0 10px 24px rgba(37, 99, 235, 0.28);
+}
+
+.topbar.site-topbar-unified .topbar-search-wrap.site-unified-search .topbar-search-form,
+.topbar.site-topbar-unified .site-global-search {
+  min-height: 38px;
+  border-color: rgba(71, 85, 105, 0.72);
+  background: rgba(15, 23, 42, 0.48);
+  box-shadow: none;
+}
+
+.topbar.site-topbar-unified .topbar-search-wrap.site-unified-search .topbar-search-form:focus-within,
+.topbar.site-topbar-unified .site-global-search:focus-within {
+  border-color: rgba(96, 165, 250, 0.45);
+  box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.10), 0 0 20px rgba(37, 99, 235, 0.12);
+}
+
+.topbar.site-topbar-unified .topbar-search-toggle,
+.topbar.site-topbar-unified .site-global-search-toggle {
+  color: #9aa8c1;
+}
+
+.topbar.site-topbar-unified .language-switcher,
+.topbar.site-topbar-unified .notification-wrap {
+  display: inline-flex;
+  align-items: center;
+}
+
+.topbar.site-topbar-unified .language-switcher {
+  margin-left: 2px;
+}
+
+.topbar.site-topbar-unified .user-popover-badge-row a.user-badge-points {
+  color: #bfdbfe;
+  text-decoration: none;
+}
+
+.topbar.site-topbar-unified .user-popover-badge-row a.user-badge-points:hover,
+.topbar.site-topbar-unified .user-popover-badge-row a.user-badge-points:focus-visible {
+  color: #ffffff;
+  text-shadow: 0 0 12px rgba(96, 165, 250, 0.45);
+  outline: none;
+}
+
 @media (max-width: 1180px) {
   .topbar.site-topbar-unified .topbar-search-wrap.site-unified-search,
   .topbar.site-topbar-unified .site-global-search {

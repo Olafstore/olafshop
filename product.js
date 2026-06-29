@@ -2758,6 +2758,10 @@ function renderUserPopover() {
         <span>${escapeHtml(email)}</span>
       </div>
     </div>
+    <div class="user-popover-badge-row">
+      <span class="user-badge-role">${escapeHtml(user.role || "member")}</span>
+      <a class="user-badge-points" href="profile.html#info" data-topbar-point-balance>${formatPointAmount(0)} Points</a>
+    </div>
     <div class="user-popover-menu">
       ${user.role === "admin" ? '<a href="olaf-control.html"><i data-lucide="shield"></i>หลังบ้าน (Admin)</a>' : ""}
       <a href="profile.html"><i data-lucide="user"></i>ข้อมูลส่วนตัว</a>
@@ -2768,6 +2772,7 @@ function renderUserPopover() {
     </div>
   `;
   createIconSet();
+  refreshTopbarPointBalance().catch(() => null);
   
   document.querySelector("#logout-button")?.addEventListener("click", async () => {
     await window.OlafStore.logout();
@@ -2777,6 +2782,19 @@ function renderUserPopover() {
     showToast("ออกจากระบบแล้ว", "info");
     setTimeout(() => { window.location.reload(); }, 800);
   });
+}
+
+async function refreshTopbarPointBalance() {
+  if (!window.OlafOrders?.fetchPointBalance) return;
+  try {
+    const wallet = await window.OlafOrders.fetchPointBalance();
+    const label = `${formatPointAmount(wallet?.balance || 0)} Points`;
+    document.querySelectorAll("[data-topbar-point-balance]").forEach((item) => {
+      item.textContent = label;
+    });
+  } catch (error) {
+    console.warn("Unable to load topbar point balance", error);
+  }
 }
 
 function updateAccountChrome() {
@@ -2879,6 +2897,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       if (popover) {
         popover.hidden = !popover.hidden;
         document.querySelector("#open-auth").classList.toggle("is-active", !popover.hidden);
+        if (!popover.hidden) refreshTopbarPointBalance().catch(() => null);
       }
     } else {
       window.location.href = "login.html?return=" + encodeURIComponent(window.location.href);

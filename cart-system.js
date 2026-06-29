@@ -239,6 +239,17 @@
     badge.hidden = count <= 0;
   }
 
+  function setPaymentMode(dialog, enabled) {
+    const summaryCard = $(".site-cart-summary-card", dialog);
+    const paymentBox = $("[data-site-cart-payment-result]", dialog);
+    dialog.classList.toggle("is-payment-mode", Boolean(enabled));
+    if (summaryCard) summaryCard.hidden = Boolean(enabled);
+    if (paymentBox && !enabled) {
+      paymentBox.hidden = true;
+      paymentBox.innerHTML = "";
+    }
+  }
+
   function renderDialog() {
     const dialog = ensureDialog();
     const items = readCart();
@@ -249,6 +260,7 @@
     const count = items.reduce((sum, item) => sum + item.quantity, 0);
 
     if (!list) return;
+    if (!pendingOrder) setPaymentMode(dialog, false);
     const countLabel = $("[data-site-cart-count-label]", dialog);
     if (countLabel) countLabel.textContent = `${point(count)} รายการ`;
     if (!items.length) {
@@ -323,6 +335,7 @@
   function add(item) {
     const next = cleanItems([item])[0];
     if (!next) return;
+    pendingOrder = null;
     const items = readCart();
     const key = cartKey(next);
     const found = items.find((entry) => cartKey(entry) === key);
@@ -340,6 +353,7 @@
   }
 
   function updateQuantity(key, quantity) {
+    pendingOrder = null;
     const items = readCart();
     const next = items
       .map((item) => cartKey(item) === key ? { ...item, quantity: Math.max(0, Math.floor(Number(quantity || 0))) } : item)
@@ -376,17 +390,49 @@
     const dialog = ensureDialog();
     const box = $("[data-site-cart-payment-result]", dialog);
     if (!box) return;
-    const qr = await paymentQr(order);
+    setPaymentMode(dialog, true);
     box.hidden = false;
     box.innerHTML = `
       <div class="site-cart-paid-head">
-        <i data-lucide="scan-line"></i>
+        <i data-lucide="qr-code"></i>
         <div>
           <strong>ชำระเงินคำสั่งซื้อ ${escapeHtml(orderRef(order))}</strong>
           <span>ยอดชำระ ${money(order.total)}</span>
         </div>
       </div>
-      ${qr ? `<img class="site-cart-qr" src="${escapeHtml(qr)}" alt="QR สำหรับชำระเงิน" />` : `<div class="site-cart-noqr">ยังไม่พบ QR สำหรับช่องทางนี้</div>`}
+      <div class="site-cart-qr-loading" aria-live="polite">
+        <span class="site-cart-qr-loader"><i data-lucide="loader-circle"></i></span>
+        <strong>กำลังโหลด QR Code</strong>
+        <small>กรุณารอสักครู่ ระบบกำลังเตรียมยอดชำระ</small>
+      </div>
+      <div class="site-cart-result-actions">
+        <button class="primary-button" type="button" disabled><i data-lucide="loader-circle"></i>กำลังเตรียม QR</button>
+        <button class="secondary-button" type="button" data-site-cart-profile><i data-lucide="package"></i>ไปคลังสินค้า</button>
+      </div>
+    `;
+    window.lucide?.createIcons?.();
+
+    let qr = "";
+    try {
+      qr = await paymentQr(order);
+    } catch (error) {
+      console.warn("Unable to load cart payment QR", error);
+    }
+
+    box.innerHTML = `
+      <div class="site-cart-paid-head">
+        <i data-lucide="qr-code"></i>
+        <div>
+          <strong>ชำระเงินคำสั่งซื้อ ${escapeHtml(orderRef(order))}</strong>
+          <span>ยอดชำระ ${money(order.total)}</span>
+        </div>
+      </div>
+      ${qr ? `
+        <div class="site-cart-qr-frame">
+          <img class="site-cart-qr" src="${escapeHtml(qr)}" alt="QR สำหรับชำระเงิน" />
+          <span>สแกน QR แล้วแนบสลิปเพื่อให้ระบบตรวจอัตโนมัติ</span>
+        </div>
+      ` : `<div class="site-cart-noqr">ยังไม่พบ QR สำหรับช่องทางนี้ กรุณาไปหน้าคลังสินค้าหรือเลือกช่องทางอื่น</div>`}
       <div class="site-cart-result-actions">
         <button class="primary-button" type="button" data-site-cart-upload><i data-lucide="upload"></i>แนบสลิป</button>
         <button class="secondary-button" type="button" data-site-cart-profile><i data-lucide="package"></i>ไปคลังสินค้า</button>

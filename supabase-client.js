@@ -350,10 +350,6 @@
   }
 
   async function saveAdminUser(user) {
-    if (String(user.password || "").trim()) {
-      throw new Error("PASSWORD_MANAGED_IN_SUPABASE_AUTH");
-    }
-
     const { data, error } = await requireClient().rpc("admin_save_profile", {
       p_id: user.id || null,
       p_email: user.email || "",
@@ -365,7 +361,47 @@
       p_status: user.status || "active"
     });
     if (error) throw error;
-    return mapProfilePayload(data);
+    const savedUser = mapProfilePayload(data);
+    const nextPassword = String(user.password || "").trim();
+    if (nextPassword) {
+      await adminSetUserPassword({
+        userId: savedUser.id || user.id,
+        password: nextPassword
+      });
+    }
+    return savedUser;
+  }
+
+  async function adminSetUserPassword({ userId, password }) {
+    const targetUserId = String(userId || "").trim();
+    const nextPassword = String(password || "");
+    if (!targetUserId) throw new Error("USER_REQUIRED");
+    if (nextPassword.length < 6) throw new Error("PASSWORD_TOO_SHORT");
+
+    const { data: sessionData, error: sessionError } = await requireClient().auth.getSession();
+    if (sessionError) throw sessionError;
+    const accessToken = sessionData?.session?.access_token;
+    if (!accessToken) throw new Error("AUTH_REQUIRED");
+
+    const response = await fetch("/api/admin-user-password", {
+      method: "POST",
+      headers: {
+        Accept: "application/json",
+        Authorization: `Bearer ${accessToken}`,
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        userId: targetUserId,
+        password: nextPassword
+      })
+    });
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok || payload?.success !== true) {
+      const error = new Error(payload?.message || payload?.code || "ADMIN_PASSWORD_UPDATE_FAILED");
+      error.code = payload?.code || "ADMIN_PASSWORD_UPDATE_FAILED";
+      throw error;
+    }
+    return payload;
   }
 
   async function disableAdminUser(userId) {
@@ -1356,6 +1392,21 @@
     });
   }
 
+  async function adminAdjustUserPoints({ userId, amount, note }) {
+    const targetUserId = String(userId || "").trim();
+    const normalizedAmount = Number(amount || 0);
+    if (!targetUserId) throw new Error("USER_REQUIRED");
+    if (!Number.isFinite(normalizedAmount) || normalizedAmount === 0) throw new Error("POINT_AMOUNT_REQUIRED");
+
+    const { data, error } = await requireClient().rpc("admin_adjust_user_points", {
+      p_user_id: targetUserId,
+      p_amount: normalizedAmount,
+      p_note: note || null
+    });
+    if (error) throw error;
+    return normalizeAdminFinancePayload(data || {});
+  }
+
   async function adminUpdateOrder({ orderId, status, deliveryNote, deliveredPayload }) {
     const { data, error } = await requireClient().rpc("admin_update_order", {
       p_order_id: orderId,
@@ -1426,10 +1477,12 @@
   window.OlafAdminUsers = {
     fetchAdminUsers,
     saveAdminUser,
-    disableAdminUser
+    disableAdminUser,
+    adminSetUserPassword
   };
   window.OlafAdminFinance = {
-    fetchAdminFinanceOverview
+    fetchAdminFinanceOverview,
+    adminAdjustUserPoints
   };
   window.OlafStoreSettings = {
     fetchStoreSettings,

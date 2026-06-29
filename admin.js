@@ -32,6 +32,7 @@ const state = {
   },
   financeSearch: "",
   financeTypeFilter: "all",
+  financeOrderPeriod: "all",
   selectedUserId: null,
   selectedReviewId: null,
   selectedOrderId: null,
@@ -2165,6 +2166,9 @@ function adminStockErrorMessage(error) {
 
 function adminUserErrorMessage(error) {
   const message = String(error?.message || "");
+  if (message.includes("PASSWORD_TOO_SHORT")) return "รหัสผ่านใหม่ต้องมีอย่างน้อย 6 ตัวอักษร";
+  if (message.includes("CONFIG_REQUIRED")) return "ยังไม่ได้ตั้งค่า Environment Variables สำหรับ API เปลี่ยนรหัสผ่าน";
+  if (message.includes("PASSWORD_UPDATE_FAILED")) return "บันทึกข้อมูล user แล้ว แต่เปลี่ยนรหัสผ่านไม่สำเร็จ";
   if (message.includes("PASSWORD_MANAGED_IN_SUPABASE_AUTH")) {
     return "รหัสผ่านของ Auth user ต้องเปลี่ยนใน Supabase Dashboard > Authentication > Users";
   }
@@ -2460,6 +2464,10 @@ function renderUserForm() {
   fillUserForm(selectedUser());
 }
 
+function walletRowForUser(userId) {
+  return financeWalletRows().find((row) => row.userId === userId) || null;
+}
+
 function fillUserForm(user) {
   const form = $("#user-form");
   const isNew = !user;
@@ -2483,6 +2491,13 @@ function fillUserForm(user) {
   form.elements.position.value = value.position;
   form.elements.partnerLevel.value = value.partnerLevel;
   form.elements.status.value = value.status;
+  if (form.elements.pointAdjustAmount) form.elements.pointAdjustAmount.value = "";
+  if (form.elements.pointAdjustNote) form.elements.pointAdjustNote.value = "";
+  const wallet = user?.id ? walletRowForUser(user.id) : null;
+  const pointLabel = $("#user-current-point");
+  if (pointLabel) pointLabel.textContent = `${formatPointAmount(wallet?.balance || 0)} Points`;
+  const pointButton = $("#adjust-user-point");
+  if (pointButton) pointButton.disabled = isNew;
 }
 
 async function saveUserFromForm(event) {
@@ -2520,6 +2535,55 @@ async function saveUserFromForm(event) {
   }
 }
 
+async function adjustSelectedUserPoints() {
+  const user = selectedUser();
+  const form = $("#user-form");
+  if (!user || !form) return;
+  const amount = Number(form.elements.pointAdjustAmount?.value || 0);
+  const note = String(form.elements.pointAdjustNote?.value || "").trim();
+  if (!Number.isFinite(amount) || amount === 0) {
+    showAdminToast("กรุณาใส่จำนวน Point ที่ต้องการปรับ เช่น 50 หรือ -20", "warning");
+    return;
+  }
+  if (!(await adminConfirm(`ปรับ Point ของ ${user.email || user.username} จำนวน ${amount > 0 ? "+" : ""}${formatPointAmount(amount)} ใช่ไหม?`))) return;
+
+  const button = $("#adjust-user-point");
+  const originalText = button?.innerHTML || "";
+  if (button) {
+    button.disabled = true;
+    button.innerHTML = '<i data-lucide="loader-circle"></i> กำลังปรับ Point';
+    createIconSet();
+  }
+
+  try {
+    const overview = await window.OlafAdminFinance.adminAdjustUserPoints({
+      userId: user.id,
+      amount,
+      note
+    });
+    state.finance = normalizeFinanceOverview(overview);
+    renderUsersTable();
+    renderUserForm();
+    renderFinancePanel();
+    renderMetrics();
+    createIconSet();
+    showAdminToast("ปรับ Point ลูกค้าเรียบร้อยแล้ว", "success");
+    setStatus(`ปรับ Point ${user.email || user.username} แล้ว`);
+  } catch (error) {
+    const message = error?.message?.includes("POINT_BALANCE_WOULD_BE_NEGATIVE")
+      ? "Point คงเหลือไม่พอสำหรับการลดจำนวนนี้"
+      : error?.message || "ปรับ Point ไม่สำเร็จ";
+    showAdminToast(message, "error");
+    setStatus(message);
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.innerHTML = originalText;
+      createIconSet();
+    }
+  }
+}
+
 async function deleteSelectedUser() {
   const user = selectedUser();
   if (!user) return;
@@ -2549,12 +2613,48 @@ async function deleteSelectedUser() {
 
 function adminResetPassword(userId) {
   const user = state.users.find((item) => item.id === userId);
-  setStatus(`เปลี่ยนรหัสผ่าน ${user?.email || "user"} ได้ใน Supabase Dashboard > Authentication > Users`);
-  showAdminToast("เพื่อความปลอดภัย รหัสผ่านต้องเปลี่ยนใน Supabase Dashboard", "warning");
+  if (!user) return;
+  state.selectedUserId = user.id;
+  switchPanel("users");
+  renderUserForm();
+  $("#user-form")?.elements?.password?.focus();
+  setStatus(`กรอกรหัสผ่านใหม่สำหรับ ${user.email || user.username} แล้วกดบันทึก user`);
+  showAdminToast("กรอกรหัสผ่านใหม่ในฟอร์ม แล้วกดบันทึก user เพื่อเปลี่ยนผ่าน server-side API", "success", 6500);
 }
 
 function isRevenueOrder(order) {
   return order && !["cancelled", "expired"].includes(String(order.status || "").toLowerCase());
+}
+
+function startOfLocalDay(date = new Date()) {
+  return new Date(date.getFullYear(), date.getMonth(), date.getDate());
+}
+
+function orderMatchesFinancePeriod(order, period = state.financeOrderPeriod) {
+  if (!order?.createdAt || period === "all") return true;
+  const orderDate = new Date(order.createdAt);
+  if (Number.isNaN(orderDate.getTime())) return true;
+  const now = new Date();
+  if (period === "day") return orderDate >= startOfLocalDay(now);
+  if (period === "week") {
+    const weekStart = startOfLocalDay(now);
+    weekStart.setDate(weekStart.getDate() - 6);
+    return orderDate >= weekStart;
+  }
+  if (period === "year") {
+    const yearStart = new Date(now.getFullYear(), 0, 1);
+    return orderDate >= yearStart;
+  }
+  return true;
+}
+
+function financePeriodLabel(period = state.financeOrderPeriod) {
+  return {
+    all: "ทั้งหมด",
+    day: "รายวัน",
+    week: "รายสัปดาห์",
+    year: "รายปี"
+  }[period] || "ทั้งหมด";
 }
 
 function adminUserLabel(user = {}) {
@@ -2835,6 +2935,7 @@ function renderFinanceTransactionsTable() {
 function renderFinanceOrdersTable() {
   const users = financeUserMap();
   const rows = state.orders
+    .filter((order) => orderMatchesFinancePeriod(order))
     .map((order) => ({
       ...order,
       user: userForOrder(order, users),
@@ -2856,7 +2957,8 @@ function renderFinanceOrdersTable() {
   const table = $("#finance-orders-table");
   if (!table) return;
   const count = $("#finance-orders-count");
-  if (count) count.textContent = `${rows.length.toLocaleString("th-TH")} ออเดอร์`;
+  const periodRevenue = rows.filter(isRevenueOrder).reduce((sum, order) => sum + Number(order.total || 0), 0);
+  if (count) count.textContent = `${rows.length.toLocaleString("th-TH")} ออเดอร์ · ${financePeriodLabel()} · ${formatPrice(periodRevenue)}`;
   table.innerHTML = rows.length
     ? rows
         .slice(0, 160)
@@ -3781,6 +3883,14 @@ function bindEvents() {
     renderFinancePanel();
     createIconSet();
   });
+
+  $("#finance-order-period")?.addEventListener("change", (event) => {
+    state.financeOrderPeriod = event.target.value || "all";
+    renderFinancePanel();
+    createIconSet();
+  });
+
+  $("#adjust-user-point")?.addEventListener("click", adjustSelectedUserPoints);
 
   $("#finance-refresh")?.addEventListener("click", async () => {
     const button = $("#finance-refresh");

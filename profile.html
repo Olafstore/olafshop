@@ -16,7 +16,7 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
   <script src="slip-qr-scanner.js?v=20260621-slip-verify-v2" defer></script>
-  <script src="supabase-client.js?v=20260629-cart" defer></script> 
+  <script src="supabase-client.js?v=20260630-admin-user-point-password" defer></script> 
   <script src="order-action-popup.js?v=20260621-order-animation" defer></script>
   <script src="platform-store.js?v=20260619-profile-update-fix" defer></script>
   <script src="image-performance.js?v=20260607-performance" defer></script>
@@ -2246,6 +2246,131 @@
         max-width: 180px;
       }
     }
+    /* 2026-06-30 clearer order history columns */
+    .profile-orders-summary {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 12px;
+      padding: 14px;
+      border-bottom: 1px solid #162239;
+      background: linear-gradient(135deg, rgba(59, 130, 246, 0.10), rgba(15, 23, 42, 0.24));
+    }
+
+    .profile-orders-summary > div {
+      display: grid;
+      gap: 3px;
+      min-width: 0;
+      padding: 12px 14px;
+      border: 1px solid rgba(96, 165, 250, 0.18);
+      border-radius: 14px;
+      background: rgba(2, 6, 23, 0.34);
+    }
+
+    .profile-orders-summary span,
+    .profile-orders-table-head {
+      color: #8ea3c1;
+      font-size: 0.76rem;
+    }
+
+    .profile-orders-summary strong {
+      color: #e5efff;
+      font-size: 1.05rem;
+      font-weight: 500;
+    }
+
+    .profile-orders-table-head,
+    .profile-order-row {
+      display: grid;
+      grid-template-columns: minmax(150px, 0.82fr) minmax(230px, 1.35fr) minmax(130px, 0.7fr) minmax(170px, 0.85fr) minmax(108px, auto);
+      align-items: center;
+      gap: 14px;
+    }
+
+    .profile-orders-table-head {
+      padding: 10px 20px;
+      border-bottom: 1px solid #162239;
+      background: rgba(2, 6, 23, 0.28);
+      letter-spacing: 0.01em;
+    }
+
+    .profile-order-row {
+      grid-template-columns: minmax(150px, 0.82fr) minmax(230px, 1.35fr) minmax(130px, 0.7fr) minmax(170px, 0.85fr) minmax(108px, auto);
+      align-items: start;
+    }
+
+    .profile-order-cell {
+      display: grid;
+      min-width: 0;
+      gap: 5px;
+    }
+
+    .profile-order-meta,
+    .profile-order-status,
+    .profile-order-action {
+      justify-items: start;
+    }
+
+    .profile-order-point-line {
+      color: #bfdbfe;
+      font-size: 0.73rem;
+    }
+
+    .profile-order-point-line.is-credit {
+      color: #86efac;
+    }
+
+    .profile-order-products .order-item-products {
+      white-space: normal;
+    }
+
+    .profile-order-action .profile-order-open {
+      width: 100%;
+      justify-content: center;
+    }
+
+    @media (max-width: 980px) {
+      .profile-orders-table-head {
+        display: none;
+      }
+
+      .profile-orders-summary,
+      .profile-order-row {
+        grid-template-columns: 1fr;
+      }
+
+      .profile-order-row {
+        gap: 12px;
+      }
+
+      .profile-order-cell {
+        grid-template-columns: 92px minmax(0, 1fr);
+        align-items: start;
+      }
+
+      .profile-order-cell::before {
+        content: attr(data-label);
+        color: #7d91b0;
+        font-size: 0.72rem;
+      }
+
+      .profile-order-action .profile-order-open {
+        width: max-content;
+      }
+    }
+
+    @media (max-width: 560px) {
+      .profile-orders-summary {
+        grid-template-columns: 1fr;
+      }
+
+      .profile-order-cell {
+        grid-template-columns: 1fr;
+      }
+
+      .profile-order-action .profile-order-open {
+        width: 100%;
+      }
+    }
   </style>
 </head>
 
@@ -2871,17 +2996,52 @@
       const ordersList = document.getElementById('orders-list');
       if (!ordersList) return;
       if (orders.length) {
-        ordersList.innerHTML = orders.slice(0, 10).map(o => `
+        const sortedOrders = [...orders].sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+        const totalPaid = sortedOrders
+          .filter(order => !['cancelled', 'expired'].includes(order.status))
+          .reduce((sum, order) => sum + Number(order.total || 0), 0);
+        ordersList.innerHTML = `
+          <div class="profile-orders-summary">
+            <div>
+              <span>คำสั่งซื้อทั้งหมด</span>
+              <strong>${sortedOrders.length.toLocaleString('th-TH')} ออเดอร์</strong>
+            </div>
+            <div>
+              <span>ยอดซื้อรวม</span>
+              <strong>${formatPrice(totalPaid)}</strong>
+            </div>
+          </div>
+          <div class="profile-orders-table-head" aria-hidden="true">
+            <span>Order</span>
+            <span>สินค้า</span>
+            <span>ยอดชำระ</span>
+            <span>สถานะ</span>
+            <span>จัดการ</span>
+          </div>
+          ${sortedOrders.map(o => `
             <article class="profile-order-row">
-              <div class="profile-order-main">
+              <div class="profile-order-cell profile-order-main" data-label="Order">
                 <div class="order-item-id">${escape(o.orderNumber || o.id)}</div>
-                <div class="order-item-products">${productNames(o)}</div>
                 <div class="order-item-date">${new Date(o.createdAt).toLocaleString('th-TH')}</div>
               </div>
-              <div class="profile-order-meta">
+              <div class="profile-order-cell profile-order-products" data-label="สินค้า">
+                <div class="order-item-products">${productNames(o)}</div>
+                <div class="order-item-date">${(o.items || []).length.toLocaleString('th-TH')} รายการ</div>
+              </div>
+              <div class="profile-order-cell profile-order-meta" data-label="ยอดชำระ">
                 <div class="order-item-price">${formatPrice(o.total)}</div>
-                ${paymentVerifiedBadge(o)}
+                ${Number(o.pointsRedeemedAmount || 0) > 0 ? `<span class="profile-order-point-line">ใช้ ${formatPointAmount(o.pointsRedeemedAmount)} Point</span>` : ''}
+                ${Number(o.pointCreditAmount || 0) > 0 ? `<span class="profile-order-point-line is-credit">เครดิต ${formatPointAmount(o.pointCreditAmount)} Point</span>` : ''}
+              </div>
+              <div class="profile-order-cell profile-order-status" data-label="สถานะ">
                 <span class="status-badge ${escape(o.status)}">${orderStatusLabel(o.status)}</span>
+                ${paymentVerifiedBadge(o)}
+              </div>
+              <div class="profile-order-cell profile-order-action" data-label="จัดการ">
+                <button class="profile-order-open" type="button" data-open-order="${escape(o.id)}">
+                  <i data-lucide="arrow-up-right" style="width:15px;height:15px"></i>
+                  เปิดในคลัง
+                </button>
               </div>
               ${String(o.paymentVerificationNote || '') === 'PAYMENT_AMOUNT_INSUFFICIENT' || String(o.paymentVerificationNote || '') === 'PAYMENT_AMOUNT_INSUFFICIENT_POINTS_CREDITED' ? `
                 <div class="profile-order-payment-alert">
@@ -2890,12 +3050,9 @@
                 </div>
               ` : ''}
               ${renderOrderDelivery(o)}
-              <button class="profile-order-open" type="button" data-open-order="${escape(o.id)}">
-                <i data-lucide="arrow-up-right" style="width:15px;height:15px"></i>
-                เปิดในคลัง
-              </button>
             </article>
-          `).join('');
+          `).join('')}
+        `;
       } else {
         ordersList.innerHTML = `<div class="empty-panel"><i data-lucide="inbox" style="width:40px;height:40px"></i><p>ยังไม่มีออเดอร์</p></div>`;
       }

@@ -2485,7 +2485,7 @@ img[data-fast-img]:not(.is-loaded):not([src^="data:image"]) {
   background: rgba(15, 23, 42, 0.76);
   color: var(--text);
   box-shadow: 0 18px 44px rgba(2, 6, 23, 0.22);
-  transition: transform 220ms ease, border-color 220ms ease, box-shadow 220ms ease;
+  transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1), border-color 260ms ease, box-shadow 260ms ease, background 260ms ease;
 }
 
 .extras-category-card::before {
@@ -2514,8 +2514,10 @@ img[data-fast-img]:not(.is-loaded):not([src^="data:image"]) {
 
 .extras-category-card-minecraft::before {
   background:
+    radial-gradient(circle at 18% 22%, rgba(132, 204, 22, 0.34), transparent 44%),
+    radial-gradient(circle at 82% 16%, rgba(34, 211, 238, 0.16), transparent 34%),
     linear-gradient(135deg, rgba(58, 120, 34, 0.28), transparent 62%),
-    repeating-linear-gradient(90deg, transparent 0 22px, rgba(132, 204, 22, 0.025) 22px 23px);
+    repeating-linear-gradient(90deg, transparent 0 22px, rgba(132, 204, 22, 0.03) 22px 23px);
 }
 
 .extras-category-card-rockstar {
@@ -2586,6 +2588,22 @@ img[data-fast-img]:not(.is-loaded):not([src^="data:image"]) {
   display: grid;
   gap: 20px;
   padding: 22px;
+}
+
+.extras-minecraft-section {
+  border-color: rgba(132, 204, 22, 0.22);
+  background:
+    radial-gradient(circle at 4% 0, rgba(132, 204, 22, 0.12), transparent 32%),
+    radial-gradient(circle at 96% 6%, rgba(34, 211, 238, 0.1), transparent 28%),
+    linear-gradient(180deg, rgba(15, 23, 42, 0.82), rgba(4, 20, 10, 0.68));
+}
+
+.extras-rockstar-section {
+  border-color: rgba(250, 204, 21, 0.22);
+  background:
+    radial-gradient(circle at 12% 0, rgba(250, 204, 21, 0.11), transparent 30%),
+    radial-gradient(circle at 92% 8%, rgba(239, 68, 68, 0.1), transparent 28%),
+    linear-gradient(180deg, rgba(15, 15, 15, 0.92), rgba(2, 6, 23, 0.7));
 }
 
 .extras-section-head {
@@ -2664,6 +2682,7 @@ img[data-fast-img]:not(.is-loaded):not([src^="data:image"]) {
 
 .minecraft-branded-hero {
   background:
+    radial-gradient(circle at 78% 22%, rgba(34, 211, 238, 0.24), transparent 32%),
     linear-gradient(180deg, rgba(22, 74, 18, 0.2), rgba(7, 24, 8, 0.74)),
     url("https://www.minecraft.net/content/dam/minecraftnet/games/minecraft/key-art/Hero-Image_Vanilla_Deluxe_1200x675.jpg") center 42% / cover;
 }
@@ -2741,6 +2760,7 @@ img[data-fast-img]:not(.is-loaded):not([src^="data:image"]) {
 }
 
 .extras-product-card {
+  position: relative;
   display: grid;
   grid-template-columns: minmax(210px, 0.78fr) minmax(0, 1.22fr);
   min-height: 320px;
@@ -2749,16 +2769,34 @@ img[data-fast-img]:not(.is-loaded):not([src^="data:image"]) {
   border-radius: 20px;
   background: rgba(15, 23, 42, 0.84);
   box-shadow: 0 18px 44px rgba(2, 6, 23, 0.2);
+  animation: extrasCardIn 420ms cubic-bezier(0.16, 1, 0.3, 1) both;
+  transition: transform 260ms cubic-bezier(0.16, 1, 0.3, 1), border-color 260ms ease, box-shadow 260ms ease;
 }
 
 .extras-product-card.is-minecraft {
   border-color: rgba(132, 204, 22, 0.24);
-  background: linear-gradient(145deg, rgba(34, 84, 29, 0.72), rgba(12, 31, 15, 0.9));
+  background:
+    radial-gradient(circle at 92% 0, rgba(34, 211, 238, 0.12), transparent 34%),
+    linear-gradient(145deg, rgba(34, 84, 29, 0.72), rgba(12, 31, 15, 0.9));
 }
 
 .extras-product-card.is-rockstar {
   border-color: rgba(250, 204, 21, 0.26);
-  background: linear-gradient(145deg, #171717, #050505);
+  background:
+    radial-gradient(circle at 88% 0, rgba(250, 204, 21, 0.16), transparent 34%),
+    radial-gradient(circle at 18% 100%, rgba(239, 68, 68, 0.1), transparent 34%),
+    linear-gradient(145deg, #171717, #050505);
+}
+
+.extras-product-card:hover {
+  transform: translateY(-5px);
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow: 0 30px 72px rgba(2, 6, 23, 0.36);
+}
+
+@keyframes extrasCardIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .extras-product-cover {
@@ -2894,6 +2932,13 @@ img[data-fast-img]:not(.is-loaded):not([src^="data:image"]) {
   font-size: 0.76rem;
   font-weight: 800;
   white-space: nowrap;
+  transition: transform 180ms ease, filter 180ms ease, box-shadow 180ms ease;
+}
+
+.extras-product-action:hover {
+  filter: brightness(1.06);
+  transform: translateY(-1px);
+  box-shadow: 0 12px 24px rgba(2, 6, 23, 0.22);
 }
 
 .is-rockstar .extras-product-action {
@@ -7148,6 +7193,12 @@ dialog::backdrop {
   color: #e9d5ff;
 }
 
+.pd-badge-windows {
+  background: rgba(37, 99, 235, 0.18);
+  border: 1px solid rgba(96, 165, 250, 0.42);
+  color: #dbeafe;
+}
+
 .pd-badge-minecraft {
   background: rgba(77, 124, 15, 0.2);
   border: 1px solid rgba(132, 204, 22, 0.42);
@@ -7211,9 +7262,23 @@ dialog::backdrop {
   text-transform: uppercase;
 }
 
+.pd-brand-hero-windows {
+  align-content: end;
+  background:
+    radial-gradient(circle at 78% 18%, rgba(59, 130, 246, 0.3), transparent 38%),
+    linear-gradient(135deg, rgba(2, 6, 23, 0.34), rgba(15, 23, 42, 0.84)),
+    url("https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows11/windows11-original.svg") right 12% center / min(260px, 38vw) no-repeat;
+  border-color: rgba(96, 165, 250, 0.32);
+}
+
+.pd-brand-hero-windows .pd-brand-kicker {
+  color: #93c5fd;
+}
+
 .pd-brand-hero-minecraft {
   align-content: end;
   background:
+    radial-gradient(circle at 82% 20%, rgba(34, 211, 238, 0.24), transparent 36%),
     linear-gradient(180deg, rgba(26, 80, 18, 0.12), rgba(5, 26, 8, 0.74)),
     url("https://www.minecraft.net/content/dam/minecraftnet/games/minecraft/key-art/Hero-Image_Vanilla_Deluxe_1200x675.jpg") center 42% / cover;
   border-color: rgba(132, 204, 22, 0.28);
@@ -7804,13 +7869,39 @@ dialog::backdrop {
   height: 12px;
 }
 
+.product-theme-windows .pd-sidebar-card {
+  border-color: rgba(96, 165, 250, 0.32);
+  background:
+    radial-gradient(circle at 18% 0, rgba(37, 99, 235, 0.18), transparent 36%),
+    rgba(15, 23, 42, 0.9);
+}
+
+.product-theme-windows .pd-buy-btn {
+  background: linear-gradient(135deg, #2563eb, #06b6d4);
+  box-shadow: 0 4px 24px rgba(37, 99, 235, 0.34);
+}
+
+.product-theme-windows .pd-price-main,
+.product-theme-windows .pd-genre-tag {
+  color: #93c5fd;
+}
+
+.product-theme-windows .pd-genre-tag {
+  border-color: rgba(96, 165, 250, 0.26);
+  background: rgba(37, 99, 235, 0.08);
+}
+
 .product-theme-minecraft .pd-sidebar-card {
-  border-color: rgba(132, 204, 22, 0.28);
+  border-color: rgba(132, 204, 22, 0.34);
+  background:
+    radial-gradient(circle at 14% 0, rgba(132, 204, 22, 0.16), transparent 34%),
+    radial-gradient(circle at 88% 20%, rgba(34, 211, 238, 0.12), transparent 34%),
+    rgba(10, 24, 14, 0.92);
 }
 
 .product-theme-minecraft .pd-buy-btn {
-  background: linear-gradient(135deg, #4d7c0f, #65a30d);
-  box-shadow: 0 4px 22px rgba(77, 124, 15, 0.36);
+  background: linear-gradient(135deg, #16a34a, #84cc16 55%, #22c55e);
+  box-shadow: 0 4px 24px rgba(34, 197, 94, 0.34);
 }
 
 .product-theme-minecraft .pd-price-main,
@@ -7818,9 +7909,17 @@ dialog::backdrop {
   color: #bef264;
 }
 
+.product-theme-minecraft .pd-genre-tag {
+  border-color: rgba(132, 204, 22, 0.26);
+  background: rgba(34, 197, 94, 0.08);
+}
+
 .product-theme-rockstar .pd-sidebar-card {
   border-color: rgba(250, 204, 21, 0.28);
-  background: #0b0b0b;
+  background:
+    radial-gradient(circle at 12% 0, rgba(250, 204, 21, 0.16), transparent 34%),
+    radial-gradient(circle at 90% 14%, rgba(239, 68, 68, 0.12), transparent 30%),
+    #0b0b0b;
 }
 
 .product-theme-rockstar .pd-buy-btn {

@@ -2,9 +2,29 @@
   const MINECRAFT_HERO =
     "https://www.minecraft.net/content/dam/minecraftnet/games/minecraft/key-art/Hero-Image_Vanilla_Deluxe_1200x675.jpg";
   const ROCKSTAR_HERO =
-    "https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/3240220/header.jpg";
+    "https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg";
+  const GTA_V_HERO =
+    "https://cdn.cloudflare.steamstatic.com/steam/apps/271590/header.jpg";
   const WINDOWS_IMAGE =
     "https://cdn.jsdelivr.net/gh/devicons/devicon/icons/windows11/windows11-original.svg";
+  const WINDOWS_PREORDER_FEATURES = [
+    { icon: "credit-card", title: "ชำระเงินในเว็บ", text: "ใช้ระบบออเดอร์และสลิปของร้าน" },
+    { icon: "message-circle-more", title: "แอดมินจัดส่ง", text: "ส่งคีย์หลังตรวจสอบสลิป" },
+    { icon: "key-round", title: "License Key", text: "คีย์ตามรุ่น Windows ที่เลือก" },
+    { icon: "headset", title: "ช่วยแนะนำ", text: "สอบถามขั้นตอนเปิดใช้งานได้" }
+  ];
+  const WINDOWS_PREORDER_DETAILS = [
+    {
+      title: "รูปแบบการจัดส่ง",
+      body:
+        "สินค้า Windows 10 & 11 Keys เป็นแบบพรีออเดอร์ ลูกค้าชำระเงินผ่านระบบเว็บและแอดมินจัดส่งคีย์หลังตรวจสอบสลิปเรียบร้อย"
+    },
+    {
+      title: "ข้อควรทราบก่อนสั่งซื้อ",
+      body:
+        "กรุณาเลือกรุ่น Windows ให้ตรงกับเครื่องที่จะใช้งาน หากไม่แน่ใจว่าควรเลือก Home หรือ Pro สามารถติดต่อแอดมินก่อนสั่งซื้อได้"
+    }
+  ];
 
   const categories = [
     { id: "windows", label: "Key Windows" },
@@ -18,22 +38,22 @@
       name: "Windows 10 Home",
       publisher: "Microsoft",
       category: "windows",
-      label: "OEM",
+      label: "PRE-ORDER",
       price: 199,
       compareAt: 4385,
-      stock: 0,
+      stock: 99,
       sold: 0,
       rating: "",
-      delivery: "สั่งซื้อและรับคีย์ผ่านแอดมินหลังตรวจสอบการชำระเงิน",
+      delivery: "ชำระเงินในเว็บและรับคีย์ผ่านแอดมินหลังตรวจสอบสลิป",
       warranty: "รับประกันคีย์ตามเงื่อนไขร้าน",
       image: WINDOWS_IMAGE,
       heroImage: WINDOWS_IMAGE,
-      tags: ["ลิขสิทธิ์แท้สำหรับใช้งานส่วนตัว", "License Key Code", "ติดตั้งได้ 1 เครื่อง", "มีแอดมินช่วยแนะนำ"],
-      description: "คีย์สำหรับเปิดใช้งาน Windows 10 Home จำนวน 1 เครื่อง สั่งซื้อและรับคีย์ผ่านแอดมิน",
+      tags: ["พรีออเดอร์", "ชำระเงินในเว็บ", "License Key Code", "แอดมินจัดส่ง"],
+      description: "คีย์สำหรับเปิดใช้งาน Windows 10 Home จำนวน 1 เครื่อง ชำระเงินผ่านระบบเว็บและแอดมินจัดส่งคีย์หลังตรวจสอบสลิป",
       gallery: [WINDOWS_IMAGE],
       platformLinks: [],
-      featureBlocks: [],
-      detailSections: [],
+      featureBlocks: WINDOWS_PREORDER_FEATURES,
+      detailSections: WINDOWS_PREORDER_DETAILS,
       steamRelatedLinks: [],
       systemRequirements: { minimum: ["Windows 10 Home"], recommended: [] },
       isActive: true,
@@ -44,22 +64,22 @@
       name: "Windows 10 Pro",
       publisher: "Microsoft",
       category: "windows",
-      label: "Retail",
+      label: "PRE-ORDER",
       price: 199,
       compareAt: 4890,
-      stock: 0,
+      stock: 99,
       sold: 0,
       rating: "",
-      delivery: "สั่งซื้อและรับคีย์ผ่านแอดมินหลังตรวจสอบการชำระเงิน",
+      delivery: "ชำระเงินในเว็บและรับคีย์ผ่านแอดมินหลังตรวจสอบสลิป",
       warranty: "รับประกันคีย์ตามเงื่อนไขร้าน",
       image: WINDOWS_IMAGE,
       heroImage: WINDOWS_IMAGE,
-      tags: ["รองรับฟีเจอร์ Pro ครบ", "BitLocker และ Remote Desktop", "ย้ายเครื่องได้", "เหมาะกับสายทำงาน"],
-      description: "คีย์สำหรับเปิดใช้งาน Windows 10 Professional พร้อมฟีเจอร์สำหรับการทำงาน",
+      tags: ["พรีออเดอร์", "ชำระเงินในเว็บ", "Retail Key", "เหมาะกับสายทำงาน"],
+      description: "คีย์สำหรับเปิดใช้งาน Windows 10 Professional พร้อมฟีเจอร์สำหรับการทำงาน ชำระเงินผ่านระบบเว็บและรอแอดมินจัดส่ง",
       gallery: [WINDOWS_IMAGE],
       platformLinks: [],
-      featureBlocks: [],
-      detailSections: [],
+      featureBlocks: WINDOWS_PREORDER_FEATURES,
+      detailSections: WINDOWS_PREORDER_DETAILS,
       steamRelatedLinks: [],
       systemRequirements: { minimum: ["Windows 10 Pro"], recommended: [] },
       isActive: true,
@@ -70,22 +90,22 @@
       name: "Windows 11 Home",
       publisher: "Microsoft",
       category: "windows",
-      label: "OEM",
+      label: "PRE-ORDER",
       price: 199,
       compareAt: 4385,
-      stock: 0,
+      stock: 99,
       sold: 0,
       rating: "",
-      delivery: "สั่งซื้อและรับคีย์ผ่านแอดมินหลังตรวจสอบการชำระเงิน",
+      delivery: "ชำระเงินในเว็บและรับคีย์ผ่านแอดมินหลังตรวจสอบสลิป",
       warranty: "รับประกันคีย์ตามเงื่อนไขร้าน",
       image: WINDOWS_IMAGE,
       heroImage: WINDOWS_IMAGE,
-      tags: ["รองรับ Windows 11 ล่าสุด", "License Key Code", "ติดตั้งได้ 1 เครื่อง", "เหมาะกับเครื่องใหม่"],
-      description: "คีย์สำหรับเปิดใช้งาน Windows 11 Home จำนวน 1 เครื่อง เหมาะสำหรับการใช้งานทั่วไป",
+      tags: ["พรีออเดอร์", "ชำระเงินในเว็บ", "License Key Code", "เหมาะกับเครื่องใหม่"],
+      description: "คีย์สำหรับเปิดใช้งาน Windows 11 Home จำนวน 1 เครื่อง เหมาะสำหรับการใช้งานทั่วไป ชำระเงินผ่านระบบเว็บและรอแอดมินจัดส่ง",
       gallery: [WINDOWS_IMAGE],
       platformLinks: [],
-      featureBlocks: [],
-      detailSections: [],
+      featureBlocks: WINDOWS_PREORDER_FEATURES,
+      detailSections: WINDOWS_PREORDER_DETAILS,
       steamRelatedLinks: [],
       systemRequirements: { minimum: ["Windows 11 Home และอุปกรณ์ที่รองรับ"], recommended: [] },
       isActive: true,
@@ -96,22 +116,22 @@
       name: "Windows 11 Pro",
       publisher: "Microsoft",
       category: "windows",
-      label: "Retail",
+      label: "PRE-ORDER",
       price: 199,
       compareAt: 4850,
-      stock: 0,
+      stock: 99,
       sold: 0,
       rating: "",
-      delivery: "สั่งซื้อและรับคีย์ผ่านแอดมินหลังตรวจสอบการชำระเงิน",
+      delivery: "ชำระเงินในเว็บและรับคีย์ผ่านแอดมินหลังตรวจสอบสลิป",
       warranty: "รับประกันคีย์ตามเงื่อนไขร้าน",
       image: WINDOWS_IMAGE,
       heroImage: WINDOWS_IMAGE,
-      tags: ["รองรับฟีเจอร์ Pro ครบ", "Hyper-V และ Windows Sandbox", "ย้ายเครื่องได้", "เหมาะกับสายมืออาชีพ"],
-      description: "คีย์สำหรับเปิดใช้งาน Windows 11 Professional พร้อมฟีเจอร์สำหรับผู้ใช้ระดับมืออาชีพ",
+      tags: ["พรีออเดอร์", "ชำระเงินในเว็บ", "Retail Key", "เหมาะกับสายมืออาชีพ"],
+      description: "คีย์สำหรับเปิดใช้งาน Windows 11 Professional พร้อมฟีเจอร์สำหรับผู้ใช้ระดับมืออาชีพ ชำระเงินผ่านระบบเว็บและรอแอดมินจัดส่ง",
       gallery: [WINDOWS_IMAGE],
       platformLinks: [],
-      featureBlocks: [],
-      detailSections: [],
+      featureBlocks: WINDOWS_PREORDER_FEATURES,
+      detailSections: WINDOWS_PREORDER_DETAILS,
       steamRelatedLinks: [],
       systemRequirements: { minimum: ["Windows 11 Pro และอุปกรณ์ที่รองรับ"], recommended: [] },
       isActive: true,
@@ -269,6 +289,58 @@
       },
       isActive: true,
       sortOrder: 9010
+    },
+    {
+      id: "rockstar-gta-v-download",
+      name: "Grand Theft Auto V — Download Access",
+      publisher: "Rockstar Games",
+      category: "rockstar",
+      label: "GTA V DOWNLOAD",
+      price: 199,
+      compareAt: 299,
+      stock: 0,
+      sold: 0,
+      rating: "",
+      delivery: "จัดส่งข้อมูลดาวน์โหลดจากสต็อกหลังตรวจสอบสลิป",
+      warranty: "รับประกันการเข้าใช้งานครั้งแรกตามเงื่อนไขร้าน",
+      image: GTA_V_HERO,
+      heroImage: GTA_V_HERO,
+      tags: ["GTA V", "Download Only", "Rockstar Games", "Stock"],
+      description:
+        "ตัวเกม GTA V สำหรับใช้โหลดและติดตั้งตัวเกมเท่านั้น เหมาะสำหรับลูกค้าที่ต้องการไฟล์/สิทธิ์ดาวน์โหลดเพื่อใช้งานกับขั้นตอนของร้าน\n\nสินค้านี้เป็นสต็อกจริงแบบเดียวกับไอดีออฟไลน์ ระบบจะจอง 1 ชุดต่อ 1 ออเดอร์เมื่อสร้างคำสั่งซื้อ และจัดส่งข้อมูลหลังตรวจสอบสลิปสำเร็จ ไม่ใช่บัญชี FiveM แยกต่างหาก",
+      gallery: [GTA_V_HERO],
+      platformLinks: [
+        {
+          label: "Grand Theft Auto V",
+          url: "https://www.rockstargames.com/gta-v",
+          icon: "external-link"
+        }
+      ],
+      featureBlocks: [
+        { icon: "download", title: "ใช้โหลดตัวเกม", text: "สำหรับดาวน์โหลด/ติดตั้ง GTA V" },
+        { icon: "package-check", title: "สต็อกจริง", text: "จอง 1 ชุดต่อ 1 ออเดอร์" },
+        { icon: "info", title: "Download Only", text: "ไม่ใช่สินค้า FiveM Account" },
+        { icon: "shield-check", title: "ตรวจสอบก่อนส่ง", text: "จัดส่งหลังสลิปถูกต้อง" }
+      ],
+      detailSections: [
+        {
+          title: "รายละเอียดสินค้า",
+          body:
+            "สินค้า Grand Theft Auto V — Download Access ใช้สำหรับโหลด/ติดตั้งตัวเกม GTA V ตามขั้นตอนของร้านเท่านั้น\nไม่ใช่บัญชี FiveM และไม่ใช่การเพิ่มสิทธิ์เข้าเซิร์ฟเวอร์ FiveM โดยตรง"
+        },
+        {
+          title: "ข้อควรทราบ",
+          body:
+            "กรุณาอ่านรายละเอียดก่อนสั่งซื้อ และติดต่อแอดมินหากไม่แน่ใจว่าสินค้านี้ตรงกับการใช้งานของคุณหรือไม่\nข้อมูลจัดส่งเป็นข้อมูลสำคัญ ควรเก็บไว้ในที่ปลอดภัยหลังได้รับสินค้า"
+        }
+      ],
+      steamRelatedLinks: [],
+      systemRequirements: {
+        minimum: ["Windows 10/11", "Rockstar Games Launcher", "พื้นที่ว่างสำหรับติดตั้ง GTA V", "เชื่อมต่ออินเทอร์เน็ตสำหรับดาวน์โหลด"],
+        recommended: ["SSD สำหรับติดตั้งเกม", "อินเทอร์เน็ตความเร็วสูง"]
+      },
+      isActive: true,
+      sortOrder: 9011
     }
   ];
 

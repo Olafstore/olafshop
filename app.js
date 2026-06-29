@@ -197,14 +197,22 @@ const categoryBadgeLabels = {
   "steam-key": "STEAM KEY",
   "steam-account": "ไอดียกเมล",
   offline: "OFFLINE",
-  bundle: "แพ็กเกม"
+  bundle: "แพ็กเกม",
+  windows: "PRE-ORDER",
+  "minecraft-account": "MICROSOFT ID",
+  "minecraft-key": "MINECRAFT KEY",
+  rockstar: "ROCKSTAR / FIVEM"
 };
 
 const categoryTagFallbacks = {
   "steam-key": ["คีย์แท้", "เปิดใช้งานบน Steam", "พร้อมใช้งาน", "เกมพีซี", "แอ็กชัน"],
   "steam-account": ["ไอดียกเมล", "พร้อมเล่น", "เข้าเล่นได้", "เกมพีซี", "คุ้มค่า"],
   offline: ["ออฟไลน์", "พร้อมใช้งาน", "ติดตั้งง่าย", "เกมพีซี", "เล่นได้ต่อเนื่อง"],
-  bundle: ["แพ็กเกม", "หลายรายการ", "คุ้มราคา", "พร้อมใช้งาน", "เกมพีซี"]
+  bundle: ["แพ็กเกม", "หลายรายการ", "คุ้มราคา", "พร้อมใช้งาน", "เกมพีซี"],
+  windows: ["Windows Key", "พรีออเดอร์", "ชำระเงินในเว็บ", "แอดมินจัดส่ง"],
+  "minecraft-account": ["Minecraft", "Microsoft ID", "Java + Bedrock", "พรีออเดอร์"],
+  "minecraft-key": ["Minecraft", "Redeem Key", "Java + Bedrock", "พรีออเดอร์"],
+  rockstar: ["Rockstar Games", "FiveM / GTA V", "สต็อกจากระบบ", "จัดส่งหลังตรวจสลิป"]
 };
 
 function isExtraCatalogCategory(category) {

@@ -24,8 +24,14 @@
 
   function stockLabel(product) {
     const stock = Number(product?.stock || 0);
+    if (String(product?.category || "") === "windows") {
+      return stock > 0 ? "เปิดรับพรีออเดอร์ในเว็บ" : "รอเปิดพรีออเดอร์";
+    }
     if (String(product?.category || "").startsWith("minecraft-")) {
       return stock > 0 ? "เปิดรับพรีออเดอร์" : "ปิดรับพรีออเดอร์";
+    }
+    if (String(product?.category || "") === "rockstar") {
+      return stock > 0 ? `พร้อมส่งจากสต็อก ${stock.toLocaleString("th-TH")} ชุด` : "รอเติมสต็อกจริงใน Admin";
     }
     if (stock <= 0) return "สินค้าหมด — เติมสต็อกใน Admin";
     return `พร้อมส่ง ${stock.toLocaleString("th-TH")} ชิ้น`;
@@ -96,9 +102,9 @@
           ${features.map((feature) => `<li><i data-lucide="check"></i>${escapeHtml(feature)}</li>`).join("")}
         </ul>
         <div class="license-card-actions">
-          <a class="license-card-action" href="https://www.facebook.com/byOlafshop" target="_blank" rel="noopener noreferrer">
-            <i data-lucide="shopping-cart"></i>
-            <span>สั่งซื้อที่แอดมิน</span>
+          <a class="license-card-action" href="product.html?id=${encodeURIComponent(product.id)}">
+            <i data-lucide="credit-card"></i>
+            <span>${stock > 0 ? "ชำระเงินในเว็บ" : "ดูรายละเอียด"}</span>
           </a>
           <small class="license-ready-note ${stock <= 0 ? "is-out" : ""}">
             <i data-lucide="${stock > 0 ? "shield-check" : "clock-3"}"></i>${escapeHtml(stockText)}

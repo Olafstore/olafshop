@@ -62,6 +62,7 @@ const categoryBadgeLabels = {
   "steam-account": "ไอดียกเมล",
   offline: "OFFLINE",
   bundle: "แพ็กเกม",
+  windows: "PRE-ORDER",
   "minecraft-account": "MICROSOFT ID",
   "minecraft-key": "MINECRAFT KEY",
   rockstar: "ROCKSTAR / FIVEM"
@@ -72,9 +73,10 @@ const categoryTagFallbacks = {
   "steam-account": ["ไอดียกเมล", "พร้อมเล่น", "เข้าเล่นได้", "เกมพีซี", "คุ้มค่า"],
   offline: ["ออฟไลน์", "พร้อมใช้งาน", "ติดตั้งง่าย", "เกมพีซี", "เล่นได้ต่อเนื่อง"],
   bundle: ["แพ็กเกม", "หลายรายการ", "คุ้มราคา", "พร้อมใช้งาน", "เกมพีซี"],
+  windows: ["Windows Key", "พรีออเดอร์", "ชำระเงินในเว็บ", "แอดมินจัดส่ง"],
   "minecraft-account": ["Minecraft", "Microsoft ID", "Java + Bedrock", "พรีออเดอร์"],
   "minecraft-key": ["Minecraft", "Redeem Key", "Java + Bedrock", "พรีออเดอร์"],
-  rockstar: ["Rockstar Games", "FiveM", "บัญชีจากสต็อก", "ไม่รวม GTA V"]
+  rockstar: ["Rockstar Games", "FiveM / GTA V", "สต็อกจากระบบ", "จัดส่งหลังตรวจสลิป"]
 };
 
 const tagTranslations = new Map([
@@ -421,6 +423,7 @@ function deriveCategories(products, fallbackCategories = []) {
     "steam-account": "ไอดียกเมล",
     offline: "Steam Offline",
     bundle: "แพ็กเกม",
+    windows: "Windows 10 & 11 Keys",
     "minecraft-account": "Minecraft — Microsoft ID",
     "minecraft-key": "Minecraft — Key",
     rockstar: "Rockstar / FiveM"
@@ -463,15 +466,27 @@ function isMinecraftProduct(product = currentProduct) {
   return String(product?.category || "").startsWith("minecraft-");
 }
 
+function isWindowsProduct(product = currentProduct) {
+  return String(product?.category || "").toLowerCase() === "windows";
+}
+
 function isRockstarProduct(product = currentProduct) {
   return String(product?.category || "") === "rockstar";
 }
 
 function purchaseButtonCopy(product, canBuy) {
   if (!canBuy) return "สินค้าหมด";
+  if (isWindowsProduct(product)) return "ชำระเงินพรีออเดอร์";
   if (isMinecraftProduct(product)) return "สั่งซื้อแบบพรีออเดอร์";
   if (isRockstarProduct(product)) return "สั่งซื้อจากสต็อก";
   return "ซื้อเลยตอนนี้";
+}
+
+function purchaseButtonIcon(product = currentProduct) {
+  if (isWindowsProduct(product)) return "credit-card";
+  if (isMinecraftProduct(product)) return "clock-3";
+  if (isRockstarProduct(product)) return "package-check";
+  return "shopping-cart";
 }
 
 function getDiscount(p) {
@@ -591,7 +606,7 @@ function updatePurchaseDom() {
   if (stockEl) stockEl.innerHTML = renderStockDisplay(purchase.stock);
   if (buyBtn) {
     buyBtn.disabled = !canBuy;
-    buyBtn.innerHTML = `<i data-lucide="${isMinecraftProduct() ? "clock-3" : "shopping-cart"}"></i>${purchaseButtonCopy(currentProduct, canBuy)}`;
+    buyBtn.innerHTML = `<i data-lucide="${purchaseButtonIcon(currentProduct)}"></i>${purchaseButtonCopy(currentProduct, canBuy)}`;
   }
 
   document.querySelectorAll("[data-package-option]").forEach((card) => {
@@ -642,6 +657,7 @@ function getCategoryLabel(categoryId) {
       "steam-account": "ไอดียกเมล",
       offline: "Steam Offline",
       bundle: "แพ็กเกม",
+      windows: "Windows 10 & 11 Keys",
       "minecraft-account": "Minecraft — Microsoft ID",
       "minecraft-key": "Minecraft — Key",
       rockstar: "Rockstar / FiveM"
@@ -661,6 +677,7 @@ function getProductBadgeClass(categoryId) {
     "steam-account": "pd-badge-account",
     offline: "pd-badge-offline",
     bundle: "pd-badge-bundle",
+    windows: "pd-badge-windows",
     "minecraft-account": "pd-badge-minecraft",
     "minecraft-key": "pd-badge-minecraft",
     rockstar: "pd-badge-rockstar"
@@ -849,6 +866,9 @@ function buildSteamInfoSection(product) {
 
 function getLocalizedDelivery(product) {
   if (currentLang !== "th") return cleanDisplayText(product?.delivery || "");
+  if (isWindowsProduct(product)) {
+    return "พรีออเดอร์ — ชำระเงินในเว็บและแอดมินจัดส่งคีย์หลังตรวจสอบสลิป";
+  }
   if (String(product?.category || "").startsWith("minecraft-")) {
     return "พรีออเดอร์ — แอดมินตรวจสอบและจัดส่งสินค้าให้ด้วยตนเอง";
   }
@@ -861,6 +881,9 @@ function getLocalizedDelivery(product) {
 function getLocalizedWarranty(product) {
   if (currentLang !== "th") return cleanDisplayText(product?.warranty || "");
   if (product?.category === "steam-account") return "รับประกันการเข้าใช้งาน 30 วัน";
+  if (isWindowsProduct(product)) {
+    return cleanDisplayText(product?.warranty || "") || "รับประกันคีย์ตามเงื่อนไขร้าน";
+  }
   if (String(product?.category || "").startsWith("minecraft-")) {
     return cleanDisplayText(product?.warranty || "") || "รับประกันตามเงื่อนไขสินค้าพรีออเดอร์";
   }
@@ -1350,6 +1373,15 @@ function setupSmoothDetails(root = document) {
 }
 
 function brandedProductHero(product) {
+  if (isWindowsProduct(product)) {
+    return `
+      <section class="pd-brand-hero pd-brand-hero-windows">
+        <span class="pd-brand-kicker">Windows 10 &amp; 11 Keys</span>
+        <h2>PRE-ORDER LICENSE</h2>
+        <p>ชำระเงินผ่านระบบเว็บ และรอแอดมินจัดส่งคีย์หลังตรวจสอบสลิป</p>
+      </section>
+    `;
+  }
   if (isMinecraftProduct(product)) {
     return `
       <section class="pd-brand-hero pd-brand-hero-minecraft">
@@ -1510,6 +1542,7 @@ function renderProduct() {
   }
 
   const p = currentProduct;
+  document.body.classList.toggle("product-theme-windows", isWindowsProduct(p));
   document.body.classList.toggle("product-theme-minecraft", isMinecraftProduct(p));
   document.body.classList.toggle("product-theme-rockstar", isRockstarProduct(p));
   currentProductPackages = activePackagesForProduct(p);
@@ -1642,7 +1675,7 @@ function renderProduct() {
     </div>
   ` : "";
 
-  const extraProduct = isMinecraftProduct(p) || isRockstarProduct(p);
+  const extraProduct = Boolean(window.OlafExtraProducts?.isExtraCategory?.(p.category));
   const relatedPool = (globalPayload.products || []).filter((rp) => {
     if (rp.id === p.id) return false;
     if (!extraProduct) return !window.OlafExtraProducts?.isExtraCategory?.(rp.category);
@@ -1737,7 +1770,11 @@ function renderProduct() {
 
   const compareEl = renderPriceCompare(purchase.compareAt, purchase.price);
   const adminDescription = getAdminProductDescription(p);
-  const extrasReturnHash = isRockstarProduct(p) ? "#rockstar-products" : "#minecraft-products";
+  const extrasReturnHash = isRockstarProduct(p)
+    ? "#rockstar-products"
+    : isWindowsProduct(p)
+      ? "#windows-keys"
+      : "#minecraft-products";
   const returnHref = extraProduct ? `more-products.html${extrasReturnHash}` : "index.html";
   const returnLabel = extraProduct ? "กลับไปหน้าสินค้าเพิ่มเติม" : "กลับไปหน้าร้านค้า";
   const buyButtonText = purchaseButtonCopy(p, canAdd);
@@ -1855,7 +1892,7 @@ function renderProduct() {
             ${packageSection}
 
             <!-- Price -->
-            <p class="pd-price-label">${isMinecraftProduct(p) ? "ราคาพรีออเดอร์" : "ราคาสินค้า"}</p>
+            <p class="pd-price-label">${isMinecraftProduct(p) || isWindowsProduct(p) ? "ราคาพรีออเดอร์" : "ราคาสินค้า"}</p>
             <div class="pd-price-row">
               <strong class="pd-price-main" data-purchase-price>${formatPrice(purchase.price)}</strong>
               ${compareEl}
@@ -1866,7 +1903,7 @@ function renderProduct() {
 
             <!-- Buy button -->
             <button class="pd-buy-btn" type="button" id="btn-buy" ${!canAdd ? "disabled" : ""}>
-              <i data-lucide="${isMinecraftProduct(p) ? "clock-3" : "shopping-cart"}"></i>
+              <i data-lucide="${purchaseButtonIcon(p)}"></i>
               ${buyButtonText}
             </button>
             <button class="pd-add-cart-btn" type="button" id="btn-add-cart" ${!canAdd ? "disabled" : ""}>

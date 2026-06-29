@@ -7,14 +7,14 @@
     <title>หลังบ้าน | OLAF SHOP</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="preconnect" href="https://wtvfgwacodfrzxapwoxj.supabase.co" />
-    <link rel="stylesheet" href="admin.css?v=20260621-inventory-manager" />
+    <link rel="stylesheet" href="admin.css?v=20260629-admin-pro-finance" />
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="supabase-client.js?v=20260621-slip-verify-v2" defer></script>
+    <script src="supabase-client.js?v=20260629-admin-pro-finance" defer></script>
     <script src="platform-store.js?v=20260605-admin-users" defer></script>
     <script src="image-performance.js?v=20260607-performance" defer></script>
 <script src="delivery-payload.js?v=20260620-phase1-12-final" defer></script>
-    <script src="admin.js?v=20260621-gallery-limit" defer></script>
+    <script src="admin.js?v=20260629-admin-pro-finance" defer></script>
   </head>
   <body>
     <section class="admin-login-screen" id="admin-login-screen">
@@ -56,6 +56,10 @@
             <button type="button" data-panel-target="orders">
               <i data-lucide="receipt-text"></i>
               Orders
+            </button>
+            <button type="button" data-panel-target="finance">
+              <i data-lucide="wallet-cards"></i>
+              การเงินลูกค้า
             </button>
           </div>
           <div class="nav-section">
@@ -163,6 +167,30 @@
               </div>
               <strong id="metric-delivered-stock">0</strong>
               <small>หน่วย Offline ที่ส่งมอบและเก็บประวัติแล้ว</small>
+            </article>
+            <article class="metric-card accent-blue">
+              <div class="metric-card-top">
+                <span>รายได้ออเดอร์</span>
+                <i data-lucide="chart-no-axes-combined"></i>
+              </div>
+              <strong id="metric-revenue">฿0</strong>
+              <small>รวมออเดอร์ที่ไม่ถูกยกเลิก</small>
+            </article>
+            <article class="metric-card accent-violet">
+              <div class="metric-card-top">
+                <span>Point ในระบบ</span>
+                <i data-lucide="coins"></i>
+              </div>
+              <strong id="metric-point-balance">0</strong>
+              <small>ยอด Point คงเหลือลูกค้าทั้งหมด</small>
+            </article>
+            <article class="metric-card accent-amber">
+              <div class="metric-card-top">
+                <span>ออเดอร์ทั้งหมด</span>
+                <i data-lucide="shopping-bag"></i>
+              </div>
+              <strong id="metric-orders">0</strong>
+              <small>ประวัติคำสั่งซื้อในระบบ</small>
             </article>
           </div>
 
@@ -431,6 +459,9 @@
                       <th>User</th>
                       <th>บทบาท</th>
                       <th>ตำแหน่ง</th>
+                      <th>Point</th>
+                      <th>Orders</th>
+                      <th>ยอดซื้อ</th>
                       <th>สถานะ</th>
                       <th></th>
                     </tr>
@@ -528,6 +559,8 @@
                       <th>Order</th>
                       <th>ลูกค้า</th>
                       <th>ยอด</th>
+                      <th>Point</th>
+                      <th>ชำระเงิน</th>
                       <th>สถานะ</th>
                       <th></th>
                     </tr>
@@ -571,6 +604,129 @@
                   </button>
                 </div>
               </form>
+            </section>
+          </div>
+        </section>
+
+        <section class="admin-panel" data-panel="finance">
+          <div class="admin-finance-hero">
+            <div>
+              <p class="eyebrow">Customer Finance Center</p>
+              <h2>ประวัติเติมเงิน, Point และการซื้อสินค้าของลูกค้าทุกคน</h2>
+              <p>รวมยอด Point สะสม, เงินที่แปลงเป็น Point, การใช้ Point ลดราคา และคำสั่งซื้อทุกออเดอร์พร้อมข้อมูล user</p>
+            </div>
+            <div class="finance-hero-actions">
+              <button class="ghost-button" id="finance-refresh" type="button">
+                <i data-lucide="refresh-cw"></i>
+                โหลดประวัติใหม่
+              </button>
+            </div>
+          </div>
+
+          <div class="finance-summary-grid">
+            <article class="finance-summary-card">
+              <span>รายได้รวม</span>
+              <strong id="finance-total-revenue">฿0</strong>
+              <small>ออเดอร์ที่ไม่ถูกยกเลิก</small>
+            </article>
+            <article class="finance-summary-card">
+              <span>Point คงเหลือ</span>
+              <strong id="finance-point-balance">0</strong>
+              <small>ยอด point ในกระเป๋าลูกค้าทั้งหมด</small>
+            </article>
+            <article class="finance-summary-card">
+              <span>เติม/เครดิต Point</span>
+              <strong id="finance-point-earned">0</strong>
+              <small>เงินเกินหรือยอดไม่พอที่ถูกแปลงเป็น point</small>
+            </article>
+            <article class="finance-summary-card">
+              <span>ใช้ Point แล้ว</span>
+              <strong id="finance-point-spent">0</strong>
+              <small>ยอด point ที่ลูกค้านำไปลดราคา</small>
+            </article>
+          </div>
+
+          <div class="admin-grid finance-grid">
+            <section class="admin-card finance-card-wide">
+              <div class="card-heading">
+                <div>
+                  <h2>บัญชีลูกค้าและยอด Point</h2>
+                  <span id="finance-wallet-count">0 users</span>
+                </div>
+                <label class="search-control finance-search">
+                  <i data-lucide="search"></i>
+                  <input id="finance-search" type="search" placeholder="ค้นหา user, email, order" />
+                </label>
+              </div>
+              <div class="table-wrap">
+                <table class="admin-table finance-table">
+                  <thead>
+                    <tr>
+                      <th>User</th>
+                      <th>Point</th>
+                      <th>เติมสะสม</th>
+                      <th>ใช้ไป</th>
+                      <th>ออเดอร์</th>
+                      <th>ยอดซื้อ</th>
+                      <th>ล่าสุด</th>
+                    </tr>
+                  </thead>
+                  <tbody id="finance-wallets-table"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="admin-card">
+              <div class="card-heading">
+                <div>
+                  <h2>ประวัติเติมเงิน / Point</h2>
+                  <span id="finance-activity-count">0 รายการ</span>
+                </div>
+                <label class="mini-filter">
+                  <span>ประเภท</span>
+                  <select id="finance-type-filter">
+                    <option value="all">ทั้งหมด</option>
+                    <option value="credit">เติม / เงินเข้า Point</option>
+                    <option value="debit">ใช้ Point</option>
+                    <option value="admin_adjustment">แอดมินปรับยอด</option>
+                  </select>
+                </label>
+              </div>
+              <div class="table-wrap">
+                <table class="admin-table finance-table compact-finance-table">
+                  <thead>
+                    <tr>
+                      <th>รายการ</th>
+                      <th>User</th>
+                      <th>ยอด</th>
+                      <th>คงเหลือ</th>
+                    </tr>
+                  </thead>
+                  <tbody id="finance-transactions-table"></tbody>
+                </table>
+              </div>
+            </section>
+
+            <section class="admin-card">
+              <div class="card-heading">
+                <div>
+                  <h2>ประวัติซื้อสินค้า</h2>
+                  <span id="finance-orders-count">0 ออเดอร์</span>
+                </div>
+              </div>
+              <div class="table-wrap">
+                <table class="admin-table finance-table compact-finance-table">
+                  <thead>
+                    <tr>
+                      <th>Order</th>
+                      <th>User</th>
+                      <th>สินค้า</th>
+                      <th>ยอด</th>
+                    </tr>
+                  </thead>
+                  <tbody id="finance-orders-table"></tbody>
+                </table>
+              </div>
             </section>
           </div>
         </section>

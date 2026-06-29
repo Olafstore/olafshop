@@ -1256,6 +1256,106 @@
     return withPaymentSlipUrls(normalizeArray(data).map(mapOrderRow).filter(Boolean));
   }
 
+  function mapAdminFinanceWalletRow(row = {}) {
+    return {
+      userId: row.userId || row.user_id || "",
+      email: row.email || "",
+      username: row.username || "",
+      displayName: row.displayName || row.display_name || row.fullName || row.full_name || row.username || row.email || "",
+      fullName: row.fullName || row.full_name || "",
+      role: row.role || "customer",
+      status: row.status || "active",
+      balance: Number(row.balance || 0),
+      lifetimeEarned: Number(row.lifetimeEarned ?? row.lifetime_earned ?? 0),
+      lifetimeSpent: Number(row.lifetimeSpent ?? row.lifetime_spent ?? 0),
+      updatedAt: row.updatedAt || row.updated_at || ""
+    };
+  }
+
+  function mapAdminPointTransactionRow(row = {}) {
+    return {
+      id: row.id || "",
+      userId: row.userId || row.user_id || "",
+      orderId: row.orderId || row.order_id || "",
+      orderNumber: row.orderNumber || row.order_number || "",
+      paymentVerificationId: row.paymentVerificationId || row.payment_verification_id || "",
+      type: row.type || "",
+      amount: Number(row.amount || 0),
+      balanceAfter: row.balanceAfter == null && row.balance_after == null ? null : Number(row.balanceAfter ?? row.balance_after ?? 0),
+      note: row.note || "",
+      metadata: normalizeObject(row.metadata),
+      userName: row.userName || row.user_name || row.displayName || row.display_name || row.fullName || row.full_name || row.username || row.email || "",
+      email: row.email || "",
+      createdAt: row.createdAt || row.created_at || ""
+    };
+  }
+
+  function mapAdminPaymentVerificationRow(row = {}) {
+    return {
+      id: row.id || "",
+      orderId: row.orderId || row.order_id || "",
+      userId: row.userId || row.user_id || "",
+      provider: row.provider || "",
+      status: row.status || "",
+      payloadType: row.payloadType || row.payload_type || "",
+      providerTransactionId: row.providerTransactionId || row.provider_transaction_id || "",
+      verifiedAmount: row.verifiedAmount == null && row.verified_amount == null ? null : Number(row.verifiedAmount ?? row.verified_amount ?? 0),
+      receiverName: row.receiverName || row.receiver_name || "",
+      transferredAt: row.transferredAt || row.transferred_at || "",
+      errorCode: row.errorCode || row.error_code || "",
+      attemptCount: Number(row.attemptCount || row.attempt_count || 0),
+      createdAt: row.createdAt || row.created_at || "",
+      updatedAt: row.updatedAt || row.updated_at || ""
+    };
+  }
+
+  function normalizeAdminFinancePayload(payload = {}) {
+    return {
+      wallets: normalizeArray(payload.wallets).map(mapAdminFinanceWalletRow).filter((row) => row.userId),
+      pointTransactions: normalizeArray(payload.pointTransactions || payload.point_transactions)
+        .map(mapAdminPointTransactionRow)
+        .filter((row) => row.id || row.userId),
+      paymentVerifications: normalizeArray(payload.paymentVerifications || payload.payment_verifications)
+        .map(mapAdminPaymentVerificationRow)
+        .filter((row) => row.id),
+      summary: normalizeObject(payload.summary)
+    };
+  }
+
+  async function fetchAdminFinanceOverview() {
+    const client = requireClient();
+    const rpcResult = await client.rpc("admin_finance_overview");
+    if (!rpcResult.error) return normalizeAdminFinancePayload(rpcResult.data || {});
+
+    const rpcMessage = String(rpcResult.error?.message || "");
+    const missingRpc =
+      rpcResult.error?.code === "PGRST202" ||
+      rpcResult.error?.code === "42883" ||
+      rpcMessage.includes("admin_finance_overview") ||
+      rpcMessage.toLowerCase().includes("schema cache");
+    if (!missingRpc) throw rpcResult.error;
+
+    const [walletResult, txResult, verificationResult] = await Promise.all([
+      client.from("user_points").select("*").order("updated_at", { ascending: false }).limit(500),
+      client.from("point_transactions").select("*").order("created_at", { ascending: false }).limit(300),
+      client
+        .from("payment_verifications")
+        .select("id, order_id, user_id, payload_type, provider, status, provider_transaction_id, verified_amount, receiver_name, transferred_at, error_code, attempt_count, created_at, updated_at")
+        .order("created_at", { ascending: false })
+        .limit(300)
+    ]);
+
+    if (walletResult.error) throw walletResult.error;
+    if (txResult.error) throw txResult.error;
+    if (verificationResult.error) throw verificationResult.error;
+
+    return normalizeAdminFinancePayload({
+      wallets: normalizeArray(walletResult.data),
+      pointTransactions: normalizeArray(txResult.data),
+      paymentVerifications: normalizeArray(verificationResult.data)
+    });
+  }
+
   async function adminUpdateOrder({ orderId, status, deliveryNote, deliveredPayload }) {
     const { data, error } = await requireClient().rpc("admin_update_order", {
       p_order_id: orderId,
@@ -1327,6 +1427,9 @@
     fetchAdminUsers,
     saveAdminUser,
     disableAdminUser
+  };
+  window.OlafAdminFinance = {
+    fetchAdminFinanceOverview
   };
   window.OlafStoreSettings = {
     fetchStoreSettings,

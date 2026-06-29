@@ -24,6 +24,14 @@ const state = {
   productPackages: {},
   offlineStockItems: {},
   inventorySummaries: {},
+  finance: {
+    wallets: [],
+    pointTransactions: [],
+    paymentVerifications: [],
+    summary: {}
+  },
+  financeSearch: "",
+  financeTypeFilter: "all",
   selectedUserId: null,
   selectedReviewId: null,
   selectedOrderId: null,
@@ -48,7 +56,8 @@ const EXTRA_CATALOG_PRODUCT_IDS = [
   "windows-11-pro",
   "minecraft-microsoft-account",
   "minecraft-java-bedrock-key",
-  "rockstar-fivem-account"
+  "rockstar-fivem-account",
+  "rockstar-gta-v-download"
 ];
 
 const emptyPayload = {
@@ -120,6 +129,21 @@ const formatPrice = (value) =>
     currency: "THB",
     maximumFractionDigits: 0
   }).format(Number(value) || 0);
+
+const formatPointAmount = (value) =>
+  new Intl.NumberFormat("th-TH", {
+    maximumFractionDigits: 2
+  }).format(Number(value) || 0);
+
+const formatAdminDateTime = (value) => {
+  if (!value) return "-";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "-";
+  return date.toLocaleString("th-TH", {
+    dateStyle: "medium",
+    timeStyle: "short"
+  });
+};
 
 function ratingValue(value) {
   return Math.max(0, Math.min(5, Number(value) || 0));
@@ -648,6 +672,27 @@ async function fetchAdminUsersFromSupabase() {
   return window.OlafAdminUsers.fetchAdminUsers();
 }
 
+async function fetchAdminFinanceFromSupabase() {
+  if (!window.OlafAdminFinance?.fetchAdminFinanceOverview) {
+    return {
+      wallets: [],
+      pointTransactions: [],
+      paymentVerifications: [],
+      summary: {}
+    };
+  }
+  return window.OlafAdminFinance.fetchAdminFinanceOverview();
+}
+
+function normalizeFinanceOverview(overview = {}) {
+  return {
+    wallets: Array.isArray(overview.wallets) ? overview.wallets : [],
+    pointTransactions: Array.isArray(overview.pointTransactions) ? overview.pointTransactions : [],
+    paymentVerifications: Array.isArray(overview.paymentVerifications) ? overview.paymentVerifications : [],
+    summary: overview.summary && typeof overview.summary === "object" ? overview.summary : {}
+  };
+}
+
 function mapSupabaseProductRow(row) {
   const product = window.OlafProducts?.mapProductRow
     ? window.OlafProducts.mapProductRow(row)
@@ -757,7 +802,7 @@ async function loadData() {
   state.users = adminUsers;
   state.reviews = window.OlafStore?.getReviews() ?? [];
   state.widgets = window.OlafStore?.getWidgets() ?? [];
-  const [adminOrders, inventorySummaries] = await Promise.all([
+  const [adminOrders, inventorySummaries, financeOverview] = await Promise.all([
     window.OlafOrders.fetchAdminOrders().catch((error) => {
       console.warn("Admin orders unavailable while loading products", {
         code: error?.code,
@@ -773,9 +818,22 @@ async function loadData() {
           });
           return [];
         })
-      : Promise.resolve([])
+      : Promise.resolve([]),
+    fetchAdminFinanceFromSupabase().catch((error) => {
+      console.warn("Admin finance overview unavailable", {
+        code: error?.code,
+        message: error?.message
+      });
+      return {
+        wallets: [],
+        pointTransactions: [],
+        paymentVerifications: [],
+        summary: {}
+      };
+    })
   ]);
   state.orders = adminOrders;
+  state.finance = normalizeFinanceOverview(financeOverview);
   setInventorySummaries(inventorySummaries);
   const productNames = new Map(state.payload.products.map((product) => [product.id, product.name]));
   state.stockLog = (await window.OlafOrders.fetchStockMovements().catch(() => [])).map((movement) => ({
@@ -1424,6 +1482,7 @@ function renderAll() {
   renderAdminSection("user form", renderUserForm, errors);
   renderAdminSection("orders table", renderOrdersTable, errors);
   renderAdminSection("order form", renderOrderForm, errors);
+  renderAdminSection("finance center", renderFinancePanel, errors);
   renderAdminSection("reviews table", renderReviewsTable, errors);
   renderAdminSection("review form", renderReviewForm, errors);
   renderAdminSection("widgets table", renderWidgetsTable, errors);
@@ -1446,6 +1505,7 @@ function renderMetrics() {
     (sum, product) => sum + Number(inventorySummaryFor(product).deliveredCount || 0),
     0
   );
+  const finance = financeSummary();
 
   $("#metric-products").textContent = products().length.toLocaleString("th-TH");
   $("#metric-stock").textContent = totalStock.toLocaleString("th-TH");
@@ -1453,6 +1513,9 @@ function renderMetrics() {
   $("#metric-sold").textContent = totalSold.toLocaleString("th-TH");
   $("#metric-active-products").textContent = activeProducts.toLocaleString("th-TH");
   $("#metric-delivered-stock").textContent = deliveredStock.toLocaleString("th-TH");
+  if ($("#metric-revenue")) $("#metric-revenue").textContent = formatPrice(finance.totalRevenue);
+  if ($("#metric-point-balance")) $("#metric-point-balance").textContent = formatPointAmount(finance.pointBalance);
+  if ($("#metric-orders")) $("#metric-orders").textContent = finance.orderCount.toLocaleString("th-TH");
 
   const alerts = products()
     .filter((product) => product.stock <= 5)
@@ -2328,10 +2391,13 @@ async function deleteSelectedProduct() {
 }
 
 function renderUsersTable() {
+  const walletRows = new Map(financeWalletRows().map((row) => [row.userId, row]));
   $("#users-table").innerHTML = state.users.length
     ? state.users
         .map(
-          (user) => `
+          (user) => {
+            const wallet = walletRows.get(user.id) || {};
+            return `
             <tr>
               <td>
                 <div class="user-cell">
@@ -2344,6 +2410,9 @@ function renderUsersTable() {
               </td>
               <td><span class="status-pill ${user.role === "admin" ? "warn" : "ok"}">${escapeHtml(user.role)}</span></td>
               <td>${escapeHtml(user.position || "-")}</td>
+              <td class="numeric"><strong>${formatPointAmount(wallet.balance || 0)}</strong></td>
+              <td class="numeric">${Number(wallet.orderCount || 0).toLocaleString("th-TH")}</td>
+              <td class="numeric">${formatPrice(wallet.totalSpent || 0)}</td>
               <td><span class="status-pill ${user.status === "active" ? "ok" : "danger"}">${escapeHtml(user.status)}</span></td>
               <td>
                 <div class="row-actions">
@@ -2356,10 +2425,11 @@ function renderUsersTable() {
                 </div>
               </td>
             </tr>
-          `
+          `;
+          }
         )
         .join("")
-    : `<tr><td colspan="5">ยังไม่มี user</td></tr>`;
+    : `<tr><td colspan="8">ยังไม่มี user</td></tr>`;
 }
 
 function userFromForm(form) {
@@ -2483,6 +2553,341 @@ function adminResetPassword(userId) {
   showAdminToast("เพื่อความปลอดภัย รหัสผ่านต้องเปลี่ยนใน Supabase Dashboard", "warning");
 }
 
+function isRevenueOrder(order) {
+  return order && !["cancelled", "expired"].includes(String(order.status || "").toLowerCase());
+}
+
+function adminUserLabel(user = {}) {
+  return user.displayName || user.fullName || user.username || user.customerName || user.email || "Customer";
+}
+
+function financeUserMap() {
+  const map = new Map();
+  state.users.forEach((user) => {
+    if (!user?.id) return;
+    map.set(user.id, {
+      userId: user.id,
+      email: user.email || "",
+      username: user.username || "",
+      displayName: user.displayName || user.fullName || user.username || user.email || "Customer",
+      fullName: user.fullName || user.displayName || "",
+      role: user.role || "customer",
+      status: user.status || "active"
+    });
+  });
+  state.finance.wallets.forEach((wallet) => {
+    if (!wallet?.userId) return;
+    map.set(wallet.userId, {
+      ...(map.get(wallet.userId) || {}),
+      ...wallet,
+      displayName: wallet.displayName || wallet.fullName || wallet.username || wallet.email || map.get(wallet.userId)?.displayName || "Customer"
+    });
+  });
+  state.orders.forEach((order) => {
+    if (!order?.userId || map.has(order.userId)) return;
+    map.set(order.userId, {
+      userId: order.userId,
+      email: order.customerEmail || "",
+      username: order.customerName || "",
+      displayName: order.customerName || order.customerEmail || "Customer",
+      fullName: order.customerName || "",
+      role: "customer",
+      status: "active"
+    });
+  });
+  return map;
+}
+
+function financeWalletMap() {
+  return new Map(state.finance.wallets.filter((wallet) => wallet?.userId).map((wallet) => [wallet.userId, wallet]));
+}
+
+function ordersForUser(userId) {
+  return state.orders.filter((order) => order.userId && order.userId === userId);
+}
+
+function financeWalletRows() {
+  const users = financeUserMap();
+  const wallets = financeWalletMap();
+  return [...users.values()]
+    .map((user) => {
+      const wallet = wallets.get(user.userId) || {};
+      const userOrders = ordersForUser(user.userId);
+      const revenueOrders = userOrders.filter(isRevenueOrder);
+      const totalSpent = revenueOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+      const lastOrderAt =
+        userOrders
+          .map((order) => order.createdAt)
+          .filter(Boolean)
+          .sort()
+          .at(-1) || "";
+      return {
+        ...user,
+        balance: Number(wallet.balance || 0),
+        lifetimeEarned: Number(wallet.lifetimeEarned || wallet.lifetime_earned || 0),
+        lifetimeSpent: Number(wallet.lifetimeSpent || wallet.lifetime_spent || 0),
+        orderCount: userOrders.length,
+        totalSpent,
+        lastOrderAt
+      };
+    })
+    .sort((a, b) => b.totalSpent - a.totalSpent || b.balance - a.balance || b.orderCount - a.orderCount);
+}
+
+function financeSummary() {
+  const wallets = financeWalletRows();
+  const revenueOrders = state.orders.filter(isRevenueOrder);
+  const totalRevenue = revenueOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+  const pointBalance = wallets.reduce((sum, wallet) => sum + Number(wallet.balance || 0), 0);
+  const pointEarned = wallets.reduce((sum, wallet) => sum + Number(wallet.lifetimeEarned || 0), 0);
+  const pointSpent = wallets.reduce((sum, wallet) => sum + Number(wallet.lifetimeSpent || 0), 0);
+  return {
+    totalRevenue,
+    pointBalance,
+    pointEarned,
+    pointSpent,
+    orderCount: state.orders.length,
+    revenueOrderCount: revenueOrders.length
+  };
+}
+
+function financeSearchValue() {
+  return String(state.financeSearch || "").trim().toLowerCase();
+}
+
+function financeMatches(values) {
+  const term = financeSearchValue();
+  if (!term) return true;
+  return values.some((value) => String(value || "").toLowerCase().includes(term));
+}
+
+function userForOrder(order, users = financeUserMap()) {
+  const user = users.get(order?.userId || "") || {};
+  return {
+    ...user,
+    displayName: user.displayName || order?.customerName || order?.customerEmail || "Customer",
+    email: user.email || order?.customerEmail || ""
+  };
+}
+
+function pointTypeLabel(type) {
+  const labels = {
+    credit_overpayment: "เงินเกินเข้า Point",
+    credit_underpayment: "ยอดไม่พอเข้า Point",
+    debit_order_discount: "ใช้ Point ลดราคา",
+    refund_order_points: "คืน Point",
+    admin_adjustment: "แอดมินปรับยอด"
+  };
+  return labels[type] || type || "Point";
+}
+
+function pointTypeClass(type) {
+  if (String(type || "").startsWith("credit") || type === "refund_order_points") return "ok";
+  if (String(type || "").startsWith("debit")) return "warn";
+  return "neutral";
+}
+
+function financeTransactions() {
+  const users = financeUserMap();
+  let rows = state.finance.pointTransactions.map((tx) => {
+    const user = users.get(tx.userId || "") || {};
+    const order = state.orders.find((item) => item.id === tx.orderId) || {};
+    return {
+      ...tx,
+      orderNumber: tx.orderNumber || order.orderNumber || "",
+      userName: tx.userName || user.displayName || user.username || user.email || "Customer",
+      email: tx.email || user.email || "",
+      createdAt: tx.createdAt || ""
+    };
+  });
+
+  if (!rows.length) {
+    state.orders.forEach((order) => {
+      const user = userForOrder(order, users);
+      if (Number(order.pointCreditAmount || 0) > 0) {
+        rows.push({
+          id: `${order.id}-credit`,
+          userId: order.userId,
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          type: Number(order.paymentVerifiedAmount || 0) >= Number(order.total || 0) ? "credit_overpayment" : "credit_underpayment",
+          amount: Number(order.pointCreditAmount || 0),
+          balanceAfter: null,
+          note: order.paymentVerificationNote || "",
+          userName: adminUserLabel(user),
+          email: user.email || "",
+          createdAt: order.paymentVerifiedAt || order.updatedAt || order.createdAt
+        });
+      }
+      if (Number(order.pointsRedeemedAmount || 0) > 0) {
+        rows.push({
+          id: `${order.id}-debit`,
+          userId: order.userId,
+          orderId: order.id,
+          orderNumber: order.orderNumber,
+          type: "debit_order_discount",
+          amount: Number(order.pointsRedeemedAmount || 0),
+          balanceAfter: null,
+          note: "ใช้ Point ลดราคาออเดอร์",
+          userName: adminUserLabel(user),
+          email: user.email || "",
+          createdAt: order.createdAt
+        });
+      }
+    });
+  }
+
+  const typeFilter = state.financeTypeFilter || "all";
+  rows = rows.filter((row) => {
+    if (typeFilter === "credit") return String(row.type || "").startsWith("credit") || row.type === "refund_order_points";
+    if (typeFilter === "debit") return String(row.type || "").startsWith("debit");
+    if (typeFilter === "admin_adjustment") return row.type === "admin_adjustment";
+    return true;
+  });
+
+  return rows
+    .filter((row) => financeMatches([row.userName, row.email, row.type, row.orderNumber, row.note, row.amount]))
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+}
+
+function renderFinancePanel() {
+  const summary = financeSummary();
+  const setText = (selector, value) => {
+    const element = $(selector);
+    if (element) element.textContent = value;
+  };
+
+  setText("#finance-total-revenue", formatPrice(summary.totalRevenue));
+  setText("#finance-point-balance", `${formatPointAmount(summary.pointBalance)} Points`);
+  setText("#finance-point-earned", `${formatPointAmount(summary.pointEarned)} Points`);
+  setText("#finance-point-spent", `${formatPointAmount(summary.pointSpent)} Points`);
+  renderFinanceWalletsTable();
+  renderFinanceTransactionsTable();
+  renderFinanceOrdersTable();
+}
+
+function renderFinanceWalletsTable() {
+  const rows = financeWalletRows().filter((wallet) =>
+    financeMatches([wallet.displayName, wallet.username, wallet.email, wallet.role, wallet.status])
+  );
+  const table = $("#finance-wallets-table");
+  if (!table) return;
+  const count = $("#finance-wallet-count");
+  if (count) count.textContent = `${rows.length.toLocaleString("th-TH")} users`;
+  table.innerHTML = rows.length
+    ? rows
+        .map(
+          (wallet) => `
+            <tr>
+              <td>
+                <div class="finance-user-chip">
+                  <span>${escapeHtml(adminUserLabel(wallet).slice(0, 1).toUpperCase())}</span>
+                  <div>
+                    <strong>${escapeHtml(adminUserLabel(wallet))}</strong>
+                    <small>${escapeHtml(wallet.email || wallet.username || "-")}</small>
+                  </div>
+                </div>
+              </td>
+              <td class="numeric"><strong>${formatPointAmount(wallet.balance)}</strong></td>
+              <td class="numeric money-positive">${formatPointAmount(wallet.lifetimeEarned)}</td>
+              <td class="numeric">${formatPointAmount(wallet.lifetimeSpent)}</td>
+              <td class="numeric">${Number(wallet.orderCount || 0).toLocaleString("th-TH")}</td>
+              <td class="numeric">${formatPrice(wallet.totalSpent)}</td>
+              <td><span>${formatAdminDateTime(wallet.lastOrderAt)}</span></td>
+            </tr>
+          `
+        )
+        .join("")
+    : `<tr><td colspan="7">ยังไม่พบข้อมูลลูกค้าหรือ Point</td></tr>`;
+}
+
+function renderFinanceTransactionsTable() {
+  const rows = financeTransactions();
+  const table = $("#finance-transactions-table");
+  if (!table) return;
+  const count = $("#finance-activity-count");
+  if (count) count.textContent = `${rows.length.toLocaleString("th-TH")} รายการ`;
+  table.innerHTML = rows.length
+    ? rows
+        .slice(0, 160)
+        .map(
+          (tx) => `
+            <tr>
+              <td>
+                <strong>${escapeHtml(pointTypeLabel(tx.type))}</strong>
+                <span>${escapeHtml(tx.orderNumber || tx.orderId || "-")} · ${formatAdminDateTime(tx.createdAt)}</span>
+              </td>
+              <td>
+                <div class="finance-mini-user">
+                  <strong>${escapeHtml(tx.userName || "Customer")}</strong>
+                  <span>${escapeHtml(tx.email || tx.userId || "-")}</span>
+                </div>
+              </td>
+              <td><span class="status-pill ${pointTypeClass(tx.type)}">${formatPointAmount(tx.amount)} P</span></td>
+              <td class="numeric">${tx.balanceAfter == null ? "-" : `${formatPointAmount(tx.balanceAfter)} P`}</td>
+            </tr>
+          `
+        )
+        .join("")
+    : `<tr><td colspan="4">ยังไม่มีประวัติ Point ตามเงื่อนไขที่เลือก</td></tr>`;
+}
+
+function renderFinanceOrdersTable() {
+  const users = financeUserMap();
+  const rows = state.orders
+    .map((order) => ({
+      ...order,
+      user: userForOrder(order, users),
+      firstItem: order.items?.[0]?.productName || order.items?.[0]?.name || "-"
+    }))
+    .filter((order) =>
+      financeMatches([
+        order.orderNumber,
+        order.id,
+        order.user.displayName,
+        order.user.email,
+        order.customerName,
+        order.firstItem,
+        order.status,
+        order.paymentMethod
+      ])
+    )
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
+  const table = $("#finance-orders-table");
+  if (!table) return;
+  const count = $("#finance-orders-count");
+  if (count) count.textContent = `${rows.length.toLocaleString("th-TH")} ออเดอร์`;
+  table.innerHTML = rows.length
+    ? rows
+        .slice(0, 160)
+        .map(
+          (order) => `
+            <tr>
+              <td>
+                <strong>${escapeHtml(order.orderNumber || order.id)}</strong>
+                <span>${formatAdminDateTime(order.createdAt)}</span>
+              </td>
+              <td>
+                <div class="finance-mini-user">
+                  <strong>${escapeHtml(adminUserLabel(order.user))}</strong>
+                  <span>${escapeHtml(order.user.email || order.customerEmail || "-")}</span>
+                </div>
+              </td>
+              <td>
+                <strong>${escapeHtml(order.firstItem)}</strong>
+                <span>${Number(order.items?.length || 0).toLocaleString("th-TH")} รายการ · ${escapeHtml(order.paymentMethod || "-")}</span>
+              </td>
+              <td>
+                <strong>${formatPrice(order.total)}</strong>
+                <span class="status-pill ${orderStatusClass(order.status)}">${escapeHtml(order.status || "-")}</span>
+              </td>
+            </tr>
+          `
+        )
+        .join("")
+    : `<tr><td colspan="4">ยังไม่มีประวัติซื้อสินค้าตามคำค้นหา</td></tr>`;
+}
+
 function renderReviewsTable() {
   $("#reviews-count").textContent = `${state.reviews.length.toLocaleString("th-TH")} รีวิว`;
   $("#reviews-table").innerHTML = state.reviews.length
@@ -2576,21 +2981,36 @@ function orderStatusClass(status) {
 
 function renderOrdersTable() {
   $("#orders-count").textContent = `${state.orders.length.toLocaleString("th-TH")} ออเดอร์`;
+  const users = financeUserMap();
   $("#orders-table").innerHTML = state.orders.length
     ? state.orders
         .map(
-          (order) => `
+          (order) => {
+            const user = userForOrder(order, users);
+            const pointInfo =
+              Number(order.pointsRedeemedAmount || 0) > 0 || Number(order.pointCreditAmount || 0) > 0
+                ? `ใช้ ${formatPointAmount(order.pointsRedeemedAmount || 0)}P / เครดิต ${formatPointAmount(order.pointCreditAmount || 0)}P`
+                : "-";
+            return `
             <tr>
-              <td><strong>${escapeHtml(order.orderNumber || order.id)}</strong><br><span>${new Date(order.createdAt).toLocaleString("th-TH")}</span></td>
-              <td>${escapeHtml(order.customerName || order.username || "-")}</td>
-              <td>${formatPrice(order.total)}</td>
+              <td><strong>${escapeHtml(order.orderNumber || order.id)}</strong><br><span>${formatAdminDateTime(order.createdAt)}</span></td>
+              <td>
+                <div class="finance-mini-user">
+                  <strong>${escapeHtml(adminUserLabel(user))}</strong>
+                  <span>${escapeHtml(user.email || order.customerEmail || "-")}</span>
+                </div>
+              </td>
+              <td>${formatPrice(order.total)}<br><span>${escapeHtml(order.paymentMethod || "-")}</span></td>
+              <td>${escapeHtml(pointInfo)}</td>
+              <td><span class="status-pill ${order.paymentStatus === "verified" ? "ok" : "warn"}">${escapeHtml(order.paymentStatus || "pending")}</span></td>
               <td><span class="status-pill ${orderStatusClass(order.status)}">${escapeHtml(order.status)}</span></td>
               <td><div class="row-actions"><button class="mini-button" type="button" data-edit-order="${escapeHtml(order.id)}"><i data-lucide="pencil"></i></button></div></td>
             </tr>
-          `
+          `;
+          }
         )
         .join("")
-    : `<tr><td colspan="5">ยังไม่มีคำสั่งซื้อ</td></tr>`;
+    : `<tr><td colspan="7">ยังไม่มีคำสั่งซื้อ</td></tr>`;
 }
 
 function renderOrderForm() {
@@ -3348,6 +3768,43 @@ function bindEvents() {
     state.stockActiveOnly = event.target.checked === true;
     renderStockBoard();
     createIconSet();
+  });
+
+  $("#finance-search")?.addEventListener("input", (event) => {
+    state.financeSearch = event.target.value;
+    renderFinancePanel();
+    createIconSet();
+  });
+
+  $("#finance-type-filter")?.addEventListener("change", (event) => {
+    state.financeTypeFilter = event.target.value || "all";
+    renderFinancePanel();
+    createIconSet();
+  });
+
+  $("#finance-refresh")?.addEventListener("click", async () => {
+    const button = $("#finance-refresh");
+    const originalText = button?.innerHTML || "";
+    if (button) {
+      button.disabled = true;
+      button.innerHTML = '<i data-lucide="loader-circle"></i> กำลังโหลด';
+      createIconSet();
+    }
+    try {
+      state.finance = normalizeFinanceOverview(await fetchAdminFinanceFromSupabase());
+      const orders = await window.OlafOrders.fetchAdminOrders().catch(() => state.orders);
+      state.orders = Array.isArray(orders) ? orders : state.orders;
+      renderAll();
+      showAdminToast("โหลดประวัติการเงินลูกค้าใหม่แล้ว", "success");
+    } catch (error) {
+      showAdminToast(error.message || "โหลดประวัติการเงินไม่สำเร็จ", "error");
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.innerHTML = originalText;
+        createIconSet();
+      }
+    }
   });
 
   $("#resize-managed-stock")?.addEventListener("click", async () => {

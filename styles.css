@@ -16756,3 +16756,68 @@ dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-payment-result {
   height: 18px !important;
   flex: 0 0 18px !important;
 }
+
+/* 2026-06-30 FINAL FIX: prevent mobile cart items/summary overlap */
+@media (max-width: 920px) {
+  dialog.site-cart-dialog:not([data-cart-stage="creating"]):not([data-cart-stage="payment"]) .site-cart-body {
+    display: flex !important;
+    flex-direction: column !important;
+    grid-template-columns: none !important;
+    align-items: stretch !important;
+    gap: 12px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+
+  dialog.site-cart-dialog:not([data-cart-stage="creating"]):not([data-cart-stage="payment"]) [data-site-cart-stage-panel="items"],
+  dialog.site-cart-dialog:not([data-cart-stage="creating"]):not([data-cart-stage="payment"]) .site-cart-summary {
+    position: static !important;
+    display: block !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    flex: 0 0 auto !important;
+  }
+
+  dialog.site-cart-dialog:not([data-cart-stage="creating"]):not([data-cart-stage="payment"]) .site-cart-summary-card {
+    position: static !important;
+    top: auto !important;
+    display: grid !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  dialog.site-cart-dialog:not([data-cart-stage="creating"]):not([data-cart-stage="payment"]) .site-cart-items {
+    max-height: none !important;
+    overflow: visible !important;
+  }
+}
+
+@media (max-width: 620px) {
+  dialog.site-cart-dialog:not([data-cart-stage="creating"]):not([data-cart-stage="payment"]) {
+    overflow: hidden !important;
+  }
+
+  dialog.site-cart-dialog:not([data-cart-stage="creating"]):not([data-cart-stage="payment"]) .site-cart-shell {
+    height: 100% !important;
+    max-height: none !important;
+    overflow: hidden !important;
+  }
+
+  dialog.site-cart-dialog:not([data-cart-stage="creating"]):not([data-cart-stage="payment"]) .site-cart-body {
+    height: calc(100% - 70px) !important;
+    min-height: 0 !important;
+    padding: 12px !important;
+    scroll-padding-bottom: 18px;
+  }
+
+  dialog.site-cart-dialog:not([data-cart-stage="creating"]):not([data-cart-stage="payment"]) .site-cart-items-panel,
+  dialog.site-cart-dialog:not([data-cart-stage="creating"]):not([data-cart-stage="payment"]) .site-cart-summary-card {
+    flex-shrink: 0 !important;
+    border-radius: 18px !important;
+  }
+
+  dialog.site-cart-dialog:not([data-cart-stage="creating"]):not([data-cart-stage="payment"]) .site-cart-summary-card {
+    margin-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}

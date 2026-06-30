@@ -16821,3 +16821,390 @@ dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-payment-result {
     margin-bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
   }
 }
+
+/* 2026-06-30 FINAL FIX: mobile payment / QR checkout polish */
+@media (max-width: 768px) {
+  dialog.checkout-order-dialog,
+  dialog.qr-payment-dialog,
+  dialog.site-cart-dialog[data-cart-stage="creating"],
+  dialog.site-cart-dialog[data-cart-stage="payment"] {
+    inset: 8px !important;
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    border-radius: 22px !important;
+    overflow: hidden !important;
+  }
+
+  dialog.checkout-order-dialog .premium-dialog-inner,
+  dialog.qr-payment-dialog .premium-dialog-inner {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-height: calc(100dvh - 16px) !important;
+    overflow: hidden !important;
+  }
+
+  dialog.checkout-order-dialog .premium-dialog-header,
+  dialog.qr-payment-dialog .premium-dialog-header {
+    padding: 14px 16px 10px !important;
+    text-align: left !important;
+  }
+
+  dialog.checkout-order-dialog .premium-icon-box,
+  dialog.qr-payment-dialog .premium-icon-box {
+    width: 42px !important;
+    height: 42px !important;
+    margin: 0 0 10px !important;
+    border-radius: 15px !important;
+  }
+
+  dialog.checkout-order-dialog .premium-icon-box svg,
+  dialog.qr-payment-dialog .premium-icon-box svg {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  dialog.checkout-order-dialog .premium-dialog-header h2,
+  dialog.qr-payment-dialog .premium-dialog-header h2 {
+    font-size: 1.02rem !important;
+    line-height: 1.3 !important;
+  }
+
+  dialog.checkout-order-dialog .premium-dialog-header p,
+  dialog.qr-payment-dialog .premium-dialog-header p {
+    font-size: 0.78rem !important;
+    line-height: 1.45 !important;
+  }
+
+  dialog.checkout-order-dialog .dialog-close,
+  dialog.qr-payment-dialog .dialog-close {
+    top: 12px !important;
+    right: 12px !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 14px !important;
+  }
+
+  dialog.checkout-order-dialog .premium-checkout-form,
+  dialog.qr-payment-dialog .qr-payment-content {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    width: 100% !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 12px 14px calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+    gap: 12px !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  dialog.checkout-order-dialog .premium-product-card {
+    display: grid !important;
+    grid-template-columns: 58px minmax(0, 1fr) !important;
+    gap: 12px !important;
+    padding: 12px !important;
+    border-radius: 16px !important;
+  }
+
+  dialog.checkout-order-dialog .premium-product-thumb {
+    width: 58px !important;
+    height: 58px !important;
+    border-radius: 13px !important;
+  }
+
+  dialog.checkout-order-dialog .premium-product-info h3 {
+    white-space: normal !important;
+    display: -webkit-box !important;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden !important;
+    font-size: 0.9rem !important;
+    line-height: 1.35 !important;
+  }
+
+  dialog.checkout-order-dialog .premium-product-price {
+    grid-column: 1 / -1 !important;
+    justify-self: end !important;
+    padding: 6px 10px !important;
+    border-radius: 999px !important;
+    background: rgba(37, 99, 235, 0.14) !important;
+    font-size: 1rem !important;
+    line-height: 1 !important;
+  }
+
+  dialog.checkout-order-dialog .premium-summary-card,
+  dialog.checkout-order-dialog .premium-points-card,
+  dialog.checkout-order-dialog .premium-payment-section {
+    padding: 12px !important;
+    border-radius: 16px !important;
+  }
+
+  dialog.checkout-order-dialog .premium-summary-row {
+    gap: 12px !important;
+    align-items: flex-start !important;
+    font-size: 0.84rem !important;
+  }
+
+  dialog.checkout-order-dialog .premium-summary-row strong,
+  dialog.checkout-order-dialog .premium-total-price {
+    text-align: right !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  dialog.checkout-order-dialog .premium-payment-header {
+    margin-bottom: 10px !important;
+    font-size: 0.74rem !important;
+    letter-spacing: 0.035em !important;
+  }
+
+  dialog.checkout-order-dialog .premium-payment-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  dialog.checkout-order-dialog .premium-payment-card {
+    min-height: 74px !important;
+    padding: 11px 8px !important;
+    border-radius: 16px !important;
+  }
+
+  dialog.checkout-order-dialog .payment-card-content {
+    gap: 5px !important;
+  }
+
+  dialog.checkout-order-dialog .payment-card-content i {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  dialog.checkout-order-dialog .payment-card-content strong {
+    font-size: 0.82rem !important;
+  }
+
+  dialog.checkout-order-dialog .payment-card-content span {
+    font-size: 0.68rem !important;
+  }
+
+  dialog.checkout-order-dialog .payment-check {
+    top: 8px !important;
+    right: 8px !important;
+  }
+
+  dialog.checkout-order-dialog .premium-actions,
+  dialog.qr-payment-dialog .premium-actions {
+    position: static !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    margin-top: 4px !important;
+    padding: 0 !important;
+    background: transparent !important;
+  }
+
+  dialog.checkout-order-dialog .submit-order-btn,
+  dialog.qr-payment-dialog .submit-order-btn,
+  dialog.qr-payment-dialog .cancel-order-btn,
+  dialog.qr-payment-dialog .text-button {
+    width: 100% !important;
+    min-height: 44px !important;
+    height: auto !important;
+    padding: 11px 14px !important;
+    border-radius: 15px !important;
+    font-size: 0.88rem !important;
+    line-height: 1.25 !important;
+  }
+
+  dialog.qr-payment-dialog .qr-payment-content {
+    align-items: stretch !important;
+    text-align: center !important;
+  }
+
+  dialog.qr-payment-dialog .qr-method-badge,
+  dialog.qr-payment-dialog .qr-status-badge {
+    justify-content: center !important;
+    width: fit-content !important;
+    max-width: 100% !important;
+    margin: 0 auto 10px !important;
+    padding: 6px 12px !important;
+    font-size: 0.76rem !important;
+  }
+
+  dialog.qr-payment-dialog .qr-image-frame {
+    width: min(210px, 58vw) !important;
+    height: min(210px, 58vw) !important;
+    padding: 10px !important;
+    margin: 0 auto 12px !important;
+    border-radius: 20px !important;
+    box-shadow: 0 18px 38px rgba(0, 0, 0, 0.26) !important;
+  }
+
+  dialog.qr-payment-dialog .qr-image-frame img {
+    max-width: 100% !important;
+    max-height: 100% !important;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+  }
+
+  dialog.qr-payment-dialog .qr-loading,
+  dialog.qr-payment-dialog .qr-unavailable {
+    font-size: 0.78rem !important;
+    line-height: 1.45 !important;
+  }
+
+  dialog.qr-payment-dialog .qr-order-details {
+    padding: 12px !important;
+    margin-bottom: 10px !important;
+    border-radius: 16px !important;
+  }
+
+  dialog.qr-payment-dialog .qr-detail-row {
+    gap: 10px !important;
+    align-items: flex-start !important;
+    margin-bottom: 9px !important;
+    font-size: 0.8rem !important;
+  }
+
+  dialog.qr-payment-dialog .qr-detail-row strong {
+    text-align: right !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  dialog.qr-payment-dialog .qr-total-highlight {
+    font-size: 1.16rem !important;
+  }
+
+  dialog.qr-payment-dialog .qr-store-note,
+  dialog.qr-payment-dialog .qr-note-alert,
+  dialog.qr-payment-dialog .qr-manual-transfer {
+    margin-bottom: 10px !important;
+    border-radius: 16px !important;
+    font-size: 0.78rem !important;
+    line-height: 1.45 !important;
+  }
+
+  dialog.qr-payment-dialog .qr-manual-transfer summary {
+    padding: 11px 12px !important;
+    font-size: 0.78rem !important;
+  }
+
+  dialog.qr-payment-dialog .qr-manual-transfer-body {
+    padding: 12px !important;
+  }
+
+  dialog.qr-payment-dialog .qr-accounts-container {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+    margin-bottom: 10px !important;
+  }
+
+  dialog.qr-payment-dialog .qr-account-box {
+    align-items: flex-start !important;
+    padding: 11px 12px !important;
+    text-align: left !important;
+  }
+
+  dialog.qr-payment-dialog .qr-account-box .acc-number {
+    font-size: 0.96rem !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-shell,
+  dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-shell {
+    height: 100% !important;
+    max-height: calc(100dvh - 16px) !important;
+    overflow: hidden !important;
+  }
+
+  dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-body,
+  dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-body {
+    height: calc(100% - 72px) !important;
+    min-height: 0 !important;
+    padding: 12px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    align-items: stretch !important;
+  }
+
+  dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-payment-result,
+  dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-payment-result {
+    width: 100% !important;
+    min-height: 0 !important;
+    gap: 10px !important;
+    padding: 12px !important;
+    border-radius: 18px !important;
+  }
+
+  .site-cart-qr-loading {
+    min-height: 220px !important;
+    padding: 16px 12px !important;
+    border-radius: 18px !important;
+  }
+
+  .site-cart-qr-loader {
+    width: 48px !important;
+    height: 48px !important;
+    border-radius: 16px !important;
+  }
+
+  .site-cart-qr-frame {
+    gap: 10px !important;
+    padding: 12px !important;
+    border-radius: 18px !important;
+  }
+
+  .site-cart-qr-frame .site-cart-qr {
+    width: min(210px, 58vw) !important;
+    border-width: 8px !important;
+    border-radius: 18px !important;
+  }
+
+  .site-cart-paid-head {
+    align-items: flex-start !important;
+    gap: 10px !important;
+  }
+
+  .site-cart-paid-head > i,
+  .site-cart-paid-head > svg {
+    flex: 0 0 38px !important;
+    width: 38px !important;
+    height: 38px !important;
+    padding: 9px !important;
+    border-radius: 14px !important;
+  }
+
+  .site-cart-paid-head strong,
+  .site-cart-paid-head span {
+    line-height: 1.35 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .site-cart-result-actions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .site-cart-result-actions button {
+    min-height: 44px !important;
+    border-radius: 15px !important;
+    font-size: 0.88rem !important;
+  }
+}
+
+@media (max-width: 390px) {
+  dialog.checkout-order-dialog .premium-payment-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  dialog.qr-payment-dialog .qr-image-frame,
+  .site-cart-qr-frame .site-cart-qr {
+    width: min(196px, 56vw) !important;
+  }
+
+  dialog.qr-payment-dialog .qr-image-frame {
+    height: min(196px, 56vw) !important;
+  }
+}

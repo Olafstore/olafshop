@@ -17208,3 +17208,284 @@ dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-payment-result {
     height: min(196px, 56vw) !important;
   }
 }
+
+/* 2026-06-30 FINAL FIX: unified centered mobile popups */
+@media (max-width: 768px) {
+  :root {
+    --mobile-popup-gap: 12px;
+    --mobile-popup-max-height: calc(100dvh - 24px);
+    --mobile-popup-width: min(430px, calc(100vw - 24px));
+    --mobile-popup-safe-bottom: env(safe-area-inset-bottom, 0px);
+  }
+
+  @supports not (height: 100dvh) {
+    :root {
+      --mobile-popup-max-height: calc(100vh - 24px);
+    }
+  }
+
+  dialog[open],
+  dialog.auth-dialog[open],
+  dialog.dashboard-dialog[open],
+  dialog.product-dialog[open],
+  dialog.cart-dialog[open],
+  dialog.payment-dialog[open],
+  dialog.contact-dialog[open],
+  dialog.premium-dialog[open],
+  dialog.checkout-order-dialog[open],
+  dialog.qr-payment-dialog[open],
+  dialog.order-confirm-dialog[open],
+  dialog.site-cart-dialog[open] {
+    position: fixed !important;
+    inset: auto !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: var(--mobile-popup-width) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: var(--mobile-popup-max-height) !important;
+    margin: 0 !important;
+    border-radius: 22px !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+    transform: translate3d(-50%, -50%, 0) !important;
+    animation: mobilePopupCenterIn 180ms ease-out both !important;
+    overscroll-behavior: contain;
+  }
+
+  dialog.product-dialog[open],
+  dialog.dashboard-dialog[open] {
+    width: min(520px, calc(100vw - 24px)) !important;
+  }
+
+  dialog::backdrop {
+    background: rgba(2, 6, 23, 0.78) !important;
+    backdrop-filter: blur(10px) saturate(120%) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(120%) !important;
+  }
+
+  dialog[open] > *,
+  .dialog-content,
+  .premium-dialog-inner,
+  .payment-result,
+  .member-dashboard,
+  .product-detail,
+  .cart-layout,
+  .contact-body,
+  .contact-dialog-body,
+  .order-confirm-inner,
+  .site-cart-shell {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  .dialog-content,
+  .premium-dialog-inner,
+  .payment-result,
+  .member-dashboard,
+  .product-detail,
+  .cart-layout,
+  .contact-body,
+  .contact-dialog-body,
+  .order-confirm-inner,
+  .site-cart-shell {
+    max-height: var(--mobile-popup-max-height) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  .dialog-close,
+  dialog .dialog-close,
+  .inventory-modal-close {
+    top: 10px !important;
+    right: 10px !important;
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    min-height: 38px !important;
+    border-radius: 14px !important;
+    z-index: 20 !important;
+  }
+
+  .dialog-actions,
+  .premium-actions,
+  .order-confirm-actions,
+  .filter-popover-actions,
+  .site-cart-result-actions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 9px !important;
+    width: 100% !important;
+    padding-bottom: calc(4px + var(--mobile-popup-safe-bottom)) !important;
+    box-sizing: border-box !important;
+  }
+
+  .dialog-actions button,
+  .premium-actions button,
+  .order-confirm-actions button,
+  .filter-popover-actions button,
+  .site-cart-result-actions button {
+    width: 100% !important;
+    min-height: 44px !important;
+    border-radius: 15px !important;
+    white-space: normal !important;
+  }
+
+  .user-popover:not([hidden]),
+  .notification-popover:not([hidden]),
+  .language-popover:not([hidden]),
+  .filter-popover:not([hidden]),
+  .search-suggestions:not([hidden]) {
+    position: fixed !important;
+    inset: auto !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: min(390px, calc(100vw - 24px)) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: min(74dvh, 620px) !important;
+    margin: 0 !important;
+    border-radius: 22px !important;
+    overflow: hidden auto !important;
+    box-sizing: border-box !important;
+    transform: translate3d(-50%, -50%, 0) !important;
+    animation: mobilePopupCenterIn 160ms ease-out both !important;
+    z-index: 1400 !important;
+    box-shadow: 0 28px 80px rgba(2, 6, 23, 0.62), 0 0 0 1px rgba(96, 165, 250, 0.10) inset !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  .notification-popover:not([hidden]) {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .notification-body,
+  .user-popover-menu,
+  .search-suggestions:not([hidden]) {
+    max-height: min(58dvh, 480px) !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .language-popover:not([hidden]),
+  .filter-popover:not([hidden]) {
+    padding: 12px !important;
+  }
+
+  .inventory-modal {
+    place-items: center !important;
+    padding: 12px !important;
+  }
+
+  .inventory-modal:not([hidden]) .inventory-modal-dialog,
+  .inventory-modal-dialog {
+    position: fixed !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: min(430px, calc(100vw - 24px)) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - 24px) !important;
+    border-radius: 22px !important;
+    padding: 16px !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    transform: translate3d(-50%, -50%, 0) !important;
+    animation: mobilePopupCenterIn 180ms ease-out both !important;
+    box-sizing: border-box !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+
+  .inventory-modal-product {
+    grid-template-columns: 72px minmax(0, 1fr) !important;
+    gap: 12px !important;
+    padding-right: 42px !important;
+  }
+
+  .inventory-modal-image-wrap,
+  .inventory-modal-image,
+  .inventory-modal-image-fallback {
+    width: 72px !important;
+    height: 72px !important;
+    border-radius: 18px !important;
+  }
+
+  .inventory-modal-title {
+    font-size: 1rem !important;
+    line-height: 1.35 !important;
+    overflow-wrap: anywhere !important;
+  }
+
+  .inventory-modal-copy,
+  .inventory-detail-panel,
+  .inventory-order-actions,
+  .inventory-modal-footer {
+    max-width: 100% !important;
+    box-sizing: border-box !important;
+  }
+
+  #toast-container,
+  .toast-container {
+    left: 12px !important;
+    right: 12px !important;
+    bottom: calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+    width: auto !important;
+    max-width: none !important;
+  }
+
+  .toast {
+    width: 100% !important;
+    max-width: 100% !important;
+    border-radius: 16px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  dialog[open],
+  dialog.auth-dialog[open],
+  dialog.dashboard-dialog[open],
+  dialog.product-dialog[open],
+  dialog.cart-dialog[open],
+  dialog.payment-dialog[open],
+  dialog.contact-dialog[open],
+  dialog.premium-dialog[open],
+  dialog.checkout-order-dialog[open],
+  dialog.qr-payment-dialog[open],
+  dialog.order-confirm-dialog[open],
+  dialog.site-cart-dialog[open] {
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    border-radius: 20px !important;
+  }
+
+  .user-popover:not([hidden]),
+  .notification-popover:not([hidden]),
+  .language-popover:not([hidden]),
+  .filter-popover:not([hidden]),
+  .search-suggestions:not([hidden]) {
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    border-radius: 20px !important;
+  }
+}
+
+@keyframes mobilePopupCenterIn {
+  from {
+    opacity: 0;
+    transform: translate3d(-50%, -46%, 0) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) scale(1);
+  }
+}

@@ -2613,3 +2613,70 @@ body {
     min-width: 150px;
   }
 }
+
+/* 2026-06-30 FINAL FIX: centered admin mobile popups */
+@media (max-width: 768px) {
+  .admin-dialog[open] {
+    position: fixed !important;
+    inset: auto !important;
+    top: 50% !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: min(420px, calc(100vw - 24px)) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - 24px) !important;
+    margin: 0 !important;
+    border-radius: 22px !important;
+    overflow: hidden !important;
+    transform: translate3d(-50%, -50%, 0) !important;
+    animation: adminMobilePopupCenterIn 180ms ease-out both !important;
+    box-sizing: border-box !important;
+    overscroll-behavior: contain;
+  }
+
+  .admin-dialog .dialog-content {
+    max-height: calc(100dvh - 24px) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: 18px !important;
+    gap: 14px !important;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .admin-dialog .dialog-actions {
+    position: static !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+    padding-top: 8px !important;
+    background: transparent !important;
+  }
+
+  .admin-dialog .dialog-actions button {
+    width: 100% !important;
+    min-height: 44px !important;
+    border-radius: 14px !important;
+  }
+}
+
+@media (max-width: 390px) {
+  .admin-dialog[open] {
+    width: calc(100vw - 16px) !important;
+    max-width: calc(100vw - 16px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    border-radius: 20px !important;
+  }
+}
+
+@keyframes adminMobilePopupCenterIn {
+  from {
+    opacity: 0;
+    transform: translate3d(-50%, -46%, 0) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) scale(1);
+  }
+}

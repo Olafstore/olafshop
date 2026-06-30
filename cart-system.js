@@ -155,6 +155,15 @@
               <em data-site-cart-count-label>0 รายการ</em>
             </div>
             <div class="site-cart-items" data-site-cart-items></div>
+            <div class="site-cart-mobile-actions" data-site-cart-mobile-actions>
+              <button class="primary-button site-cart-mobile-confirm" type="button" data-site-cart-show-summary>
+                <i data-lucide="list-checks"></i>
+                <span>คอนเฟิร์มรายการสินค้า</span>
+              </button>
+              <button class="secondary-button site-cart-mobile-continue" type="button" data-site-cart-close>
+                เลือกสินค้าต่อ
+              </button>
+            </div>
           </section>
           <aside class="site-cart-summary">
             <div class="site-cart-summary-card">
@@ -191,6 +200,10 @@
                 </div>
               </div>
               <div class="site-cart-action-row">
+                <button class="secondary-button site-cart-back" type="button" data-site-cart-back-items>
+                  <i data-lucide="arrow-left"></i>
+                  กลับไปแก้รายการ
+                </button>
                 <button class="primary-button site-cart-checkout" type="button" data-site-cart-checkout>
                   <i data-lucide="receipt-text"></i>
                   สร้างคำสั่งซื้อ
@@ -216,6 +229,20 @@
       if (remove) updateQuantity(remove.dataset.siteCartRemove, 0);
       if (increase) updateQuantity(increase.dataset.siteCartIncrease, Number(increase.dataset.quantity || 1) + 1);
       if (decrease) updateQuantity(decrease.dataset.siteCartDecrease, Number(decrease.dataset.quantity || 1) - 1);
+      if (event.target.closest("[data-site-cart-show-summary]")) {
+        if (!readCart().length) {
+          showToast("กรุณาเพิ่มสินค้าก่อน", "warning");
+          return;
+        }
+        setCartStage(dialog, "summary");
+        $(".site-cart-body", dialog)?.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
+      if (event.target.closest("[data-site-cart-back-items]")) {
+        setCartStage(dialog, "cart");
+        $(".site-cart-body", dialog)?.scrollTo({ top: 0, behavior: "smooth" });
+        return;
+      }
       if (event.target.closest("[data-site-cart-checkout]")) checkout();
       if (event.target.closest("[data-site-cart-upload]")) openSlipPicker();
       if (event.target.closest("[data-site-cart-profile]")) window.location.href = "profile.html#inventory";
@@ -242,18 +269,20 @@
 
   function setCartStage(dialog, stage = "cart") {
     cartStage = stage;
-    const isCart = stage === "cart";
+    const isPaymentStep = stage === "creating" || stage === "payment";
+    const isSummary = stage === "summary";
     const isProcessing = stage === "creating" || stage === "payment";
     const itemsPanel = $("[data-site-cart-stage-panel='items']", dialog);
     const summaryCard = $(".site-cart-summary-card", dialog);
     const paymentBox = $("[data-site-cart-payment-result]", dialog);
     dialog.dataset.cartStage = stage;
     dialog.classList.toggle("is-payment-mode", stage === "payment");
+    dialog.classList.toggle("is-summary-mode", isSummary);
     dialog.classList.toggle("is-cart-processing", isProcessing);
-    if (itemsPanel) itemsPanel.hidden = !isCart;
-    if (summaryCard) summaryCard.hidden = !isCart;
-    if (paymentBox) paymentBox.hidden = isCart;
-    if (paymentBox && isCart) {
+    if (itemsPanel) itemsPanel.hidden = isPaymentStep || isSummary;
+    if (summaryCard) summaryCard.hidden = isPaymentStep;
+    if (paymentBox) paymentBox.hidden = !isPaymentStep;
+    if (paymentBox && !isPaymentStep) {
       paymentBox.hidden = true;
       paymentBox.innerHTML = "";
     }
@@ -268,6 +297,7 @@
     const box = $("[data-site-cart-payment-result]", dialog);
     if (!box) return;
     setCartStage(dialog, "creating");
+    $(".site-cart-body", dialog)?.scrollTo({ top: 0, behavior: "smooth" });
     box.hidden = false;
     box.innerHTML = `
       <div class="site-cart-stage-loader" role="status" aria-live="polite">
@@ -290,9 +320,12 @@
     const count = items.reduce((sum, item) => sum + item.quantity, 0);
 
     if (!list) return;
+    if (!items.length && cartStage === "summary") setCartStage(dialog, "cart");
     if (!pendingOrder && cartStage === "cart") setPaymentMode(dialog, false);
     const countLabel = $("[data-site-cart-count-label]", dialog);
     if (countLabel) countLabel.textContent = `${point(count)} รายการ`;
+    const mobileConfirm = $("[data-site-cart-show-summary]", dialog);
+    if (mobileConfirm) mobileConfirm.disabled = !items.length;
     if (!items.length) {
       list.innerHTML = `
         <div class="site-cart-empty">
@@ -423,6 +456,7 @@
     const box = $("[data-site-cart-payment-result]", dialog);
     if (!box) return;
     setPaymentMode(dialog, true);
+    $(".site-cart-body", dialog)?.scrollTo({ top: 0, behavior: "smooth" });
     box.hidden = false;
     box.innerHTML = `
       <div class="site-cart-paid-head">
@@ -582,11 +616,10 @@
   }
 
   async function openCart() {
-    ensureDialog();
-    if (!pendingOrder) cartStage = "cart";
+    const dialog = ensureDialog();
+    if (!pendingOrder) setCartStage(dialog, "cart");
     renderDialog();
     await hydratePoints();
-    const dialog = ensureDialog();
     if (!dialog.open) dialog.showModal();
     window.lucide?.createIcons?.();
   }

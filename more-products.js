@@ -103,7 +103,7 @@
         </ul>
         <div class="license-card-actions">
           <a class="license-card-action" href="product.html?id=${encodeURIComponent(product.id)}">
-            <i data-lucide="credit-card"></i>
+            <i data-lucide="receipt-text"></i>
             <span>${stock > 0 ? "ชำระเงินในเว็บ" : "ดูรายละเอียด"}</span>
           </a>
           <small class="license-ready-note ${stock <= 0 ? "is-out" : ""}">

@@ -5,6 +5,7 @@
   const CART_BADGE_ID = "site-cart-count";
   let pointState = { balance: 0, enabled: false, pointsToUse: 0 };
   let pendingOrder = null;
+  let cartStage = "cart";
   let storeSettingsPromise = null;
 
   const $ = (selector, root = document) => root.querySelector(selector);
@@ -145,7 +146,7 @@
           </button>
         </div>
         <div class="site-cart-body">
-          <section class="site-cart-items-panel">
+          <section class="site-cart-items-panel" data-site-cart-stage-panel="items">
             <div class="site-cart-section-head">
               <div>
                 <strong>รายการสินค้า</strong>
@@ -185,13 +186,13 @@
                   </label>
                   <label>
                     <input type="radio" name="siteCartPayment" value="wallet" />
-                    <span><i data-lucide="wallet"></i><b>Wallet</b><small>TrueMoney</small></span>
+                <span class="site-cart-wallet-option"><i data-lucide="wallet"></i><b>Wallet</b><small>TrueMoney</small></span>
                   </label>
                 </div>
               </div>
               <div class="site-cart-action-row">
                 <button class="primary-button site-cart-checkout" type="button" data-site-cart-checkout>
-                  <i data-lucide="clipboard-check"></i>
+                  <i data-lucide="receipt-text"></i>
                   สร้างคำสั่งซื้อ
                 </button>
                 <button class="secondary-button site-cart-continue" type="button" data-site-cart-close>
@@ -239,15 +240,44 @@
     badge.hidden = count <= 0;
   }
 
-  function setPaymentMode(dialog, enabled) {
+  function setCartStage(dialog, stage = "cart") {
+    cartStage = stage;
+    const isCart = stage === "cart";
+    const isProcessing = stage === "creating" || stage === "payment";
+    const itemsPanel = $("[data-site-cart-stage-panel='items']", dialog);
     const summaryCard = $(".site-cart-summary-card", dialog);
     const paymentBox = $("[data-site-cart-payment-result]", dialog);
-    dialog.classList.toggle("is-payment-mode", Boolean(enabled));
-    if (summaryCard) summaryCard.hidden = Boolean(enabled);
-    if (paymentBox && !enabled) {
+    dialog.dataset.cartStage = stage;
+    dialog.classList.toggle("is-payment-mode", stage === "payment");
+    dialog.classList.toggle("is-cart-processing", isProcessing);
+    if (itemsPanel) itemsPanel.hidden = !isCart;
+    if (summaryCard) summaryCard.hidden = !isCart;
+    if (paymentBox) paymentBox.hidden = isCart;
+    if (paymentBox && isCart) {
       paymentBox.hidden = true;
       paymentBox.innerHTML = "";
     }
+  }
+
+  function setPaymentMode(dialog, enabled) {
+    setCartStage(dialog, enabled ? "payment" : "cart");
+  }
+
+  function showCartProcessing(title = "กำลังสร้างคำสั่งซื้อ", detail = "ระบบกำลังตรวจสอบสินค้า Point และเตรียมหน้าชำระเงิน") {
+    const dialog = ensureDialog();
+    const box = $("[data-site-cart-payment-result]", dialog);
+    if (!box) return;
+    setCartStage(dialog, "creating");
+    box.hidden = false;
+    box.innerHTML = `
+      <div class="site-cart-stage-loader" role="status" aria-live="polite">
+        <span class="site-cart-qr-loader"><i data-lucide="loader-circle"></i></span>
+        <strong>${escapeHtml(title)}</strong>
+        <small>${escapeHtml(detail)}</small>
+        <span class="site-cart-stage-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+      </div>
+    `;
+    window.lucide?.createIcons?.();
   }
 
   function renderDialog() {
@@ -260,7 +290,7 @@
     const count = items.reduce((sum, item) => sum + item.quantity, 0);
 
     if (!list) return;
-    if (!pendingOrder) setPaymentMode(dialog, false);
+    if (!pendingOrder && cartStage === "cart") setPaymentMode(dialog, false);
     const countLabel = $("[data-site-cart-count-label]", dialog);
     if (countLabel) countLabel.textContent = `${point(count)} รายการ`;
     if (!items.length) {
@@ -336,6 +366,7 @@
     const next = cleanItems([item])[0];
     if (!next) return;
     pendingOrder = null;
+    cartStage = "cart";
     const items = readCart();
     const key = cartKey(next);
     const found = items.find((entry) => cartKey(entry) === key);
@@ -354,6 +385,7 @@
 
   function updateQuantity(key, quantity) {
     pendingOrder = null;
+    cartStage = "cart";
     const items = readCart();
     const next = items
       .map((item) => cartKey(item) === key ? { ...item, quantity: Math.max(0, Math.floor(Number(quantity || 0))) } : item)
@@ -473,6 +505,7 @@
     const dialog = ensureDialog();
     const button = $("[data-site-cart-checkout]", dialog);
     const original = button?.innerHTML || "";
+    showCartProcessing();
     if (button) {
       button.disabled = true;
       button.innerHTML = '<i data-lucide="loader-circle"></i> กำลังสร้างคำสั่งซื้อ...';
@@ -498,6 +531,7 @@
       await showPayment(order);
     } catch (error) {
       console.error(error);
+      setPaymentMode(dialog, false);
       showToast(checkoutErrorMessage(error), "error");
     } finally {
       if (button) {
@@ -549,6 +583,7 @@
 
   async function openCart() {
     ensureDialog();
+    if (!pendingOrder) cartStage = "cart";
     renderDialog();
     await hydratePoints();
     const dialog = ensureDialog();

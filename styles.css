@@ -10542,6 +10542,190 @@ details.qr-manual-transfer[open] .qr-manual-transfer-body {
   }
 }
 
+/* 2026-06-30 cart staged checkout + stable mobile account icon */
+.topbar.site-topbar-unified .account-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.topbar.site-topbar-unified .account-button > svg,
+.topbar.site-topbar-unified .account-button > i {
+  width: 18px !important;
+  height: 18px !important;
+  min-width: 18px;
+  flex: 0 0 18px;
+  stroke-width: 2.15;
+}
+
+.topbar.site-topbar-unified .account-button.is-signed-in {
+  min-width: 42px;
+  border-color: rgba(96, 165, 250, 0.28);
+}
+
+@media (max-width: 760px) {
+  .topbar.site-topbar-unified .account-button,
+  body.home-page .topbar.site-topbar-unified .account-button,
+  .profile-page .topbar.site-topbar-unified .account-button {
+    display: inline-grid !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    place-items: center;
+    padding: 0 !important;
+    border-radius: 999px !important;
+    line-height: 1;
+  }
+
+  .topbar.site-topbar-unified .account-button span {
+    display: none !important;
+  }
+
+  .topbar.site-topbar-unified .account-button > svg,
+  .topbar.site-topbar-unified .account-button > i {
+    width: 20px !important;
+    height: 20px !important;
+    min-width: 20px;
+    margin: 0 !important;
+  }
+}
+
+dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-body,
+dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-body {
+  grid-template-columns: 1fr;
+}
+
+dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-summary,
+dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-summary {
+  width: min(520px, 100%);
+  justify-self: center;
+}
+
+dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-payment-result,
+dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-payment-result {
+  min-height: 360px;
+  animation: siteCartStageIn 240ms ease both;
+}
+
+@keyframes siteCartStageIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.985);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.site-cart-stage-loader {
+  display: grid;
+  min-height: 330px;
+  place-items: center;
+  align-content: center;
+  gap: 12px;
+  text-align: center;
+}
+
+.site-cart-stage-loader strong {
+  color: #f8fafc;
+  font-size: 1.1rem;
+}
+
+.site-cart-stage-loader small {
+  max-width: 320px;
+  color: #94a3b8;
+  line-height: 1.6;
+}
+
+.site-cart-stage-dots {
+  display: inline-flex;
+  gap: 6px;
+  margin-top: 4px;
+}
+
+.site-cart-stage-dots i {
+  width: 7px;
+  height: 7px;
+  border-radius: 999px;
+  background: #60a5fa;
+  animation: siteCartDot 0.9s ease-in-out infinite;
+}
+
+.site-cart-stage-dots i:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.site-cart-stage-dots i:nth-child(3) {
+  animation-delay: 0.24s;
+}
+
+@keyframes siteCartDot {
+  0%, 100% {
+    opacity: 0.35;
+    transform: translateY(0);
+  }
+  50% {
+    opacity: 1;
+    transform: translateY(-4px);
+  }
+}
+
+.site-cart-checkout svg,
+.site-cart-checkout i,
+.submit-order-btn svg,
+.submit-order-btn i,
+#submit-order svg,
+#submit-order i {
+  width: 18px;
+  height: 18px;
+}
+
+.site-cart-payment-grid input[value="wallet"] + span,
+.site-cart-payment-grid input[value="wallet"]:checked + span,
+.premium-payment-card:has(input[value="wallet"]) {
+  border-color: rgba(249, 115, 22, 0.34);
+}
+
+.site-cart-payment-grid input[value="wallet"] + span svg,
+.site-cart-payment-grid input[value="wallet"] + span i,
+.premium-payment-card:has(input[value="wallet"]) .payment-card-content i {
+  color: #fb923c;
+}
+
+.site-cart-payment-grid input[value="wallet"]:checked + span {
+  border-color: rgba(249, 115, 22, 0.76);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(251, 146, 60, 0.20), transparent 42%),
+    rgba(249, 115, 22, 0.12);
+  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.10), 0 18px 36px rgba(249, 115, 22, 0.10);
+}
+
+.site-cart-payment-grid input[value="wallet"]:checked + span svg,
+.site-cart-payment-grid input[value="wallet"]:checked + span i {
+  color: #f97316;
+}
+
+@media (max-width: 620px) {
+  dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-body,
+  dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-body {
+    height: calc(100% - 70px);
+    place-items: stretch;
+  }
+
+  dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-summary,
+  dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-summary {
+    width: 100%;
+  }
+
+  dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-payment-result,
+  dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-payment-result {
+    min-height: calc(100dvh - 180px);
+  }
+}
+
 /* ─────────────────────────────────────────────
    BREAKPOINT: 560px — Medium phone
    ───────────────────────────────────────────── */
@@ -16473,4 +16657,102 @@ html {
     margin-top: 6px;
     white-space: normal;
   }
+}
+
+/* 2026-06-30 FINAL OVERRIDE: staged cart, wallet orange, stable mobile user icon */
+.topbar.site-topbar-unified .account-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+
+.topbar.site-topbar-unified .account-button > svg,
+.topbar.site-topbar-unified .account-button > i {
+  width: 20px !important;
+  height: 20px !important;
+  min-width: 20px !important;
+  flex: 0 0 20px !important;
+  margin: 0 !important;
+}
+
+@media (max-width: 760px) {
+  .topbar.site-topbar-unified .account-button,
+  body.home-page .topbar.site-topbar-unified .account-button,
+  .profile-page .topbar.site-topbar-unified .account-button,
+  .extras-page .topbar.site-topbar-unified .account-button,
+  .product-detail-page .topbar.site-topbar-unified .account-button {
+    display: inline-grid !important;
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    place-items: center !important;
+    padding: 0 !important;
+    border-radius: 999px !important;
+    line-height: 1 !important;
+  }
+
+  .topbar.site-topbar-unified .account-button span {
+    display: none !important;
+  }
+}
+
+dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-body,
+dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-body {
+  grid-template-columns: 1fr !important;
+}
+
+dialog.site-cart-dialog[data-cart-stage="creating"] [data-site-cart-stage-panel="items"],
+dialog.site-cart-dialog[data-cart-stage="payment"] [data-site-cart-stage-panel="items"],
+dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-summary-card,
+dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-summary-card {
+  display: none !important;
+}
+
+dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-payment-result,
+dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-payment-result {
+  display: grid !important;
+  width: min(520px, 100%) !important;
+  min-height: 360px;
+  justify-self: center;
+}
+
+.site-cart-payment-grid input[value="wallet"] + span {
+  border-color: rgba(249, 115, 22, 0.36) !important;
+}
+
+.site-cart-payment-grid input[value="wallet"] + span svg,
+.site-cart-payment-grid input[value="wallet"] + span i {
+  color: #fb923c !important;
+}
+
+.site-cart-payment-grid input[value="wallet"]:checked + span {
+  border-color: rgba(249, 115, 22, 0.82) !important;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(251, 146, 60, 0.22), transparent 42%),
+    rgba(249, 115, 22, 0.13) !important;
+  box-shadow: 0 0 0 1px rgba(249, 115, 22, 0.10), 0 18px 36px rgba(249, 115, 22, 0.10) !important;
+}
+
+.premium-payment-card:has(input[value="wallet"]),
+.premium-payment-card:has(input[value="wallet"]:checked) {
+  border-color: rgba(249, 115, 22, 0.72) !important;
+}
+
+.premium-payment-card:has(input[value="wallet"]:checked) {
+  background: rgba(249, 115, 22, 0.10) !important;
+  box-shadow: 0 0 18px rgba(249, 115, 22, 0.16) !important;
+}
+
+.site-cart-checkout svg,
+.site-cart-checkout i,
+.submit-order-btn svg,
+.submit-order-btn i,
+#submit-order svg,
+#submit-order i {
+  width: 18px !important;
+  height: 18px !important;
+  flex: 0 0 18px !important;
 }

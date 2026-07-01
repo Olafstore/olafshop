@@ -15960,6 +15960,7 @@ dialog.site-cart-dialog {
 
 /* 2026-06-29: cart payment handoff + premium quantity controls. */
 .site-cart-summary-card[hidden],
+.site-cart-summary[hidden],
 .site-cart-payment-result[hidden] {
   display: none !important;
 }
@@ -17772,4 +17773,96 @@ body {
     backdrop-filter: blur(18px) saturate(130%) !important;
     -webkit-backdrop-filter: blur(18px) saturate(130%) !important;
   }
+}
+
+/* 2026-07-01 FINAL FIX: mobile cart opens one popup step at a time */
+@media (max-width: 768px) {
+  dialog.site-cart-dialog[open].is-mobile-stage-pop {
+    animation: mobileCartStepPopup 240ms cubic-bezier(0.2, 0.9, 0.22, 1.08) both !important;
+  }
+
+  dialog.site-cart-dialog[open].is-mobile-stage-pop [data-site-cart-stage-panel="items"]:not([hidden]),
+  dialog.site-cart-dialog[open].is-mobile-stage-pop .site-cart-summary-card:not([hidden]),
+  dialog.site-cart-dialog[open].is-mobile-stage-pop .site-cart-payment-result:not([hidden]) {
+    animation: mobileCartPanelStepIn 260ms cubic-bezier(0.2, 0.9, 0.22, 1.08) both !important;
+  }
+
+  dialog.site-cart-dialog[data-cart-stage="cart"] .site-cart-summary,
+  dialog.site-cart-dialog[data-cart-stage="cart"] .site-cart-summary-card,
+  dialog.site-cart-dialog[data-cart-stage="cart"] .site-cart-payment-result {
+    display: none !important;
+  }
+
+  dialog.site-cart-dialog[data-cart-stage="summary"] [data-site-cart-stage-panel="items"],
+  dialog.site-cart-dialog[data-cart-stage="summary"] .site-cart-payment-result {
+    display: none !important;
+  }
+
+  dialog.site-cart-dialog[data-cart-stage="summary"] .site-cart-summary,
+  dialog.site-cart-dialog[data-cart-stage="summary"] .site-cart-summary-card {
+    display: grid !important;
+    width: 100% !important;
+    min-width: 0 !important;
+    max-width: none !important;
+  }
+
+  dialog.site-cart-dialog[data-cart-stage="creating"] [data-site-cart-stage-panel="items"],
+  dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-summary,
+  dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-summary-card,
+  dialog.site-cart-dialog[data-cart-stage="payment"] [data-site-cart-stage-panel="items"],
+  dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-summary,
+  dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-summary-card {
+    display: none !important;
+  }
+
+  dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-payment-result,
+  dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-payment-result {
+    display: grid !important;
+    width: 100% !important;
+    margin: 0 !important;
+  }
+
+  dialog.site-cart-dialog[data-cart-stage="cart"] .site-cart-body,
+  dialog.site-cart-dialog[data-cart-stage="summary"] .site-cart-body,
+  dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-body,
+  dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-body {
+    display: block !important;
+    grid-template-columns: none !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+  }
+}
+
+@keyframes mobileCartStepPopup {
+  from {
+    opacity: 0.72;
+    transform: translate3d(-50%, -48%, 0) scale(0.965);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) scale(1);
+  }
+}
+
+@keyframes mobileCartPanelStepIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 14px, 0) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+/* Keep this at the very end: hidden cart stages must never be revived by older mobile rules. */
+dialog.site-cart-dialog .site-cart-summary[hidden],
+dialog.site-cart-dialog .site-cart-summary-card[hidden],
+dialog.site-cart-dialog [data-site-cart-stage-panel="items"][hidden],
+dialog.site-cart-dialog .site-cart-payment-result[hidden] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
 }

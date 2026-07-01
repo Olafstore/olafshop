@@ -79,6 +79,35 @@
     return window.OlafStore?.currentUser?.() || null;
   }
 
+  function isMobileCartView() {
+    return window.matchMedia?.("(max-width: 768px)")?.matches || window.innerWidth <= 768;
+  }
+
+  function updateCartStageCopy(dialog, stage) {
+    const title = $(".site-cart-head h2", dialog);
+    const note = $("[data-cart-head-note]", dialog);
+    const copy = {
+      cart: ["ตะกร้าสินค้า", "ตรวจรายการสินค้าให้เรียบร้อย แล้วค่อยไปสรุปยอดชำระ"],
+      summary: ["สรุปยอดชำระ", "เลือก Point และช่องทางชำระเงิน ก่อนสร้างคำสั่งซื้อ"],
+      creating: ["กำลังเตรียมคำสั่งซื้อ", "ระบบกำลังสร้างคำสั่งซื้อและเตรียมหน้า QR"],
+      payment: ["สแกน QR เพื่อชำระเงิน", "สแกนจ่ายแล้วแนบสลิปเพื่อให้ระบบตรวจสอบอัตโนมัติ"]
+    }[stage] || null;
+    if (!copy) return;
+    if (title) title.textContent = copy[0];
+    if (note) note.textContent = copy[1];
+  }
+
+  function triggerMobileStagePopup(dialog) {
+    if (!dialog?.open || !isMobileCartView()) return;
+    dialog.classList.remove("is-mobile-stage-pop");
+    void dialog.offsetWidth;
+    dialog.classList.add("is-mobile-stage-pop");
+    clearTimeout(dialog._cartStagePopTimer);
+    dialog._cartStagePopTimer = setTimeout(() => {
+      dialog.classList.remove("is-mobile-stage-pop");
+    }, 320);
+  }
+
   function showToast(message, type = "success") {
     if (typeof window.showToast === "function") {
       window.showToast(message, type);
@@ -267,12 +296,14 @@
     badge.hidden = count <= 0;
   }
 
-  function setCartStage(dialog, stage = "cart") {
+  function setCartStage(dialog, stage = "cart", options = {}) {
     cartStage = stage;
     const isPaymentStep = stage === "creating" || stage === "payment";
     const isSummary = stage === "summary";
+    const isMobile = isMobileCartView();
     const isProcessing = stage === "creating" || stage === "payment";
     const itemsPanel = $("[data-site-cart-stage-panel='items']", dialog);
+    const summaryAside = $(".site-cart-summary", dialog);
     const summaryCard = $(".site-cart-summary-card", dialog);
     const paymentBox = $("[data-site-cart-payment-result]", dialog);
     dialog.dataset.cartStage = stage;
@@ -280,12 +311,15 @@
     dialog.classList.toggle("is-summary-mode", isSummary);
     dialog.classList.toggle("is-cart-processing", isProcessing);
     if (itemsPanel) itemsPanel.hidden = isPaymentStep || isSummary;
-    if (summaryCard) summaryCard.hidden = isPaymentStep;
+    if (summaryAside) summaryAside.hidden = isPaymentStep || (isMobile && stage === "cart");
+    if (summaryCard) summaryCard.hidden = isPaymentStep || (isMobile && stage === "cart");
     if (paymentBox) paymentBox.hidden = !isPaymentStep;
     if (paymentBox && !isPaymentStep) {
       paymentBox.hidden = true;
       paymentBox.innerHTML = "";
     }
+    updateCartStageCopy(dialog, stage);
+    if (options.pop !== false) triggerMobileStagePopup(dialog);
   }
 
   function setPaymentMode(dialog, enabled) {
@@ -621,6 +655,7 @@
     renderDialog();
     await hydratePoints();
     if (!dialog.open) dialog.showModal();
+    triggerMobileStagePopup(dialog);
     window.lucide?.createIcons?.();
   }
 

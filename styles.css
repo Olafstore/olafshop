@@ -18006,3 +18006,378 @@ dialog.checkout-order-dialog [hidden] {
   overflow: hidden !important;
   opacity: 0 !important;
 }
+
+/* 2026-07-02 v3: mobile-first stability pass for cart/payment popups, QR, Point and topbar overlays. */
+html.olaf-dialog-open,
+body.olaf-dialog-open,
+html:has(dialog[open]),
+body:has(dialog[open]) {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+}
+
+.site-cart-points {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: stretch !important;
+  gap: 10px !important;
+  padding: 10px !important;
+  border: 1px solid rgba(96, 165, 250, 0.22) !important;
+  border-radius: 18px !important;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(96, 165, 250, 0.18), transparent 42%),
+    rgba(9, 16, 34, 0.82) !important;
+}
+
+.site-cart-points-toggle {
+  display: grid !important;
+  grid-template-columns: 40px minmax(0, 1fr) 20px !important;
+  align-items: center !important;
+  gap: 10px !important;
+  min-width: 0 !important;
+  cursor: pointer !important;
+}
+
+.site-cart-points-toggle input {
+  position: absolute !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+.site-cart-points-toggle .site-cart-points-icon {
+  display: grid !important;
+  width: 40px !important;
+  height: 40px !important;
+  place-items: center !important;
+  border-radius: 14px !important;
+  background: rgba(59, 130, 246, 0.18) !important;
+  color: #93c5fd !important;
+}
+
+.site-cart-points-copy {
+  display: grid !important;
+  min-width: 0 !important;
+  gap: 2px !important;
+}
+
+.site-cart-points-copy b,
+.site-cart-points-copy small {
+  display: block !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.site-cart-point-button {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 94px !important;
+  min-height: 42px !important;
+  padding: 0 12px !important;
+  border: 1px solid rgba(96, 165, 250, 0.42) !important;
+  border-radius: 14px !important;
+  background: linear-gradient(135deg, rgba(37, 99, 235, 0.82), rgba(99, 102, 241, 0.78)) !important;
+  color: #fff !important;
+  font: inherit !important;
+  font-size: 0.82rem !important;
+  font-weight: 800 !important;
+  cursor: pointer !important;
+  box-shadow: 0 14px 28px rgba(37, 99, 235, 0.2) !important;
+}
+
+.site-cart-points.is-disabled .site-cart-points-toggle {
+  opacity: 0.78 !important;
+}
+
+.site-cart-points.is-disabled .site-cart-point-button {
+  border-color: rgba(148, 163, 184, 0.24) !important;
+  background: rgba(15, 23, 42, 0.86) !important;
+  color: #bfdbfe !important;
+  box-shadow: none !important;
+}
+
+@media (max-width: 768px) {
+  dialog.site-cart-dialog[open],
+  dialog.qr-payment-dialog[open],
+  dialog.checkout-order-dialog[open],
+  dialog.order-confirm-dialog[open] {
+    position: fixed !important;
+    inset: 50% auto auto 50% !important;
+    width: min(430px, calc(100vw - 14px)) !important;
+    max-width: calc(100vw - 14px) !important;
+    max-height: calc(100dvh - 14px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    overflow: hidden !important;
+    border-radius: 22px !important;
+    transform: translate3d(-50%, -50%, 0) scale(1) !important;
+    transform-origin: center center !important;
+    will-change: opacity, transform !important;
+    overscroll-behavior: contain !important;
+    touch-action: none !important;
+  }
+
+  dialog.site-cart-dialog[open].is-mobile-stage-pop,
+  dialog.qr-payment-dialog[open].is-mobile-payment-pop,
+  dialog.checkout-order-dialog[open].is-mobile-payment-pop,
+  dialog.order-confirm-dialog[open] {
+    animation: olafMobileStablePop 160ms ease-out both !important;
+  }
+
+  dialog.site-cart-dialog[open] .site-cart-shell,
+  dialog.qr-payment-dialog[open] .premium-dialog-inner,
+  dialog.checkout-order-dialog[open] .premium-dialog-inner,
+  dialog.order-confirm-dialog[open] .order-confirm-inner {
+    display: flex !important;
+    flex-direction: column !important;
+    max-height: calc(100dvh - 14px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    overflow: hidden !important;
+    overscroll-behavior: contain !important;
+  }
+
+  dialog.site-cart-dialog[open] .site-cart-head,
+  dialog.qr-payment-dialog[open] .premium-dialog-header,
+  dialog.checkout-order-dialog[open] .premium-dialog-header {
+    flex: 0 0 auto !important;
+  }
+
+  dialog.site-cart-dialog[open] .site-cart-body {
+    display: block !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    padding: 12px !important;
+    overflow: hidden !important;
+    grid-template-columns: none !important;
+    touch-action: none !important;
+  }
+
+  dialog.site-cart-dialog[data-cart-stage="cart"] [data-site-cart-stage-panel="items"],
+  dialog.site-cart-dialog[data-cart-stage="summary"] .site-cart-summary,
+  dialog.site-cart-dialog[data-cart-stage="summary"] .site-cart-summary-card,
+  dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-payment-result,
+  dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-payment-result {
+    display: grid !important;
+    position: relative !important;
+    visibility: visible !important;
+    inline-size: auto !important;
+    block-size: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+    margin: 0 !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  dialog.site-cart-dialog[data-cart-stage="cart"] .site-cart-summary,
+  dialog.site-cart-dialog[data-cart-stage="cart"] .site-cart-summary-card,
+  dialog.site-cart-dialog[data-cart-stage="cart"] .site-cart-payment-result,
+  dialog.site-cart-dialog[data-cart-stage="summary"] [data-site-cart-stage-panel="items"],
+  dialog.site-cart-dialog[data-cart-stage="summary"] .site-cart-payment-result,
+  dialog.site-cart-dialog[data-cart-stage="creating"] [data-site-cart-stage-panel="items"],
+  dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-summary,
+  dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-summary-card,
+  dialog.site-cart-dialog[data-cart-stage="payment"] [data-site-cart-stage-panel="items"],
+  dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-summary,
+  dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-summary-card {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    opacity: 0 !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-items-panel,
+  dialog.site-cart-dialog .site-cart-summary-card,
+  dialog.site-cart-dialog .site-cart-payment-result {
+    width: 100% !important;
+    max-height: calc(100dvh - 138px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    overflow: hidden !important;
+    border-radius: 20px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-items {
+    max-height: min(360px, calc(100dvh - 286px)) !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-summary-card {
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    touch-action: pan-y !important;
+    gap: 10px !important;
+    padding: 14px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-item {
+    grid-template-columns: 78px minmax(0, 1fr) !important;
+    gap: 10px !important;
+    padding: 10px !important;
+    border-radius: 16px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-item-media,
+  dialog.site-cart-dialog .site-cart-item-media img {
+    width: 78px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-item-actions {
+    grid-column: 1 / -1 !important;
+    grid-template-columns: minmax(0, 1fr) 82px !important;
+    gap: 8px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-qty-control {
+    max-width: 170px !important;
+    min-height: 42px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-points {
+    grid-template-columns: minmax(0, 1fr) 92px !important;
+    gap: 8px !important;
+    padding: 9px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-points-toggle {
+    grid-template-columns: 34px minmax(0, 1fr) 18px !important;
+    gap: 8px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-points-toggle .site-cart-points-icon {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 12px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-point-button {
+    min-width: 86px !important;
+    min-height: 38px !important;
+    padding: 0 9px !important;
+    font-size: 0.76rem !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-payment-grid {
+    grid-template-columns: 1fr 1fr !important;
+    gap: 8px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-payment-grid label > span {
+    min-height: 64px !important;
+    padding: 9px !important;
+    border-radius: 14px !important;
+  }
+
+  dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-payment-result,
+  dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-payment-result {
+    align-content: center !important;
+    justify-items: stretch !important;
+    max-height: calc(100dvh - 126px) !important;
+    overflow: hidden !important;
+    padding: 14px !important;
+    gap: 10px !important;
+  }
+
+  .site-cart-qr-loading {
+    min-height: min(230px, 52dvh) !important;
+    padding: 14px !important;
+  }
+
+  .site-cart-qr-frame {
+    padding: 10px !important;
+    gap: 8px !important;
+    border-radius: 18px !important;
+  }
+
+  .site-cart-qr-frame .site-cart-qr {
+    width: min(208px, 58vw) !important;
+    border-width: 8px !important;
+    border-radius: 18px !important;
+  }
+
+  .site-cart-paid-head {
+    gap: 10px !important;
+    padding-bottom: 8px !important;
+  }
+
+  .site-cart-result-actions {
+    grid-template-columns: 1fr !important;
+    gap: 8px !important;
+  }
+
+  .site-cart-result-actions button {
+    min-height: 42px !important;
+  }
+
+  .user-popover:not([hidden]),
+  .notification-popover:not([hidden]),
+  .language-popover:not([hidden]),
+  .filter-popover:not([hidden]),
+  .search-suggestions:not([hidden]) {
+    position: fixed !important;
+    top: calc(70px + env(safe-area-inset-top, 0px)) !important;
+    left: 12px !important;
+    right: 12px !important;
+    bottom: auto !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: calc(100dvh - 88px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    margin: 0 !important;
+    transform: translate3d(0, 0, 0) !important;
+    z-index: 10020 !important;
+    overflow: hidden auto !important;
+    overscroll-behavior: contain !important;
+  }
+
+  .language-popover:not([hidden]) {
+    left: auto !important;
+    width: min(220px, calc(100vw - 24px)) !important;
+  }
+
+  .topbar.site-topbar-unified.is-mobile-nav-open .main-nav,
+  body.home-page .topbar.site-topbar-unified.is-mobile-nav-open .main-nav {
+    position: fixed !important;
+    top: calc(70px + env(safe-area-inset-top, 0px)) !important;
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
+    max-height: calc(100dvh - 88px) !important;
+    overflow-y: auto !important;
+    z-index: 10015 !important;
+    transform: none !important;
+  }
+}
+
+@media (max-width: 380px) {
+  dialog.site-cart-dialog .site-cart-points {
+    grid-template-columns: 1fr !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-point-button {
+    width: 100% !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-payment-grid {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@keyframes olafMobileStablePop {
+  from {
+    opacity: 0.9;
+    transform: translate3d(-50%, -50%, 0) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) scale(1);
+  }
+}

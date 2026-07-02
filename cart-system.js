@@ -7,6 +7,7 @@
   let pendingOrder = null;
   let cartStage = "cart";
   let storeSettingsPromise = null;
+  let dialogLockObserverInstalled = false;
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
@@ -81,6 +82,47 @@
 
   function isMobileCartView() {
     return window.matchMedia?.("(max-width: 768px)")?.matches || window.innerWidth <= 768;
+  }
+
+  function anyDialogOpen() {
+    return !!document.querySelector("dialog[open]");
+  }
+
+  function syncDialogLock() {
+    const locked = anyDialogOpen();
+    document.documentElement.classList.toggle("olaf-dialog-open", locked);
+    document.body.classList.toggle("olaf-dialog-open", locked);
+  }
+
+  function installDialogLockObserver() {
+    if (dialogLockObserverInstalled) return;
+    dialogLockObserverInstalled = true;
+    const observer = new MutationObserver(syncDialogLock);
+    const start = () => {
+      if (!document.body) return;
+      observer.observe(document.body, {
+        childList: true,
+        subtree: true,
+        attributes: true,
+        attributeFilter: ["open"]
+      });
+      syncDialogLock();
+    };
+    if (document.body) start();
+    else document.addEventListener("DOMContentLoaded", start, { once: true });
+    window.addEventListener("resize", syncDialogLock, { passive: true });
+    document.addEventListener("close", syncDialogLock, true);
+  }
+
+  function closeTopbarOverlays() {
+    ["#user-popover", "#notification-popover", "#language-popover", "#filter-popover"].forEach((selector) => {
+      const node = $(selector);
+      if (node) node.hidden = true;
+    });
+    $$(".topbar.is-mobile-nav-open, .topbar.site-topbar-unified.is-mobile-nav-open").forEach((header) => {
+      header.classList.remove("is-mobile-nav-open");
+      header.querySelector(".mobile-nav-toggle")?.setAttribute("aria-expanded", "false");
+    });
   }
 
   function updateCartStageCopy(dialog, stage) {
@@ -204,15 +246,18 @@
                 </div>
               </div>
               <div class="site-cart-summary-row"><span>ยอดสินค้า</span><strong data-site-cart-subtotal>฿0</strong></div>
-              <label class="site-cart-points" data-site-cart-points hidden>
+              <div class="site-cart-points" data-site-cart-points hidden>
+                <label class="site-cart-points-toggle">
                 <input type="checkbox" data-site-cart-use-points />
                 <span class="site-cart-points-icon"><i data-lucide="coins"></i></span>
                 <span class="site-cart-points-copy">
-                  <b>ใช้ Point</b>
-                  <small>ลดราคา · คงเหลือ <em data-site-cart-point-balance>0</em> Point</small>
+                  <b data-site-cart-point-title>ใช้ Point ลดราคา</b>
+                  <small data-site-cart-point-note>คงเหลือ <em data-site-cart-point-balance>0</em> Point</small>
                 </span>
                 <i class="site-cart-points-check" data-lucide="check"></i>
-              </label>
+                </label>
+                <button class="site-cart-point-button" type="button" data-site-cart-point-button>ใช้ Point</button>
+              </div>
               <div class="site-cart-summary-row"><span>ส่วนลด Point</span><strong data-site-cart-point-discount>-฿0</strong></div>
               <div class="site-cart-summary-row total-line"><span>ยอดชำระ</span><strong data-site-cart-total>฿0</strong></div>
               <div class="site-cart-payment" data-site-cart-payment>
@@ -249,6 +294,7 @@
       </div>
     `;
     document.body.appendChild(dialog);
+    installDialogLockObserver();
 
     dialog.addEventListener("click", (event) => {
       if (event.target === dialog || event.target.closest("[data-site-cart-close]")) dialog.close();
@@ -275,6 +321,17 @@
       if (event.target.closest("[data-site-cart-checkout]")) checkout();
       if (event.target.closest("[data-site-cart-upload]")) openSlipPicker();
       if (event.target.closest("[data-site-cart-profile]")) window.location.href = "profile.html#inventory";
+      if (event.target.closest("[data-site-cart-point-button]")) {
+        if (pointState.balance > 0) {
+          pointState.enabled = !pointState.enabled;
+          renderDialog();
+        } else if (currentUser()) {
+          window.location.href = "profile.html#info";
+        } else {
+          const returnPath = `${location.pathname.split("/").pop() || "index.html"}${location.search}${location.hash}`;
+          window.location.href = `login.html?return=${encodeURIComponent(returnPath)}`;
+        }
+      }
     });
 
     dialog.addEventListener("change", (event) => {
@@ -411,13 +468,35 @@
 
     const pointsCard = $("[data-site-cart-points]", dialog);
     const pointInput = $("[data-site-cart-use-points]", dialog);
-    if (pointsCard) pointsCard.hidden = !(pointState.balance > 0 && sub > 0);
-    if (pointInput) pointInput.checked = Boolean(pointState.enabled && pointState.balance > 0);
-    if (pointsCard) pointsCard.classList.toggle("is-active", Boolean(pointState.enabled && discount > 0));
+    const pointTitle = $("[data-site-cart-point-title]", dialog);
+    const pointNote = $("[data-site-cart-point-note]", dialog);
+    const pointButton = $("[data-site-cart-point-button]", dialog);
+    const pointBalanceEl = $("[data-site-cart-point-balance]", dialog);
+    const hasPointBalance = pointState.balance > 0;
+    if (pointsCard) {
+      pointsCard.hidden = !(sub > 0);
+      pointsCard.classList.toggle("is-active", Boolean(pointState.enabled && discount > 0));
+      pointsCard.classList.toggle("is-disabled", !hasPointBalance);
+    }
+    if (pointInput) {
+      pointInput.checked = Boolean(pointState.enabled && hasPointBalance);
+      pointInput.disabled = !hasPointBalance;
+    }
+    if (pointTitle) pointTitle.textContent = hasPointBalance ? "ใช้ Point ลดราคา" : "Point สะสม";
+    if (pointNote) {
+      pointNote.innerHTML = hasPointBalance
+        ? `มี <em data-site-cart-point-balance>${point(pointState.balance)}</em> Point · ลดได้สูงสุด ${money(Math.min(pointState.balance, sub))}`
+        : `ยังไม่มี Point · กดเช็คยอดในโปรไฟล์`;
+    }
+    if (pointButton) {
+      pointButton.textContent = hasPointBalance
+        ? (pointState.enabled ? "ยกเลิก Point" : "ใช้ Point")
+        : "เช็ค Point";
+    }
     const payment = $("[data-site-cart-payment]", dialog);
     if (payment) payment.hidden = total <= 0 && discount > 0;
     $("[data-site-cart-subtotal]", dialog).textContent = money(sub);
-    $("[data-site-cart-point-balance]", dialog).textContent = point(pointState.balance);
+    if (pointBalanceEl) pointBalanceEl.textContent = point(pointState.balance);
     $("[data-site-cart-point-discount]", dialog).textContent = `-${money(discount)}`;
     $("[data-site-cart-total]", dialog).textContent = money(total);
     window.lucide?.createIcons?.();
@@ -473,9 +552,61 @@
 
   async function storeSettings() {
     if (!storeSettingsPromise) {
-      storeSettingsPromise = window.OlafStoreSettings?.fetchStoreSettings?.().catch(() => ({})) || Promise.resolve({});
+      storeSettingsPromise = loadStoreSettings();
     }
     return storeSettingsPromise;
+  }
+
+  async function fetchProductJsonStoreSettings() {
+    const endpoints = [
+      window.OLAF_CONFIG?.productsEndpoint,
+      "api/products.json",
+      "/api/products.json",
+      "./api/products.json"
+    ].filter(Boolean);
+    for (const endpoint of [...new Set(endpoints)]) {
+      try {
+        const res = await fetch(endpoint, { cache: "no-store" });
+        if (!res.ok) continue;
+        const payload = await res.json();
+        if (payload?.store && typeof payload.store === "object") return payload.store;
+      } catch (error) {
+        console.warn("Cart product JSON store fallback unavailable", error);
+      }
+    }
+    return {};
+  }
+
+  function mergePreferNonEmpty(primary = {}, fallback = {}) {
+    const next = { ...(fallback || {}) };
+    Object.entries(primary || {}).forEach(([key, value]) => {
+      const isEmptyString = typeof value === "string" && value.trim() === "";
+      const isEmptyArray = Array.isArray(value) && value.length === 0;
+      const isEmptyObject = value && typeof value === "object" && !Array.isArray(value) && !Object.keys(value).length;
+      if (value == null || isEmptyString || isEmptyArray || isEmptyObject) return;
+      next[key] = value;
+    });
+    return next;
+  }
+
+  function mergeStoreSettings(primary = {}, fallback = {}) {
+    const next = mergePreferNonEmpty(primary || {}, fallback || {});
+    next.payment = mergePreferNonEmpty((primary || {}).payment || {}, (fallback || {}).payment || {});
+    const primaryChannels = Array.isArray(primary?.paymentChannels) ? primary.paymentChannels : [];
+    const fallbackChannels = Array.isArray(fallback?.paymentChannels) ? fallback.paymentChannels : [];
+    next.paymentChannels = primaryChannels.length ? primaryChannels : fallbackChannels;
+    return next;
+  }
+
+  async function loadStoreSettings() {
+    const [remote, fallback] = await Promise.all([
+      (window.OlafStoreSettings?.fetchStoreSettings?.() || Promise.resolve({})).catch((error) => {
+        console.warn("Cart store settings unavailable", error);
+        return {};
+      }),
+      fetchProductJsonStoreSettings().catch(() => ({}))
+    ]);
+    return mergeStoreSettings(remote || {}, fallback || {});
   }
 
   function promptPayQr(promptPayId, amount) {
@@ -484,6 +615,10 @@
       .replace(/[^\d]/g, "");
     if (!id) return "";
     return `https://promptpay.io/${encodeURIComponent(id)}/${Math.max(1, Number(amount || 0)).toFixed(2)}.png`;
+  }
+
+  function orderTotal(order) {
+    return Number(order?.total || order?.totalAmount || order?.total_amount || order?.amount || 0);
   }
 
   function normalizePaymentMethod(method) {
@@ -505,24 +640,41 @@
     const promptPayId =
       channel?.promptPayId ||
       channel?.promptpayId ||
+      channel?.promptpay_id ||
+      channel?.accountNumber ||
+      channel?.account_number ||
       payment.promptPayId ||
       payment.promptpayId ||
+      payment.promptpay_id ||
+      payment.promptPayPhone ||
+      payment.receiverPhone ||
       settings.promptPayId ||
+      settings.promptpayId ||
       window.OLAF_CONFIG?.promptPayId ||
       "";
     if (method === "wallet") {
       return uniqueValues([
         channel?.qrUrl,
+        channel?.qr_url,
+        channel?.manualQrUrl,
         payment.trueMoneyQrUrl,
+        payment.truemoneyQrUrl,
         payment.walletQrUrl,
-        payment.manualQrUrl
+        payment.manualQrUrl,
+        payment.qrUrl,
+        settings.walletQrUrl,
+        settings.trueMoneyQrUrl
       ]);
     }
     return uniqueValues([
       channel?.qrUrl,
+      channel?.qr_url,
+      channel?.manualQrUrl,
       payment.manualQrUrl,
       payment.qrUrl,
-      promptPayQr(promptPayId, order.total)
+      settings.manualQrUrl,
+      settings.qrUrl,
+      promptPayQr(promptPayId, orderTotal(order))
     ]);
   }
 
@@ -729,16 +881,19 @@
   }
 
   async function openCart() {
+    closeTopbarOverlays();
     const dialog = ensureDialog();
     if (!pendingOrder) setCartStage(dialog, "cart");
     renderDialog();
     await hydratePoints();
     if (!dialog.open) dialog.showModal();
+    syncDialogLock();
     triggerMobileStagePopup(dialog);
     window.lucide?.createIcons?.();
   }
 
   function init() {
+    installDialogLockObserver();
     ensureCartButton();
     ensureDialog();
     renderCartBadge();

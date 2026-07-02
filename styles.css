@@ -16660,6 +16660,13 @@ html {
   }
 }
 
+/* 2026-07-02: legacy mobile override quarantine.
+   The rules inside this media block are old experimental cart/payment/mobile
+   layers that conflict with the current V8 mobile shell. They are kept here
+   only as history and disabled so they cannot revive hidden panels or enlarge
+   the phone menu again. */
+@media (max-width: 0px) {
+
 /* 2026-06-30 FINAL OVERRIDE: staged cart, wallet orange, stable mobile user icon */
 .topbar.site-topbar-unified .account-button {
   display: inline-flex !important;
@@ -18382,6 +18389,8 @@ body:has(dialog[open]) {
   }
 }
 
+}
+
 /* 2026-07-02 MOBILE GAME SHELL V4
    Refines phone topbar, account popover, drawer, profile pages and popup motion.
    Desktop/tablet logic is intentionally left untouched. */
@@ -19846,5 +19855,547 @@ body:has(dialog[open]) {
     border-radius: 0 0 20px 20px !important;
     border: 0 !important;
     background: #ffffff !important;
+  }
+}
+
+/* 2026-07-02 MOBILE UI CLEANUP V8
+   Single final guard after quarantining legacy mobile layers:
+   smaller menus, stable centered popups, one cart stage at a time. */
+@keyframes mobilePaymentStepPop {
+  from {
+    opacity: 0;
+    transform: translate3d(-50%, calc(-50% + 12px), 0) scale(0.975);
+    filter: blur(7px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes olafTinyRise {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 8px, 0) scale(0.985);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@media (max-width: 768px) {
+  html,
+  body {
+    max-width: 100%;
+    overflow-x: clip !important;
+  }
+
+  body:has(dialog[open]),
+  body:has(.topbar.site-topbar-unified.is-mobile-nav-open) {
+    overflow: hidden !important;
+    overscroll-behavior: contain !important;
+  }
+
+  .topbar.site-topbar-unified,
+  body.home-page .topbar.site-topbar-unified,
+  body.product-detail-page .topbar.site-topbar-unified,
+  .profile-page .topbar.site-topbar-unified,
+  .extras-page .topbar.site-topbar-unified {
+    min-height: 72px !important;
+    height: 72px !important;
+    padding: 10px 14px !important;
+    gap: 8px !important;
+    border-radius: 0 !important;
+    background:
+      linear-gradient(180deg, rgba(3, 7, 18, 0.88), rgba(3, 7, 18, 0.74)) !important;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.13) !important;
+    box-shadow: 0 14px 42px rgba(0, 0, 0, 0.28) !important;
+    backdrop-filter: blur(16px) saturate(1.15) !important;
+    -webkit-backdrop-filter: blur(16px) saturate(1.15) !important;
+  }
+
+  .topbar.site-topbar-unified > .brand {
+    flex: 0 0 auto !important;
+    width: 46px !important;
+    min-width: 46px !important;
+    height: 46px !important;
+    display: inline-grid !important;
+    place-items: center !important;
+  }
+
+  .topbar.site-topbar-unified .brand-mark {
+    width: 46px !important;
+    height: 46px !important;
+    border-radius: 15px !important;
+    box-shadow: 0 14px 26px rgba(37, 99, 235, 0.22) !important;
+  }
+
+  .topbar.site-topbar-unified .topbar-actions {
+    display: flex !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    justify-content: flex-end !important;
+    gap: 7px !important;
+  }
+
+  .topbar.site-topbar-unified .icon-button,
+  .topbar.site-topbar-unified .account-button,
+  .topbar.site-topbar-unified .site-cart-button,
+  .topbar.site-topbar-unified .site-global-search,
+  .topbar.site-topbar-unified .topbar-search-wrap.site-unified-search,
+  .topbar.site-topbar-unified .topbar-search-wrap.site-unified-search .topbar-search-form,
+  .topbar.site-topbar-unified .mobile-nav-toggle {
+    width: 38px !important;
+    min-width: 38px !important;
+    max-width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    padding: 0 !important;
+    border-radius: 13px !important;
+    background: rgba(15, 23, 42, 0.42) !important;
+    border: 1px solid rgba(148, 163, 184, 0.12) !important;
+    box-shadow: none !important;
+  }
+
+  .topbar.site-topbar-unified .account-button {
+    border-radius: 999px !important;
+  }
+
+  .topbar.site-topbar-unified .icon-button > svg,
+  .topbar.site-topbar-unified .icon-button > i,
+  .topbar.site-topbar-unified .account-button > svg,
+  .topbar.site-topbar-unified .account-button > i,
+  .topbar.site-topbar-unified .site-cart-button > svg,
+  .topbar.site-topbar-unified .site-cart-button > i,
+  .topbar.site-topbar-unified .mobile-nav-toggle > svg,
+  .topbar.site-topbar-unified .mobile-nav-toggle > i {
+    width: 18px !important;
+    height: 18px !important;
+  }
+
+  .topbar.site-topbar-unified .site-cart-count,
+  .topbar.site-topbar-unified .notification-badge {
+    top: -4px !important;
+    right: -4px !important;
+    min-width: 17px !important;
+    height: 17px !important;
+    padding: 0 4px !important;
+    border-width: 2px !important;
+    font-size: 0.58rem !important;
+    line-height: 13px !important;
+    z-index: 8 !important;
+  }
+
+  .topbar.site-topbar-unified .account-button span,
+  .topbar.site-topbar-unified .register-button,
+  .topbar.site-topbar-unified .primary-button.register-button,
+  .topbar.site-topbar-unified .brand > span:not(.brand-mark),
+  .topbar.site-topbar-unified .brand strong,
+  .topbar.site-topbar-unified .brand small {
+    display: none !important;
+  }
+
+  .topbar.site-topbar-unified .topbar-search-wrap.site-unified-search.is-search-open,
+  .topbar.site-topbar-unified .site-global-search.is-search-open {
+    position: fixed !important;
+    inset: 12px 12px auto 12px !important;
+    z-index: 10060 !important;
+    width: auto !important;
+    max-width: none !important;
+    height: 46px !important;
+    border-radius: 18px !important;
+    background: rgba(10, 17, 32, 0.96) !important;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.42) !important;
+    animation: olafTinyRise 180ms ease-out both !important;
+  }
+
+  .topbar.site-topbar-unified .topbar-search-wrap.site-unified-search.is-search-open .topbar-search-form,
+  .topbar.site-topbar-unified .site-global-search.is-search-open .topbar-search-form {
+    width: 100% !important;
+    height: 46px !important;
+    border-radius: 18px !important;
+  }
+
+  .topbar.site-topbar-unified .topbar-search-wrap.site-unified-search.is-search-open .topbar-search-input,
+  .topbar.site-topbar-unified .site-global-search.is-search-open input {
+    display: block !important;
+    width: 100% !important;
+    opacity: 1 !important;
+  }
+
+  .topbar.site-topbar-unified > .main-nav {
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    z-index: 10040 !important;
+    display: flex !important;
+    width: min(296px, calc(100vw - 58px)) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: 6px !important;
+    padding: calc(20px + env(safe-area-inset-top, 0px)) 14px calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+    border: 0 !important;
+    border-right: 1px solid rgba(148, 163, 184, 0.16) !important;
+    border-radius: 0 !important;
+    background:
+      radial-gradient(circle at 16% 0%, rgba(37, 99, 235, 0.16), transparent 32%),
+      linear-gradient(180deg, rgba(5, 10, 24, 0.98), rgba(4, 8, 18, 0.98)) !important;
+    box-shadow: 28px 0 80px rgba(0, 0, 0, 0.46) !important;
+    transform: translateX(-108%) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    overflow: auto !important;
+    transition: transform 230ms cubic-bezier(0.16, 1, 0.3, 1), opacity 180ms ease !important;
+  }
+
+  .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav {
+    transform: translateX(0) !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  .topbar.site-topbar-unified.is-mobile-nav-open::after {
+    content: "" !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10030 !important;
+    display: block !important;
+    background: rgba(1, 5, 15, 0.54) !important;
+    backdrop-filter: blur(3px) !important;
+    -webkit-backdrop-filter: blur(3px) !important;
+  }
+
+  .topbar.site-topbar-unified > .main-nav > a {
+    display: flex !important;
+    width: 100% !important;
+    min-height: 42px !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 10px !important;
+    padding: 0 13px !important;
+    border: 0 !important;
+    border-radius: 13px !important;
+    background: transparent !important;
+    color: rgba(226, 232, 240, 0.78) !important;
+    font-size: 0.95rem !important;
+    font-weight: 400 !important;
+  }
+
+  .topbar.site-topbar-unified > .main-nav > a.is-active,
+  .topbar.site-topbar-unified > .main-nav > a:hover {
+    background: rgba(37, 99, 235, 0.13) !important;
+    color: #93c5fd !important;
+    text-shadow: 0 0 16px rgba(96, 165, 250, 0.28) !important;
+  }
+
+  .user-popover,
+  .notification-popover,
+  .language-popover,
+  .search-suggestions {
+    position: fixed !important;
+    z-index: 10080 !important;
+    max-height: calc(100dvh - 90px) !important;
+    overflow: auto !important;
+    border-radius: 20px !important;
+    background: rgba(10, 17, 32, 0.97) !important;
+    box-shadow: 0 28px 72px rgba(0, 0, 0, 0.48) !important;
+    animation: olafTinyRise 190ms ease-out both !important;
+  }
+
+  .user-popover {
+    top: 78px !important;
+    right: 10px !important;
+    left: auto !important;
+    width: min(300px, calc(100vw - 20px)) !important;
+    padding: 14px !important;
+  }
+
+  .user-popover:not([hidden]) .user-profile-card {
+    padding: 12px !important;
+    border-radius: 16px !important;
+  }
+
+  .user-popover-avatar,
+  .user-popover .user-avatar,
+  .user-popover .profile-avatar {
+    width: 46px !important;
+    height: 46px !important;
+    font-size: 1.2rem !important;
+  }
+
+  .user-popover .user-menu-link,
+  .user-popover a,
+  .user-popover button {
+    min-height: 42px !important;
+    font-size: 0.93rem !important;
+  }
+
+  .profile-page .profile-content {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    padding: 18px 12px 28px !important;
+  }
+
+  .profile-page .profile-sidebar,
+  .profile-page .profile-sidebar-card,
+  .profile-page .profile-sidebar-logout,
+  .profile-page .panel-card {
+    border-radius: 22px !important;
+  }
+
+  .profile-page .profile-sidebar-card {
+    padding: 18px !important;
+  }
+
+  .profile-page .profile-sidebar-user {
+    gap: 14px !important;
+  }
+
+  .profile-page .profile-avatar,
+  .profile-page .profile-sidebar-user .profile-avatar {
+    width: 62px !important;
+    height: 62px !important;
+    font-size: 1.45rem !important;
+  }
+
+  .profile-page .profile-nav-item {
+    min-height: 46px !important;
+    padding: 0 13px !important;
+    border-radius: 14px !important;
+    font-size: 0.96rem !important;
+    font-weight: 400 !important;
+  }
+
+  dialog.checkout-order-dialog[open],
+  dialog.qr-payment-dialog[open],
+  dialog.order-confirm-dialog[open],
+  dialog.site-cart-dialog[open] {
+    position: fixed !important;
+    inset: 50% auto auto 50% !important;
+    width: min(424px, calc(100vw - 16px)) !important;
+    max-width: calc(100vw - 16px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    margin: 0 !important;
+    transform: translate3d(-50%, -50%, 0) scale(1) !important;
+    overflow: hidden !important;
+    overscroll-behavior: contain !important;
+    animation: mobilePaymentStepPop 220ms cubic-bezier(0.16, 1, 0.3, 1) both !important;
+  }
+
+  dialog.checkout-order-dialog .premium-dialog-inner,
+  dialog.qr-payment-dialog .premium-dialog-inner,
+  dialog.order-confirm-dialog .order-confirm-inner,
+  dialog.site-cart-dialog .site-cart-shell {
+    max-height: calc(100dvh - 16px) !important;
+    overflow: auto !important;
+    overscroll-behavior: contain !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-body {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    padding: 12px 14px 14px !important;
+    gap: 12px !important;
+    overflow: visible !important;
+  }
+
+  dialog.site-cart-dialog[data-cart-stage="cart"] .site-cart-summary,
+  dialog.site-cart-dialog[data-cart-stage="cart"] .site-cart-summary-card,
+  dialog.site-cart-dialog[data-cart-stage="cart"] .site-cart-payment-result,
+  dialog.site-cart-dialog[data-cart-stage="summary"] [data-site-cart-stage-panel="items"],
+  dialog.site-cart-dialog[data-cart-stage="summary"] .site-cart-payment-result,
+  dialog.site-cart-dialog[data-cart-stage="creating"] [data-site-cart-stage-panel="items"],
+  dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-summary,
+  dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-summary-card,
+  dialog.site-cart-dialog[data-cart-stage="payment"] [data-site-cart-stage-panel="items"],
+  dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-summary,
+  dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-summary-card {
+    display: none !important;
+  }
+
+  dialog.site-cart-dialog[data-cart-stage="cart"] [data-site-cart-stage-panel="items"],
+  dialog.site-cart-dialog[data-cart-stage="summary"] .site-cart-summary,
+  dialog.site-cart-dialog[data-cart-stage="summary"] .site-cart-summary-card,
+  dialog.site-cart-dialog[data-cart-stage="creating"] .site-cart-payment-result,
+  dialog.site-cart-dialog[data-cart-stage="payment"] .site-cart-payment-result {
+    display: grid !important;
+    animation: olafTinyRise 170ms ease-out both !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-head {
+    min-height: 74px !important;
+    padding: 14px 16px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-icon-bubble,
+  dialog.site-cart-dialog .site-cart-summary-icon {
+    width: 36px !important;
+    height: 36px !important;
+    border-radius: 13px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-head h2 {
+    font-size: 1.18rem !important;
+    font-weight: 600 !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-items-panel,
+  dialog.site-cart-dialog .site-cart-summary-card {
+    padding: 12px !important;
+    border-radius: 18px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-item {
+    display: grid !important;
+    grid-template-columns: 82px minmax(0, 1fr) !important;
+    gap: 12px !important;
+    min-height: auto !important;
+    padding: 12px !important;
+    border-radius: 18px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-item-media {
+    width: 82px !important;
+    border-radius: 12px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-item-actions {
+    grid-column: 1 / -1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-qty-control {
+    width: auto !important;
+    min-width: 132px !important;
+    min-height: 40px !important;
+    padding: 4px !important;
+    border-radius: 14px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-qty-control .quantity-button {
+    width: 32px !important;
+    height: 32px !important;
+    border-radius: 11px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-remove {
+    width: auto !important;
+    min-height: 38px !important;
+    padding: 0 12px !important;
+    border-radius: 13px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-points {
+    display: flex !important;
+    min-height: 62px !important;
+    align-items: center !important;
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-payment-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-payment-grid label > span {
+    min-height: 68px !important;
+    padding: 12px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-checkout,
+  dialog.site-cart-dialog .site-cart-mobile-confirm,
+  dialog.site-cart-dialog .site-cart-result-actions .primary-button,
+  dialog.checkout-order-dialog .submit-order-btn,
+  dialog.order-confirm-dialog #order-confirm-submit-btn {
+    min-height: 48px !important;
+    border-radius: 13px !important;
+    font-size: 0.96rem !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-continue,
+  dialog.site-cart-dialog .site-cart-mobile-continue,
+  dialog.site-cart-dialog .site-cart-result-actions .secondary-button,
+  dialog.checkout-order-dialog .cancel-order-btn,
+  dialog.order-confirm-dialog #order-confirm-cancel-btn {
+    min-height: 44px !important;
+    border-radius: 13px !important;
+    font-size: 0.94rem !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-paid-head,
+  dialog.site-cart-dialog .site-cart-qr-frame,
+  dialog.site-cart-dialog .site-cart-qr-loading,
+  dialog.site-cart-dialog .site-cart-result-actions,
+  dialog.qr-payment-dialog .premium-dialog-header,
+  dialog.qr-payment-dialog .qr-payment-content,
+  dialog.qr-payment-dialog .premium-actions {
+    margin-left: 16px !important;
+    margin-right: 16px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-qr-frame .site-cart-qr,
+  dialog.qr-payment-dialog .qr-image-frame img,
+  dialog.qr-payment-dialog .qr-image {
+    width: min(214px, 62vw) !important;
+    height: min(214px, 62vw) !important;
+  }
+}
+
+/* V8.1: higher-specificity phone drawer/menu sizing after older page rules. */
+@media (max-width: 768px) {
+  body.home-page .topbar.site-topbar-unified > .main-nav,
+  body.product-detail-page .topbar.site-topbar-unified > .main-nav,
+  body.extras-page .topbar.site-topbar-unified > .main-nav,
+  .profile-page .topbar.site-topbar-unified > .main-nav,
+  .topbar.site-topbar-unified > .main-nav {
+    left: 0 !important;
+    right: auto !important;
+    top: 0 !important;
+    bottom: 0 !important;
+    width: min(286px, calc(100vw - 62px)) !important;
+    max-width: min(286px, calc(100vw - 62px)) !important;
+    padding: calc(18px + env(safe-area-inset-top, 0px)) 12px calc(16px + env(safe-area-inset-bottom, 0px)) !important;
+    gap: 5px !important;
+    transform: translate3d(-108%, 0, 0) !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav,
+  body.product-detail-page .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav,
+  body.extras-page .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav,
+  .profile-page .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav,
+  .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav {
+    transform: translate3d(0, 0, 0) !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified > .main-nav > a,
+  body.product-detail-page .topbar.site-topbar-unified > .main-nav > a,
+  body.extras-page .topbar.site-topbar-unified > .main-nav > a,
+  .profile-page .topbar.site-topbar-unified > .main-nav > a,
+  .topbar.site-topbar-unified > .main-nav > a {
+    min-height: 42px !important;
+    height: 42px !important;
+    margin: 0 !important;
+    padding: 0 12px !important;
+    border-radius: 12px !important;
+    font-size: 0.92rem !important;
+    line-height: 1.15 !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified > .main-nav > a + a,
+  body.product-detail-page .topbar.site-topbar-unified > .main-nav > a + a,
+  body.extras-page .topbar.site-topbar-unified > .main-nav > a + a,
+  .profile-page .topbar.site-topbar-unified > .main-nav > a + a,
+  .topbar.site-topbar-unified > .main-nav > a + a {
+    margin-top: 5px !important;
   }
 }

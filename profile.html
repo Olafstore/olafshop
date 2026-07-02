@@ -21,10 +21,10 @@
   <script src="platform-store.js?v=20260619-profile-update-fix" defer></script>
   <script src="image-performance.js?v=20260607-performance" defer></script>
 <script src="delivery-payload.js?v=20260620-phase1-12-final" defer></script>
-  <script src="site-navigation.js?v=20260702-mobile-ui-v15" defer></script>
-  <script src="cart-system.js?v=20260702-mobile-ui-v15" defer></script>
+  <script src="site-navigation.js?v=20260702-mobile-ui-v17" defer></script>
+  <script src="cart-system.js?v=20260702-mobile-ui-v17" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-  <link rel="stylesheet" href="styles.css?v=20260702-mobile-ui-v15" />
+  <link rel="stylesheet" href="styles.css?v=20260702-mobile-ui-v17" />
   <style>
     body {
       padding-top: 0;
@@ -3889,7 +3889,7 @@
           if (notificationPopover) notificationPopover.hidden = true;
         }
 
-        if (!event.target.closest('.user-popover-wrap')) {
+        if (!event.target.closest('.user-popover-wrap') && !event.target.closest('#user-popover')) {
           const userPopover = document.getElementById('user-popover');
           if (userPopover) userPopover.hidden = true;
           document.getElementById('open-auth')?.classList.remove('is-active');

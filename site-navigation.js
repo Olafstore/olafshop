@@ -160,9 +160,46 @@
       </div>`;
   }
 
+  function mobileDrawerHtml() {
+    return `${mobileNavHeaderHtml()}${NAV_ITEMS.map(navLinkHtml).join("")}${mobileNavFooterHtml()}`;
+  }
+
   function renderMainNav(nav) {
-    nav.innerHTML = `${mobileNavHeaderHtml()}${NAV_ITEMS.map(navLinkHtml).join("")}${mobileNavFooterHtml()}`;
+    nav.innerHTML = NAV_ITEMS.map(navLinkHtml).join("");
     window.lucide?.createIcons?.();
+  }
+
+  function renderMobileDrawer(drawer) {
+    drawer.innerHTML = mobileDrawerHtml();
+    window.lucide?.createIcons?.();
+  }
+
+  function ensureMobileBackdrop() {
+    let backdrop = document.querySelector("[data-olaf-mobile-backdrop]");
+    if (!backdrop) {
+      backdrop = document.createElement("button");
+      backdrop.type = "button";
+      backdrop.className = "olaf-mobile-menu-backdrop";
+      backdrop.dataset.olafMobileBackdrop = "true";
+      backdrop.setAttribute("aria-label", "ปิดเมนู");
+      document.body?.appendChild(backdrop);
+    }
+    return backdrop;
+  }
+
+  function ensureMobileDrawer(index) {
+    const drawerId = `olaf-mobile-drawer-${index + 1}`;
+    let drawer = document.getElementById(drawerId);
+    if (!drawer) {
+      drawer = document.createElement("nav");
+      drawer.id = drawerId;
+      drawer.className = "olaf-mobile-drawer";
+      drawer.dataset.mobileMenu = "drawer-v16";
+      drawer.setAttribute("aria-hidden", "true");
+      document.body?.appendChild(drawer);
+    }
+    renderMobileDrawer(drawer);
+    return drawer;
   }
 
   function isMobileNavigationViewport() {
@@ -199,18 +236,57 @@
 
   window.OlafNavigation = {
     ...(window.OlafNavigation || {}),
+    closeMobileMenus: () => {
+      document.querySelectorAll(".topbar.is-mobile-nav-open, .topbar.site-topbar-unified.is-mobile-nav-open").forEach((header) => {
+        header.classList.remove("is-mobile-nav-open");
+        header.querySelector(".mobile-nav-toggle")?.setAttribute("aria-expanded", "false");
+      });
+      document.querySelectorAll(".olaf-mobile-drawer.is-open").forEach((drawer) => {
+        drawer.classList.remove("is-open");
+        drawer.setAttribute("aria-hidden", "true");
+      });
+      document.querySelectorAll(".olaf-mobile-menu-backdrop.is-open").forEach((backdrop) => backdrop.classList.remove("is-open"));
+      document.documentElement.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
+      document.body?.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
+      setMobilePageScrollLock(false);
+    },
     unlockMobileNavScroll: () => setMobilePageScrollLock(false)
   };
+
+  function syncMobileUserPopoverPortal() {
+    const popover = document.querySelector("#user-popover");
+    if (!popover || !document.body) return;
+    const isMobile = isMobileNavigationViewport();
+    if (isMobile) {
+      if (!popover.__olafOriginalParent && popover.parentElement) {
+        popover.__olafOriginalParent = popover.parentElement;
+        popover.__olafOriginalNextSibling = popover.nextSibling;
+      }
+      if (popover.parentElement !== document.body) document.body.appendChild(popover);
+      popover.dataset.mobilePortal = "true";
+      return;
+    }
+
+    if (popover.__olafOriginalParent && popover.parentElement === document.body) {
+      popover.__olafOriginalParent.insertBefore(popover, popover.__olafOriginalNextSibling || null);
+    }
+    delete popover.dataset.mobilePortal;
+  }
 
   function normalizeMainNavigation(header, index) {
     const nav = header.querySelector(".main-nav");
     if (!nav) return;
+    const drawer = ensureMobileDrawer(index);
+    const backdrop = ensureMobileBackdrop();
 
     const syncMobileNavState = () => {
       const isAnyOpen = Boolean(document.querySelector(".topbar.is-mobile-nav-open, .topbar.site-topbar-unified.is-mobile-nav-open"));
       document.documentElement.classList.toggle("olaf-mobile-nav-open", isAnyOpen);
       document.body?.classList.toggle("olaf-mobile-nav-open", isAnyOpen);
       document.body?.classList.toggle("olaf-topbar-overlay-open", isAnyOpen);
+      drawer.classList.toggle("is-open", isAnyOpen);
+      backdrop.classList.toggle("is-open", isAnyOpen);
+      drawer.setAttribute("aria-hidden", String(!isAnyOpen));
       setMobilePageScrollLock(isAnyOpen);
     };
 
@@ -234,12 +310,13 @@
       header.insertBefore(toggle, nav);
     }
     toggle.innerHTML = '<i data-lucide="menu"></i><span>menu</span>';
+    toggle.setAttribute("aria-controls", drawer.id);
     toggle.setAttribute("aria-expanded", "false");
 
     toggle.addEventListener("click", () => {
       setMobileNavOpen(!header.classList.contains("is-mobile-nav-open"));
     });
-    nav.addEventListener("click", async (event) => {
+    drawer.addEventListener("click", async (event) => {
       if (event.target.closest("[data-mobile-menu-close]")) {
         event.preventDefault();
         setMobileNavOpen(false);
@@ -264,7 +341,12 @@
       setMobileNavOpen(false);
     });
 
-    const refreshNavForAuth = () => renderMainNav(nav);
+    backdrop.addEventListener("click", () => setMobileNavOpen(false));
+
+    const refreshNavForAuth = () => {
+      renderMainNav(nav);
+      renderMobileDrawer(drawer);
+    };
     const storeReady = window.OlafStore?.ready;
     if (storeReady && typeof storeReady.finally === "function") storeReady.finally(refreshNavForAuth);
     window.addEventListener("olaf-auth-changed", refreshNavForAuth);
@@ -272,7 +354,7 @@
     setTimeout(refreshNavForAuth, 700);
 
     document.addEventListener("click", (event) => {
-      if (nav.contains(event.target) || toggle?.contains(event.target)) return;
+      if (drawer.contains(event.target) || toggle?.contains(event.target)) return;
       setMobileNavOpen(false);
     });
 
@@ -561,6 +643,7 @@
 
   function setupSiteNavigation() {
     replaceLegacyOrderLinks();
+    syncMobileUserPopoverPortal();
     const headers = [...document.querySelectorAll(".topbar")];
     headers.forEach((header, index) => {
       header.classList.add("site-topbar-unified");
@@ -569,22 +652,20 @@
       setupResponsiveSearch(header);
     });
     setupStickyState(headers);
+    setTimeout(syncMobileUserPopoverPortal, 600);
     let resizeQueued = false;
     window.addEventListener("resize", () => {
       if (resizeQueued) return;
       resizeQueued = true;
       window.requestAnimationFrame(() => {
         resizeQueued = false;
+        syncMobileUserPopoverPortal();
         if (window.innerWidth > 1180) {
+          window.OlafNavigation?.closeMobileMenus?.();
           headers.forEach((header) => {
-            header.classList.remove("is-mobile-nav-open");
             header.classList.remove("is-search-active");
-            header.querySelector(".mobile-nav-toggle")?.setAttribute("aria-expanded", "false");
             header.querySelector(".is-search-open")?.classList.remove("is-search-open");
           });
-          document.documentElement.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
-          document.body?.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
-          setMobilePageScrollLock(false);
         }
       });
     }, { passive: true });

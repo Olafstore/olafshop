@@ -21174,6 +21174,11 @@ body:has(dialog[open]) {
 }
 
 @media (max-width: 768px) {
+  :root {
+    --olaf-mobile-popover-top: clamp(62px, 10dvh, 82px);
+    --olaf-mobile-popover-side-gap: 12px;
+  }
+
   html.olaf-mobile-nav-open,
   body.olaf-mobile-nav-open {
     overflow: hidden !important;
@@ -21468,12 +21473,15 @@ body:has(dialog[open]) {
     all: unset !important;
     box-sizing: border-box !important;
     position: fixed !important;
-    top: calc(72px + env(safe-area-inset-top, 0px)) !important;
+    top: max(var(--olaf-mobile-popover-top), calc(env(safe-area-inset-top, 0px) + 58px)) !important;
     left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
     z-index: 10070 !important;
     display: block !important;
-    width: min(320px, calc(100vw - 24px)) !important;
-    max-height: calc(100dvh - 96px) !important;
+    width: min(336px, calc(100vw - (var(--olaf-mobile-popover-side-gap) * 2))) !important;
+    max-width: calc(100vw - (var(--olaf-mobile-popover-side-gap) * 2)) !important;
+    max-height: calc(100dvh - max(var(--olaf-mobile-popover-top), calc(env(safe-area-inset-top, 0px) + 58px)) - max(14px, env(safe-area-inset-bottom, 0px))) !important;
     overflow: auto !important;
     transform: translateX(-50%) !important;
     padding: 12px !important;
@@ -21482,6 +21490,19 @@ body:has(dialog[open]) {
     background: linear-gradient(180deg, rgba(15, 23, 42, 0.985), rgba(5, 10, 24, 0.985)) !important;
     color: #e5edff !important;
     box-shadow: 0 24px 70px rgba(0, 0, 0, 0.44) !important;
+  }
+
+  @media (max-width: 380px) {
+    :root {
+      --olaf-mobile-popover-top: clamp(58px, 9dvh, 72px);
+      --olaf-mobile-popover-side-gap: 10px;
+    }
+
+    #user-popover:not([hidden]),
+    .user-popover:not([hidden]) {
+      padding: 10px !important;
+      border-radius: 20px !important;
+    }
   }
 
   #user-popover:not([hidden]) .user-profile-card,

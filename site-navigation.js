@@ -1,11 +1,11 @@
 (function () {
   const ORDER_DESTINATION = "profile.html#inventory";
   const NAV_ITEMS = [
-    { href: "index.html", label: "หน้าแรก", match: ["index.html", ""] },
-    { href: "index.html#catalog", label: "สินค้า", matchHash: "#catalog" },
-    { href: "more-products.html", label: "หมวดหมู่", match: ["more-products.html"] },
-    { href: ORDER_DESTINATION, label: "คลังสินค้า", match: ["profile.html"], matchHash: "#inventory" },
-    { href: "https://www.facebook.com/byOlafshop", label: "ติดต่อเรา", external: true }
+    { href: "index.html", label: "หน้าหลัก", icon: "home", match: ["index.html", ""] },
+    { href: "index.html#catalog", label: "สินค้า", icon: "library", matchHash: "#catalog" },
+    { href: "more-products.html", label: "หมวดหมู่", icon: "package", match: ["more-products.html"] },
+    { href: ORDER_DESTINATION, label: "คลังสินค้า", icon: "box", match: ["profile.html"], matchHash: "#inventory" },
+    { href: "https://www.facebook.com/byOlafshop", label: "ติดต่อเรา", icon: "phone", external: true }
   ];
 
   function createDisplayTextCleaner() {
@@ -106,7 +106,63 @@
         ? file === "profile.html" && hash === "#inventory"
         : Boolean(matchesFile && !hash);
     const external = item.external ? ' target="_blank" rel="noreferrer"' : "";
-    return `<a href="${item.href}"${external}${active || matchesHash ? ' class="is-active"' : ""}>${item.label}</a>`;
+    return `<a href="${item.href}"${external}${active || matchesHash ? ' class="is-active"' : ""}><i data-lucide="${item.icon || "circle"}" aria-hidden="true"></i><span>${escapeHtml(item.label)}</span></a>`;
+  }
+
+  function currentNavUser() {
+    try {
+      return window.OlafStore?.currentUser?.() || null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function mobileReturnUrl() {
+    return encodeURIComponent(`${window.location.pathname}${window.location.search}${window.location.hash}` || "index.html");
+  }
+
+  function mobileNavHeaderHtml() {
+    return `
+      <div class="mobile-menu-head" aria-hidden="false">
+        <a class="mobile-menu-brand" href="index.html" aria-label="OLAFSHOP">
+          <span class="mobile-menu-brand-mark"><i data-lucide="gamepad-2"></i></span>
+          <span class="mobile-menu-brand-text">OLAF<span>SHOP</span></span>
+        </a>
+        <button class="mobile-menu-close" type="button" data-mobile-menu-close aria-label="ปิดเมนู">
+          <i data-lucide="x"></i>
+        </button>
+      </div>`;
+  }
+
+  function mobileNavFooterHtml() {
+    const user = currentNavUser();
+    if (user) {
+      return `
+        <div class="mobile-menu-footer">
+          <button class="mobile-menu-auth-btn mobile-menu-logout" type="button" data-mobile-nav-logout>
+            <i data-lucide="log-out"></i>
+            <span>ออกจากระบบ</span>
+          </button>
+        </div>`;
+    }
+
+    const returnUrl = mobileReturnUrl();
+    return `
+      <div class="mobile-menu-footer mobile-menu-auth">
+        <a class="mobile-menu-auth-btn mobile-menu-login" href="login.html?return=${returnUrl}">
+          <i data-lucide="log-in"></i>
+          <span>เข้าสู่ระบบ</span>
+        </a>
+        <a class="mobile-menu-auth-btn mobile-menu-register" href="register.html?return=${returnUrl}">
+          <i data-lucide="user-plus"></i>
+          <span>สมัครสมาชิก</span>
+        </a>
+      </div>`;
+  }
+
+  function renderMainNav(nav) {
+    nav.innerHTML = `${mobileNavHeaderHtml()}${NAV_ITEMS.map(navLinkHtml).join("")}${mobileNavFooterHtml()}`;
+    window.lucide?.createIcons?.();
   }
 
   function normalizeMainNavigation(header, index) {
@@ -126,7 +182,8 @@
       syncMobileNavState();
     };
 
-    nav.innerHTML = NAV_ITEMS.map(navLinkHtml).join("");
+    nav.dataset.mobileMenu = "ready";
+    renderMainNav(nav);
     const navId = nav.id || `main-nav-${index + 1}`;
     nav.id = navId;
 
@@ -144,13 +201,40 @@
     toggle.addEventListener("click", () => {
       setMobileNavOpen(!header.classList.contains("is-mobile-nav-open"));
     });
-    nav.addEventListener("click", (event) => {
+    nav.addEventListener("click", async (event) => {
+      if (event.target.closest("[data-mobile-menu-close]")) {
+        event.preventDefault();
+        setMobileNavOpen(false);
+        return;
+      }
+
+      const logoutButton = event.target.closest("[data-mobile-nav-logout]");
+      if (logoutButton) {
+        event.preventDefault();
+        logoutButton.disabled = true;
+        try {
+          await window.OlafStore?.logout?.();
+        } catch (error) {
+          console.warn("Unable to sign out from mobile menu.", error);
+        }
+        setMobileNavOpen(false);
+        window.location.href = "index.html";
+        return;
+      }
+
       if (!event.target.closest("a")) return;
       setMobileNavOpen(false);
     });
 
+    const refreshNavForAuth = () => renderMainNav(nav);
+    const storeReady = window.OlafStore?.ready;
+    if (storeReady && typeof storeReady.finally === "function") storeReady.finally(refreshNavForAuth);
+    window.addEventListener("olaf-auth-changed", refreshNavForAuth);
+    window.addEventListener("storage", refreshNavForAuth);
+    setTimeout(refreshNavForAuth, 700);
+
     document.addEventListener("click", (event) => {
-      if (header.contains(event.target)) return;
+      if (nav.contains(event.target) || toggle?.contains(event.target)) return;
       setMobileNavOpen(false);
     });
 

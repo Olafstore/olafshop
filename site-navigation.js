@@ -223,7 +223,7 @@
       syncMobileNavState();
     };
 
-    nav.dataset.mobileMenu = "ready";
+    nav.dataset.mobileMenu = "clean-v14";
     renderMainNav(nav);
     const navId = nav.id || `main-nav-${index + 1}`;
     nav.id = navId;

@@ -165,6 +165,46 @@
     window.lucide?.createIcons?.();
   }
 
+  function isMobileNavigationViewport() {
+    return window.matchMedia?.("(max-width: 768px)")?.matches ?? window.innerWidth <= 768;
+  }
+
+  function setMobilePageScrollLock(shouldLock) {
+    const body = document.body;
+    if (!body) return;
+
+    if (shouldLock && isMobileNavigationViewport()) {
+      if (body.dataset.mobileNavScrollLocked === "1") return;
+      const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+      body.dataset.mobileNavScrollLocked = "1";
+      body.dataset.mobileNavScrollY = String(scrollY);
+      body.style.position = "fixed";
+      body.style.top = `-${scrollY}px`;
+      body.style.left = "0";
+      body.style.right = "0";
+      body.style.width = "100%";
+      body.style.overflow = "hidden";
+      return;
+    }
+
+    if (body.dataset.mobileNavScrollLocked !== "1") return;
+    const scrollY = Number(body.dataset.mobileNavScrollY || "0") || 0;
+    delete body.dataset.mobileNavScrollLocked;
+    delete body.dataset.mobileNavScrollY;
+    body.style.position = "";
+    body.style.top = "";
+    body.style.left = "";
+    body.style.right = "";
+    body.style.width = "";
+    body.style.overflow = "";
+    window.scrollTo(0, scrollY);
+  }
+
+  window.OlafNavigation = {
+    ...(window.OlafNavigation || {}),
+    unlockMobileNavScroll: () => setMobilePageScrollLock(false)
+  };
+
   function normalizeMainNavigation(header, index) {
     const nav = header.querySelector(".main-nav");
     if (!nav) return;
@@ -174,6 +214,7 @@
       document.documentElement.classList.toggle("olaf-mobile-nav-open", isAnyOpen);
       document.body?.classList.toggle("olaf-mobile-nav-open", isAnyOpen);
       document.body?.classList.toggle("olaf-topbar-overlay-open", isAnyOpen);
+      setMobilePageScrollLock(isAnyOpen);
     };
 
     const setMobileNavOpen = (isOpen) => {
@@ -546,6 +587,7 @@
           });
           document.documentElement.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
           document.body?.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
+          setMobilePageScrollLock(false);
         }
       });
     }, { passive: true });

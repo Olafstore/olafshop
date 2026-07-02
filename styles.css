@@ -22190,3 +22190,339 @@ body:has(dialog[open]) {
     display: none !important;
   }
 }
+
+/* 2026-07-02 MOBILE MENU + USER POPOVER V13 FINAL
+   Smaller hamburger, left-edge drawer, locked page feel, and clean mobile user card. */
+@media (max-width: 768px) {
+  html.olaf-mobile-nav-open,
+  body.olaf-mobile-nav-open {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: none !important;
+  }
+
+  body.olaf-mobile-nav-open .discord-floating-link {
+    display: none !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified > .mobile-nav-toggle,
+  body.product-detail-page .topbar.site-topbar-unified > .mobile-nav-toggle,
+  body.extras-page .topbar.site-topbar-unified > .mobile-nav-toggle,
+  .profile-page .topbar.site-topbar-unified > .mobile-nav-toggle,
+  .topbar.site-topbar-unified > .mobile-nav-toggle {
+    display: inline-grid !important;
+    width: 32px !important;
+    min-width: 32px !important;
+    max-width: 32px !important;
+    height: 32px !important;
+    min-height: 32px !important;
+    padding: 0 !important;
+    place-items: center !important;
+    border-radius: 10px !important;
+    border: 1px solid rgba(148, 163, 184, 0.16) !important;
+    background: rgba(15, 23, 42, 0.36) !important;
+    color: rgba(226, 232, 240, 0.84) !important;
+    box-shadow: none !important;
+  }
+
+  .topbar.site-topbar-unified > .mobile-nav-toggle > svg,
+  .topbar.site-topbar-unified > .mobile-nav-toggle > i {
+    width: 16px !important;
+    height: 16px !important;
+    stroke-width: 2.1 !important;
+  }
+
+  .topbar.site-topbar-unified > .mobile-nav-toggle span,
+  .topbar.site-topbar-unified > .mobile-nav-toggle .mobile-nav-chevron {
+    display: none !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified > .main-nav,
+  body.product-detail-page .topbar.site-topbar-unified > .main-nav,
+  body.extras-page .topbar.site-topbar-unified > .main-nav,
+  .profile-page .topbar.site-topbar-unified > .main-nav,
+  .topbar.site-topbar-unified > .main-nav {
+    inset: 0 auto 0 0 !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: auto !important;
+    bottom: 0 !important;
+    width: min(306px, 82vw) !important;
+    max-width: min(306px, 82vw) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 22px 22px 0 !important;
+    border-left: 0 !important;
+    border-right: 1px solid rgba(96, 165, 250, 0.18) !important;
+    transform: translate3d(-101%, 0, 0) !important;
+  }
+
+  .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav {
+    transform: translate3d(0, 0, 0) !important;
+  }
+
+  .topbar.site-topbar-unified .mobile-menu-head {
+    min-height: 78px !important;
+    padding: calc(13px + env(safe-area-inset-top, 0px)) 14px 13px !important;
+  }
+
+  .topbar.site-topbar-unified .mobile-menu-brand {
+    gap: 10px !important;
+  }
+
+  .topbar.site-topbar-unified .mobile-menu-brand-mark {
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 14px !important;
+  }
+
+  .topbar.site-topbar-unified .mobile-menu-brand-mark svg {
+    width: 22px !important;
+    height: 22px !important;
+  }
+
+  .topbar.site-topbar-unified .mobile-menu-brand-text {
+    font-size: 1.08rem !important;
+  }
+
+  .topbar.site-topbar-unified .mobile-menu-close {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 12px !important;
+  }
+
+  .topbar.site-topbar-unified .mobile-menu-close svg {
+    width: 19px !important;
+    height: 19px !important;
+  }
+
+  .topbar.site-topbar-unified > .main-nav > a:first-of-type {
+    margin-top: 14px !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified > .main-nav > a,
+  body.product-detail-page .topbar.site-topbar-unified > .main-nav > a,
+  body.extras-page .topbar.site-topbar-unified > .main-nav > a,
+  .profile-page .topbar.site-topbar-unified > .main-nav > a,
+  .topbar.site-topbar-unified > .main-nav > a {
+    min-height: 46px !important;
+    height: 46px !important;
+    gap: 13px !important;
+    margin-left: 12px !important;
+    margin-right: 12px !important;
+    padding: 0 12px !important;
+    border-radius: 14px !important;
+    font-size: 0.94rem !important;
+  }
+
+  .topbar.site-topbar-unified > .main-nav > a > svg,
+  .topbar.site-topbar-unified > .main-nav > a > i {
+    width: 21px !important;
+    height: 21px !important;
+  }
+
+  .topbar.site-topbar-unified .mobile-menu-footer {
+    gap: 8px !important;
+    padding: 12px 12px calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .topbar.site-topbar-unified .mobile-menu-auth-btn {
+    min-height: 44px !important;
+    height: 44px !important;
+    border-radius: 14px !important;
+    font-size: 0.92rem !important;
+  }
+
+  #user-popover:not([hidden]),
+  .user-popover-wrap #user-popover:not([hidden]),
+  .user-popover:not([hidden]) {
+    position: fixed !important;
+    top: calc(72px + env(safe-area-inset-top, 0px)) !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    z-index: 10090 !important;
+    display: block !important;
+    width: min(322px, calc(100vw - 24px)) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - 94px - env(safe-area-inset-bottom, 0px)) !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    overflow-y: auto !important;
+    transform: translateX(-50%) !important;
+    border: 1px solid rgba(96, 165, 250, 0.18) !important;
+    border-radius: 22px !important;
+    background:
+      radial-gradient(circle at 18% 0%, rgba(59, 130, 246, 0.16), transparent 42%),
+      linear-gradient(180deg, rgba(18, 27, 46, 0.985), rgba(8, 13, 28, 0.985)) !important;
+    box-shadow: 0 24px 70px rgba(0, 0, 0, 0.46), inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+    backdrop-filter: blur(18px) saturate(1.12) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.12) !important;
+  }
+
+  #user-popover:not([hidden]) .user-profile-card,
+  .user-popover:not([hidden]) .user-profile-card {
+    margin: 0 0 10px !important;
+    padding: 0 !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  #user-popover:not([hidden]) .user-popover-header,
+  .user-popover:not([hidden]) .user-popover-header,
+  #user-popover:not([hidden]) .user-popover-header-link,
+  .user-popover:not([hidden]) .user-popover-header-link {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    width: 100% !important;
+    margin: 0 0 10px !important;
+    padding: 12px !important;
+    border: 1px solid rgba(148, 163, 184, 0.16) !important;
+    border-radius: 18px !important;
+    background: rgba(15, 23, 42, 0.42) !important;
+    color: #f8fafc !important;
+    text-decoration: none !important;
+  }
+
+  #user-popover:not([hidden]) .user-popover-avatar,
+  .user-popover:not([hidden]) .user-popover-avatar,
+  #user-popover:not([hidden]) .user-avatar,
+  .user-popover:not([hidden]) .user-avatar,
+  #user-popover:not([hidden]) .profile-avatar,
+  .user-popover:not([hidden]) .profile-avatar {
+    display: grid !important;
+    width: 50px !important;
+    height: 50px !important;
+    min-width: 50px !important;
+    place-items: center !important;
+    border-radius: 999px !important;
+    background: linear-gradient(135deg, #2563eb, #6366f1) !important;
+    color: #ffffff !important;
+    font-size: 1.18rem !important;
+    font-weight: 700 !important;
+    box-shadow: 0 14px 30px rgba(37, 99, 235, 0.24) !important;
+  }
+
+  #user-popover:not([hidden]) .user-popover-info,
+  .user-popover:not([hidden]) .user-popover-info {
+    min-width: 0 !important;
+    flex: 1 1 auto !important;
+  }
+
+  #user-popover:not([hidden]) .user-popover-info strong,
+  .user-popover:not([hidden]) .user-popover-info strong {
+    display: block !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    color: #f8fafc !important;
+    font-size: 1rem !important;
+    font-weight: 650 !important;
+    line-height: 1.25 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #user-popover:not([hidden]) .user-popover-info span,
+  .user-popover:not([hidden]) .user-popover-info span {
+    display: block !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    color: rgba(203, 213, 225, 0.68) !important;
+    font-size: 0.78rem !important;
+    line-height: 1.35 !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  #user-popover:not([hidden]) .user-popover-badge-row,
+  .user-popover:not([hidden]) .user-popover-badge-row {
+    display: flex !important;
+    min-height: 42px !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 10px !important;
+    margin: 0 0 12px !important;
+    padding: 7px 10px !important;
+    border: 1px solid rgba(96, 165, 250, 0.12) !important;
+    border-radius: 14px !important;
+    background: rgba(2, 6, 23, 0.36) !important;
+  }
+
+  #user-popover:not([hidden]) .user-popover-menu-title,
+  .user-popover:not([hidden]) .user-popover-menu-title {
+    margin: 6px 4px 8px !important;
+    color: rgba(148, 163, 184, 0.72) !important;
+    font-size: 0.78rem !important;
+    font-weight: 500 !important;
+  }
+
+  #user-popover:not([hidden]) .user-popover-menu,
+  .user-popover:not([hidden]) .user-popover-menu {
+    display: grid !important;
+    gap: 5px !important;
+    max-height: none !important;
+    overflow: visible !important;
+  }
+
+  #user-popover:not([hidden]) .user-popover-menu a,
+  #user-popover:not([hidden]) .user-popover-menu button,
+  .user-popover:not([hidden]) .user-popover-menu a,
+  .user-popover:not([hidden]) .user-popover-menu button {
+    display: flex !important;
+    min-height: 42px !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 11px !important;
+    width: 100% !important;
+    margin: 0 !important;
+    padding: 0 11px !important;
+    border: 1px solid transparent !important;
+    border-radius: 14px !important;
+    background: transparent !important;
+    color: rgba(226, 232, 240, 0.82) !important;
+    font-size: 0.9rem !important;
+    font-weight: 450 !important;
+    line-height: 1.15 !important;
+    text-align: left !important;
+    text-decoration: none !important;
+  }
+
+  #user-popover:not([hidden]) .user-popover-menu a:hover,
+  #user-popover:not([hidden]) .user-popover-menu button:hover,
+  .user-popover:not([hidden]) .user-popover-menu a:hover,
+  .user-popover:not([hidden]) .user-popover-menu button:hover {
+    border-color: rgba(96, 165, 250, 0.18) !important;
+    background: rgba(37, 99, 235, 0.12) !important;
+    color: #bfdbfe !important;
+  }
+
+  #user-popover:not([hidden]) .user-popover-menu svg,
+  #user-popover:not([hidden]) .user-popover-menu i,
+  .user-popover:not([hidden]) .user-popover-menu svg,
+  .user-popover:not([hidden]) .user-popover-menu i {
+    width: 20px !important;
+    height: 20px !important;
+    flex: 0 0 auto !important;
+    color: rgba(203, 213, 225, 0.72) !important;
+  }
+
+  #user-popover:not([hidden]) .user-popover-divider,
+  .user-popover:not([hidden]) .user-popover-divider {
+    height: 1px !important;
+    margin: 8px 0 !important;
+    background: rgba(148, 163, 184, 0.14) !important;
+  }
+
+  #user-popover:not([hidden]) .danger-item,
+  .user-popover:not([hidden]) .danger-item {
+    color: #fca5a5 !important;
+  }
+
+  #user-popover:not([hidden]) .danger-item svg,
+  .user-popover:not([hidden]) .danger-item svg {
+    color: #fca5a5 !important;
+  }
+}

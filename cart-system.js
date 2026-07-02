@@ -125,6 +125,7 @@
     });
     document.documentElement.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
     document.body?.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
+    window.OlafNavigation?.unlockMobileNavScroll?.();
   }
 
   function updateCartStageCopy(dialog, stage) {

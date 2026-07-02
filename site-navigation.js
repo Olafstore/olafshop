@@ -165,8 +165,12 @@
   }
 
   function renderMainNav(nav) {
-    nav.innerHTML = NAV_ITEMS.map(navLinkHtml).join("");
+    nav.innerHTML = mobileDrawerHtml();
     window.lucide?.createIcons?.();
+  }
+
+  function removePortalMobileMenuArtifacts() {
+    document.querySelectorAll(".olaf-mobile-drawer, [data-olaf-mobile-backdrop]").forEach((node) => node.remove());
   }
 
   function renderMobileDrawer(drawer) {
@@ -211,27 +215,43 @@
     const root = document.documentElement;
     if (!body) return;
 
+    if (shouldLock) {
+      const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
+      if (!root.style.getPropertyValue("--olaf-mobile-scroll-y")) {
+        root.style.setProperty("--olaf-mobile-scroll-y", `${scrollY}px`);
+      }
+      if (!isMobileNavigationViewport()) return;
+    }
+
     if (shouldLock && isMobileNavigationViewport()) {
       if (body.dataset.mobileNavScrollLocked === "1") return;
       const scrollY = window.scrollY || document.documentElement.scrollTop || 0;
       body.dataset.mobileNavScrollLocked = "1";
       body.dataset.mobileNavScrollY = String(scrollY);
-      root.style.overflow = "hidden";
-      root.style.overscrollBehavior = "none";
-      body.style.width = "100%";
-      body.style.overflow = "hidden";
-      body.style.overscrollBehavior = "none";
+      if (!root.style.getPropertyValue("--olaf-mobile-scroll-y")) {
+        root.style.setProperty("--olaf-mobile-scroll-y", `${scrollY}px`);
+      }
       return;
     }
 
-    if (body.dataset.mobileNavScrollLocked !== "1") return;
+    if (body.dataset.mobileNavScrollLocked !== "1") {
+      root.style.removeProperty("--olaf-mobile-scroll-y");
+      return;
+    }
     delete body.dataset.mobileNavScrollLocked;
     delete body.dataset.mobileNavScrollY;
     root.style.overflow = "";
     root.style.overscrollBehavior = "";
+    root.style.height = "";
+    root.style.removeProperty("--olaf-mobile-scroll-y");
     body.style.width = "";
     body.style.overflow = "";
     body.style.overscrollBehavior = "";
+    body.style.height = "";
+    body.style.position = "";
+    body.style.top = "";
+    body.style.left = "";
+    body.style.right = "";
   }
 
   window.OlafNavigation = {
@@ -240,12 +260,12 @@
       document.querySelectorAll(".topbar.is-mobile-nav-open, .topbar.site-topbar-unified.is-mobile-nav-open").forEach((header) => {
         header.classList.remove("is-mobile-nav-open");
         header.querySelector(".mobile-nav-toggle")?.setAttribute("aria-expanded", "false");
+        header.querySelectorAll(".main-nav[data-mobile-menu='clean-v14']").forEach((nav) => {
+          nav.style.top = "";
+          nav.style.removeProperty("--olaf-mobile-scroll-y");
+        });
       });
-      document.querySelectorAll(".olaf-mobile-drawer.is-open").forEach((drawer) => {
-        drawer.classList.remove("is-open");
-        drawer.setAttribute("aria-hidden", "true");
-      });
-      document.querySelectorAll(".olaf-mobile-menu-backdrop.is-open").forEach((backdrop) => backdrop.classList.remove("is-open"));
+      removePortalMobileMenuArtifacts();
       document.documentElement.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
       document.body?.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
       setMobilePageScrollLock(false);
@@ -256,41 +276,64 @@
   function syncMobileUserPopoverPortal() {
     const popover = document.querySelector("#user-popover");
     if (!popover || !document.body) return;
-    const isMobile = isMobileNavigationViewport();
-    if (isMobile) {
-      if (!popover.__olafOriginalParent && popover.parentElement) {
-        popover.__olafOriginalParent = popover.parentElement;
-        popover.__olafOriginalNextSibling = popover.nextSibling;
-      }
-      if (popover.parentElement !== document.body) document.body.appendChild(popover);
-      popover.dataset.mobilePortal = "true";
-      return;
-    }
-
     if (popover.__olafOriginalParent && popover.parentElement === document.body) {
       popover.__olafOriginalParent.insertBefore(popover, popover.__olafOriginalNextSibling || null);
     }
     delete popover.dataset.mobilePortal;
   }
 
+  function hideMobileFloatingPanel(node) {
+    if (!node) return;
+    node.hidden = true;
+    node.classList.add("hidden");
+    node.classList.remove("show", "open", "is-open", "active", "is-active");
+    node.style.display = "";
+    node.style.opacity = "";
+    node.style.pointerEvents = "";
+    node.style.transform = "";
+    node.setAttribute("aria-hidden", "true");
+  }
+
   function normalizeMainNavigation(header, index) {
     const nav = header.querySelector(".main-nav");
     if (!nav) return;
-    const drawer = ensureMobileDrawer(index);
-    const backdrop = ensureMobileBackdrop();
+    removePortalMobileMenuArtifacts();
 
     const syncMobileNavState = () => {
       const isAnyOpen = Boolean(document.querySelector(".topbar.is-mobile-nav-open, .topbar.site-topbar-unified.is-mobile-nav-open"));
       document.documentElement.classList.toggle("olaf-mobile-nav-open", isAnyOpen);
       document.body?.classList.toggle("olaf-mobile-nav-open", isAnyOpen);
       document.body?.classList.toggle("olaf-topbar-overlay-open", isAnyOpen);
-      drawer.classList.toggle("is-open", isAnyOpen);
-      backdrop.classList.toggle("is-open", isAnyOpen);
-      drawer.setAttribute("aria-hidden", String(!isAnyOpen));
       setMobilePageScrollLock(isAnyOpen);
     };
 
     const setMobileNavOpen = (isOpen) => {
+      const positionMobileDrawer = () => {
+        if (!isOpen || !isMobileNavigationViewport()) return;
+        const scrollY = Math.max(
+          window.scrollY || 0,
+          document.documentElement.scrollTop || 0,
+          document.body?.scrollTop || 0
+        );
+        const offset = `${Math.round(scrollY)}px`;
+        document.documentElement.style.setProperty("--olaf-mobile-scroll-y", offset);
+        nav.style.setProperty("--olaf-mobile-scroll-y", offset);
+        nav.style.top = offset;
+      };
+
+      if (isOpen) {
+        positionMobileDrawer();
+        ["#user-popover", "#notification-popover", "#language-popover", "#filter-popover"].forEach((selector) => {
+          hideMobileFloatingPanel(document.querySelector(selector));
+        });
+        header.querySelector("#open-auth")?.classList.remove("is-active");
+        header.querySelector("#lang-toggle")?.setAttribute("aria-expanded", "false");
+        requestAnimationFrame(() => requestAnimationFrame(positionMobileDrawer));
+        window.setTimeout(positionMobileDrawer, 90);
+      } else {
+        nav.style.top = "";
+        nav.style.removeProperty("--olaf-mobile-scroll-y");
+      }
       header.classList.toggle("is-mobile-nav-open", Boolean(isOpen));
       toggle?.setAttribute("aria-expanded", String(Boolean(isOpen)));
       syncMobileNavState();
@@ -310,13 +353,13 @@
       header.insertBefore(toggle, nav);
     }
     toggle.innerHTML = '<i data-lucide="menu"></i><span>menu</span>';
-    toggle.setAttribute("aria-controls", drawer.id);
+    toggle.setAttribute("aria-controls", nav.id);
     toggle.setAttribute("aria-expanded", "false");
 
     toggle.addEventListener("click", () => {
       setMobileNavOpen(!header.classList.contains("is-mobile-nav-open"));
     });
-    drawer.addEventListener("click", async (event) => {
+    nav.addEventListener("click", async (event) => {
       if (event.target.closest("[data-mobile-menu-close]")) {
         event.preventDefault();
         setMobileNavOpen(false);
@@ -341,11 +384,8 @@
       setMobileNavOpen(false);
     });
 
-    backdrop.addEventListener("click", () => setMobileNavOpen(false));
-
     const refreshNavForAuth = () => {
       renderMainNav(nav);
-      renderMobileDrawer(drawer);
     };
     const storeReady = window.OlafStore?.ready;
     if (storeReady && typeof storeReady.finally === "function") storeReady.finally(refreshNavForAuth);
@@ -354,7 +394,7 @@
     setTimeout(refreshNavForAuth, 700);
 
     document.addEventListener("click", (event) => {
-      if (drawer.contains(event.target) || toggle?.contains(event.target)) return;
+      if (nav.contains(event.target) || toggle?.contains(event.target)) return;
       setMobileNavOpen(false);
     });
 

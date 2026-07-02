@@ -307,6 +307,129 @@ html.has-order-action-popup {
   }
 }
 
+/* 2026-07-03 MOBILE MENU OLD-DRAWER RESTORE V18
+   Restore the header-owned mobile menu, remove the body portal drawer and keep open/close smooth. */
+.olaf-mobile-menu-backdrop,
+.olaf-mobile-drawer,
+.olaf-mobile-drawer[data-mobile-menu="drawer-v16"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+@media (max-width: 768px) {
+  html.olaf-mobile-nav-open,
+  body.olaf-mobile-nav-open {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: none !important;
+  }
+
+  .topbar.site-topbar-unified.is-mobile-nav-open::before {
+    content: "" !important;
+    position: fixed !important;
+    top: var(--olaf-mobile-scroll-y, 0px) !important;
+    right: 0 !important;
+    bottom: auto !important;
+    left: 0 !important;
+    z-index: 10040 !important;
+    display: block !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100svh !important;
+    background:
+      radial-gradient(circle at 14% 8%, rgba(37, 99, 235, 0.16), transparent 34%),
+      rgba(2, 6, 23, 0.72) !important;
+    backdrop-filter: blur(10px) saturate(1.08) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(1.08) !important;
+    opacity: 1 !important;
+    animation: olafMobileBackdropIn 190ms ease both !important;
+  }
+
+  .topbar.site-topbar-unified.is-mobile-nav-open::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified > .main-nav[data-mobile-menu="clean-v14"],
+  body.product-detail-page .topbar.site-topbar-unified > .main-nav[data-mobile-menu="clean-v14"],
+  body.extras-page .topbar.site-topbar-unified > .main-nav[data-mobile-menu="clean-v14"],
+  .profile-page .topbar.site-topbar-unified > .main-nav[data-mobile-menu="clean-v14"],
+  .topbar.site-topbar-unified > .main-nav[data-mobile-menu="clean-v14"] {
+    all: unset !important;
+    box-sizing: border-box !important;
+    position: fixed !important;
+    top: var(--olaf-mobile-scroll-y, 0px) !important;
+    left: 0 !important;
+    right: auto !important;
+    bottom: auto !important;
+    z-index: 10060 !important;
+    display: flex !important;
+    visibility: visible !important;
+    width: min(318px, 84vw) !important;
+    height: 100vh !important;
+    height: 100svh !important;
+    max-height: 100svh !important;
+    flex-direction: column !important;
+    overflow: hidden auto !important;
+    color: #e5edff !important;
+    border-right: 1px solid rgba(96, 165, 250, 0.18) !important;
+    border-radius: 0 24px 24px 0 !important;
+    background:
+      radial-gradient(circle at 14% 4%, rgba(59, 130, 246, 0.18), transparent 34%),
+      linear-gradient(180deg, rgba(7, 12, 28, 0.992), rgba(2, 6, 23, 0.992)) !important;
+    box-shadow: 28px 0 80px rgba(0, 0, 0, 0.48) !important;
+    backdrop-filter: blur(20px) saturate(1.1) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(1.1) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translate3d(-104%, 0, 0) scaleX(0.985) !important;
+    transform-origin: left center !important;
+    transition:
+      opacity 210ms ease,
+      transform 280ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+    will-change: transform, opacity !important;
+    contain: layout paint style !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav[data-mobile-menu="clean-v14"],
+  body.product-detail-page .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav[data-mobile-menu="clean-v14"],
+  body.extras-page .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav[data-mobile-menu="clean-v14"],
+  .profile-page .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav[data-mobile-menu="clean-v14"],
+  .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav[data-mobile-menu="clean-v14"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: translate3d(0, 0, 0) scaleX(1) !important;
+  }
+
+  .topbar.site-topbar-unified .main-nav[data-mobile-menu="clean-v14"] .mobile-menu-head,
+  .topbar.site-topbar-unified .main-nav[data-mobile-menu="clean-v14"] .mobile-menu-footer {
+    flex: 0 0 auto !important;
+  }
+
+  .topbar.site-topbar-unified .main-nav[data-mobile-menu="clean-v14"] > a {
+    flex: 0 0 auto !important;
+  }
+
+  #user-popover[data-mobile-portal="true"]:not([hidden]),
+  .user-popover[data-mobile-portal="true"]:not([hidden]) {
+    position: absolute !important;
+    inset: auto 0 auto auto !important;
+    transform: none !important;
+  }
+}
+
+@keyframes olafMobileBackdropIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 /* 2026-07-02 MOBILE MENU VIEWPORT PORTAL V16
    Drawer is now mounted under body, outside sticky header, so it stays aligned at any scroll position. */
 @media (min-width: 769px) {
@@ -331,7 +454,10 @@ html.has-order-action-popup {
     all: unset !important;
     box-sizing: border-box !important;
     position: fixed !important;
-    inset: 0 !important;
+    top: var(--olaf-mobile-scroll-y, 0px) !important;
+    right: 0 !important;
+    bottom: auto !important;
+    left: 0 !important;
     z-index: 10040 !important;
     display: block !important;
     width: 100vw !important;
@@ -355,7 +481,7 @@ html.has-order-action-popup {
     all: unset !important;
     box-sizing: border-box !important;
     position: fixed !important;
-    top: 0 !important;
+    top: var(--olaf-mobile-scroll-y, 0px) !important;
     right: auto !important;
     bottom: auto !important;
     left: 0 !important;
@@ -22173,5 +22299,136 @@ body:has(dialog[open]) {
     max-height: calc(100dvh - max(64px, calc(env(safe-area-inset-top, 0px) + 56px)) - max(14px, env(safe-area-inset-bottom, 0px))) !important;
     transform: translate3d(-50%, 0, 0) !important;
     z-index: 10055 !important;
+  }
+}
+
+/* 2026-07-03 MOBILE MENU OLD-DRAWER RESTORE V18 FINAL
+   This final override intentionally wins over V16/V17 portal styles. */
+@media (max-width: 768px) {
+  html.olaf-mobile-nav-open body .topbar.site-topbar-unified.is-mobile-nav-open::before {
+    top: var(--olaf-mobile-scroll-y, 0px) !important;
+    right: 0 !important;
+    bottom: auto !important;
+    left: 0 !important;
+  }
+
+  html.olaf-mobile-nav-open body .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav[data-mobile-menu="clean-v14"] {
+    top: var(--olaf-mobile-scroll-y, 0px) !important;
+    display: flex !important;
+    visibility: visible !important;
+  }
+}
+
+.olaf-mobile-menu-backdrop,
+.olaf-mobile-drawer,
+.olaf-mobile-drawer[data-mobile-menu="drawer-v16"] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+@media (max-width: 768px) {
+  html.olaf-mobile-nav-open,
+  body.olaf-mobile-nav-open {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: none !important;
+  }
+
+  body.olaf-mobile-nav-open .discord-floating-link {
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  .topbar.site-topbar-unified.is-mobile-nav-open::before {
+    content: "" !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10040 !important;
+    display: block !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100svh !important;
+    background:
+      radial-gradient(circle at 14% 8%, rgba(37, 99, 235, 0.16), transparent 34%),
+      rgba(2, 6, 23, 0.72) !important;
+    backdrop-filter: blur(10px) saturate(1.08) !important;
+    -webkit-backdrop-filter: blur(10px) saturate(1.08) !important;
+    opacity: 1 !important;
+    animation: olafMobileBackdropIn 190ms ease both !important;
+  }
+
+  .topbar.site-topbar-unified.is-mobile-nav-open::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified > .main-nav[data-mobile-menu="clean-v14"],
+  body.product-detail-page .topbar.site-topbar-unified > .main-nav[data-mobile-menu="clean-v14"],
+  body.extras-page .topbar.site-topbar-unified > .main-nav[data-mobile-menu="clean-v14"],
+  .profile-page .topbar.site-topbar-unified > .main-nav[data-mobile-menu="clean-v14"],
+  .topbar.site-topbar-unified > .main-nav[data-mobile-menu="clean-v14"] {
+    all: unset !important;
+    box-sizing: border-box !important;
+    position: fixed !important;
+    top: 0 !important;
+    left: 0 !important;
+    right: auto !important;
+    bottom: auto !important;
+    z-index: 10060 !important;
+    display: flex !important;
+    visibility: visible !important;
+    width: min(318px, 84vw) !important;
+    height: 100vh !important;
+    height: 100svh !important;
+    max-height: 100svh !important;
+    flex-direction: column !important;
+    overflow: hidden auto !important;
+    color: #e5edff !important;
+    border-right: 1px solid rgba(96, 165, 250, 0.18) !important;
+    border-radius: 0 24px 24px 0 !important;
+    background:
+      radial-gradient(circle at 14% 4%, rgba(59, 130, 246, 0.18), transparent 34%),
+      linear-gradient(180deg, rgba(7, 12, 28, 0.992), rgba(2, 6, 23, 0.992)) !important;
+    box-shadow: 28px 0 80px rgba(0, 0, 0, 0.48) !important;
+    backdrop-filter: blur(20px) saturate(1.1) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(1.1) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translate3d(-104%, 0, 0) scaleX(0.985) !important;
+    transform-origin: left center !important;
+    transition:
+      opacity 210ms ease,
+      transform 280ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+    will-change: transform, opacity !important;
+    contain: layout paint style !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav[data-mobile-menu="clean-v14"],
+  body.product-detail-page .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav[data-mobile-menu="clean-v14"],
+  body.extras-page .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav[data-mobile-menu="clean-v14"],
+  .profile-page .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav[data-mobile-menu="clean-v14"],
+  .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav[data-mobile-menu="clean-v14"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: translate3d(0, 0, 0) scaleX(1) !important;
+  }
+
+  .topbar.site-topbar-unified .main-nav[data-mobile-menu="clean-v14"] .mobile-menu-head,
+  .topbar.site-topbar-unified .main-nav[data-mobile-menu="clean-v14"] .mobile-menu-footer {
+    flex: 0 0 auto !important;
+  }
+
+  .topbar.site-topbar-unified .main-nav[data-mobile-menu="clean-v14"] > a {
+    flex: 0 0 auto !important;
+  }
+
+  #user-popover[data-mobile-portal="true"]:not([hidden]),
+  .user-popover[data-mobile-portal="true"]:not([hidden]) {
+    position: absolute !important;
+    inset: auto 0 auto auto !important;
+    transform: none !important;
   }
 }

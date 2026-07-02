@@ -20944,3 +20944,143 @@ body:has(dialog[open]) {
     overflow: hidden !important;
   }
 }
+
+/* 2026-07-02 MOBILE MENU POPUP V11
+   Hamburger button + compact vertical menu popover. */
+@media (max-width: 768px) {
+  .topbar.site-topbar-unified .mobile-nav-toggle .mobile-nav-chevron,
+  .topbar.site-topbar-unified .mobile-nav-toggle span {
+    display: none !important;
+  }
+
+  .topbar.site-topbar-unified .mobile-nav-toggle {
+    color: rgba(226, 232, 240, 0.88) !important;
+  }
+
+  .topbar.site-topbar-unified .mobile-nav-toggle:hover,
+  .topbar.site-topbar-unified .mobile-nav-toggle:focus-visible,
+  .topbar.site-topbar-unified.is-mobile-nav-open .mobile-nav-toggle {
+    border-color: rgba(96, 165, 250, 0.32) !important;
+    background: rgba(37, 99, 235, 0.14) !important;
+    color: #bfdbfe !important;
+    box-shadow: 0 0 0 1px rgba(96, 165, 250, 0.08), 0 10px 24px rgba(37, 99, 235, 0.12) !important;
+  }
+
+  .topbar.site-topbar-unified.is-mobile-nav-open::after,
+  body.home-page .topbar.site-topbar-unified.is-mobile-nav-open::after,
+  body.product-detail-page .topbar.site-topbar-unified.is-mobile-nav-open::after,
+  body.extras-page .topbar.site-topbar-unified.is-mobile-nav-open::after,
+  .profile-page .topbar.site-topbar-unified.is-mobile-nav-open::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified > .main-nav,
+  body.product-detail-page .topbar.site-topbar-unified > .main-nav,
+  body.extras-page .topbar.site-topbar-unified > .main-nav,
+  .profile-page .topbar.site-topbar-unified > .main-nav,
+  .topbar.site-topbar-unified > .main-nav {
+    position: fixed !important;
+    inset: 66px 10px auto auto !important;
+    left: auto !important;
+    right: 10px !important;
+    top: calc(66px + env(safe-area-inset-top, 0px)) !important;
+    bottom: auto !important;
+    z-index: 10070 !important;
+    display: flex !important;
+    width: min(224px, calc(100vw - 20px)) !important;
+    max-width: min(224px, calc(100vw - 20px)) !important;
+    height: auto !important;
+    max-height: min(330px, calc(100dvh - 86px)) !important;
+    flex-direction: column !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    gap: 5px !important;
+    padding: 8px !important;
+    overflow: auto !important;
+    border: 1px solid rgba(96, 165, 250, 0.18) !important;
+    border-radius: 18px !important;
+    background:
+      radial-gradient(circle at 84% 0%, rgba(96, 165, 250, 0.14), transparent 34%),
+      linear-gradient(180deg, rgba(10, 17, 32, 0.985), rgba(5, 10, 24, 0.972)) !important;
+    box-shadow:
+      0 22px 54px rgba(0, 0, 0, 0.42),
+      inset 0 1px 0 rgba(255, 255, 255, 0.035) !important;
+    backdrop-filter: blur(18px) saturate(1.1) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.1) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translate3d(0, -8px, 0) scale(0.965) !important;
+    transform-origin: top right !important;
+    transition:
+      opacity 170ms ease,
+      transform 190ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav,
+  body.product-detail-page .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav,
+  body.extras-page .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav,
+  .profile-page .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav,
+  .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    transform: translate3d(0, 0, 0) scale(1) !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified > .main-nav > a,
+  body.product-detail-page .topbar.site-topbar-unified > .main-nav > a,
+  body.extras-page .topbar.site-topbar-unified > .main-nav > a,
+  .profile-page .topbar.site-topbar-unified > .main-nav > a,
+  .topbar.site-topbar-unified > .main-nav > a {
+    display: flex !important;
+    min-height: 39px !important;
+    height: 39px !important;
+    width: 100% !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    margin: 0 !important;
+    padding: 0 12px !important;
+    border: 1px solid transparent !important;
+    border-radius: 13px !important;
+    background: transparent !important;
+    color: rgba(226, 232, 240, 0.82) !important;
+    font-size: 0.9rem !important;
+    font-weight: 400 !important;
+    line-height: 1.1 !important;
+    text-align: left !important;
+    white-space: nowrap !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified > .main-nav > a + a,
+  body.product-detail-page .topbar.site-topbar-unified > .main-nav > a + a,
+  body.extras-page .topbar.site-topbar-unified > .main-nav > a + a,
+  .profile-page .topbar.site-topbar-unified > .main-nav > a + a,
+  .topbar.site-topbar-unified > .main-nav > a + a {
+    margin-top: 0 !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified > .main-nav > a::after,
+  body.product-detail-page .topbar.site-topbar-unified > .main-nav > a::after,
+  body.extras-page .topbar.site-topbar-unified > .main-nav > a::after,
+  .profile-page .topbar.site-topbar-unified > .main-nav > a::after,
+  .topbar.site-topbar-unified > .main-nav > a::after {
+    display: none !important;
+    content: none !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified > .main-nav > a:hover,
+  body.home-page .topbar.site-topbar-unified > .main-nav > a.is-active,
+  body.product-detail-page .topbar.site-topbar-unified > .main-nav > a:hover,
+  body.product-detail-page .topbar.site-topbar-unified > .main-nav > a.is-active,
+  body.extras-page .topbar.site-topbar-unified > .main-nav > a:hover,
+  body.extras-page .topbar.site-topbar-unified > .main-nav > a.is-active,
+  .profile-page .topbar.site-topbar-unified > .main-nav > a:hover,
+  .profile-page .topbar.site-topbar-unified > .main-nav > a.is-active,
+  .topbar.site-topbar-unified > .main-nav > a:hover,
+  .topbar.site-topbar-unified > .main-nav > a.is-active {
+    border-color: rgba(96, 165, 250, 0.22) !important;
+    background: rgba(37, 99, 235, 0.13) !important;
+    color: #bfdbfe !important;
+    text-shadow: 0 0 14px rgba(96, 165, 250, 0.18) !important;
+  }
+}

@@ -136,9 +136,9 @@
       toggle.className = "mobile-nav-toggle";
       toggle.type = "button";
       toggle.setAttribute("aria-controls", navId);
-      toggle.innerHTML = '<i data-lucide="layout-grid"></i><span>เมนู</span><i data-lucide="chevron-down" class="mobile-nav-chevron"></i>';
       header.insertBefore(toggle, nav);
     }
+    toggle.innerHTML = '<i data-lucide="menu"></i><span>menu</span>';
     toggle.setAttribute("aria-expanded", "false");
 
     toggle.addEventListener("click", () => {

@@ -20399,3 +20399,315 @@ body:has(dialog[open]) {
     margin-top: 5px !important;
   }
 }
+
+/* 2026-07-02 MOBILE BUGFIX V9
+   Fixes real phone screenshots:
+   - hidden QR loader must stay hidden after the QR image loads
+   - QR sheet must fit Safari mobile viewport without clipping
+   - drawer/user popover/menu icons are smaller and Discord does not overlap overlays */
+@media (max-width: 768px) {
+  dialog.qr-payment-dialog [hidden],
+  dialog.site-cart-dialog [hidden],
+  dialog.checkout-order-dialog [hidden],
+  dialog.order-confirm-dialog [hidden],
+  dialog.qr-payment-dialog .qr-loading[hidden],
+  dialog.qr-payment-dialog .qr-image[hidden],
+  dialog.qr-payment-dialog .qr-unavailable[hidden],
+  dialog.site-cart-dialog .site-cart-qr-loading[hidden],
+  dialog.site-cart-dialog .site-cart-qr-frame[hidden] {
+    display: none !important;
+    visibility: hidden !important;
+  }
+
+  body:has(dialog[open]) .discord-floating-link,
+  body:has(.topbar.site-topbar-unified.is-mobile-nav-open) .discord-floating-link,
+  body:has(.user-popover:not([hidden])) .discord-floating-link,
+  body:has(.notification-popover:not([hidden])) .discord-floating-link,
+  body:has(.language-popover:not([hidden])) .discord-floating-link {
+    display: none !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  .topbar.site-topbar-unified,
+  body.home-page .topbar.site-topbar-unified,
+  body.product-detail-page .topbar.site-topbar-unified,
+  .profile-page .topbar.site-topbar-unified,
+  .extras-page .topbar.site-topbar-unified {
+    min-height: 66px !important;
+    height: 66px !important;
+    padding: 9px 12px !important;
+    gap: 6px !important;
+  }
+
+  .topbar.site-topbar-unified > .brand {
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+  }
+
+  .topbar.site-topbar-unified .brand-mark {
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 14px !important;
+  }
+
+  .topbar.site-topbar-unified .topbar-actions {
+    gap: 5px !important;
+  }
+
+  .topbar.site-topbar-unified .icon-button,
+  .topbar.site-topbar-unified .account-button,
+  .topbar.site-topbar-unified .site-cart-button,
+  .topbar.site-topbar-unified .site-global-search,
+  .topbar.site-topbar-unified .topbar-search-wrap.site-unified-search,
+  .topbar.site-topbar-unified .topbar-search-wrap.site-unified-search .topbar-search-form,
+  .topbar.site-topbar-unified .mobile-nav-toggle {
+    width: 35px !important;
+    min-width: 35px !important;
+    max-width: 35px !important;
+    height: 35px !important;
+    min-height: 35px !important;
+    border-radius: 12px !important;
+  }
+
+  .topbar.site-topbar-unified .icon-button > svg,
+  .topbar.site-topbar-unified .icon-button > i,
+  .topbar.site-topbar-unified .account-button > svg,
+  .topbar.site-topbar-unified .account-button > i,
+  .topbar.site-topbar-unified .site-cart-button > svg,
+  .topbar.site-topbar-unified .site-cart-button > i,
+  .topbar.site-topbar-unified .mobile-nav-toggle > svg,
+  .topbar.site-topbar-unified .mobile-nav-toggle > i {
+    width: 16px !important;
+    height: 16px !important;
+  }
+
+  .topbar.site-topbar-unified .site-cart-count,
+  .topbar.site-topbar-unified .notification-badge {
+    top: -5px !important;
+    right: -5px !important;
+    min-width: 16px !important;
+    height: 16px !important;
+    font-size: 0.55rem !important;
+    line-height: 12px !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified > .main-nav,
+  body.product-detail-page .topbar.site-topbar-unified > .main-nav,
+  body.extras-page .topbar.site-topbar-unified > .main-nav,
+  .profile-page .topbar.site-topbar-unified > .main-nav,
+  .topbar.site-topbar-unified > .main-nav {
+    left: 0 !important;
+    width: min(248px, 74vw) !important;
+    max-width: min(248px, 74vw) !important;
+    padding: calc(14px + env(safe-area-inset-top, 0px)) 10px calc(14px + env(safe-area-inset-bottom, 0px)) !important;
+    gap: 4px !important;
+    border-right-color: rgba(96, 165, 250, 0.18) !important;
+    background:
+      radial-gradient(circle at 12% 0%, rgba(37, 99, 235, 0.13), transparent 34%),
+      linear-gradient(180deg, rgba(5, 10, 24, 0.965), rgba(3, 7, 18, 0.97)) !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified > .main-nav > a,
+  body.product-detail-page .topbar.site-topbar-unified > .main-nav > a,
+  body.extras-page .topbar.site-topbar-unified > .main-nav > a,
+  .profile-page .topbar.site-topbar-unified > .main-nav > a,
+  .topbar.site-topbar-unified > .main-nav > a {
+    min-height: 38px !important;
+    height: 38px !important;
+    padding: 0 11px !important;
+    border-radius: 11px !important;
+    font-size: 0.88rem !important;
+    color: rgba(226, 232, 240, 0.82) !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified > .main-nav > a + a,
+  body.product-detail-page .topbar.site-topbar-unified > .main-nav > a + a,
+  body.extras-page .topbar.site-topbar-unified > .main-nav > a + a,
+  .profile-page .topbar.site-topbar-unified > .main-nav > a + a,
+  .topbar.site-topbar-unified > .main-nav > a + a {
+    margin-top: 4px !important;
+  }
+
+  .user-popover:not([hidden]) {
+    top: 72px !important;
+    right: 8px !important;
+    left: auto !important;
+    width: min(326px, calc(100vw - 16px)) !important;
+    max-height: calc(100dvh - 94px) !important;
+    padding: 12px !important;
+    border-radius: 22px !important;
+    z-index: 10090 !important;
+  }
+
+  .user-popover:not([hidden]) .user-popover-header {
+    gap: 12px !important;
+  }
+
+  .user-popover:not([hidden]) .user-popover-avatar {
+    width: 52px !important;
+    height: 52px !important;
+    font-size: 1.25rem !important;
+  }
+
+  .user-popover:not([hidden]) .user-popover-info strong {
+    font-size: 1rem !important;
+  }
+
+  .user-popover:not([hidden]) .user-popover-info span {
+    font-size: 0.78rem !important;
+  }
+
+  .user-popover:not([hidden]) .user-popover-menu a,
+  .user-popover:not([hidden]) .user-popover-menu button {
+    min-height: 40px !important;
+    gap: 11px !important;
+    padding: 0 10px !important;
+    font-size: 0.92rem !important;
+  }
+
+  dialog.qr-payment-dialog[open] {
+    width: min(392px, calc(100vw - 26px)) !important;
+    max-width: calc(100vw - 26px) !important;
+    max-height: calc(100dvh - 26px) !important;
+    border-radius: 24px !important;
+    background:
+      linear-gradient(180deg, rgba(6, 11, 25, 0.94), rgba(4, 8, 18, 0.94)) !important;
+  }
+
+  dialog.qr-payment-dialog .premium-dialog-inner {
+    max-height: calc(100dvh - 26px) !important;
+    overflow: auto !important;
+    background: transparent !important;
+  }
+
+  dialog.qr-payment-dialog .dialog-close {
+    position: absolute !important;
+    top: 14px !important;
+    right: 14px !important;
+    z-index: 4 !important;
+    width: 42px !important;
+    min-width: 42px !important;
+    height: 42px !important;
+    border: 1px solid rgba(148, 163, 184, 0.20) !important;
+    border-radius: 15px !important;
+    background: rgba(255, 255, 255, 0.92) !important;
+    color: #64748b !important;
+    box-shadow: none !important;
+    outline: none !important;
+  }
+
+  dialog.qr-payment-dialog .dialog-close:focus,
+  dialog.qr-payment-dialog .dialog-close:focus-visible {
+    outline: none !important;
+    box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.22) !important;
+  }
+
+  dialog.qr-payment-dialog .premium-dialog-header {
+    margin: 14px 12px 0 !important;
+    padding: 50px 16px 8px !important;
+    border-radius: 22px 22px 0 0 !important;
+  }
+
+  dialog.qr-payment-dialog .premium-dialog-header h2 {
+    max-width: calc(100% - 18px) !important;
+    margin: 0 auto !important;
+    font-size: clamp(1.08rem, 4.9vw, 1.32rem) !important;
+    line-height: 1.25 !important;
+  }
+
+  dialog.qr-payment-dialog .premium-dialog-header p {
+    max-width: 100% !important;
+    margin-top: 8px !important;
+    font-size: 0.82rem !important;
+    line-height: 1.45 !important;
+  }
+
+  dialog.qr-payment-dialog .qr-payment-content {
+    display: grid !important;
+    gap: 14px !important;
+    margin: 0 12px !important;
+    padding: 12px 16px 14px !important;
+    overflow: hidden !important;
+    border-radius: 0 0 22px 22px !important;
+  }
+
+  dialog.qr-payment-dialog .qr-image-frame {
+    width: min(254px, 68vw) !important;
+    min-height: 0 !important;
+    aspect-ratio: 1 / 1 !important;
+    margin: 0 auto !important;
+    padding: 10px !important;
+    overflow: hidden !important;
+    border-radius: 16px !important;
+  }
+
+  dialog.qr-payment-dialog .qr-image-frame img,
+  dialog.qr-payment-dialog .qr-image {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
+  }
+
+  dialog.qr-payment-dialog .qr-loading {
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    padding: 12px !important;
+    align-content: center !important;
+    justify-items: center !important;
+  }
+
+  dialog.qr-payment-dialog .qr-image-frame:has(img:not([hidden])) .qr-loading {
+    display: none !important;
+  }
+
+  dialog.qr-payment-dialog .qr-order-details {
+    margin: 0 !important;
+  }
+
+  dialog.qr-payment-dialog .qr-detail-row {
+    justify-items: start !important;
+    text-align: left !important;
+  }
+
+  dialog.qr-payment-dialog .qr-total-highlight {
+    font-size: clamp(1.4rem, 7vw, 1.9rem) !important;
+  }
+
+  dialog.qr-payment-dialog .premium-actions {
+    margin: 0 12px 14px !important;
+    padding: 12px 16px 16px !important;
+  }
+
+  dialog.qr-payment-dialog .submit-order-btn {
+    min-height: 50px !important;
+    border-radius: 14px !important;
+    font-size: 0.96rem !important;
+  }
+
+  dialog.qr-payment-dialog .premium-actions .cancel-order-btn,
+  dialog.qr-payment-dialog .premium-actions .text-button {
+    min-height: 42px !important;
+    font-size: 0.9rem !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-paid-head,
+  dialog.site-cart-dialog .site-cart-qr-frame,
+  dialog.site-cart-dialog .site-cart-qr-loading,
+  dialog.site-cart-dialog .site-cart-result-actions {
+    margin-left: 12px !important;
+    margin-right: 12px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-qr-frame,
+  dialog.site-cart-dialog .site-cart-qr-loading {
+    overflow: hidden !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-qr-frame .site-cart-qr {
+    width: min(220px, 64vw) !important;
+    height: min(220px, 64vw) !important;
+  }
+}

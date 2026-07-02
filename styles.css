@@ -20711,3 +20711,236 @@ body:has(dialog[open]) {
     height: min(220px, 64vw) !important;
   }
 }
+
+/* 2026-07-02 MOBILE BUGFIX V10
+   JS-assisted fallback for Safari/phone cache quirks. */
+@media (max-width: 768px) {
+  html.olaf-topbar-overlay-open,
+  body.olaf-topbar-overlay-open,
+  html.olaf-mobile-nav-open,
+  body.olaf-mobile-nav-open,
+  html.olaf-dialog-open,
+  body.olaf-dialog-open {
+    overflow: hidden !important;
+    overscroll-behavior: contain !important;
+  }
+
+  html.olaf-topbar-overlay-open .discord-floating-link,
+  body.olaf-topbar-overlay-open .discord-floating-link,
+  html.olaf-mobile-nav-open .discord-floating-link,
+  body.olaf-mobile-nav-open .discord-floating-link,
+  html.olaf-dialog-open .discord-floating-link,
+  body.olaf-dialog-open .discord-floating-link {
+    display: none !important;
+    opacity: 0 !important;
+    transform: translate3d(140%, 0, 0) !important;
+    pointer-events: none !important;
+  }
+
+  body.product-detail-page .topbar.site-topbar-unified,
+  body.home-page .topbar.site-topbar-unified,
+  .topbar.site-topbar-unified {
+    height: 62px !important;
+    min-height: 62px !important;
+    padding: 8px 11px !important;
+  }
+
+  body.product-detail-page .topbar.site-topbar-unified .brand,
+  body.home-page .topbar.site-topbar-unified .brand,
+  .topbar.site-topbar-unified .brand,
+  body.product-detail-page .topbar.site-topbar-unified .brand-mark,
+  body.home-page .topbar.site-topbar-unified .brand-mark,
+  .topbar.site-topbar-unified .brand-mark {
+    width: 40px !important;
+    min-width: 40px !important;
+    height: 40px !important;
+  }
+
+  body.product-detail-page .topbar.site-topbar-unified .icon-button,
+  body.product-detail-page .topbar.site-topbar-unified .account-button,
+  body.product-detail-page .topbar.site-topbar-unified .site-cart-button,
+  body.product-detail-page .topbar.site-topbar-unified .site-global-search,
+  body.product-detail-page .topbar.site-topbar-unified .mobile-nav-toggle,
+  .topbar.site-topbar-unified .icon-button,
+  .topbar.site-topbar-unified .account-button,
+  .topbar.site-topbar-unified .site-cart-button,
+  .topbar.site-topbar-unified .site-global-search,
+  .topbar.site-topbar-unified .mobile-nav-toggle {
+    width: 34px !important;
+    min-width: 34px !important;
+    max-width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    border-radius: 12px !important;
+  }
+
+  body.product-detail-page .topbar.site-topbar-unified > .main-nav,
+  body.home-page .topbar.site-topbar-unified > .main-nav,
+  body.extras-page .topbar.site-topbar-unified > .main-nav,
+  .profile-page .topbar.site-topbar-unified > .main-nav,
+  .topbar.site-topbar-unified > .main-nav {
+    width: min(224px, 62vw) !important;
+    max-width: min(224px, 62vw) !important;
+    padding: calc(12px + env(safe-area-inset-top, 0px)) 9px calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+    background:
+      linear-gradient(180deg, rgba(4, 8, 18, 0.965), rgba(3, 7, 18, 0.972)) !important;
+    box-shadow: 18px 0 52px rgba(0, 0, 0, 0.36) !important;
+  }
+
+  body.product-detail-page .topbar.site-topbar-unified > .main-nav > a,
+  body.home-page .topbar.site-topbar-unified > .main-nav > a,
+  body.extras-page .topbar.site-topbar-unified > .main-nav > a,
+  .profile-page .topbar.site-topbar-unified > .main-nav > a,
+  .topbar.site-topbar-unified > .main-nav > a {
+    min-height: 34px !important;
+    height: 34px !important;
+    padding: 0 9px !important;
+    font-size: 0.82rem !important;
+    line-height: 1.1 !important;
+    border-radius: 10px !important;
+  }
+
+  #user-popover:not([hidden]),
+  .user-popover-wrap #user-popover:not([hidden]),
+  .user-popover:not([hidden]) {
+    position: fixed !important;
+    top: 68px !important;
+    right: 10px !important;
+    left: auto !important;
+    width: min(312px, calc(100vw - 20px)) !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100dvh - 94px) !important;
+    padding: 12px !important;
+    border-radius: 20px !important;
+    z-index: 10095 !important;
+    overflow: auto !important;
+  }
+
+  #user-popover:not([hidden]) .user-popover-header {
+    gap: 10px !important;
+    margin-bottom: 10px !important;
+  }
+
+  #user-popover:not([hidden]) .user-popover-avatar {
+    width: 48px !important;
+    height: 48px !important;
+    font-size: 1.18rem !important;
+  }
+
+  #user-popover:not([hidden]) .user-popover-badge-row {
+    min-height: 44px !important;
+    padding: 7px 8px !important;
+  }
+
+  #user-popover:not([hidden]) .user-popover-menu {
+    gap: 4px !important;
+    max-height: none !important;
+  }
+
+  #user-popover:not([hidden]) .user-popover-menu a,
+  #user-popover:not([hidden]) .user-popover-menu button {
+    min-height: 36px !important;
+    padding: 0 9px !important;
+    gap: 10px !important;
+    font-size: 0.86rem !important;
+  }
+
+  #user-popover:not([hidden]) .user-popover-menu svg,
+  #user-popover:not([hidden]) .user-popover-menu i {
+    width: 17px !important;
+    height: 17px !important;
+  }
+
+  dialog.qr-payment-dialog[open] {
+    width: min(374px, calc(100vw - 30px)) !important;
+    max-height: calc(100dvh - 32px) !important;
+    border-radius: 24px !important;
+  }
+
+  dialog.qr-payment-dialog .premium-dialog-inner {
+    max-height: calc(100dvh - 32px) !important;
+    overflow: auto !important;
+  }
+
+  dialog.qr-payment-dialog .premium-dialog-header {
+    margin: 12px 10px 0 !important;
+    padding: 44px 14px 8px !important;
+  }
+
+  dialog.qr-payment-dialog .qr-payment-content {
+    margin: 0 10px !important;
+    padding: 10px 14px 12px !important;
+    gap: 10px !important;
+  }
+
+  dialog.qr-payment-dialog .qr-image-frame {
+    position: relative !important;
+    display: block !important;
+    width: min(238px, 61vw) !important;
+    height: min(238px, 61vw) !important;
+    min-height: 0 !important;
+    margin: 0 auto !important;
+    padding: 8px !important;
+    overflow: hidden !important;
+    box-sizing: border-box !important;
+  }
+
+  dialog.qr-payment-dialog .qr-loading,
+  dialog.qr-payment-dialog .qr-image {
+    position: absolute !important;
+    inset: 8px !important;
+    width: calc(100% - 16px) !important;
+    height: calc(100% - 16px) !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  dialog.qr-payment-dialog .qr-loading {
+    display: grid !important;
+    place-items: center !important;
+    align-content: center !important;
+    z-index: 1 !important;
+  }
+
+  dialog.qr-payment-dialog .qr-image {
+    z-index: 2 !important;
+    object-fit: contain !important;
+    background: #fff !important;
+  }
+
+  dialog.qr-payment-dialog .qr-image-frame.has-qr-image .qr-loading,
+  dialog.qr-payment-dialog .qr-loading[hidden],
+  dialog.qr-payment-dialog .qr-image[hidden] + .qr-loading {
+    display: none !important;
+  }
+
+  dialog.qr-payment-dialog .qr-order-details {
+    margin-top: 0 !important;
+  }
+
+  dialog.qr-payment-dialog .qr-detail-row {
+    min-height: auto !important;
+    gap: 3px !important;
+  }
+
+  dialog.qr-payment-dialog .premium-actions {
+    margin: 0 10px 12px !important;
+    padding: 10px 14px 14px !important;
+  }
+
+  dialog.qr-payment-dialog .submit-order-btn,
+  dialog.qr-payment-dialog .premium-actions .cancel-order-btn,
+  dialog.qr-payment-dialog .premium-actions .text-button {
+    min-height: 40px !important;
+  }
+
+  dialog.site-cart-dialog .site-cart-qr-frame,
+  dialog.site-cart-dialog .site-cart-qr-loading {
+    position: relative !important;
+    width: min(238px, 61vw) !important;
+    min-height: min(238px, 61vw) !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    overflow: hidden !important;
+  }
+}

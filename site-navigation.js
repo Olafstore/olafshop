@@ -113,6 +113,19 @@
     const nav = header.querySelector(".main-nav");
     if (!nav) return;
 
+    const syncMobileNavState = () => {
+      const isAnyOpen = Boolean(document.querySelector(".topbar.is-mobile-nav-open, .topbar.site-topbar-unified.is-mobile-nav-open"));
+      document.documentElement.classList.toggle("olaf-mobile-nav-open", isAnyOpen);
+      document.body?.classList.toggle("olaf-mobile-nav-open", isAnyOpen);
+      document.body?.classList.toggle("olaf-topbar-overlay-open", isAnyOpen);
+    };
+
+    const setMobileNavOpen = (isOpen) => {
+      header.classList.toggle("is-mobile-nav-open", Boolean(isOpen));
+      toggle?.setAttribute("aria-expanded", String(Boolean(isOpen)));
+      syncMobileNavState();
+    };
+
     nav.innerHTML = NAV_ITEMS.map(navLinkHtml).join("");
     const navId = nav.id || `main-nav-${index + 1}`;
     nav.id = navId;
@@ -129,25 +142,21 @@
     toggle.setAttribute("aria-expanded", "false");
 
     toggle.addEventListener("click", () => {
-      const isOpen = header.classList.toggle("is-mobile-nav-open");
-      toggle.setAttribute("aria-expanded", String(isOpen));
+      setMobileNavOpen(!header.classList.contains("is-mobile-nav-open"));
     });
     nav.addEventListener("click", (event) => {
       if (!event.target.closest("a")) return;
-      header.classList.remove("is-mobile-nav-open");
-      toggle.setAttribute("aria-expanded", "false");
+      setMobileNavOpen(false);
     });
 
     document.addEventListener("click", (event) => {
       if (header.contains(event.target)) return;
-      header.classList.remove("is-mobile-nav-open");
-      toggle.setAttribute("aria-expanded", "false");
+      setMobileNavOpen(false);
     });
 
     document.addEventListener("keydown", (event) => {
       if (event.key !== "Escape") return;
-      header.classList.remove("is-mobile-nav-open");
-      toggle.setAttribute("aria-expanded", "false");
+      setMobileNavOpen(false);
     });
   }
 
@@ -451,6 +460,8 @@
             header.querySelector(".mobile-nav-toggle")?.setAttribute("aria-expanded", "false");
             header.querySelector(".is-search-open")?.classList.remove("is-search-open");
           });
+          document.documentElement.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
+          document.body?.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
         }
       });
     }, { passive: true });

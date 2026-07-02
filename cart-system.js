@@ -123,6 +123,8 @@
       header.classList.remove("is-mobile-nav-open");
       header.querySelector(".mobile-nav-toggle")?.setAttribute("aria-expanded", "false");
     });
+    document.documentElement.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
+    document.body?.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
   }
 
   function updateCartStageCopy(dialog, stage) {

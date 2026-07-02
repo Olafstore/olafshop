@@ -2411,9 +2411,37 @@ function isMobilePaymentView() {
   return window.matchMedia?.("(max-width: 768px)")?.matches || window.innerWidth <= 768;
 }
 
+function syncProductOverlayState() {
+  const overlayOpen = Boolean(
+    document.querySelector("dialog[open], .user-popover:not([hidden]), .notification-popover:not([hidden]), .language-popover:not([hidden]), .topbar.is-mobile-nav-open, .topbar.site-topbar-unified.is-mobile-nav-open")
+  );
+  document.documentElement.classList.toggle("olaf-topbar-overlay-open", overlayOpen);
+  document.body?.classList.toggle("olaf-topbar-overlay-open", overlayOpen);
+}
+
+function setQrLoadingVisible(visible) {
+  const loading = $("[data-qr-loading]");
+  if (!loading) return;
+  loading.hidden = !visible;
+  loading.toggleAttribute("hidden", !visible);
+  loading.style.display = visible ? "grid" : "none";
+}
+
+function setQrImageVisible(visible) {
+  const image = $("[data-qr-image]");
+  const frame = image?.closest(".qr-image-frame");
+  if (!image) return;
+  image.hidden = !visible;
+  image.toggleAttribute("hidden", !visible);
+  image.style.display = visible ? "block" : "none";
+  frame?.classList.toggle("has-qr-image", Boolean(visible));
+  if (visible) setQrLoadingVisible(false);
+}
+
 function setMobilePaymentStage(dialog, stage) {
   if (!dialog) return;
   dialog.dataset.paymentStage = stage;
+  syncProductOverlayState();
   if (!isMobilePaymentView()) return;
   dialog.classList.remove("is-mobile-payment-pop");
   void dialog.offsetWidth;
@@ -2440,11 +2468,11 @@ function showDirectOrderProcessingPopup() {
   const unavailable = $("[data-qr-unavailable]");
   const note = $("[data-qr-note]");
   if (loading) {
-    loading.hidden = false;
+    setQrLoadingVisible(true);
     loading.textContent = "กำลังสร้างคำสั่งซื้อและเตรียม QR สำหรับชำระเงิน...";
   }
   if (image) {
-    image.hidden = true;
+    setQrImageVisible(false);
     image.removeAttribute("src");
     image.onload = null;
     image.onerror = null;
@@ -2530,18 +2558,18 @@ function showPaymentResult(order) {
   const loading = $("[data-qr-loading]");
   const image = $("[data-qr-image]");
   const unavailable = $("[data-qr-unavailable]");
-  if (loading) loading.hidden = !qrUrl;
+  setQrLoadingVisible(Boolean(qrUrl));
   if (unavailable) unavailable.hidden = true;
   if (image) {
-    image.hidden = true;
+    setQrImageVisible(false);
     image.removeAttribute("src");
     image.onload = null;
     image.onerror = null;
     if (qrUrl) {
       let qrIndex = 1;
       image.onload = () => {
-        if (loading) loading.hidden = true;
-        image.hidden = false;
+        setQrLoadingVisible(false);
+        setQrImageVisible(true);
       };
       image.onerror = () => {
         const nextQr = qrUrls[qrIndex];
@@ -2550,8 +2578,8 @@ function showPaymentResult(order) {
           image.src = nextQr;
           return;
         }
-        if (loading) loading.hidden = true;
-        image.hidden = true;
+        setQrLoadingVisible(false);
+        setQrImageVisible(false);
         if (unavailable) unavailable.hidden = false;
       };
       image.loading = "eager";
@@ -2559,14 +2587,14 @@ function showPaymentResult(order) {
       image.fetchPriority = "high";
       image.src = qrUrl;
       if (image.complete && image.naturalWidth > 0) {
-        if (loading) loading.hidden = true;
-        image.hidden = false;
+        setQrLoadingVisible(false);
+        setQrImageVisible(true);
       }
     } else if (unavailable) {
       unavailable.hidden = false;
     }
   } else if (loading) {
-    loading.hidden = true;
+    setQrLoadingVisible(false);
   }
 
   if (!dialog.open) dialog.showModal();
@@ -2869,6 +2897,7 @@ function closeLanguageMenu() {
   const toggle = $("#lang-toggle");
   if (popover) popover.hidden = true;
   if (toggle) toggle.setAttribute("aria-expanded", "false");
+  syncProductOverlayState();
 }
 
 function toggleLanguageMenu() {
@@ -2879,6 +2908,7 @@ function toggleLanguageMenu() {
   if (nextOpen) closeNotificationMenu();
   popover.hidden = !nextOpen;
   toggle.setAttribute("aria-expanded", String(nextOpen));
+  syncProductOverlayState();
 }
 
 function selectLanguage(lang) {
@@ -2896,12 +2926,14 @@ function closeNotificationMenu() {
   const toggle = $("#open-notifications");
   if (popover) popover.hidden = true;
   if (toggle) toggle.setAttribute("aria-expanded", "false");
+  syncProductOverlayState();
 }
 
 function closeUserPopover() {
   const popover = document.querySelector("#user-popover");
   if (popover) popover.hidden = true;
   document.querySelector("#open-auth")?.classList.remove("is-active");
+  syncProductOverlayState();
 }
 
 function toggleNotificationMenu() {
@@ -2913,6 +2945,7 @@ function toggleNotificationMenu() {
   closeUserPopover();
   popover.hidden = !nextOpen;
   toggle.setAttribute("aria-expanded", String(nextOpen));
+  syncProductOverlayState();
 }
 
 function renderUserPopover() {
@@ -3065,6 +3098,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     button.addEventListener("click", () => button.closest("dialog")?.close());
   });
   $("[data-qr-close-btn]")?.addEventListener("click", () => $("#qr-dialog")?.close());
+  document.querySelectorAll("dialog").forEach((dialog) => {
+    dialog.addEventListener("close", syncProductOverlayState);
+    dialog.addEventListener("cancel", syncProductOverlayState);
+  });
   $("[data-qr-upload-slip-btn]")?.addEventListener("click", openQrSlipPicker);
   $("[data-qr-view-order-btn]")?.addEventListener("click", viewCurrentQrOrder);
   $("[data-qr-cancel-btn]")?.addEventListener("click", cancelCurrentQrOrder);
@@ -3086,6 +3123,7 @@ document.addEventListener("DOMContentLoaded", async () => {
         popover.hidden = !popover.hidden;
         document.querySelector("#open-auth").classList.toggle("is-active", !popover.hidden);
         if (!popover.hidden) refreshTopbarPointBalance().catch(() => null);
+        syncProductOverlayState();
       }
     } else {
       window.location.href = "login.html?return=" + encodeURIComponent(window.location.href);

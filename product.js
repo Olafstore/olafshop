@@ -2292,11 +2292,13 @@ async function submitOrder(formData) {
   const purchase = getPurchaseOption(p);
   const submitButton = $("#submit-order");
   const originalHtml = submitButton?.innerHTML || "";
+  const mobilePaymentFlow = isMobilePaymentView();
   if (submitButton) {
     submitButton.disabled = true;
     submitButton.innerHTML = '<i data-lucide="loader-circle"></i> กำลังสร้างออเดอร์...';
     createIconSet();
   }
+  if (mobilePaymentFlow) showDirectOrderProcessingPopup();
 
   try {
     if (!window.OlafOrders?.createOrder) throw new Error("Supabase order client is not ready");
@@ -2315,6 +2317,7 @@ async function submitOrder(formData) {
     if (orderNumberWrap) orderNumberWrap.hidden = false;
     $("#order-dialog")?.close();
     if (Number(savedOrder?.total || 0) <= 0 || savedOrder?.paymentStatus === "verified") {
+      if (mobilePaymentFlow && $("#qr-dialog")?.open) $("#qr-dialog")?.close();
       showToast(
         savedOrder?.status === "delivered"
           ? "ใช้พอยท์สั่งซื้อสำเร็จ และจัดส่งสินค้า Offline แล้ว"
@@ -2332,6 +2335,7 @@ async function submitOrder(formData) {
     showToast("สร้างคำสั่งซื้อแล้ว กรุณาชำระเงินและแนบสลิป", "payment", 5000);
     return;
   } catch (error) {
+    if (mobilePaymentFlow && $("#qr-dialog")?.open && !currentQrOrder) $("#qr-dialog")?.close();
     showToast(orderErrorMessage(error), "error", 5000);
   } finally {
     if (submitButton) {
@@ -2343,7 +2347,20 @@ async function submitOrder(formData) {
 }
 
 function createPromptPayUrl(amount) {
-  const promptPayId = globalPayload?.store?.promptPayId || "0812345678";
+  const paymentInfo = globalPayload?.store?.payment ?? {};
+  const promptPayChannel = paymentChannelForMethod("promptpay");
+  const promptPayId = String(
+    promptPayChannel?.promptPayId ||
+    promptPayChannel?.promptpayId ||
+    paymentInfo.promptPayId ||
+    paymentInfo.promptpayId ||
+    globalPayload?.store?.promptPayId ||
+    window.OLAF_CONFIG?.promptPayId ||
+    ""
+  )
+    .trim()
+    .replace(/[^\d]/g, "");
+  if (!promptPayId) return "";
   const value = Math.max(1, Number(amount || 0)).toFixed(2);
   return `https://promptpay.io/${encodeURIComponent(promptPayId)}/${value}.png`;
 }
@@ -2363,12 +2380,85 @@ function paymentChannelForMethod(method) {
 }
 
 function paymentQrForOrder(order) {
+  return paymentQrCandidatesForOrder(order)[0] || "";
+}
+
+function uniquePaymentUrls(values = []) {
+  return [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
+}
+
+function paymentQrCandidatesForOrder(order) {
   const method = normalizePaymentMethod(order.paymentMethod);
   const channel = paymentChannelForMethod(method);
   const paymentInfo = globalPayload?.store?.payment ?? {};
-  if (channel?.qrUrl) return channel.qrUrl;
-  if (method === "wallet") return paymentInfo.trueMoneyQrUrl || "";
-  return paymentInfo.manualQrUrl || "";
+  if (method === "wallet") {
+    return uniquePaymentUrls([
+      channel?.qrUrl,
+      paymentInfo.trueMoneyQrUrl,
+      paymentInfo.walletQrUrl,
+      paymentInfo.manualQrUrl
+    ]);
+  }
+  return uniquePaymentUrls([
+    channel?.qrUrl,
+    paymentInfo.manualQrUrl,
+    paymentInfo.qrUrl,
+    createPromptPayUrl(order.total)
+  ]);
+}
+
+function isMobilePaymentView() {
+  return window.matchMedia?.("(max-width: 768px)")?.matches || window.innerWidth <= 768;
+}
+
+function setMobilePaymentStage(dialog, stage) {
+  if (!dialog) return;
+  dialog.dataset.paymentStage = stage;
+  if (!isMobilePaymentView()) return;
+  dialog.classList.remove("is-mobile-payment-pop");
+  void dialog.offsetWidth;
+  dialog.classList.add("is-mobile-payment-pop");
+  clearTimeout(dialog._mobilePaymentPopTimer);
+  dialog._mobilePaymentPopTimer = window.setTimeout(() => {
+    dialog.classList.remove("is-mobile-payment-pop");
+  }, 320);
+}
+
+function showDirectOrderProcessingPopup() {
+  if (!isMobilePaymentView()) return;
+  const orderDialog = $("#order-dialog");
+  const dialog = $("#qr-dialog");
+  if (!dialog) return;
+  if (orderDialog?.open) orderDialog.close();
+  currentQrOrder = null;
+  setTextContent("[data-qr-order-id]", "กำลังสร้างคำสั่งซื้อ");
+  setTextContent("[data-qr-total]", formatPrice(Math.max(checkoutPointState.totalBeforePoints - checkoutPointState.pointsToUse, 0)));
+  const methodBadge = $("[data-qr-method-badge]");
+  if (methodBadge) methodBadge.innerHTML = `<i data-lucide="loader-circle"></i> กำลังเตรียม QR`;
+  const loading = $("[data-qr-loading]");
+  const image = $("[data-qr-image]");
+  const unavailable = $("[data-qr-unavailable]");
+  const note = $("[data-qr-note]");
+  if (loading) {
+    loading.hidden = false;
+    loading.textContent = "กำลังสร้างคำสั่งซื้อและเตรียม QR สำหรับชำระเงิน...";
+  }
+  if (image) {
+    image.hidden = true;
+    image.removeAttribute("src");
+    image.onload = null;
+    image.onerror = null;
+  }
+  if (unavailable) unavailable.hidden = true;
+  if (note) {
+    note.hidden = true;
+    note.innerHTML = "";
+  }
+  const status = $(".qr-status-badge");
+  if (status) status.innerHTML = `<i data-lucide="loader-circle"></i> กำลังสร้างคำสั่งซื้อ`;
+  if (!dialog.open) dialog.showModal();
+  setMobilePaymentStage(dialog, "creating");
+  createIconSet();
 }
 
 function showPaymentResult(order) {
@@ -2376,7 +2466,8 @@ function showPaymentResult(order) {
   const methodLabel = { promptpay: "QR พร้อมเพย์", wallet: "TrueMoney Wallet" }[method] || "QR พร้อมเพย์";
   const methodIcon = method === "wallet" ? "wallet" : "qr-code";
   const paymentInfo = globalPayload?.store?.payment ?? {};
-  const qrUrl = paymentQrForOrder(order);
+  const qrUrls = paymentQrCandidatesForOrder(order);
+  const qrUrl = qrUrls[0] || "";
 
   const dialog = $("#qr-dialog");
   if (!dialog) {
@@ -2393,6 +2484,8 @@ function showPaymentResult(order) {
 
   setTextContent("[data-qr-order-id]", formatOrderReference(order));
   setTextContent("[data-qr-total]", formatPrice(order.total));
+  const status = $(".qr-status-badge");
+  if (status) status.innerHTML = `<i data-lucide="clock"></i> รอการชำระเงิน`;
 
   const note = $("[data-qr-note]");
   if (note) {
@@ -2442,12 +2535,21 @@ function showPaymentResult(order) {
   if (image) {
     image.hidden = true;
     image.removeAttribute("src");
+    image.onload = null;
+    image.onerror = null;
     if (qrUrl) {
+      let qrIndex = 1;
       image.onload = () => {
         if (loading) loading.hidden = true;
         image.hidden = false;
       };
       image.onerror = () => {
+        const nextQr = qrUrls[qrIndex];
+        qrIndex += 1;
+        if (nextQr) {
+          image.src = nextQr;
+          return;
+        }
         if (loading) loading.hidden = true;
         image.hidden = true;
         if (unavailable) unavailable.hidden = false;
@@ -2468,6 +2570,7 @@ function showPaymentResult(order) {
   }
 
   if (!dialog.open) dialog.showModal();
+  setMobilePaymentStage(dialog, "qr");
   createIconSet();
   hydrateImages();
 }

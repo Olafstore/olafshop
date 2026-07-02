@@ -17866,3 +17866,143 @@ dialog.site-cart-dialog .site-cart-payment-result[hidden] {
   visibility: hidden !important;
   pointer-events: none !important;
 }
+
+/* 2026-07-02 FINAL FIX: mobile payment dialogs, QR step flow, and scroll stability */
+@media (max-width: 768px) {
+  html:has(dialog[open]),
+  body:has(dialog[open]) {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: pan-y;
+  }
+
+  dialog.checkout-order-dialog[open],
+  dialog.qr-payment-dialog[open],
+  dialog.order-confirm-dialog[open],
+  dialog.site-cart-dialog[open] {
+    width: min(430px, calc(100vw - 16px)) !important;
+    max-width: calc(100vw - 16px) !important;
+    max-height: calc(100dvh - 16px) !important;
+    border-radius: 22px !important;
+    overflow: hidden !important;
+    scrollbar-gutter: stable both-edges;
+    transform: translate3d(-50%, -50%, 0) !important;
+    will-change: transform, opacity;
+    contain: layout paint;
+  }
+
+  dialog.checkout-order-dialog .premium-dialog-inner,
+  dialog.qr-payment-dialog .premium-dialog-inner,
+  dialog.order-confirm-dialog .order-confirm-inner,
+  dialog.site-cart-dialog .site-cart-shell {
+    display: flex !important;
+    flex-direction: column !important;
+    max-height: calc(100dvh - 16px) !important;
+    overflow: hidden !important;
+    overscroll-behavior: contain !important;
+  }
+
+  dialog.checkout-order-dialog .premium-checkout-form,
+  dialog.qr-payment-dialog .qr-payment-content,
+  dialog.order-confirm-dialog .order-confirm-terms-wrap,
+  dialog.site-cart-dialog .site-cart-body {
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain !important;
+    touch-action: pan-y;
+  }
+
+  dialog.checkout-order-dialog[open].is-mobile-payment-pop,
+  dialog.qr-payment-dialog[open].is-mobile-payment-pop,
+  dialog.site-cart-dialog[open].is-mobile-stage-pop {
+    animation: mobilePaymentStepPop 240ms cubic-bezier(0.2, 0.9, 0.22, 1.08) both !important;
+  }
+
+  dialog.checkout-order-dialog .premium-dialog-header,
+  dialog.qr-payment-dialog .premium-dialog-header,
+  dialog.site-cart-dialog .site-cart-head {
+    flex: 0 0 auto !important;
+  }
+
+  dialog.qr-payment-dialog[data-payment-stage="creating"] .qr-image-frame {
+    display: grid !important;
+    place-items: center !important;
+    min-height: min(240px, 58vw) !important;
+  }
+
+  dialog.qr-payment-dialog[data-payment-stage="creating"] .qr-loading {
+    display: grid !important;
+    place-items: center !important;
+    min-height: 150px !important;
+    padding: 18px !important;
+  }
+
+  dialog.qr-payment-dialog .qr-image-frame {
+    flex: 0 0 auto !important;
+  }
+
+  dialog.qr-payment-dialog .qr-image,
+  .site-cart-qr-frame .site-cart-qr {
+    background: #fff !important;
+    object-fit: contain !important;
+  }
+
+  dialog.qr-payment-dialog .premium-actions,
+  dialog.checkout-order-dialog .premium-actions,
+  .site-cart-result-actions,
+  .site-cart-mobile-actions {
+    flex: 0 0 auto !important;
+    transform: translateZ(0);
+  }
+
+  .site-cart-noqr,
+  dialog.qr-payment-dialog .qr-unavailable {
+    width: 100% !important;
+    padding: 18px 14px !important;
+    border: 1px solid rgba(248, 113, 113, 0.28) !important;
+    border-radius: 18px !important;
+    background: rgba(127, 29, 29, 0.18) !important;
+    color: #fecaca !important;
+    text-align: center !important;
+    line-height: 1.5 !important;
+  }
+}
+
+@keyframes mobilePaymentStepPop {
+  from {
+    opacity: 0.76;
+    transform: translate3d(-50%, -47%, 0) scale(0.965);
+  }
+
+  to {
+    opacity: 1;
+    transform: translate3d(-50%, -50%, 0) scale(1);
+  }
+}
+
+/* Absolute final guard: hidden payment/cart panels stay hidden on every mobile stage. */
+dialog.site-cart-dialog .site-cart-summary[hidden],
+dialog.site-cart-dialog .site-cart-summary-card[hidden],
+dialog.site-cart-dialog [data-site-cart-stage-panel="items"][hidden],
+dialog.site-cart-dialog .site-cart-payment-result[hidden],
+dialog.qr-payment-dialog [hidden],
+dialog.checkout-order-dialog [hidden] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+  position: absolute !important;
+  inline-size: 0 !important;
+  block-size: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  max-width: 0 !important;
+  max-height: 0 !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  overflow: hidden !important;
+  opacity: 0 !important;
+}

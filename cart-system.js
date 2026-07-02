@@ -296,6 +296,17 @@
     badge.hidden = count <= 0;
   }
 
+  function setStagePanelHidden(element, hidden) {
+    if (!element) return;
+    element.hidden = !!hidden;
+    element.toggleAttribute("hidden", !!hidden);
+    if (hidden) {
+      element.style.setProperty("display", "none", "important");
+    } else {
+      element.style.removeProperty("display");
+    }
+  }
+
   function setCartStage(dialog, stage = "cart", options = {}) {
     cartStage = stage;
     const isPaymentStep = stage === "creating" || stage === "payment";
@@ -310,12 +321,12 @@
     dialog.classList.toggle("is-payment-mode", stage === "payment");
     dialog.classList.toggle("is-summary-mode", isSummary);
     dialog.classList.toggle("is-cart-processing", isProcessing);
-    if (itemsPanel) itemsPanel.hidden = isPaymentStep || isSummary;
-    if (summaryAside) summaryAside.hidden = isPaymentStep || (isMobile && stage === "cart");
-    if (summaryCard) summaryCard.hidden = isPaymentStep || (isMobile && stage === "cart");
-    if (paymentBox) paymentBox.hidden = !isPaymentStep;
+    setStagePanelHidden(itemsPanel, isPaymentStep || isSummary);
+    setStagePanelHidden(summaryAside, isPaymentStep || (isMobile && stage === "cart"));
+    setStagePanelHidden(summaryCard, isPaymentStep || (isMobile && stage === "cart"));
+    setStagePanelHidden(paymentBox, !isPaymentStep);
     if (paymentBox && !isPaymentStep) {
-      paymentBox.hidden = true;
+      setStagePanelHidden(paymentBox, true);
       paymentBox.innerHTML = "";
     }
     updateCartStageCopy(dialog, stage);
@@ -332,7 +343,7 @@
     if (!box) return;
     setCartStage(dialog, "creating");
     $(".site-cart-body", dialog)?.scrollTo({ top: 0, behavior: "smooth" });
-    box.hidden = false;
+    setStagePanelHidden(box, false);
     box.innerHTML = `
       <div class="site-cart-stage-loader" role="status" aria-live="polite">
         <span class="site-cart-qr-loader"><i data-lucide="loader-circle"></i></span>
@@ -468,16 +479,81 @@
   }
 
   function promptPayQr(promptPayId, amount) {
-    const id = String(promptPayId || "").trim();
+    const id = String(promptPayId || "")
+      .trim()
+      .replace(/[^\d]/g, "");
     if (!id) return "";
     return `https://promptpay.io/${encodeURIComponent(id)}/${Math.max(1, Number(amount || 0)).toFixed(2)}.png`;
   }
 
-  async function paymentQr(order) {
+  function normalizePaymentMethod(method) {
+    const value = String(method || "").trim().toLowerCase();
+    if (["wallet", "wallet-api", "truemoney", "true_money"].includes(value)) return "wallet";
+    return "promptpay";
+  }
+
+  function uniqueValues(values = []) {
+    return [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
+  }
+
+  async function paymentQrCandidates(order) {
     const settings = await storeSettings();
     const payment = settings?.payment || {};
-    if (order.paymentMethod === "wallet") return payment.trueMoneyQrUrl || payment.manualQrUrl || "";
-    return payment.manualQrUrl || promptPayQr(payment.promptPayId || settings.promptPayId, order.total);
+    const method = normalizePaymentMethod(order.paymentMethod || order.payment_method);
+    const channels = Array.isArray(settings?.paymentChannels) ? settings.paymentChannels : [];
+    const channel = channels.find((item) => normalizePaymentMethod(item?.method || item?.id) === method) || null;
+    const promptPayId =
+      channel?.promptPayId ||
+      channel?.promptpayId ||
+      payment.promptPayId ||
+      payment.promptpayId ||
+      settings.promptPayId ||
+      window.OLAF_CONFIG?.promptPayId ||
+      "";
+    if (method === "wallet") {
+      return uniqueValues([
+        channel?.qrUrl,
+        payment.trueMoneyQrUrl,
+        payment.walletQrUrl,
+        payment.manualQrUrl
+      ]);
+    }
+    return uniqueValues([
+      channel?.qrUrl,
+      payment.manualQrUrl,
+      payment.qrUrl,
+      promptPayQr(promptPayId, order.total)
+    ]);
+  }
+
+  async function paymentQr(order) {
+    const candidates = await paymentQrCandidates(order);
+    return candidates[0] || "";
+  }
+
+  function wireCartQrFallback(box, qrCandidates = []) {
+    const img = $(".site-cart-qr", box);
+    const frame = $(".site-cart-qr-frame", box);
+    const noQr = $(".site-cart-noqr", box);
+    if (!img) return;
+    const candidates = uniqueValues(qrCandidates);
+    let index = Math.max(0, candidates.indexOf(img.getAttribute("src"))) + 1;
+    img.onerror = () => {
+      const next = candidates[index];
+      index += 1;
+      if (next) {
+        img.src = next;
+        return;
+      }
+      img.hidden = true;
+      if (frame) frame.hidden = true;
+      if (noQr) noQr.hidden = false;
+    };
+    img.onload = () => {
+      img.hidden = false;
+      if (frame) frame.hidden = false;
+      if (noQr) noQr.hidden = true;
+    };
   }
 
   function orderRef(order) {
@@ -491,7 +567,7 @@
     if (!box) return;
     setPaymentMode(dialog, true);
     $(".site-cart-body", dialog)?.scrollTo({ top: 0, behavior: "smooth" });
-    box.hidden = false;
+    setStagePanelHidden(box, false);
     box.innerHTML = `
       <div class="site-cart-paid-head">
         <i data-lucide="qr-code"></i>
@@ -512,12 +588,13 @@
     `;
     window.lucide?.createIcons?.();
 
-    let qr = "";
+    let qrCandidates = [];
     try {
-      qr = await paymentQr(order);
+      qrCandidates = await paymentQrCandidates(order);
     } catch (error) {
       console.warn("Unable to load cart payment QR", error);
     }
+    const qr = qrCandidates[0] || "";
 
     box.innerHTML = `
       <div class="site-cart-paid-head">
@@ -532,12 +609,14 @@
           <img class="site-cart-qr" src="${escapeHtml(qr)}" alt="QR สำหรับชำระเงิน" />
           <span>สแกน QR แล้วแนบสลิปเพื่อให้ระบบตรวจอัตโนมัติ</span>
         </div>
+        <div class="site-cart-noqr" hidden>ยังไม่พบ QR สำหรับช่องทางนี้ กรุณาไปหน้าคลังสินค้าหรือเลือกช่องทางอื่น</div>
       ` : `<div class="site-cart-noqr">ยังไม่พบ QR สำหรับช่องทางนี้ กรุณาไปหน้าคลังสินค้าหรือเลือกช่องทางอื่น</div>`}
       <div class="site-cart-result-actions">
         <button class="primary-button" type="button" data-site-cart-upload><i data-lucide="upload"></i>แนบสลิป</button>
         <button class="secondary-button" type="button" data-site-cart-profile><i data-lucide="package"></i>ไปคลังสินค้า</button>
       </div>
     `;
+    wireCartQrFallback(box, qrCandidates);
     window.lucide?.createIcons?.();
   }
 

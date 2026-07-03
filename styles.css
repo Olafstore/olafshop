@@ -421,6 +421,88 @@ html.has-order-action-popup {
   }
 }
 
+/* 2026-07-03 MOBILE USER POPOVER SINGLE LEGACY FIX V20
+   Keep only the original topbar user dropdown on phones; disable old portal/new modal leftovers. */
+@media (max-width: 768px) {
+  body > #user-popover:not([hidden]),
+  body > .user-popover:not(#user-popover):not([hidden]),
+  .olaf-user-popover-duplicate,
+  .user-popover[data-mobile-portal="true"]:not(.olaf-user-popover-single) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  .topbar.site-topbar-unified .user-popover-wrap {
+    position: relative !important;
+    isolation: isolate !important;
+  }
+
+  .topbar.site-topbar-unified .user-popover-wrap > #user-popover,
+  .topbar.site-topbar-unified .user-popover-wrap > .user-popover {
+    position: fixed !important;
+    top: max(64px, calc(env(safe-area-inset-top, 0px) + 58px)) !important;
+    right: max(10px, env(safe-area-inset-right, 0px)) !important;
+    bottom: auto !important;
+    left: auto !important;
+    z-index: 10080 !important;
+    width: min(326px, calc(100vw - 20px)) !important;
+    max-width: calc(100vw - 20px) !important;
+    max-height: calc(100svh - max(64px, calc(env(safe-area-inset-top, 0px) + 58px)) - max(14px, env(safe-area-inset-bottom, 0px))) !important;
+    overflow: auto !important;
+    margin: 0 !important;
+    padding: 12px !important;
+    border: 1px solid rgba(96, 165, 250, 0.18) !important;
+    border-radius: 20px !important;
+    background:
+      radial-gradient(circle at 18% 0%, rgba(59, 130, 246, 0.16), transparent 36%),
+      linear-gradient(180deg, rgba(15, 23, 42, 0.985), rgba(5, 10, 24, 0.985)) !important;
+    color: #e5edff !important;
+    box-shadow: 0 24px 58px rgba(0, 0, 0, 0.46) !important;
+    backdrop-filter: blur(18px) saturate(1.08) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.08) !important;
+    transform: none !important;
+    transform-origin: top right !important;
+    animation: olafLegacyUserPopoverIn 180ms ease both !important;
+    contain: layout paint style !important;
+  }
+
+  .topbar.site-topbar-unified .user-popover-wrap > #user-popover[hidden],
+  .topbar.site-topbar-unified .user-popover-wrap > .user-popover[hidden] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  .topbar.site-topbar-unified .user-popover-wrap > #user-popover:not([hidden]),
+  .topbar.site-topbar-unified .user-popover-wrap > .user-popover:not([hidden]) {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  .topbar.site-topbar-unified .user-popover-wrap > #user-popover .user-profile-card,
+  .topbar.site-topbar-unified .user-popover-wrap > .user-popover .user-profile-card {
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+}
+
+@keyframes olafLegacyUserPopoverIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
 @keyframes olafMobileBackdropIn {
   from {
     opacity: 0;

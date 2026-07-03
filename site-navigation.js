@@ -274,12 +274,49 @@
   };
 
   function syncMobileUserPopoverPortal() {
-    const popover = document.querySelector("#user-popover");
-    if (!popover || !document.body) return;
-    if (popover.__olafOriginalParent && popover.parentElement === document.body) {
-      popover.__olafOriginalParent.insertBefore(popover, popover.__olafOriginalNextSibling || null);
+    if (!document.body) return;
+    const preferredWrap =
+      document.querySelector(".topbar .user-popover-wrap") ||
+      document.querySelector(".user-popover-wrap");
+    let popover =
+      preferredWrap?.querySelector("#user-popover") ||
+      document.querySelector("#user-popover");
+
+    if (preferredWrap && popover && popover.parentElement !== preferredWrap) {
+      preferredWrap.appendChild(popover);
     }
+
+    document.querySelectorAll("#user-popover").forEach((node) => {
+      if (!popover || node === popover) return;
+      node.hidden = true;
+      node.classList.add("hidden", "olaf-user-popover-duplicate");
+      node.remove();
+    });
+
+    document.querySelectorAll(".user-popover").forEach((node) => {
+      if (!popover || node === popover || popover.contains(node)) return;
+      node.hidden = true;
+      node.classList.add("hidden", "olaf-user-popover-duplicate");
+      node.remove();
+    });
+
+    if (!popover) return;
     delete popover.dataset.mobilePortal;
+    popover.classList.remove("olaf-user-popover-duplicate");
+    popover.classList.add("olaf-user-popover-single");
+    popover.removeAttribute("aria-hidden");
+    popover.style.position = "";
+    popover.style.top = "";
+    popover.style.right = "";
+    popover.style.bottom = "";
+    popover.style.left = "";
+    popover.style.width = "";
+    popover.style.maxWidth = "";
+    popover.style.maxHeight = "";
+    popover.style.transform = "";
+    popover.style.opacity = "";
+    popover.style.pointerEvents = "";
+    if (popover.hidden) popover.style.display = "";
   }
 
   function hideMobileFloatingPanel(node) {
@@ -392,6 +429,11 @@
     window.addEventListener("olaf-auth-changed", refreshNavForAuth);
     window.addEventListener("storage", refreshNavForAuth);
     setTimeout(refreshNavForAuth, 700);
+
+    document.addEventListener("click", (event) => {
+      if (!event.target.closest("#open-auth, .user-popover-wrap, #user-popover")) return;
+      syncMobileUserPopoverPortal();
+    }, true);
 
     document.addEventListener("click", (event) => {
       if (nav.contains(event.target) || toggle?.contains(event.target)) return;

@@ -271,7 +271,9 @@
       document.body?.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
       setMobilePageScrollLock(false);
     },
-    unlockMobileNavScroll: () => setMobilePageScrollLock(false)
+    unlockMobileNavScroll: () => setMobilePageScrollLock(false),
+    closeTopbarPopovers,
+    positionTopbarPopover
   };
 
   function syncMobileUserPopoverPortal() {
@@ -330,6 +332,217 @@
     node.style.pointerEvents = "";
     node.style.transform = "";
     node.setAttribute("aria-hidden", "true");
+  }
+
+  let activeTopbarPopover = null;
+  let activeTopbarAnchor = null;
+  let topbarPortalCounter = 0;
+
+  function resolveNode(target) {
+    if (!target) return null;
+    if (typeof target === "string") return document.querySelector(target);
+    return target instanceof Element ? target : null;
+  }
+
+  function clampNumber(value, min, max) {
+    return Math.max(min, Math.min(max, value));
+  }
+
+  function clearTopbarPopoverPosition(popoverTarget) {
+    const popover = resolveNode(popoverTarget);
+    if (!popover) return;
+    popover.classList.remove("topbar-popover-fixed");
+    popover.style.removeProperty("--olaf-popover-top");
+    popover.style.removeProperty("--olaf-popover-left");
+    popover.style.removeProperty("--olaf-popover-width");
+    popover.style.removeProperty("--olaf-popover-max-height");
+    if (activeTopbarPopover === popover) {
+      activeTopbarPopover = null;
+      activeTopbarAnchor = null;
+    }
+  }
+
+  function ensureTopbarPortalId(node) {
+    if (!node) return "";
+    if (!node.dataset.olafTopbarPortalId) {
+      topbarPortalCounter += 1;
+      node.dataset.olafTopbarPortalId = `topbar-popover-parent-${topbarPortalCounter}`;
+    }
+    return node.dataset.olafTopbarPortalId;
+  }
+
+  function portalTopbarPopover(popover) {
+    if (!popover || !document.body || popover.parentElement === document.body) return;
+    const parent = popover.parentElement;
+    popover.dataset.olafOriginalTopbarParent = ensureTopbarPortalId(parent);
+    document.body.appendChild(popover);
+  }
+
+  function restoreTopbarPopover(popover) {
+    if (!popover?.dataset?.olafOriginalTopbarParent) return;
+    const parent = document.querySelector(`[data-olaf-topbar-portal-id="${popover.dataset.olafOriginalTopbarParent}"]`);
+    if (parent && popover.parentElement !== parent) parent.appendChild(popover);
+    delete popover.dataset.olafOriginalTopbarParent;
+  }
+
+  function positionTopbarPopover(popoverTarget, anchorTarget, options = {}) {
+    const popover = resolveNode(popoverTarget);
+    const anchor = resolveNode(anchorTarget);
+    if (!popover || !anchor || popover.hidden) {
+      clearTopbarPopoverPosition(popover);
+      return;
+    }
+
+    const viewportWidth = document.documentElement.clientWidth || window.innerWidth || 360;
+    const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 640;
+    const shouldFloat = viewportWidth <= Number(options.breakpoint || 1180);
+    if (!shouldFloat) {
+      clearTopbarPopoverPosition(popover);
+      restoreTopbarPopover(popover);
+      return;
+    }
+
+    const anchorRect = anchor.getBoundingClientRect();
+    const sideGap = viewportWidth <= 420 ? 10 : 12;
+    const maxWidth = Number(options.maxWidth || (popover.id === "notification-popover" ? 348 : 336));
+    const width = Math.round(Math.min(maxWidth, viewportWidth - sideGap * 2));
+    const centerLeft = anchorRect.left + anchorRect.width / 2 - width / 2;
+    const left = Math.round(clampNumber(centerLeft, sideGap, Math.max(sideGap, viewportWidth - width - sideGap)));
+    const fallbackTop = Math.max(58, Number(options.fallbackTop || 64));
+    const top = Math.round(clampNumber(anchorRect.bottom + 10, fallbackTop, Math.max(fallbackTop, viewportHeight - 96)));
+    const maxHeight = Math.max(180, viewportHeight - top - Math.max(12, sideGap));
+
+    portalTopbarPopover(popover);
+    popover.classList.add("topbar-popover-fixed");
+    popover.classList.remove("hidden");
+    popover.removeAttribute("aria-hidden");
+    popover.style.setProperty("--olaf-popover-top", `${top}px`);
+    popover.style.setProperty("--olaf-popover-left", `${left}px`);
+    popover.style.setProperty("--olaf-popover-width", `${width}px`);
+    popover.style.setProperty("--olaf-popover-max-height", `${Math.round(maxHeight)}px`);
+    activeTopbarPopover = popover;
+    activeTopbarAnchor = anchor;
+  }
+
+  function positionKnownTopbarPopover(popover) {
+    if (!popover || popover.hidden) return;
+    const header = popover.closest(".topbar") || document.querySelector(".topbar");
+    const anchor =
+      popover.id === "language-popover"
+        ? header?.querySelector("#lang-toggle")
+        : popover.id === "notification-popover"
+          ? header?.querySelector("#open-notifications")
+          : popover.id === "user-popover"
+            ? header?.querySelector("#open-auth")
+            : null;
+    if (anchor) positionTopbarPopover(popover, anchor);
+  }
+
+  function scheduleTopbarPopoverPosition(popoverSelector, anchorSelector) {
+    window.requestAnimationFrame(() => {
+      const popover = document.querySelector(popoverSelector);
+      const anchor = document.querySelector(anchorSelector);
+      if (popover && anchor && !popover.hidden) positionTopbarPopover(popover, anchor);
+    });
+  }
+
+  function closeTopbarPopovers(except = "") {
+    [
+      ["language", "#language-popover", "#lang-toggle"],
+      ["notifications", "#notification-popover", "#open-notifications"],
+      ["user", "#user-popover", "#open-auth"]
+    ].forEach(([key, popoverSelector, buttonSelector]) => {
+      if (key === except) return;
+      const popover = document.querySelector(popoverSelector);
+      const button = document.querySelector(buttonSelector);
+      if (popover) {
+        popover.hidden = true;
+        clearTopbarPopoverPosition(popover);
+      }
+      button?.classList.remove("is-active");
+      button?.setAttribute("aria-expanded", "false");
+    });
+  }
+
+  function setupTopbarPopoverAnchoring() {
+    if (document.body?.dataset.olafTopbarPopoverAnchorBound === "true") return;
+    document.body.dataset.olafTopbarPopoverAnchorBound = "true";
+
+    document.addEventListener("click", (event) => {
+      const languageButton = event.target.closest("#lang-toggle");
+      const notificationButton = event.target.closest("#open-notifications");
+      const authButton = event.target.closest("#open-auth");
+      if (languageButton) scheduleTopbarPopoverPosition("#language-popover", "#lang-toggle");
+      if (notificationButton) scheduleTopbarPopoverPosition("#notification-popover", "#open-notifications");
+      if (authButton) scheduleTopbarPopoverPosition("#user-popover", "#open-auth");
+    }, true);
+
+    const updateActive = () => {
+      if (activeTopbarPopover && activeTopbarAnchor && !activeTopbarPopover.hidden) {
+        positionTopbarPopover(activeTopbarPopover, activeTopbarAnchor);
+        return;
+      }
+      ["#language-popover", "#notification-popover", "#user-popover"].forEach((selector) => {
+        const popover = document.querySelector(selector);
+        if (popover && !popover.hidden) positionKnownTopbarPopover(popover);
+      });
+    };
+    window.addEventListener("resize", () => window.requestAnimationFrame(updateActive), { passive: true });
+    window.addEventListener("scroll", () => window.requestAnimationFrame(updateActive), { passive: true });
+  }
+
+  function setupFallbackTopbarControls(header) {
+    if (!document.body?.classList.contains("free-random-page")) return;
+    if (header.dataset.olafFallbackTopbarControls === "true") return;
+    header.dataset.olafFallbackTopbarControls = "true";
+
+    const langToggle = header.querySelector("#lang-toggle");
+    const languagePopover = header.querySelector("#language-popover");
+    const notificationToggle = header.querySelector("#open-notifications");
+    const notificationPopover = header.querySelector("#notification-popover");
+
+    langToggle?.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const nextOpen = Boolean(languagePopover?.hidden);
+      closeTopbarPopovers("language");
+      if (!languagePopover) return;
+      languagePopover.hidden = !nextOpen;
+      langToggle.setAttribute("aria-expanded", String(nextOpen));
+      if (nextOpen) positionTopbarPopover(languagePopover, langToggle);
+    });
+
+    languagePopover?.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const button = event.target.closest("[data-lang-option]");
+      if (!button) return;
+      languagePopover.querySelectorAll("[data-lang-option]").forEach((item) => {
+        item.classList.toggle("is-active", item === button);
+      });
+      languagePopover.hidden = true;
+      clearTopbarPopoverPosition(languagePopover);
+      langToggle?.setAttribute("aria-expanded", "false");
+    });
+
+    notificationToggle?.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      const nextOpen = Boolean(notificationPopover?.hidden);
+      closeTopbarPopovers("notifications");
+      if (!notificationPopover) return;
+      notificationPopover.hidden = !nextOpen;
+      notificationToggle.setAttribute("aria-expanded", String(nextOpen));
+      if (nextOpen) positionTopbarPopover(notificationPopover, notificationToggle);
+    });
+
+    document.addEventListener("click", (event) => {
+      if (event.target.closest(".language-switcher, .notification-wrap, .user-popover-wrap")) return;
+      closeTopbarPopovers("");
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeTopbarPopovers("");
+    });
   }
 
   function normalizeMainNavigation(header, index) {
@@ -733,7 +946,9 @@
       normalizeMainNavigation(header, index);
       setupUniversalSearch(header);
       setupResponsiveSearch(header);
+      setupFallbackTopbarControls(header);
     });
+    setupTopbarPopoverAnchoring();
     setupStickyState(headers);
     setTimeout(syncMobileUserPopoverPortal, 600);
     let resizeQueued = false;

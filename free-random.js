@@ -8,7 +8,8 @@
     config: { settings: { dailyLimit: 5, isActive: true }, slots: [] },
     status: { dailyLimit: 5, spinsUsedToday: 0, spinsRemaining: 0 },
     spinning: false,
-    user: null
+    user: null,
+    countdownTimer: null
   };
 
   function escapeHtml(value = "") {
@@ -139,6 +140,40 @@
             ? "ครบ 5 ครั้งวันนี้แล้ว"
             : "เริ่มสุ่มฟรี";
     }
+    startResetCountdown();
+  }
+
+  function nextResetAt() {
+    const today = String(state.status?.today || "").trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(today)) {
+      const reset = new Date(`${today}T00:00:00+07:00`);
+      if (!Number.isNaN(reset.getTime())) {
+        reset.setDate(reset.getDate() + 1);
+        return reset;
+      }
+    }
+    const now = new Date();
+    return new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
+  }
+
+  function formatDuration(ms) {
+    const total = Math.max(0, Math.floor(ms / 1000));
+    const hours = Math.floor(total / 3600);
+    const minutes = Math.floor((total % 3600) / 60);
+    const seconds = total % 60;
+    return [hours, minutes, seconds].map((value) => String(value).padStart(2, "0")).join(":");
+  }
+
+  function updateResetCountdown() {
+    const label = $("#free-random-reset-countdown");
+    if (!label) return;
+    label.textContent = formatDuration(nextResetAt().getTime() - Date.now());
+  }
+
+  function startResetCountdown() {
+    updateResetCountdown();
+    if (state.countdownTimer) return;
+    state.countdownTimer = window.setInterval(updateResetCountdown, 1000);
   }
 
   function showResult(result) {
@@ -301,27 +336,35 @@
       event.stopPropagation();
       if (!popover) return;
       popover.hidden = !popover.hidden;
-      if (!popover.hidden) hydrateAuthPoint(popover);
+      if (!popover.hidden) {
+        hydrateAuthPoint(popover);
+        window.OlafNavigation?.positionTopbarPopover?.(popover, button);
+      }
     };
 
     if (popover) {
       popover.innerHTML = `
-        <a class="user-popover-header user-popover-header-link" href="profile.html#info">
-          <span class="user-popover-avatar">${escapeHtml(userInitial(user))}</span>
-          <span class="user-popover-info">
-            <strong>${escapeHtml(userName(user))}</strong>
-            <span>${escapeHtml(user.email || "")}</span>
-          </span>
-        </a>
-        <div class="user-popover-badge-row">
-          <span>${escapeHtml(user.role || "member")}</span>
-          <a class="user-badge-points" href="profile.html#info" data-free-auth-points>กำลังโหลด Point</a>
+        <div class="user-profile-card">
+          <a class="user-popover-header user-popover-header-link" href="profile.html#info">
+            <span class="user-popover-avatar">${escapeHtml(userInitial(user))}</span>
+            <span class="user-popover-info">
+              <strong>${escapeHtml(userName(user))}</strong>
+              <span>${escapeHtml(user.email || "")}</span>
+            </span>
+          </a>
+          <div class="user-popover-badge-row">
+            <span class="user-badge-role">${escapeHtml(user.role || "member")}</span>
+            <a class="user-badge-points" href="profile.html#info" data-free-auth-points data-topbar-point-balance>กำลังโหลด Point</a>
+          </div>
         </div>
-        <div class="user-popover-divider"></div>
         <div class="user-popover-menu">
+          <div class="user-popover-menu-title">หน้าหลัก</div>
+          ${user.role === "admin" ? '<a href="olaf-control.html"><i data-lucide="shield"></i><span>หลังบ้าน (Admin)</span></a>' : ""}
+          <a href="profile.html#info"><i data-lucide="user"></i><span>ข้อมูลส่วนตัว</span></a>
           <a href="profile.html#inventory"><i data-lucide="archive"></i><span>คลังสินค้า</span></a>
-          <a href="profile.html#orders"><i data-lucide="receipt"></i><span>ประวัติคำสั่งซื้อ</span></a>
+          <a href="profile.html#orders"><i data-lucide="receipt-text"></i><span>ประวัติคำสั่งซื้อ</span></a>
           <a href="free-random.html"><i data-lucide="dice-5"></i><span>สุ่มเกมฟรี</span></a>
+          <div class="user-popover-divider"></div>
           <button class="danger-item" type="button" data-free-auth-logout><i data-lucide="log-out"></i><span>ออกจากระบบ</span></button>
         </div>
       `;
@@ -329,6 +372,7 @@
         await window.OlafStore?.logout?.();
         state.user = null;
         popover.hidden = true;
+        window.OlafNavigation?.closeTopbarPopovers?.();
         renderAuthHeader();
         renderStatus();
       });

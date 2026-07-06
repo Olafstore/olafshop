@@ -1,4 +1,4 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="th">
 
 <head>
@@ -15,16 +15,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260703-mobile-ui-v20" />
+  <link rel="stylesheet" href="styles.css?v=20260706-no-cart-v21" />
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-  <script src="supabase-client.js?v=20260629-cart" defer></script>
+  <script src="supabase-client.js?v=20260706-no-cart-v21" defer></script>
   <script src="platform-store.js?v=20260605-admin-users" defer></script>
   <script src="image-performance.js?v=20260607-performance" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-  <script src="site-navigation.js?v=20260703-mobile-ui-v20" defer></script>
-  <script src="cart-system.js?v=20260703-mobile-ui-v20" defer></script>
-  <script src="app.js?v=20260629-auth-footer-polish" defer></script>
+  <script src="site-navigation.js?v=20260706-no-cart-v21" defer></script>
+  <script src="app.js?v=20260706-no-cart-v21" defer></script>
 </head>
 
 <body class="home-page">
@@ -88,7 +87,6 @@
           <i data-lucide="user-plus"></i>
           <span>สมัครสมาชิก</span>
         </a>
-        <strong id="cart-count" hidden>0</strong>
       </div>
     </header>
 
@@ -443,77 +441,13 @@
     </button>
     <div class="product-detail" id="product-detail"></div>
   </dialog>
-
-  <dialog class="cart-dialog" id="cart-dialog">
-    <div class="cart-header">
-      <div>
-        <p class="eyebrow">Checkout</p>
-        <h2>ตะกร้าสินค้า</h2>
-      </div>
-      <button class="dialog-close" id="close-cart" type="button" aria-label="ปิดตะกร้า">
-        <i data-lucide="x"></i>
-      </button>
-    </div>
-
-    <div class="cart-layout">
-      <section class="cart-items" id="cart-items"></section>
-
-      <form class="checkout-form" id="checkout-form">
-        <label>
-          ชื่อผู้สั่งซื้อ
-          <input name="customerName" type="text" placeholder="ชื่อหรือนามแฝง" required />
-        </label>
-        <label>
-          ช่องทางรับสินค้า
-          <input name="contact" type="text" placeholder="LINE ID, Discord หรืออีเมล" required />
-        </label>
-        <label>
-          วิธีชำระเงิน
-          <select name="paymentMethod">
-            <option value="promptpay">PromptPay QR</option>
-            <option value="wallet">Wallet / TrueMoney QR</option>
-          </select>
-        </label>
-
-        <div class="order-summary">
-          <div>
-            <span>ยอดสินค้า</span>
-            <strong id="summary-subtotal">฿0</strong>
-          </div>
-          <div>
-            <span>ค่าบริการระบบ</span>
-            <strong id="summary-fee">฿0</strong>
-          </div>
-          <div class="total-line">
-            <span>ยอดชำระ</span>
-            <strong id="summary-total">฿0</strong>
-          </div>
-        </div>
-
-        <button class="primary-button" id="submit-order" type="submit">
-          <i data-lucide="receipt-text"></i>
-          สร้างรายการชำระเงิน
-        </button>
-      </form>
-    </div>
-  </dialog>
-
-  <dialog class="payment-dialog" id="payment-dialog">
+<dialog class="payment-dialog" id="payment-dialog">
     <button class="dialog-close" id="close-payment" type="button" aria-label="ปิดหน้าชำระเงิน">
       <i data-lucide="x"></i>
     </button>
     <div class="payment-result" id="payment-result"></div>
   </dialog>
-
-  <template id="cart-empty-template">
-    <div class="empty-cart">
-      <i data-lucide="shopping-bag"></i>
-      <h3>ตะกร้ายังว่าง</h3>
-      <p>เลือกสินค้าที่ต้องการก่อนสร้างรายการชำระเงิน</p>
-    </div>
-  </template>
-
-  <a class="discord-floating-link" href="https://discord.gg/6axb2QbDHN" target="_blank" rel="noopener noreferrer"
+<a class="discord-floating-link" href="https://discord.gg/6axb2QbDHN" target="_blank" rel="noopener noreferrer"
     aria-label="ติดต่อ Discord" data-discord-link>
     <span><i data-lucide="message-circle"></i></span>
     <strong>Discord</strong>

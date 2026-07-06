@@ -274,6 +274,30 @@ async function callRpc(name, parameters, config) {
   });
 }
 
+async function assertProviderTransactionUnused(transactionId, config) {
+  const reference = clean(transactionId);
+  if (!reference) return true;
+
+  const params = new URLSearchParams({
+    select: "id,order_id,status,provider_transaction_id",
+    provider: "eq.rdcw",
+    provider_transaction_id: `eq.${reference}`,
+    status: "in.(verified,rejected)",
+    limit: "1"
+  });
+  const rows = await fetchJson(`${config.supabaseUrl}/rest/v1/payment_verifications?${params}`, {
+    headers: serviceHeaders(config, { Accept: "application/json" })
+  }, "DUPLICATE_SLIP");
+
+  if (Array.isArray(rows) && rows.length > 0) {
+    throw new VerificationError("DUPLICATE_SLIP", 409, {
+      retriable: false,
+      providerPayload: { transactionId: reference, status: rows[0]?.status || "used" }
+    });
+  }
+  return true;
+}
+
 export async function scanQrFromImage(buffer) {
   let image;
   try {
@@ -461,7 +485,7 @@ function parseTransferredAt(candidates) {
   return null;
 }
 
-export function normalizeRdcwResponse(raw, expectedTotal, fallbackTransactionId = "") {
+function normalizeRdcwVerifiedPayload(raw, fallbackTransactionId = "") {
   const candidates = objectCandidates(raw);
   const valid = candidates.some((candidate) => candidate.valid === true || candidate.success === true);
   if (!valid) {
@@ -476,9 +500,8 @@ export function normalizeRdcwResponse(raw, expectedTotal, fallbackTransactionId 
     "transAmount",
     "transferAmount",
     "transactionAmount",
-    "paidAmount"
+      "paidAmount"
   ]);
-  const amount = matchVerifiedAmount(amountValue, expectedTotal);
   const sender = entityFromCandidates(candidates, ["sender", "from", "payer", "sendingAccount"]);
   const receiver = entityFromCandidates(candidates, ["receiver", "to", "payee", "receivingAccount"]);
   const transactionId = clean(
@@ -494,13 +517,21 @@ export function normalizeRdcwResponse(raw, expectedTotal, fallbackTransactionId 
 
   return {
     valid: true,
-    amount,
+    amountValue,
     transactionId,
     senderName: clean(firstKnownValue([sender], ["name", "displayName", "accountName"])),
     receiverName: clean(firstKnownValue([receiver], ["name", "displayName", "accountName"])),
     receiverValues: collectEntityValues(receiver),
     transferredAt: parseTransferredAt(candidates),
     raw: safeProviderPayload(raw)
+  };
+}
+
+export function normalizeRdcwResponse(raw, expectedTotal, fallbackTransactionId = "") {
+  const normalized = normalizeRdcwVerifiedPayload(raw, fallbackTransactionId);
+  return {
+    ...normalized,
+    amount: matchVerifiedAmount(normalized.amountValue, expectedTotal)
   };
 }
 
@@ -653,7 +684,7 @@ async function rejectUnderpaidOrder({
     p_provider_transaction_id: transactionId || null,
     p_verified_amount: Number(verifiedAmount),
     p_provider_payload: safeProviderPayload(providerPayload)
-  }, config).catch(() => null);
+  }, config);
   if (!rejected) return false;
   await removeSlip(order.payment_slip_path, config);
   return rejected;
@@ -720,7 +751,15 @@ export default async function handler(request, response) {
       throw error;
     }
 
-    const payloadInfo = classifySlipPayload(qrPayload);
+    let payloadInfo;
+    try {
+      payloadInfo = classifySlipPayload(qrPayload);
+    } catch (error) {
+      if (error instanceof VerificationError && error.code === "INVALID_SLIP_QR") {
+        slipHandled = await resetRejectedSlip({ order, user, reason: error.code, config });
+      }
+      throw error;
+    }
     const orderMethod = clean(order.payment_method || "promptpay").toLowerCase() === "wallet"
       ? "wallet"
       : "promptpay";
@@ -733,6 +772,8 @@ export default async function handler(request, response) {
       });
       throw new VerificationError("PAYMENT_METHOD_MISMATCH", 422);
     }
+
+    await assertProviderTransactionUnused(payloadInfo.transactionId, config);
 
     const begin = await callRpc("server_begin_payment_verification", {
       p_order_id: order.id,
@@ -775,18 +816,20 @@ export default async function handler(request, response) {
 
     let normalized;
     try {
-      normalized = normalizeRdcwResponse(providerResponse, order.total, payloadInfo.transactionId);
+      normalized = normalizeRdcwVerifiedPayload(providerResponse, payloadInfo.transactionId);
       validateTransferTime(normalized.transferredAt, order.created_at);
       const channel = await fetchPaymentChannel(orderMethod, config);
       verifyReceiverIdentity(normalized, channel, config);
+      await assertProviderTransactionUnused(normalized.transactionId || payloadInfo.transactionId, config);
+      normalized.amount = matchVerifiedAmount(normalized.amountValue, order.total);
     } catch (error) {
       if (error?.code === "PAYMENT_AMOUNT_INSUFFICIENT") {
         const rejected = await rejectUnderpaidOrder({
           attemptId,
           order,
-          transactionId: payloadInfo.transactionId,
+          transactionId: normalized?.transactionId || payloadInfo.transactionId,
           verifiedAmount: error.verifiedAmount,
-          providerPayload: providerResponse,
+          providerPayload: normalized?.raw || providerResponse,
           config
         });
         slipHandled = Boolean(rejected);

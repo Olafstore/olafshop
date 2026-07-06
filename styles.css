@@ -503,6 +503,36 @@ html.has-order-action-popup {
   }
 }
 
+/* 2026-07-06 NO CART FINAL GUARD V21
+   The site now uses direct product checkout only; hide every cart entry point and legacy cart UI. */
+#cart-count,
+#open-cart,
+#cart-dialog,
+#site-cart-button,
+#site-cart-count,
+#site-cart-dialog,
+.site-cart-button,
+.site-cart-count,
+.site-cart-dialog,
+.site-cart-mobile-actions,
+.site-cart-summary,
+.site-cart-items-panel,
+.site-cart-payment-result,
+.pd-add-cart-btn,
+[data-add],
+[data-detail-add],
+[data-site-cart-add],
+[data-site-cart-open],
+[data-site-cart-close],
+[data-cart-decrease],
+[data-cart-increase],
+[data-cart-remove] {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
 @keyframes olafMobileBackdropIn {
   from {
     opacity: 0;

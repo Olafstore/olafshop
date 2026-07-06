@@ -66,7 +66,7 @@
               <small class="${disabled ? "is-out" : ""}">${escapeHtml(stockLabel(product))}</small>
             </div>
             <a class="extras-product-action ${disabled ? "is-disabled" : ""}" href="product.html?id=${encodeURIComponent(product.id)}">
-              <i data-lucide="${isMinecraft ? "clock-3" : "shopping-cart"}"></i>
+              <i data-lucide="${isMinecraft ? "clock-3" : "receipt-text"}"></i>
               ${isMinecraft ? "สั่งซื้อพรีออเดอร์" : disabled ? "ดูรายละเอียด" : "สั่งซื้อจากสต็อก"}
             </a>
           </div>

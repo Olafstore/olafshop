@@ -1,4 +1,4 @@
-const $ = (s) => document.querySelector(s);
+﻿const $ = (s) => document.querySelector(s);
 const params = new URLSearchParams(location.search);
 const productId = params.get("id");
 let globalPayload = null;
@@ -486,7 +486,7 @@ function purchaseButtonIcon(product = currentProduct) {
   if (isWindowsProduct(product)) return "credit-card";
   if (isMinecraftProduct(product)) return "clock-3";
   if (isRockstarProduct(product)) return "package-check";
-  return "shopping-cart";
+  return "receipt-text";
 }
 
 function getDiscount(p) {
@@ -1906,11 +1906,6 @@ function renderProduct() {
               <i data-lucide="${purchaseButtonIcon(p)}"></i>
               ${buyButtonText}
             </button>
-            <button class="pd-add-cart-btn" type="button" id="btn-add-cart" ${!canAdd ? "disabled" : ""}>
-              <i data-lucide="shopping-bag"></i>
-              เพิ่มลงตะกร้า
-            </button>
-
             <!-- Feature info row -->
             <div class="pd-features-row">
               ${Array.isArray(p.featureBlocks) && p.featureBlocks.length > 0 ? p.featureBlocks.map(f => `
@@ -2043,31 +2038,6 @@ function renderProduct() {
     const fee = 0;
     const total = subtotal + fee;
     openOrderConfirmDialog(subtotal, total);
-  });
-
-  $("#btn-add-cart")?.addEventListener("click", () => {
-    const purchase = getPurchaseOption(currentProduct);
-    if (!currentProduct || purchase.stock <= 0) {
-      showToast("สินค้าหมดชั่วคราว", "warning");
-      return;
-    }
-    if (!window.OlafCart?.add) {
-      showToast("ระบบตะกร้ายังไม่พร้อม กรุณารีเฟรชหน้าเว็บ", "error");
-      return;
-    }
-    window.OlafCart.add({
-      productId: currentProduct.id,
-      packageId: purchase.packageId || null,
-      name: purchase.hasPackage
-        ? `${getDisplayProductName(currentProduct)} — ${purchase.packageTitle || "แพ็คเกจ"}`
-        : getDisplayProductName(currentProduct),
-      image: productImageForCheckout(currentProduct),
-      category: purchase.hasPackage ? "แพ็คเกจ" : getCategoryLabel(currentProduct.category),
-      packageTitle: purchase.packageTitle || "",
-      price: purchase.price,
-      stock: purchase.stock,
-      quantity: detailQuantity
-    });
   });
 }
 

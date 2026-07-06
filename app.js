@@ -1937,10 +1937,6 @@ function renderProductDetail(product) {
           <i data-lucide="plus"></i>
         </button>
       </div>
-      <button class="primary-button" type="button" data-detail-add="${escapeHtml(product.id)}" ${!canAdd ? "disabled" : ""}>
-        <i data-lucide="shopping-cart"></i>
-        เพิ่มลงตะกร้า
-      </button>
     </div>
   `;
 }
@@ -1979,6 +1975,7 @@ function cartSubtotal() {
 }
 
 function renderCart() {
+  return;
   const entries = cartEntries();
   const count = entries.reduce((sum, entry) => sum + entry.quantity, 0);
   const subtotal = cartSubtotal();
@@ -2170,7 +2167,7 @@ function openPaymentResult(order, payment) {
     ${renderReviewPrompt(order)}
   `;
 
-  $(selectors.cartDialog).close();
+  $(selectors.cartDialog)?.close?.();
   $(selectors.paymentDialog).showModal();
   createIconSet();
   // Show action toast
@@ -2235,9 +2232,6 @@ function bindEvents() {
     const detailButton = event.target.closest("[data-detail]");
     const addButton = event.target.closest("[data-add]");
     const detailAddButton = event.target.closest("[data-detail-add]");
-    const cartDecrease = event.target.closest("[data-cart-decrease]");
-    const cartIncrease = event.target.closest("[data-cart-increase]");
-    const cartRemove = event.target.closest("[data-cart-remove]");
     const quantityButton = event.target.closest("[data-qty]");
     const copyOrder = event.target.closest("[data-copy-order]");
     const authFromReview = event.target.closest("[data-open-auth-from-review]");
@@ -2270,40 +2264,12 @@ function bindEvents() {
     }
 
     if (addButton) {
-      if (!state.currentUser) {
-        window.location.href = "login.html?return=" + encodeURIComponent(window.location.pathname + window.location.search);
-        return;
-      }
-      addToCart(addButton.dataset.add);
-      $(selectors.cartDialog).showModal();
+      showToast("à¸£à¸°à¸šà¸šà¸•à¸°à¸à¸£à¹‰à¸²à¸–à¸¹à¸à¸›à¸´à¸”à¹ƒà¸Šà¹‰à¸‡à¸²à¸™ à¸à¸£à¸¸à¸“à¸²à¸ªà¸±à¹ˆà¸‡à¸‹à¸·à¹‰à¸­à¸ˆà¸²à¸à¸«à¸™à¹‰à¸²à¸£à¸²à¸¢à¸¥à¸°à¹€à¸­à¸µà¸¢à¸”à¸ªà¸´à¸™à¸„à¹‰à¸²", "info");
       return;
     }
 
     if (detailAddButton) {
-      if (!state.currentUser) {
-        window.location.href = "login.html?return=" + encodeURIComponent(window.location.pathname + window.location.search);
-        return;
-      }
-      addToCart(detailAddButton.dataset.detailAdd, state.detailQuantity);
-      $(selectors.productDialog).close();
-      $(selectors.cartDialog).showModal();
-      return;
-    }
-
-    if (cartDecrease) {
-      const id = cartDecrease.dataset.cartDecrease;
-      updateCartItem(id, (state.cart.get(id) ?? 0) - 1);
-      return;
-    }
-
-    if (cartIncrease) {
-      const id = cartIncrease.dataset.cartIncrease;
-      updateCartItem(id, (state.cart.get(id) ?? 0) + 1);
-      return;
-    }
-
-    if (cartRemove) {
-      updateCartItem(cartRemove.dataset.cartRemove, 0);
+      showToast("à¸£à¸°à¸šà¸šà¸•à¸°à¸à¸£à¹‰à¸²à¸–à¸¹à¸à¸›à¸´à¸”à¹ƒà¸Šà¹‰à¸‡à¸²à¸™ à¸à¸£à¸¸à¸“à¸²à¸ªà¸±à¹ˆà¸‡à¸‹à¸·à¹‰à¸­à¸ˆà¸²à¸à¸«à¸™à¹‰à¸²à¸£à¸²à¸¢à¸¥à¸°à¹€à¸­à¸µà¸¢à¸”à¸ªà¸´à¸™à¸„à¹‰à¸²", "info");
       return;
     }
 
@@ -2454,18 +2420,10 @@ function bindEvents() {
     toggleNotificationMenu();
   });
   $(selectors.openCart)?.addEventListener("click", () => {
-    if (!state.currentUser) {
-      window.location.href = "login.html?return=" + encodeURIComponent(window.location.pathname + window.location.search);
-      return;
-    }
-    $(selectors.cartDialog).showModal();
+    showToast("à¸£à¸°à¸šà¸šà¸•à¸°à¸à¸£à¹‰à¸²à¸–à¸¹à¸à¸›à¸´à¸”à¹ƒà¸Šà¹‰à¸‡à¸²à¸™", "info");
   });
   $(selectors.openCheckout)?.addEventListener("click", () => {
-    if (!state.currentUser) {
-      window.location.href = "login.html?return=" + encodeURIComponent(window.location.pathname + window.location.search);
-      return;
-    }
-    $(selectors.cartDialog).showModal();
+    showToast("à¸£à¸°à¸šà¸šà¸•à¸°à¸à¸£à¹‰à¸²à¸–à¸¹à¸à¸›à¸´à¸”à¹ƒà¸Šà¹‰à¸‡à¸²à¸™", "info");
   });
   $(selectors.openAuth).addEventListener("click", (event) => {
     event.stopPropagation();
@@ -2499,10 +2457,10 @@ function bindEvents() {
   $(selectors.closeProduct).addEventListener("click", () => $(selectors.productDialog).close());
   $(selectors.closeAuth)?.addEventListener("click", () => $(selectors.authDialog)?.close());
   $(selectors.closeDashboard).addEventListener("click", () => $(selectors.dashboardDialog).close());
-  $(selectors.closeCart).addEventListener("click", () => $(selectors.cartDialog).close());
+  $(selectors.closeCart)?.addEventListener("click", () => $(selectors.cartDialog)?.close?.());
   $(selectors.closePayment).addEventListener("click", () => $(selectors.paymentDialog).close());
 
-  $(selectors.checkoutForm).addEventListener("submit", async (event) => {
+  $(selectors.checkoutForm)?.addEventListener("submit", async (event) => {
     event.preventDefault();
     if (!state.cart.size) {
       showToast("กรุณาเลือกสินค้าก่อน", "warning");

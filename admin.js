@@ -40,6 +40,11 @@ const state = {
     orders: { page: 1, pageSize: 20 },
     verifications: { page: 1, pageSize: 20 }
   },
+  freeRandom: {
+    settings: { dailyLimit: 5, isActive: true },
+    slots: [],
+    claims: []
+  },
   selectedUserId: null,
   selectedReviewId: null,
   selectedOrderId: null,
@@ -730,6 +735,25 @@ async function fetchAdminFinanceFromSupabase() {
   return window.OlafAdminFinance.fetchAdminFinanceOverview();
 }
 
+async function fetchAdminFreeRandomFromSupabase() {
+  if (!window.OlafFreeRandom?.adminFetchSettings) {
+    return {
+      settings: { dailyLimit: 5, isActive: true },
+      slots: [],
+      claims: []
+    };
+  }
+  const [config, claims] = await Promise.all([
+    window.OlafFreeRandom.adminFetchSettings(),
+    window.OlafFreeRandom.adminFetchClaims ? window.OlafFreeRandom.adminFetchClaims(100).catch(() => []) : Promise.resolve([])
+  ]);
+  return {
+    settings: config.settings || { dailyLimit: 5, isActive: true },
+    slots: Array.isArray(config.slots) ? config.slots : [],
+    claims: Array.isArray(claims) ? claims : []
+  };
+}
+
 function normalizeFinanceOverview(overview = {}) {
   return {
     wallets: Array.isArray(overview.wallets) ? overview.wallets : [],
@@ -848,7 +872,7 @@ async function loadData() {
   state.users = adminUsers;
   state.reviews = window.OlafStore?.getReviews() ?? [];
   state.widgets = window.OlafStore?.getWidgets() ?? [];
-  const [adminOrders, inventorySummaries, financeOverview] = await Promise.all([
+  const [adminOrders, inventorySummaries, financeOverview, freeRandomOverview] = await Promise.all([
     window.OlafOrders.fetchAdminOrders().catch((error) => {
       console.warn("Admin orders unavailable while loading products", {
         code: error?.code,
@@ -876,10 +900,22 @@ async function loadData() {
         paymentVerifications: [],
         summary: {}
       };
+    }),
+    fetchAdminFreeRandomFromSupabase().catch((error) => {
+      console.warn("Free random settings unavailable", {
+        code: error?.code,
+        message: error?.message
+      });
+      return {
+        settings: { dailyLimit: 5, isActive: true },
+        slots: [],
+        claims: []
+      };
     })
   ]);
   state.orders = adminOrders;
   state.finance = normalizeFinanceOverview(financeOverview);
+  state.freeRandom = freeRandomOverview;
   setInventorySummaries(inventorySummaries);
   const productNames = new Map(state.payload.products.map((product) => [product.id, product.name]));
   state.stockLog = (await window.OlafOrders.fetchStockMovements().catch(() => [])).map((movement) => ({
@@ -942,6 +978,185 @@ function adminDataErrorMessage(error) {
 
 function products() {
   return state.payload.products;
+}
+
+function freeRandomSlots() {
+  const existing = new Map((state.freeRandom?.slots || []).map((slot) => [Number(slot.slotNumber), slot]));
+  return Array.from({ length: 10 }, (_, index) => {
+    const slotNumber = index + 1;
+    return {
+      slotNumber,
+      productId: "",
+      chancePercent: 0,
+      isActive: false,
+      label: "",
+      imageUrl: "",
+      productName: "",
+      stock: 0,
+      productIsActive: false,
+      ...(existing.get(slotNumber) || {})
+    };
+  });
+}
+
+function freeRandomProductOptions(selectedId = "") {
+  const selected = String(selectedId || "");
+  const sorted = [...products()].sort((a, b) => {
+    const categoryCompare = String(a.category || "").localeCompare(String(b.category || ""), "th");
+    if (categoryCompare) return categoryCompare;
+    return String(a.name || "").localeCompare(String(b.name || ""), "th");
+  });
+  return [
+    `<option value="">-- เลือกสินค้า --</option>`,
+    ...sorted.map((product) => {
+      const label = `${product.name} · ${product.category || "all"} · stock ${Number(product.stock || 0)}`;
+      return `<option value="${escapeHtml(product.id)}"${product.id === selected ? " selected" : ""}>${escapeHtml(label)}</option>`;
+    })
+  ].join("");
+}
+
+function renderFreeRandomPanel() {
+  const form = $("#free-random-form");
+  const grid = $("#free-random-slot-grid");
+  const summary = $("#free-random-admin-summary");
+  const table = $("#free-random-history-table");
+  if (!form || !grid || !summary || !table) return;
+
+  const settings = state.freeRandom?.settings || { dailyLimit: 5, isActive: true };
+  if (form.elements.isActive) form.elements.isActive.value = settings.isActive === false ? "false" : "true";
+  if (form.elements.dailyLimit) form.elements.dailyLimit.value = Number(settings.dailyLimit || 5);
+
+  const slots = freeRandomSlots();
+  const totalChance = slots.reduce((sum, slot) => sum + Number(slot.chancePercent || 0), 0);
+  const activeSlots = slots.filter((slot) => slot.isActive && slot.productId).length;
+  const readySlots = slots.filter((slot) => slot.isActive && slot.productId && slot.productIsActive !== false && Number(slot.stock || 0) > 0).length;
+  summary.innerHTML = `
+    <div class="free-random-admin-stat">
+      <span>ช่องที่เปิด</span>
+      <strong>${activeSlots}/10</strong>
+    </div>
+    <div class="free-random-admin-stat">
+      <span>พร้อมสุ่ม</span>
+      <strong>${readySlots}</strong>
+    </div>
+    <div class="free-random-admin-stat ${Math.abs(totalChance - 100) <= 0.01 ? "ok" : "warn"}">
+      <span>รวมเปอร์เซ็นต์</span>
+      <strong>${totalChance.toLocaleString("th-TH", { maximumFractionDigits: 2 })}%</strong>
+    </div>
+    <p>ระบบจะ normalize น้ำหนักให้อัตโนมัติ แม้รวมไม่ครบ 100% แต่แนะนำให้ตั้งรวม 100 เพื่ออ่านง่าย</p>
+  `;
+
+  grid.innerHTML = slots.map((slot) => {
+    const product = products().find((item) => item.id === slot.productId);
+    const stock = Number(product?.stock ?? slot.stock ?? 0);
+    const isReady = Boolean(slot.isActive && slot.productId && product?.isActive !== false && stock > 0);
+    return `
+      <article class="free-random-slot-card" data-free-random-slot="${slot.slotNumber}">
+        <div class="free-random-slot-head">
+          <strong>ช่อง ${slot.slotNumber}</strong>
+          <span class="status-pill ${isReady ? "ok" : slot.isActive ? "warn" : ""}">${isReady ? "พร้อมสุ่ม" : slot.isActive ? "ตรวจสต็อก" : "ปิด"}</span>
+        </div>
+        <label>
+          สินค้า
+          <select name="productId">${freeRandomProductOptions(slot.productId)}</select>
+        </label>
+        <div class="form-row">
+          <label>
+            %
+            <input name="chancePercent" type="number" min="0" max="100" step="0.01" value="${Number(slot.chancePercent || 0)}" />
+          </label>
+          <label>
+            สถานะ
+            <select name="isActive">
+              <option value="true"${slot.isActive ? " selected" : ""}>เปิด</option>
+              <option value="false"${!slot.isActive ? " selected" : ""}>ปิด</option>
+            </select>
+          </label>
+        </div>
+        <label>
+          ชื่อแสดงผล (เว้นว่าง = ใช้ชื่อสินค้า)
+          <input name="label" type="text" value="${escapeHtml(slot.label || "")}" placeholder="เช่น Jackpot / Rare Prize" />
+        </label>
+        <label>
+          รูปเฉพาะช่อง (ไม่บังคับ)
+          <input name="imageUrl" type="url" value="${escapeHtml(slot.imageUrl || "")}" placeholder="https://..." />
+        </label>
+        <small>สินค้า: ${escapeHtml(product?.name || slot.productName || "ยังไม่เลือก")} · Stock ${stock.toLocaleString("th-TH")}</small>
+      </article>
+    `;
+  }).join("");
+
+  const claims = Array.isArray(state.freeRandom?.claims) ? state.freeRandom.claims : [];
+  table.innerHTML = claims.length
+    ? claims.slice(0, 100).map((claim) => `
+        <tr>
+          <td>${claim.createdAt ? new Date(claim.createdAt).toLocaleString("th-TH") : "-"}</td>
+          <td>
+            <strong>${escapeHtml(claim.username || claim.userEmail || claim.userId || "-")}</strong>
+            <small>${escapeHtml(claim.userEmail || "")}</small>
+          </td>
+          <td>${escapeHtml(claim.productName || claim.prizeSnapshot?.productName || claim.productId || "-")}</td>
+          <td>${Number(claim.slotNumber || 0)} / ${Number(claim.chancePercent || 0).toLocaleString("th-TH", { maximumFractionDigits: 2 })}%</td>
+          <td>${escapeHtml(claim.orderNumber || claim.orderId || "-")}</td>
+        </tr>
+      `).join("")
+    : `<tr><td colspan="5">ยังไม่มีประวัติการสุ่ม</td></tr>`;
+}
+
+function readFreeRandomFormSlots() {
+  return $$("#free-random-slot-grid [data-free-random-slot]").map((card) => ({
+    slotNumber: Number(card.dataset.freeRandomSlot || 0),
+    productId: card.querySelector('[name="productId"]')?.value || "",
+    chancePercent: Number(card.querySelector('[name="chancePercent"]')?.value || 0),
+    isActive: card.querySelector('[name="isActive"]')?.value === "true",
+    label: card.querySelector('[name="label"]')?.value?.trim() || "",
+    imageUrl: card.querySelector('[name="imageUrl"]')?.value?.trim() || ""
+  }));
+}
+
+async function refreshFreeRandomPanel() {
+  state.freeRandom = await fetchAdminFreeRandomFromSupabase();
+  renderFreeRandomPanel();
+  createIconSet();
+}
+
+async function saveFreeRandomSettings(event) {
+  event.preventDefault();
+  if (!window.OlafFreeRandom?.adminSaveSettings) {
+    showAdminToast("ยังไม่พบ RPC ระบบสุ่มฟรี กรุณารัน supabase-free-random-game.sql ก่อน", "error", 8000);
+    return;
+  }
+  const form = event.currentTarget;
+  const button = form.querySelector('button[type="submit"]');
+  const originalText = button?.innerHTML || "";
+  if (button) {
+    button.disabled = true;
+    button.innerHTML = '<i data-lucide="loader-circle"></i> กำลังบันทึก';
+    createIconSet();
+  }
+  try {
+    const saved = await window.OlafFreeRandom.adminSaveSettings({
+      dailyLimit: Number(form.elements.dailyLimit?.value || 5),
+      isActive: form.elements.isActive?.value !== "false",
+      slots: readFreeRandomFormSlots()
+    });
+    const claims = window.OlafFreeRandom.adminFetchClaims ? await window.OlafFreeRandom.adminFetchClaims(100).catch(() => state.freeRandom.claims || []) : [];
+    state.freeRandom = {
+      settings: saved.settings,
+      slots: saved.slots,
+      claims
+    };
+    renderFreeRandomPanel();
+    showAdminToast("บันทึกระบบสุ่มฟรีเรียบร้อยแล้ว", "success");
+  } catch (error) {
+    showAdminToast(error.message || "บันทึกระบบสุ่มฟรีไม่สำเร็จ", "error", 9000);
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.innerHTML = originalText;
+      createIconSet();
+    }
+  }
 }
 
 function setInventorySummaries(rows = []) {
@@ -1529,6 +1744,7 @@ function renderAll() {
   renderAdminSection("orders table", renderOrdersTable, errors);
   renderAdminSection("order form", renderOrderForm, errors);
   renderAdminSection("finance center", renderFinancePanel, errors);
+  renderAdminSection("free random", renderFreeRandomPanel, errors);
   renderAdminSection("reviews table", renderReviewsTable, errors);
   renderAdminSection("review form", renderReviewForm, errors);
   renderAdminSection("widgets table", renderWidgetsTable, errors);
@@ -4517,6 +4733,28 @@ function bindEvents() {
   $("#review-form").addEventListener("submit", saveReviewFromForm);
   $("#order-form").addEventListener("submit", saveOrderFromForm);
   $("#widget-form").addEventListener("submit", saveWidgetFromForm);
+  $("#free-random-form")?.addEventListener("submit", saveFreeRandomSettings);
+  $("#free-random-refresh")?.addEventListener("click", async () => {
+    const button = $("#free-random-refresh");
+    const originalText = button?.innerHTML || "";
+    if (button) {
+      button.disabled = true;
+      button.innerHTML = '<i data-lucide="loader-circle"></i> กำลังโหลด';
+      createIconSet();
+    }
+    try {
+      await refreshFreeRandomPanel();
+      showAdminToast("โหลดข้อมูลสุ่มฟรีใหม่แล้ว", "success");
+    } catch (error) {
+      showAdminToast(error.message || "โหลดข้อมูลสุ่มฟรีไม่สำเร็จ", "error");
+    } finally {
+      if (button) {
+        button.disabled = false;
+        button.innerHTML = originalText;
+        createIconSet();
+      }
+    }
+  });
 
   document.querySelectorAll(".dialog-close").forEach((btn) => {
     btn.addEventListener("click", () => btn.closest("dialog")?.close());

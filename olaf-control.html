@@ -7,14 +7,14 @@
     <title>หลังบ้าน | OLAF SHOP</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="preconnect" href="https://wtvfgwacodfrzxapwoxj.supabase.co" />
-    <link rel="stylesheet" href="admin.css?v=20260630-mobile-popup-center" />
+    <link rel="stylesheet" href="admin.css?v=20260706-free-random-v1" />
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="supabase-client.js?v=20260630-admin-pro-finance" defer></script>
+    <script src="supabase-client.js?v=20260706-free-random-v1" defer></script>
     <script src="platform-store.js?v=20260605-admin-users" defer></script>
     <script src="image-performance.js?v=20260607-performance" defer></script>
 <script src="delivery-payload.js?v=20260620-phase1-12-final" defer></script>
-    <script src="admin.js?v=20260630-admin-finance-pages" defer></script>
+    <script src="admin.js?v=20260706-free-random-v1" defer></script>
   </head>
   <body>
     <section class="admin-login-screen" id="admin-login-screen">
@@ -60,6 +60,12 @@
             <button type="button" data-panel-target="finance">
               <i data-lucide="wallet-cards"></i>
               การเงินลูกค้า
+            </button>
+          </div>
+          <div class="nav-section">
+            <button type="button" data-panel-target="free-random">
+              <i data-lucide="gift"></i>
+              สุ่มฟรี
             </button>
           </div>
           <div class="nav-section">
@@ -1026,6 +1032,67 @@
             <div class="category-tabs" id="stock-category-tabs"></div>
             <div class="stock-board" id="stock-board"></div>
           </section>
+        </section>
+
+        <section class="admin-panel" data-panel="free-random">
+          <div class="admin-grid free-random-admin-grid">
+            <section class="admin-card">
+              <div class="card-heading">
+                <h2>ตั้งค่าสุ่มเกมฟรี</h2>
+                <span>กำหนดสินค้า 10 ช่อง เปอร์เซ็นต์ และจำนวนครั้งต่อวัน</span>
+              </div>
+              <form class="admin-form" id="free-random-form">
+                <div class="form-row">
+                  <label>
+                    เปิดระบบสุ่มฟรี
+                    <select name="isActive">
+                      <option value="true">เปิดใช้งาน</option>
+                      <option value="false">ปิดชั่วคราว</option>
+                    </select>
+                  </label>
+                  <label>
+                    จำนวนครั้งต่อวัน
+                    <input name="dailyLimit" type="number" min="1" max="50" step="1" value="5" />
+                  </label>
+                </div>
+                <div class="free-random-admin-summary" id="free-random-admin-summary"></div>
+                <div class="free-random-slot-grid" id="free-random-slot-grid"></div>
+                <div class="form-actions">
+                  <button class="primary-button" type="submit">
+                    <i data-lucide="save"></i>
+                    บันทึกการสุ่มฟรี
+                  </button>
+                  <button class="ghost-button" id="free-random-refresh" type="button">
+                    <i data-lucide="refresh-cw"></i>
+                    โหลดข้อมูลใหม่
+                  </button>
+                </div>
+              </form>
+            </section>
+
+            <section class="admin-card">
+              <div class="card-heading">
+                <h2>ประวัติการสุ่มล่าสุด</h2>
+                <span>ตรวจผู้ใช้งาน สินค้า และออเดอร์ที่ถูกสร้าง</span>
+              </div>
+              <div class="table-wrap">
+                <table>
+                  <thead>
+                    <tr>
+                      <th>เวลา</th>
+                      <th>ผู้ใช้</th>
+                      <th>รางวัล</th>
+                      <th>ช่อง</th>
+                      <th>ออเดอร์</th>
+                    </tr>
+                  </thead>
+                  <tbody id="free-random-history-table">
+                    <tr><td colspan="5">ยังไม่มีข้อมูล</td></tr>
+                  </tbody>
+                </table>
+              </div>
+            </section>
+          </div>
         </section>
 
         <section class="admin-panel" data-panel="payment">

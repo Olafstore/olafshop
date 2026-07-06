@@ -1203,6 +1203,126 @@
     };
   }
 
+  function mapFreeRandomSlot(row = {}) {
+    return {
+      slotNumber: Number(row.slotNumber ?? row.slot_number ?? 0),
+      productId: row.productId || row.product_id || "",
+      chancePercent: Number(row.chancePercent ?? row.chance_percent ?? 0),
+      isActive: row.isActive === true || row.is_active === true,
+      label: row.label || row.productName || row.product_name || "",
+      imageUrl: row.imageUrl || row.image_url || "",
+      productName: row.productName || row.product_name || "",
+      price: Number(row.price || 0),
+      category: row.category || "",
+      stock: Number(row.stock || 0),
+      productIsActive: row.productIsActive !== false && row.product_is_active !== false
+    };
+  }
+
+  function normalizeFreeRandomConfig(payload = {}) {
+    const settings = normalizeObject(payload.settings);
+    return {
+      settings: {
+        dailyLimit: Number(settings.dailyLimit ?? settings.daily_limit ?? 5),
+        isActive: settings.isActive !== false && settings.is_active !== false,
+        title: settings.title || "สุ่มเกมฟรี",
+        subtitle: settings.subtitle || "สุ่มของรางวัลฟรี วันละ 5 ครั้ง"
+      },
+      slots: normalizeArray(payload.slots).map(mapFreeRandomSlot).sort((a, b) => a.slotNumber - b.slotNumber)
+    };
+  }
+
+  function normalizeFreeRandomStatus(payload = {}) {
+    return {
+      today: payload.today || "",
+      dailyLimit: Number(payload.dailyLimit ?? payload.daily_limit ?? 5),
+      spinsUsedToday: Number(payload.spinsUsedToday ?? payload.spins_used_today ?? 0),
+      spinsRemaining: Number(payload.spinsRemaining ?? payload.spins_remaining ?? 0)
+    };
+  }
+
+  function mapFreeRandomClaim(row = {}) {
+    return {
+      id: row.id || "",
+      userId: row.userId || row.user_id || "",
+      userEmail: row.userEmail || row.user_email || "",
+      username: row.username || "",
+      spinDate: row.spinDate || row.spin_date || "",
+      slotNumber: Number(row.slotNumber ?? row.slot_number ?? 0),
+      productId: row.productId || row.product_id || "",
+      productName: row.productName || row.product_name || "",
+      orderId: row.orderId || row.order_id || "",
+      orderNumber: row.orderNumber || row.order_number || "",
+      chancePercent: Number(row.chancePercent ?? row.chance_percent ?? 0),
+      roll: Number(row.roll || 0),
+      prizeSnapshot: normalizeObject(row.prizeSnapshot || row.prize_snapshot),
+      createdAt: row.createdAt || row.created_at || ""
+    };
+  }
+
+  async function fetchFreeRandomConfig() {
+    const { data, error } = await requireClient().rpc("get_free_random_config");
+    if (error) throw error;
+    return normalizeFreeRandomConfig(data || {});
+  }
+
+  async function fetchMyFreeRandomStatus() {
+    const { data, error } = await requireClient().rpc("get_my_free_random_status");
+    if (error) throw error;
+    return normalizeFreeRandomStatus(data || {});
+  }
+
+  async function claimFreeRandomSpin() {
+    const { data, error } = await requireClient().rpc("claim_free_random_spin");
+    if (error) throw error;
+    const payload = data || {};
+    return {
+      claim: mapFreeRandomClaim(payload.claim || {}),
+      slot: mapFreeRandomSlot(payload.slot || {}),
+      product: {
+        id: payload.product?.id || "",
+        name: payload.product?.name || "",
+        imageUrl: payload.product?.imageUrl || payload.product?.image_url || "",
+        category: payload.product?.category || "",
+        price: Number(payload.product?.price || 0),
+        stock: Number(payload.product?.stock || 0)
+      },
+      order: mapOrderRpcPayload(payload),
+      ...normalizeFreeRandomStatus(payload)
+    };
+  }
+
+  async function adminFetchFreeRandomSettings() {
+    const { data, error } = await requireClient().rpc("admin_free_random_settings");
+    if (error) throw error;
+    return normalizeFreeRandomConfig(data || {});
+  }
+
+  async function adminSaveFreeRandomSettings({ dailyLimit = 5, isActive = true, slots = [] } = {}) {
+    const { data, error } = await requireClient().rpc("admin_save_free_random_settings", {
+      p_daily_limit: Number(dailyLimit || 5),
+      p_is_active: isActive !== false,
+      p_slots: normalizeArray(slots).map((slot, index) => ({
+        slotNumber: Number(slot.slotNumber || index + 1),
+        productId: slot.productId || null,
+        chancePercent: Number(slot.chancePercent || 0),
+        isActive: slot.isActive === true,
+        label: slot.label || null,
+        imageUrl: slot.imageUrl || null
+      }))
+    });
+    if (error) throw error;
+    return normalizeFreeRandomConfig(data || {});
+  }
+
+  async function adminFetchFreeRandomClaims(limit = 100) {
+    const { data, error } = await requireClient().rpc("admin_free_random_recent_claims", {
+      p_limit: Math.max(1, Math.min(Number(limit || 100), 500))
+    });
+    if (error) throw error;
+    return normalizeArray(data).map(mapFreeRandomClaim);
+  }
+
   async function createOrder({ productId, quantity, paymentMethod, customerName, packageId, pointsToUse = 0 }) {
     const payload = {
       p_product_id: productId,
@@ -1486,6 +1606,14 @@
   window.OlafAdminFinance = {
     fetchAdminFinanceOverview,
     adminAdjustUserPoints
+  };
+  window.OlafFreeRandom = {
+    fetchConfig: fetchFreeRandomConfig,
+    fetchStatus: fetchMyFreeRandomStatus,
+    claimSpin: claimFreeRandomSpin,
+    adminFetchSettings: adminFetchFreeRandomSettings,
+    adminSaveSettings: adminSaveFreeRandomSettings,
+    adminFetchClaims: adminFetchFreeRandomClaims
   };
   window.OlafStoreSettings = {
     fetchStoreSettings,

@@ -22544,3 +22544,298 @@ body:has(dialog[open]) {
     transform: none !important;
   }
 }
+/* Free random daily game */
+.free-random-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 18% 12%, rgba(56, 111, 255, .22), transparent 32rem),
+    radial-gradient(circle at 82% 8%, rgba(126, 87, 255, .18), transparent 30rem),
+    var(--color-bg, #050914);
+}
+
+.free-random-shell {
+  width: min(1180px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: clamp(24px, 4vw, 56px) 0 72px;
+}
+
+.free-random-hero,
+.free-random-machine,
+.free-random-result-card,
+.free-random-prizes {
+  border: 1px solid rgba(127, 166, 255, .22);
+  background: linear-gradient(145deg, rgba(12, 20, 42, .92), rgba(7, 12, 28, .82));
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .28), inset 0 1px 0 rgba(255, 255, 255, .05);
+  backdrop-filter: blur(18px);
+}
+
+.free-random-hero {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 24px;
+  align-items: center;
+  border-radius: 32px;
+  padding: clamp(24px, 4vw, 46px);
+  overflow: hidden;
+  position: relative;
+}
+
+.free-random-copy h1 {
+  margin: 12px 0 10px;
+  font-size: clamp(2rem, 6vw, 4.8rem);
+  line-height: .95;
+}
+
+.free-random-copy p {
+  max-width: 680px;
+  margin: 0;
+  color: rgba(226, 236, 255, .76);
+  font-size: clamp(1rem, 2vw, 1.25rem);
+}
+
+.free-random-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.free-random-status span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  border-radius: 999px;
+  color: #dbeafe;
+  background: rgba(58, 106, 255, .12);
+  border: 1px solid rgba(96, 165, 250, .2);
+}
+
+.free-random-status svg {
+  width: 18px;
+  height: 18px;
+  color: #76b7ff;
+}
+
+.free-random-orb {
+  display: grid;
+  place-items: center;
+  width: clamp(120px, 18vw, 210px);
+  aspect-ratio: 1;
+  border-radius: 42px;
+  color: #fff;
+  background: linear-gradient(135deg, #246bff, #7657ff);
+  box-shadow: 0 22px 80px rgba(65, 110, 255, .45);
+  transform: rotate(-8deg);
+}
+
+.free-random-orb svg {
+  width: 42%;
+  height: 42%;
+}
+
+.free-random-machine {
+  position: relative;
+  margin-top: 24px;
+  border-radius: 30px;
+  padding: clamp(18px, 3vw, 30px);
+  overflow: hidden;
+}
+
+.free-random-pointer {
+  position: absolute;
+  top: 18px;
+  left: 50%;
+  z-index: 3;
+  width: 3px;
+  height: calc(100% - 120px);
+  transform: translateX(-50%);
+  background: linear-gradient(to bottom, rgba(96, 165, 250, 0), #60a5fa 25%, #a78bfa 75%, rgba(167, 139, 250, 0));
+  filter: drop-shadow(0 0 12px rgba(96, 165, 250, .8));
+  pointer-events: none;
+}
+
+.free-random-viewport {
+  overflow: hidden;
+  border-radius: 24px;
+  border: 1px solid rgba(148, 163, 184, .15);
+  background: rgba(3, 7, 18, .36);
+  mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
+}
+
+.free-random-track {
+  display: flex;
+  gap: 14px;
+  min-height: 218px;
+  padding: 18px;
+  will-change: transform;
+}
+
+.free-random-loading,
+.free-random-empty {
+  width: 100%;
+  min-height: 180px;
+  display: grid;
+  place-items: center;
+  color: rgba(226, 236, 255, .74);
+}
+
+.free-random-loading svg {
+  animation: spin 1s linear infinite;
+}
+
+.free-random-card {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  min-width: 210px;
+  border-radius: 22px;
+  padding: 12px;
+  background: linear-gradient(180deg, rgba(18, 29, 56, .94), rgba(9, 14, 31, .96));
+  border: 1px solid rgba(125, 157, 220, .2);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, .24);
+}
+
+.free-random-card.is-compact {
+  min-width: 210px;
+}
+
+.free-random-card-image {
+  overflow: hidden;
+  border-radius: 16px;
+  aspect-ratio: 16 / 9;
+  background: #081022;
+}
+
+.free-random-card-image img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.free-random-card-body span,
+.free-random-card-body p,
+.free-random-card > strong {
+  color: rgba(191, 210, 255, .76);
+  font-size: .84rem;
+}
+
+.free-random-card-body h3 {
+  display: -webkit-box;
+  margin: 4px 0;
+  min-height: 2.6em;
+  overflow: hidden;
+  color: #f8fbff;
+  font-size: 1rem;
+  line-height: 1.3;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+}
+
+.free-random-card-body p {
+  margin: 0;
+}
+
+.free-random-card > strong {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  color: #dbeafe;
+  background: rgba(37, 99, 235, .82);
+  border: 1px solid rgba(255, 255, 255, .16);
+}
+
+.free-random-actions,
+.free-random-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.free-random-spin-button {
+  min-width: min(100%, 260px);
+  min-height: 54px;
+  font-size: 1.05rem;
+}
+
+.free-random-result-card {
+  display: grid;
+  grid-template-columns: 260px 1fr;
+  gap: 24px;
+  align-items: center;
+  margin-top: 24px;
+  border-radius: 30px;
+  padding: clamp(18px, 3vw, 28px);
+}
+
+.free-random-result-image {
+  overflow: hidden;
+  border-radius: 22px;
+  aspect-ratio: 16 / 9;
+}
+
+.free-random-result-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.free-random-result-card h2 {
+  margin: 8px 0;
+  color: #fff;
+  font-size: clamp(1.5rem, 4vw, 2.5rem);
+}
+
+.free-random-result-card p {
+  margin: 0;
+  color: rgba(226, 236, 255, .72);
+}
+
+.free-random-prizes {
+  margin-top: 24px;
+  border-radius: 30px;
+  padding: clamp(18px, 3vw, 30px);
+}
+
+.free-random-prize-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(205px, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+@media (max-width: 720px) {
+  .free-random-shell {
+    width: min(100% - 20px, 560px);
+    padding-top: 20px;
+  }
+
+  .free-random-hero,
+  .free-random-result-card {
+    grid-template-columns: 1fr;
+    border-radius: 24px;
+  }
+
+  .free-random-orb {
+    display: none;
+  }
+
+  .free-random-track {
+    min-height: 194px;
+    padding: 12px;
+  }
+
+  .free-random-card,
+  .free-random-card.is-compact {
+    min-width: 176px;
+  }
+
+  .free-random-result-image {
+    width: 100%;
+  }
+}

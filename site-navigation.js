@@ -4,6 +4,7 @@
     { href: "index.html", label: "หน้าหลัก", icon: "home", match: ["index.html", ""] },
     { href: "index.html#catalog", label: "สินค้า", icon: "library", matchHash: "#catalog" },
     { href: "more-products.html", label: "หมวดหมู่", icon: "package", match: ["more-products.html"] },
+    { href: "free-random.html", label: "สุ่มฟรี", icon: "gift", match: ["free-random.html"] },
     { href: ORDER_DESTINATION, label: "คลังสินค้า", icon: "box", match: ["profile.html"], matchHash: "#inventory" },
     { href: "https://www.facebook.com/byOlafshop", label: "ติดต่อเรา", icon: "phone", external: true }
   ];

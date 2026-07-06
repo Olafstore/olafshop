@@ -52,7 +52,7 @@
     if (kind === "empty") {
       return `
         <div class="free-random-card-symbol is-empty">
-          <i data-lucide="cloud-rain"></i>
+          <i data-lucide="circle-slash"></i>
           <strong>เกลือ</strong>
           <span>ไว้ลุ้นรอบหน้า</span>
         </div>
@@ -155,7 +155,7 @@
     const imageHtml = prizeType === "points"
       ? `<div class="free-random-result-symbol is-points"><i data-lucide="coins"></i><strong>${pointAmount.toLocaleString("th-TH")}</strong><span>POINT</span></div>`
       : prizeType === "empty"
-        ? `<div class="free-random-result-symbol is-empty"><i data-lucide="cloud-rain"></i><strong>เกลือ</strong><span>ไม่ได้รางวัลรอบนี้</span></div>`
+        ? `<div class="free-random-result-symbol is-empty"><i data-lucide="circle-slash"></i><strong>เกลือ</strong><span>ไม่ได้รางวัลรอบนี้</span></div>`
         : `<div class="free-random-result-image"><img src="${escapeHtml(product.imageUrl || result.slot?.imageUrl || "assets/placeholder.svg")}" alt="${escapeHtml(name)}" /></div>`;
     const detail = prizeType === "points"
       ? `ระบบเติม ${pointAmount.toLocaleString("th-TH")} Point เข้าบัญชีของคุณทันทีแล้ว`
@@ -167,11 +167,11 @@
       <div class="free-random-result-card is-${escapeHtml(prizeType)}">
         ${imageHtml}
         <div>
-          <span class="eyebrow"><i data-lucide="${prizeType === "empty" ? "cloud-rain" : "trophy"}"></i> ${prizeType === "empty" ? "TRY AGAIN" : "YOU WON"}</span>
+          <span class="eyebrow"><i data-lucide="${prizeType === "empty" ? "circle-slash" : "trophy"}"></i> ${prizeType === "empty" ? "TRY AGAIN" : "YOU WON"}</span>
           <h2>${escapeHtml(name)}</h2>
           <p>${escapeHtml(detail)}</p>
           <div class="free-random-result-actions">
-            ${prizeType === "product" ? `<a class="primary-button" href="profile.html#inventory"><i data-lucide="box"></i> เปิดคลังสินค้า</a>` : ""}
+            ${prizeType === "product" ? `<a class="primary-button" href="profile.html#inventory"><i data-lucide="archive"></i> เปิดคลังสินค้า</a>` : ""}
             ${prizeType === "points" ? `<a class="primary-button" href="profile.html#info"><i data-lucide="coins"></i> เช็ค Point</a>` : ""}
             ${prizeType === "empty" ? `<button class="primary-button" type="button" data-spin-again><i data-lucide="rotate-cw"></i> สุ่มอีกครั้ง</button>` : ""}
             ${result.order?.id ? `<a class="ghost-button" href="profile.html?order=${encodeURIComponent(result.order.id)}#orders"><i data-lucide="receipt"></i> ดูออเดอร์</a>` : ""}
@@ -319,9 +319,9 @@
         </div>
         <div class="user-popover-divider"></div>
         <div class="user-popover-menu">
-          <a href="profile.html#inventory"><i data-lucide="box"></i><span>คลังสินค้า</span></a>
+          <a href="profile.html#inventory"><i data-lucide="archive"></i><span>คลังสินค้า</span></a>
           <a href="profile.html#orders"><i data-lucide="receipt"></i><span>ประวัติคำสั่งซื้อ</span></a>
-          <a href="free-random.html"><i data-lucide="gift"></i><span>สุ่มเกมฟรี</span></a>
+          <a href="free-random.html"><i data-lucide="dice-5"></i><span>สุ่มเกมฟรี</span></a>
           <button class="danger-item" type="button" data-free-auth-logout><i data-lucide="log-out"></i><span>ออกจากระบบ</span></button>
         </div>
       `;

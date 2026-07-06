@@ -23,7 +23,7 @@
 <script src="delivery-payload.js?v=20260620-phase1-12-final" defer></script>
   <script src="site-navigation.js?v=20260706-no-cart-v21" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-  <link rel="stylesheet" href="styles.css?v=20260706-no-cart-v21" />
+  <link rel="stylesheet" href="styles.css?v=20260706-random-inventory-polish-v25" />
   <style>
     body {
       padding-top: 0;
@@ -2370,6 +2370,217 @@
         width: 100%;
       }
     }
+
+    /* Inventory polish v25 */
+    .profile-page #panel-inventory .panel-card {
+      border-color: rgba(120, 160, 255, 0.16);
+      background:
+        radial-gradient(circle at 14% 0%, rgba(59, 130, 246, 0.10), transparent 28rem),
+        linear-gradient(180deg, rgba(8, 14, 32, 0.88), rgba(5, 10, 24, 0.94));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.035), 0 18px 48px rgba(2, 6, 23, 0.22);
+    }
+
+    .profile-page #panel-inventory .panel-card-header {
+      min-height: 84px;
+      border-bottom-color: rgba(120, 160, 255, 0.12);
+    }
+
+    .profile-page #panel-inventory .panel-card-header h3 {
+      gap: 8px;
+      font-size: 0.98rem;
+      font-weight: 600;
+      letter-spacing: 0.01em;
+    }
+
+    .profile-page #panel-inventory .panel-card-header h3 svg {
+      width: 18px;
+      height: 18px;
+      color: #93c5fd;
+      filter: drop-shadow(0 0 10px rgba(96, 165, 250, 0.26));
+    }
+
+    .profile-page #panel-inventory .panel-title-copy p {
+      font-size: 0.74rem;
+      font-weight: 300;
+      color: #8191ad;
+    }
+
+    .profile-page .inventory-toolbar {
+      gap: 10px;
+      align-items: center;
+    }
+
+    .profile-page .inventory-search,
+    .profile-page .inventory-limit {
+      min-height: 40px;
+      border-radius: 12px;
+      border-color: rgba(112, 145, 200, 0.16);
+      background: rgba(7, 13, 29, 0.72);
+      color: #dbeafe;
+      font-size: 0.82rem;
+      font-weight: 300;
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
+    }
+
+    .profile-page .inventory-search:focus-within,
+    .profile-page .inventory-limit:focus {
+      border-color: rgba(96, 165, 250, 0.36);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.09);
+    }
+
+    .profile-page .inventory-count-badge {
+      margin-top: 10px;
+      padding: 0;
+      color: #7f8ca5;
+      font-size: 0.72rem;
+      font-weight: 300;
+      background: transparent;
+      border: 0;
+    }
+
+    .profile-page .inventory-grid {
+      gap: 12px;
+      margin-top: 12px;
+    }
+
+    .profile-page .inventory-card {
+      grid-template-columns: 58px minmax(0, 1fr);
+      gap: 12px;
+      min-height: 104px;
+      padding: 13px;
+      border-radius: 16px;
+      border-color: rgba(120, 160, 255, 0.14);
+      background:
+        radial-gradient(circle at left top, rgba(96, 165, 250, 0.10), transparent 42%),
+        linear-gradient(135deg, rgba(13, 24, 48, 0.82), rgba(5, 10, 24, 0.88));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      transition: transform 180ms ease, border-color 180ms ease, box-shadow 180ms ease, background 180ms ease;
+    }
+
+    .profile-page .inventory-card:hover {
+      transform: translateY(-1px);
+      border-color: rgba(147, 197, 253, 0.28);
+      box-shadow: 0 12px 28px rgba(2, 6, 23, 0.22);
+      background:
+        radial-gradient(circle at left top, rgba(96, 165, 250, 0.14), transparent 42%),
+        linear-gradient(135deg, rgba(15, 29, 57, 0.86), rgba(5, 10, 24, 0.9));
+    }
+
+    .profile-page .inventory-card-thumb,
+    .profile-page .inventory-card-thumb-empty {
+      width: 58px;
+      height: 58px;
+      border-radius: 14px;
+      border-color: rgba(125, 157, 220, 0.16);
+      background: rgba(15, 23, 42, 0.72);
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+    }
+
+    .profile-page .inventory-card-thumb-empty svg {
+      color: #93c5fd;
+    }
+
+    .profile-page .inventory-card-title {
+      color: #f8fbff;
+      font-size: 0.86rem;
+      font-weight: 600;
+      line-height: 1.35;
+      letter-spacing: 0;
+      overflow-wrap: anywhere;
+    }
+
+    .profile-page .inventory-card-status {
+      margin-top: 2px;
+      font-size: 0.68rem;
+      font-weight: 400;
+    }
+
+    .profile-page .inventory-card-subtitle {
+      gap: 5px;
+      color: #8ea0bd;
+      font-size: 0.72rem;
+      font-weight: 300;
+    }
+
+    .profile-page .inventory-platform {
+      color: #93c5fd;
+      font-weight: 500;
+    }
+
+    .profile-page .inventory-card-note {
+      min-height: 0;
+      color: #7f8ca5;
+      font-size: 0.70rem;
+      font-weight: 300;
+      line-height: 1.45;
+      -webkit-line-clamp: 1;
+    }
+
+    .profile-page .inventory-card-footer {
+      gap: 8px;
+      align-items: center;
+    }
+
+    .profile-page .inventory-card-order {
+      color: #7f8ca5;
+      font-size: 0.70rem;
+      font-weight: 300;
+    }
+
+    .profile-page .inventory-detail-button {
+      min-height: 32px;
+      padding: 0 10px;
+      border-radius: 10px;
+      border-color: rgba(96, 165, 250, 0.18);
+      color: #dbeafe;
+      background: rgba(16, 29, 52, 0.82);
+      box-shadow: none;
+      font-size: 0.72rem;
+      font-weight: 500;
+    }
+
+    .profile-page .inventory-detail-button:hover {
+      transform: translateY(-1px);
+      border-color: rgba(147, 197, 253, 0.32);
+      background: rgba(22, 39, 70, 0.88);
+    }
+
+    .profile-page .inventory-detail-button svg {
+      width: 14px !important;
+      height: 14px !important;
+      color: #93c5fd;
+    }
+
+    .profile-page .status-badge {
+      padding: 4px 7px;
+      border-radius: 999px;
+      font-size: 0.64rem;
+      font-weight: 500;
+      opacity: 0.9;
+    }
+
+    @media (max-width: 720px) {
+      .profile-page #panel-inventory .panel-card-header {
+        min-height: auto;
+      }
+
+      .profile-page .inventory-card {
+        grid-template-columns: 52px minmax(0, 1fr);
+        padding: 12px;
+        border-radius: 14px;
+      }
+
+      .profile-page .inventory-card-thumb,
+      .profile-page .inventory-card-thumb-empty {
+        width: 52px;
+        height: 52px;
+        border-radius: 12px;
+      }
+
+      .profile-page .inventory-card-footer {
+        flex-direction: row;
+      }
+    }
   </style>
 </head>
 
@@ -2508,7 +2719,7 @@
               เปลี่ยนรหัสผ่าน
             </button>
             <button class="profile-nav-item" type="button" data-panel="inventory">
-              <i data-lucide="package" style="width:18px;height:18px"></i>
+              <i data-lucide="archive" style="width:18px;height:18px"></i>
               คลังสินค้า (ID/Pass)
             </button>
             <button class="profile-nav-item" type="button" data-panel="orders">
@@ -2631,7 +2842,7 @@
           <div class="panel-card">
             <div class="panel-card-header">
               <div class="panel-title-copy">
-                <h3><i data-lucide="package-open"></i>คลังสินค้า (ID/Pass)</h3>
+                <h3><i data-lucide="archive"></i>คลังสินค้า (ID/Pass)</h3>
                 <p>ติดตามสถานะคำสั่งซื้อและรับข้อมูลสินค้าที่แอดมินจัดส่ง</p>
               </div>
               <button type="button" class="mini-button" data-panel-jump="orders">ประวัติคำสั่งซื้อ</button>
@@ -3163,7 +3374,7 @@
       const availabilityText = row.statusLabel;
       const imageBlock = row.productImageUrl
         ? `<div class="inventory-card-thumb"><img src="${escape(row.productImageUrl)}" alt="${escape(row.productName)}" loading="lazy" /></div>`
-        : `<div class="inventory-card-thumb-empty"><i data-lucide="package" style="width:26px;height:26px"></i></div>`;
+        : `<div class="inventory-card-thumb-empty"><i data-lucide="archive" style="width:24px;height:24px"></i></div>`;
 
       return `
         <article class="inventory-card">
@@ -3189,7 +3400,7 @@
             <div class="inventory-card-footer">
               <div class="inventory-card-order">#${escape(row.orderNumber)}</div>
               <button class="inventory-detail-button" type="button" data-inventory-detail="${escape(row.key)}">
-                <i data-lucide="${row.hasDetail ? 'key-round' : 'scan-line'}" style="width:16px;height:16px"></i>
+                <i data-lucide="${row.hasDetail ? 'key-round' : 'clipboard-check'}" style="width:15px;height:15px"></i>
                 ${row.hasDetail ? 'ดูข้อมูลสินค้า' : 'จัดการออเดอร์'}
               </button>
             </div>
@@ -3920,7 +4131,7 @@
         setProfileLoadingState(true, { quiet });
         if (!quiet) {
           if (ordersList) ordersList.innerHTML = profileLoadingMarkup('กำลังโหลดประวัติคำสั่งซื้อ', 'กำลังตรวจสอบรายการล่าสุดจากระบบ', 'history');
-          if (inventoryList) inventoryList.innerHTML = profileLoadingMarkup('กำลังโหลดคลังสินค้า', 'กำลังเตรียม ID / Pass และสถานะล่าสุด', 'package-open');
+          if (inventoryList) inventoryList.innerHTML = profileLoadingMarkup('กำลังโหลดคลังสินค้า', 'กำลังเตรียม ID / Pass และสถานะล่าสุด', 'archive');
           lucide.createIcons();
         }
 

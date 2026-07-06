@@ -22616,15 +22616,19 @@ body:has(dialog[open]) {
 
 .free-random-copy h1 {
   margin: 12px 0 10px;
-  font-size: clamp(2rem, 6vw, 4.8rem);
-  line-height: .95;
+  font-size: clamp(1.85rem, 5vw, 3.65rem);
+  line-height: 1;
+  letter-spacing: -.035em;
+  font-weight: 700;
 }
 
 .free-random-copy p {
   max-width: 680px;
   margin: 0;
   color: rgba(226, 236, 255, .76);
-  font-size: clamp(1rem, 2vw, 1.25rem);
+  font-size: clamp(.92rem, 1.55vw, 1.06rem);
+  font-weight: 300;
+  line-height: 1.7;
 }
 
 .free-random-status {
@@ -22638,28 +22642,30 @@ body:has(dialog[open]) {
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  padding: 10px 14px;
+  padding: 8px 12px;
   border-radius: 999px;
   color: #dbeafe;
+  font-size: .82rem;
+  font-weight: 400;
   background: rgba(58, 106, 255, .12);
   border: 1px solid rgba(96, 165, 250, .2);
 }
 
 .free-random-status svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   color: #76b7ff;
 }
 
 .free-random-orb {
   display: grid;
   place-items: center;
-  width: clamp(120px, 18vw, 210px);
+  width: clamp(112px, 15vw, 168px);
   aspect-ratio: 1;
-  border-radius: 42px;
+  border-radius: 34px;
   color: #fff;
   background: linear-gradient(135deg, #246bff, #7657ff);
-  box-shadow: 0 22px 80px rgba(65, 110, 255, .45);
+  box-shadow: 0 18px 56px rgba(65, 110, 255, .38);
   transform: rotate(-8deg);
 }
 
@@ -22683,11 +22689,11 @@ body:has(dialog[open]) {
   gap: 8px;
   width: fit-content;
   margin: 0 auto 14px;
-  padding: 8px 14px;
+  padding: 7px 12px;
   border-radius: 999px;
   color: #bfdbfe;
-  font-size: .78rem;
-  font-weight: 800;
+  font-size: .72rem;
+  font-weight: 700;
   letter-spacing: .16em;
   background: rgba(37, 99, 235, .14);
   border: 1px solid rgba(96, 165, 250, .24);
@@ -22720,8 +22726,8 @@ body:has(dialog[open]) {
 .free-random-track {
   display: flex;
   gap: 14px;
-  min-height: 218px;
-  padding: 18px;
+  min-height: 198px;
+  padding: 16px;
   will-change: transform;
 }
 
@@ -22741,13 +22747,13 @@ body:has(dialog[open]) {
 .free-random-card {
   position: relative;
   display: grid;
-  gap: 12px;
-  min-width: 210px;
-  border-radius: 22px;
-  padding: 12px;
+  gap: 10px;
+  min-width: 196px;
+  border-radius: 18px;
+  padding: 10px;
   background: linear-gradient(180deg, rgba(18, 29, 56, .94), rgba(9, 14, 31, .96));
   border: 1px solid rgba(125, 157, 220, .2);
-  box-shadow: 0 14px 40px rgba(0, 0, 0, .24);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, .22), inset 0 1px 0 rgba(255, 255, 255, .035);
 }
 
 .free-random-card.is-points {
@@ -22761,12 +22767,12 @@ body:has(dialog[open]) {
 }
 
 .free-random-card.is-compact {
-  min-width: 210px;
+  min-width: 196px;
 }
 
 .free-random-card-image {
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: 14px;
   aspect-ratio: 16 / 9;
   background: #081022;
 }
@@ -22776,7 +22782,7 @@ body:has(dialog[open]) {
   display: grid;
   place-items: center;
   overflow: hidden;
-  border-radius: 16px;
+  border-radius: 14px;
   aspect-ratio: 16 / 9;
   text-align: center;
   border: 1px solid rgba(255, 255, 255, .12);
@@ -22784,23 +22790,24 @@ body:has(dialog[open]) {
 
 .free-random-card-symbol svg,
 .free-random-result-symbol svg {
-  width: 34px;
-  height: 34px;
-  margin-bottom: 6px;
+  width: 28px;
+  height: 28px;
+  margin-bottom: 5px;
 }
 
 .free-random-card-symbol strong,
 .free-random-result-symbol strong {
   color: #fff;
-  font-size: 1.9rem;
+  font-size: 1.55rem;
   line-height: 1;
+  font-weight: 700;
 }
 
 .free-random-card-symbol span,
 .free-random-result-symbol span {
   color: rgba(255, 255, 255, .7);
-  font-size: .74rem;
-  font-weight: 700;
+  font-size: .68rem;
+  font-weight: 600;
   letter-spacing: .12em;
 }
 
@@ -22831,17 +22838,19 @@ body:has(dialog[open]) {
 .free-random-card-body p,
 .free-random-card > strong {
   color: rgba(191, 210, 255, .76);
-  font-size: .84rem;
+  font-size: .76rem;
+  font-weight: 300;
 }
 
 .free-random-card-body h3 {
   display: -webkit-box;
   margin: 4px 0;
-  min-height: 2.6em;
+  min-height: 2.5em;
   overflow: hidden;
   color: #f8fbff;
-  font-size: 1rem;
+  font-size: .92rem;
   line-height: 1.3;
+  font-weight: 600;
   -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
 }
@@ -22854,7 +22863,7 @@ body:has(dialog[open]) {
   position: absolute;
   top: 14px;
   right: 14px;
-  padding: 6px 9px;
+  padding: 5px 8px;
   border-radius: 999px;
   color: #dbeafe;
   background: rgba(37, 99, 235, .82);
@@ -22866,19 +22875,32 @@ body:has(dialog[open]) {
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 12px;
-  margin-top: 22px;
+  gap: 10px;
+  margin-top: 20px;
 }
 
 .free-random-spin-button {
-  min-width: min(100%, 260px);
-  min-height: 54px;
-  font-size: 1.05rem;
+  min-width: min(100%, 238px);
+  min-height: 48px;
+  font-size: .96rem;
+  font-weight: 600;
+}
+
+.free-random-actions .ghost-button,
+.free-random-result-actions .ghost-button {
+  min-height: 48px;
+  border-radius: 14px;
+  font-size: .9rem;
+  font-weight: 500;
+  color: #dbeafe;
+  background: rgba(8, 16, 34, .72);
+  border-color: rgba(125, 157, 220, .18);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .035);
 }
 
 .free-random-result-card {
   display: grid;
-  grid-template-columns: 260px 1fr;
+  grid-template-columns: 230px 1fr;
   gap: 24px;
   align-items: center;
   margin-top: 24px;
@@ -22923,12 +22945,16 @@ body:has(dialog[open]) {
 .free-random-result-card h2 {
   margin: 8px 0;
   color: #fff;
-  font-size: clamp(1.5rem, 4vw, 2.5rem);
+  font-size: clamp(1.35rem, 3vw, 2.1rem);
+  font-weight: 700;
 }
 
 .free-random-result-card p {
   margin: 0;
   color: rgba(226, 236, 255, .72);
+  font-size: .92rem;
+  font-weight: 300;
+  line-height: 1.7;
 }
 
 .free-random-prizes {
@@ -22939,7 +22965,7 @@ body:has(dialog[open]) {
 
 .free-random-prize-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(205px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   gap: 14px;
   margin-top: 18px;
 }

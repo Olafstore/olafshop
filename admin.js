@@ -986,6 +986,8 @@ function freeRandomSlots() {
     const slotNumber = index + 1;
     return {
       slotNumber,
+      prizeType: "product",
+      pointAmount: 0,
       productId: "",
       chancePercent: 0,
       isActive: false,
@@ -1028,8 +1030,13 @@ function renderFreeRandomPanel() {
 
   const slots = freeRandomSlots();
   const totalChance = slots.reduce((sum, slot) => sum + Number(slot.chancePercent || 0), 0);
-  const activeSlots = slots.filter((slot) => slot.isActive && slot.productId).length;
-  const readySlots = slots.filter((slot) => slot.isActive && slot.productId && slot.productIsActive !== false && Number(slot.stock || 0) > 0).length;
+  const activeSlots = slots.filter((slot) => slot.isActive).length;
+  const readySlots = slots.filter((slot) => {
+    if (!slot.isActive) return false;
+    if ((slot.prizeType || "product") === "empty") return true;
+    if (slot.prizeType === "points") return Number(slot.pointAmount || 0) > 0;
+    return slot.productId && slot.productIsActive !== false && Number(slot.stock || 0) > 0;
+  }).length;
   summary.innerHTML = `
     <div class="free-random-admin-stat">
       <span>ช่องที่เปิด</span>
@@ -1049,21 +1056,39 @@ function renderFreeRandomPanel() {
   grid.innerHTML = slots.map((slot) => {
     const product = products().find((item) => item.id === slot.productId);
     const stock = Number(product?.stock ?? slot.stock ?? 0);
-    const isReady = Boolean(slot.isActive && slot.productId && product?.isActive !== false && stock > 0);
+    const prizeType = slot.prizeType || "product";
+    const isReady = Boolean(slot.isActive && (
+      prizeType === "empty" ||
+      (prizeType === "points" && Number(slot.pointAmount || 0) > 0) ||
+      (slot.productId && product?.isActive !== false && stock > 0)
+    ));
+    const typeLabel = prizeType === "points" ? "Point" : prizeType === "empty" ? "เกลือ" : "สินค้า";
     return `
       <article class="free-random-slot-card" data-free-random-slot="${slot.slotNumber}">
         <div class="free-random-slot-head">
-          <strong>ช่อง ${slot.slotNumber}</strong>
+          <strong>ช่อง ${slot.slotNumber} · ${typeLabel}</strong>
           <span class="status-pill ${isReady ? "ok" : slot.isActive ? "warn" : ""}">${isReady ? "พร้อมสุ่ม" : slot.isActive ? "ตรวจสต็อก" : "ปิด"}</span>
         </div>
         <label>
-          สินค้า
+          ประเภทรางวัล
+          <select name="prizeType">
+            <option value="product"${prizeType === "product" ? " selected" : ""}>สินค้า / เกมจริง</option>
+            <option value="points"${prizeType === "points" ? " selected" : ""}>Point เข้าบัญชีทันที</option>
+            <option value="empty"${prizeType === "empty" ? " selected" : ""}>เกลือ / ไม่ได้รับรางวัล</option>
+          </select>
+        </label>
+        <label>
+          สินค้า (ใช้เฉพาะประเภทรางวัลสินค้า)
           <select name="productId">${freeRandomProductOptions(slot.productId)}</select>
         </label>
         <div class="form-row">
           <label>
             %
             <input name="chancePercent" type="number" min="0" max="100" step="0.01" value="${Number(slot.chancePercent || 0)}" />
+          </label>
+          <label>
+            Point
+            <input name="pointAmount" type="number" min="0" step="1" value="${Number(slot.pointAmount || 0)}" />
           </label>
           <label>
             สถานะ
@@ -1081,7 +1106,7 @@ function renderFreeRandomPanel() {
           รูปเฉพาะช่อง (ไม่บังคับ)
           <input name="imageUrl" type="url" value="${escapeHtml(slot.imageUrl || "")}" placeholder="https://..." />
         </label>
-        <small>สินค้า: ${escapeHtml(product?.name || slot.productName || "ยังไม่เลือก")} · Stock ${stock.toLocaleString("th-TH")}</small>
+        <small>${prizeType === "points" ? `เติม ${Number(slot.pointAmount || 0).toLocaleString("th-TH")} Point ให้ลูกค้าทันที` : prizeType === "empty" ? "รอบนี้ไม่ได้รับเกมหรือ Point แต่จะนับจำนวนครั้งสุ่ม" : `สินค้า: ${escapeHtml(product?.name || slot.productName || "ยังไม่เลือก")} · Stock ${stock.toLocaleString("th-TH")}`}</small>
       </article>
     `;
   }).join("");
@@ -1095,7 +1120,7 @@ function renderFreeRandomPanel() {
             <strong>${escapeHtml(claim.username || claim.userEmail || claim.userId || "-")}</strong>
             <small>${escapeHtml(claim.userEmail || "")}</small>
           </td>
-          <td>${escapeHtml(claim.productName || claim.prizeSnapshot?.productName || claim.productId || "-")}</td>
+          <td>${escapeHtml(claim.prizeType === "points" ? `${Number(claim.pointAmount || 0)} Point` : claim.prizeType === "empty" ? "เกลือ / ไม่ได้รับรางวัล" : claim.productName || claim.prizeSnapshot?.productName || claim.productId || "-")}</td>
           <td>${Number(claim.slotNumber || 0)} / ${Number(claim.chancePercent || 0).toLocaleString("th-TH", { maximumFractionDigits: 2 })}%</td>
           <td>${escapeHtml(claim.orderNumber || claim.orderId || "-")}</td>
         </tr>
@@ -1106,6 +1131,8 @@ function renderFreeRandomPanel() {
 function readFreeRandomFormSlots() {
   return $$("#free-random-slot-grid [data-free-random-slot]").map((card) => ({
     slotNumber: Number(card.dataset.freeRandomSlot || 0),
+    prizeType: card.querySelector('[name="prizeType"]')?.value || "product",
+    pointAmount: Number(card.querySelector('[name="pointAmount"]')?.value || 0),
     productId: card.querySelector('[name="productId"]')?.value || "",
     chancePercent: Number(card.querySelector('[name="chancePercent"]')?.value || 0),
     isActive: card.querySelector('[name="isActive"]')?.value === "true",

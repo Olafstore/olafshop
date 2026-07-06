@@ -1206,6 +1206,8 @@
   function mapFreeRandomSlot(row = {}) {
     return {
       slotNumber: Number(row.slotNumber ?? row.slot_number ?? 0),
+      prizeType: row.prizeType || row.prize_type || "product",
+      pointAmount: Number(row.pointAmount ?? row.point_amount ?? 0),
       productId: row.productId || row.product_id || "",
       chancePercent: Number(row.chancePercent ?? row.chance_percent ?? 0),
       isActive: row.isActive === true || row.is_active === true,
@@ -1249,6 +1251,9 @@
       username: row.username || "",
       spinDate: row.spinDate || row.spin_date || "",
       slotNumber: Number(row.slotNumber ?? row.slot_number ?? 0),
+      prizeType: row.prizeType || row.prize_type || row.prizeSnapshot?.prizeType || row.prize_snapshot?.prizeType || "product",
+      pointAmount: Number(row.pointAmount ?? row.point_amount ?? row.prizeSnapshot?.pointAmount ?? row.prize_snapshot?.pointAmount ?? 0),
+      pointTransactionId: row.pointTransactionId || row.point_transaction_id || "",
       productId: row.productId || row.product_id || "",
       productName: row.productName || row.product_name || "",
       orderId: row.orderId || row.order_id || "",
@@ -1287,7 +1292,9 @@
         price: Number(payload.product?.price || 0),
         stock: Number(payload.product?.stock || 0)
       },
-      order: mapOrderRpcPayload(payload),
+      order: payload.order ? mapOrderRpcPayload({ order: payload.order, items: payload.items || [] }) : null,
+      pointCredit: payload.pointCredit || payload.point_credit || null,
+      emptyPrize: payload.emptyPrize === true || payload.empty_prize === true,
       ...normalizeFreeRandomStatus(payload)
     };
   }
@@ -1304,6 +1311,8 @@
       p_is_active: isActive !== false,
       p_slots: normalizeArray(slots).map((slot, index) => ({
         slotNumber: Number(slot.slotNumber || index + 1),
+        prizeType: slot.prizeType || "product",
+        pointAmount: Number(slot.pointAmount || 0),
         productId: slot.productId || null,
         chancePercent: Number(slot.chancePercent || 0),
         isActive: slot.isActive === true,

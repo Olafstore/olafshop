@@ -22550,7 +22550,26 @@ body:has(dialog[open]) {
   background:
     radial-gradient(circle at 18% 12%, rgba(56, 111, 255, .22), transparent 32rem),
     radial-gradient(circle at 82% 8%, rgba(126, 87, 255, .18), transparent 30rem),
+    linear-gradient(180deg, rgba(3, 7, 18, .55), rgba(3, 7, 18, .9)),
     var(--color-bg, #050914);
+}
+
+.free-random-page .topbar {
+  border-bottom-color: rgba(125, 157, 220, .16);
+  background: rgba(5, 10, 24, .72);
+  backdrop-filter: blur(18px);
+}
+
+.free-auth-avatar {
+  display: inline-grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 800;
+  background: linear-gradient(135deg, #2f6dff, #7458ff);
+  box-shadow: 0 10px 22px rgba(59, 130, 246, .28);
 }
 
 .free-random-shell {
@@ -22578,6 +22597,21 @@ body:has(dialog[open]) {
   padding: clamp(24px, 4vw, 46px);
   overflow: hidden;
   position: relative;
+}
+
+.free-random-hero::before {
+  content: "";
+  position: absolute;
+  inset: -1px;
+  pointer-events: none;
+  background:
+    linear-gradient(120deg, rgba(96, 165, 250, .22), transparent 32%),
+    radial-gradient(circle at 82% 32%, rgba(255, 255, 255, .11), transparent 12rem);
+}
+
+.free-random-hero > * {
+  position: relative;
+  z-index: 1;
 }
 
 .free-random-copy h1 {
@@ -22642,6 +22676,23 @@ body:has(dialog[open]) {
   overflow: hidden;
 }
 
+.free-random-machine::before {
+  content: "OLAF DAILY CASE";
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin: 0 auto 14px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  color: #bfdbfe;
+  font-size: .78rem;
+  font-weight: 800;
+  letter-spacing: .16em;
+  background: rgba(37, 99, 235, .14);
+  border: 1px solid rgba(96, 165, 250, .24);
+}
+
 .free-random-pointer {
   position: absolute;
   top: 18px;
@@ -22658,8 +22709,11 @@ body:has(dialog[open]) {
 .free-random-viewport {
   overflow: hidden;
   border-radius: 24px;
-  border: 1px solid rgba(148, 163, 184, .15);
-  background: rgba(3, 7, 18, .36);
+  border: 1px solid rgba(148, 163, 184, .22);
+  background:
+    linear-gradient(90deg, rgba(59, 130, 246, .08), transparent 12%, transparent 88%, rgba(124, 58, 237, .08)),
+    rgba(3, 7, 18, .5);
+  box-shadow: inset 0 0 42px rgba(0, 0, 0, .32);
   mask-image: linear-gradient(90deg, transparent, #000 7%, #000 93%, transparent);
 }
 
@@ -22696,6 +22750,16 @@ body:has(dialog[open]) {
   box-shadow: 0 14px 40px rgba(0, 0, 0, .24);
 }
 
+.free-random-card.is-points {
+  border-color: rgba(250, 204, 21, .28);
+  background: linear-gradient(180deg, rgba(55, 43, 15, .82), rgba(13, 18, 34, .96));
+}
+
+.free-random-card.is-empty {
+  border-color: rgba(148, 163, 184, .18);
+  background: linear-gradient(180deg, rgba(31, 41, 55, .72), rgba(9, 14, 31, .96));
+}
+
 .free-random-card.is-compact {
   min-width: 210px;
 }
@@ -22705,6 +22769,55 @@ body:has(dialog[open]) {
   border-radius: 16px;
   aspect-ratio: 16 / 9;
   background: #081022;
+}
+
+.free-random-card-symbol,
+.free-random-result-symbol {
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 16px;
+  aspect-ratio: 16 / 9;
+  text-align: center;
+  border: 1px solid rgba(255, 255, 255, .12);
+}
+
+.free-random-card-symbol svg,
+.free-random-result-symbol svg {
+  width: 34px;
+  height: 34px;
+  margin-bottom: 6px;
+}
+
+.free-random-card-symbol strong,
+.free-random-result-symbol strong {
+  color: #fff;
+  font-size: 1.9rem;
+  line-height: 1;
+}
+
+.free-random-card-symbol span,
+.free-random-result-symbol span {
+  color: rgba(255, 255, 255, .7);
+  font-size: .74rem;
+  font-weight: 700;
+  letter-spacing: .12em;
+}
+
+.free-random-card-symbol.is-points,
+.free-random-result-symbol.is-points {
+  color: #fde68a;
+  background:
+    radial-gradient(circle at 50% 26%, rgba(250, 204, 21, .34), transparent 52%),
+    linear-gradient(145deg, #4a3410, #101827);
+}
+
+.free-random-card-symbol.is-empty,
+.free-random-result-symbol.is-empty {
+  color: #cbd5e1;
+  background:
+    radial-gradient(circle at 50% 22%, rgba(148, 163, 184, .2), transparent 48%),
+    linear-gradient(145deg, #253044, #080d1b);
 }
 
 .free-random-card-image img {
@@ -22773,10 +22886,32 @@ body:has(dialog[open]) {
   padding: clamp(18px, 3vw, 28px);
 }
 
+.free-random-result-card.is-points {
+  border-color: rgba(250, 204, 21, .28);
+}
+
+.free-random-result-card.is-empty {
+  border-color: rgba(148, 163, 184, .22);
+}
+
 .free-random-result-image {
   overflow: hidden;
   border-radius: 22px;
   aspect-ratio: 16 / 9;
+}
+
+.free-random-result-symbol {
+  min-height: 180px;
+  aspect-ratio: auto;
+}
+
+.free-random-result-symbol svg {
+  width: 54px;
+  height: 54px;
+}
+
+.free-random-result-symbol strong {
+  font-size: clamp(2.4rem, 8vw, 4rem);
 }
 
 .free-random-result-image img {

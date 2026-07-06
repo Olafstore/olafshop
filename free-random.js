@@ -25,20 +25,71 @@
   }
 
   function availableSlots() {
-    return state.config.slots.filter((slot) => slot.productId && slot.isActive && slot.productIsActive && slot.stock > 0);
+    return state.config.slots.filter((slot) => {
+      if (!slot.isActive) return false;
+      const prizeType = slot.prizeType || "product";
+      if (prizeType === "empty") return true;
+      if (prizeType === "points") return Number(slot.pointAmount || 0) > 0;
+      return slot.productId && slot.productIsActive && slot.stock > 0;
+    });
+  }
+
+  function slotKind(slot) {
+    return slot.prizeType || "product";
+  }
+
+  function slotVisualHtml(slot) {
+    const kind = slotKind(slot);
+    if (kind === "points") {
+      return `
+        <div class="free-random-card-symbol is-points">
+          <i data-lucide="coins"></i>
+          <strong>${Number(slot.pointAmount || 0).toLocaleString("th-TH")}</strong>
+          <span>POINT</span>
+        </div>
+      `;
+    }
+    if (kind === "empty") {
+      return `
+        <div class="free-random-card-symbol is-empty">
+          <i data-lucide="cloud-rain"></i>
+          <strong>เกลือ</strong>
+          <span>ไว้ลุ้นรอบหน้า</span>
+        </div>
+      `;
+    }
+    return `
+      <div class="free-random-card-image">
+        <img src="${escapeHtml(prizeImage(slot))}" alt="${escapeHtml(clean(slot.label || slot.productName || "รางวัล"))}" loading="lazy" decoding="async" />
+      </div>
+    `;
+  }
+
+  function slotMeta(slot) {
+    const kind = slotKind(slot);
+    if (kind === "points") return `${Number(slot.pointAmount || 0).toLocaleString("th-TH")} Point · เข้าบัญชีทันที`;
+    if (kind === "empty") return "ไม่ได้รับเกมหรือ Point";
+    return `${clean(slot.category || "สินค้า")} · ${money(slot.price)}`;
+  }
+
+  function slotName(slot) {
+    const kind = slotKind(slot);
+    if (slot.label) return clean(slot.label);
+    if (kind === "points") return `${Number(slot.pointAmount || 0).toLocaleString("th-TH")} Point`;
+    if (kind === "empty") return "เกลือ";
+    return clean(slot.productName || `ช่องที่ ${slot.slotNumber}`);
   }
 
   function cardHtml(slot, compact = false) {
-    const name = clean(slot.label || slot.productName || `ช่องที่ ${slot.slotNumber}`);
+    const name = slotName(slot);
+    const kind = slotKind(slot);
     return `
-      <article class="free-random-card${compact ? " is-compact" : ""}" data-slot-number="${slot.slotNumber}">
-        <div class="free-random-card-image">
-          <img src="${escapeHtml(prizeImage(slot))}" alt="${escapeHtml(name)}" loading="lazy" decoding="async" />
-        </div>
+      <article class="free-random-card is-${escapeHtml(kind)}${compact ? " is-compact" : ""}" data-slot-number="${slot.slotNumber}">
+        ${slotVisualHtml(slot)}
         <div class="free-random-card-body">
           <span>ช่อง ${slot.slotNumber}</span>
           <h3>${escapeHtml(name)}</h3>
-          <p>${escapeHtml(clean(slot.category || "สินค้า"))} · ${money(slot.price)}</p>
+          <p>${escapeHtml(slotMeta(slot))}</p>
         </div>
         <strong>${Number(slot.chancePercent || 0).toLocaleString("th-TH", { maximumFractionDigits: 2 })}%</strong>
       </article>
@@ -94,24 +145,41 @@
     const panel = $("#free-random-result");
     if (!panel) return;
     const product = result.product || {};
-    const name = clean(product.name || result.slot?.label || "รางวัลของคุณ");
+    const prizeType = result.claim?.prizeType || result.slot?.prizeType || "product";
+    const pointAmount = Number(result.pointCredit?.amount || result.claim?.pointAmount || result.slot?.pointAmount || 0);
+    const name = prizeType === "points"
+      ? `${pointAmount.toLocaleString("th-TH")} Point`
+      : prizeType === "empty"
+        ? "เกลือ!"
+        : clean(product.name || result.slot?.label || "รางวัลของคุณ");
+    const imageHtml = prizeType === "points"
+      ? `<div class="free-random-result-symbol is-points"><i data-lucide="coins"></i><strong>${pointAmount.toLocaleString("th-TH")}</strong><span>POINT</span></div>`
+      : prizeType === "empty"
+        ? `<div class="free-random-result-symbol is-empty"><i data-lucide="cloud-rain"></i><strong>เกลือ</strong><span>ไม่ได้รางวัลรอบนี้</span></div>`
+        : `<div class="free-random-result-image"><img src="${escapeHtml(product.imageUrl || result.slot?.imageUrl || "assets/placeholder.svg")}" alt="${escapeHtml(name)}" /></div>`;
+    const detail = prizeType === "points"
+      ? `ระบบเติม ${pointAmount.toLocaleString("th-TH")} Point เข้าบัญชีของคุณทันทีแล้ว`
+      : prizeType === "empty"
+        ? "รอบนี้ยังไม่ได้เกมหรือ Point แต่ยังสามารถลุ้นต่อได้ถ้ายังเหลือจำนวนครั้งวันนี้"
+        : `ระบบสร้างออเดอร์ฟรีให้แล้ว ${result.order?.status === "delivered" ? "และจัดส่งเข้าคลังเรียบร้อย" : "รอแอดมินจัดส่งตามประเภทสินค้า"}`;
     panel.hidden = false;
     panel.innerHTML = `
-      <div class="free-random-result-card">
-        <div class="free-random-result-image">
-          <img src="${escapeHtml(product.imageUrl || result.slot?.imageUrl || "assets/placeholder.svg")}" alt="${escapeHtml(name)}" />
-        </div>
+      <div class="free-random-result-card is-${escapeHtml(prizeType)}">
+        ${imageHtml}
         <div>
-          <span class="eyebrow"><i data-lucide="trophy"></i> YOU WON</span>
+          <span class="eyebrow"><i data-lucide="${prizeType === "empty" ? "cloud-rain" : "trophy"}"></i> ${prizeType === "empty" ? "TRY AGAIN" : "YOU WON"}</span>
           <h2>${escapeHtml(name)}</h2>
-          <p>ระบบสร้างออเดอร์ฟรีให้แล้ว ${result.order?.status === "delivered" ? "และจัดส่งเข้าคลังเรียบร้อย" : "รอแอดมินจัดส่งตามประเภทสินค้า"}</p>
+          <p>${escapeHtml(detail)}</p>
           <div class="free-random-result-actions">
-            <a class="primary-button" href="profile.html#inventory"><i data-lucide="box"></i> เปิดคลังสินค้า</a>
+            ${prizeType === "product" ? `<a class="primary-button" href="profile.html#inventory"><i data-lucide="box"></i> เปิดคลังสินค้า</a>` : ""}
+            ${prizeType === "points" ? `<a class="primary-button" href="profile.html#info"><i data-lucide="coins"></i> เช็ค Point</a>` : ""}
+            ${prizeType === "empty" ? `<button class="primary-button" type="button" data-spin-again><i data-lucide="rotate-cw"></i> สุ่มอีกครั้ง</button>` : ""}
             ${result.order?.id ? `<a class="ghost-button" href="profile.html?order=${encodeURIComponent(result.order.id)}#orders"><i data-lucide="receipt"></i> ดูออเดอร์</a>` : ""}
           </div>
         </div>
       </div>
     `;
+    panel.querySelector("[data-spin-again]")?.addEventListener("click", handleSpin);
     window.lucide?.createIcons?.();
     panel.scrollIntoView({ behavior: "smooth", block: "center" });
   }
@@ -122,6 +190,7 @@
     } catch (error) {
       state.user = null;
     }
+    renderAuthHeader();
     if (!state.user) {
       state.status = { dailyLimit: state.config.settings.dailyLimit || 5, spinsUsedToday: 0, spinsRemaining: state.config.settings.dailyLimit || 5 };
       renderStatus();
@@ -185,9 +254,103 @@
     return "สุ่มไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
   }
 
+  function userName(user) {
+    return clean(user?.displayName || user?.fullName || user?.username || user?.email?.split("@")[0] || "Member");
+  }
+
+  function userInitial(user) {
+    return userName(user).trim().charAt(0).toUpperCase() || "U";
+  }
+
+  async function hydrateAuthPoint(popover) {
+    const target = popover?.querySelector("[data-free-auth-points]");
+    if (!target || !window.OlafOrders?.fetchPointBalance) return;
+    try {
+      const wallet = await window.OlafOrders.fetchPointBalance();
+      target.textContent = `${Number(wallet?.balance || 0).toLocaleString("th-TH")} Points`;
+    } catch (error) {
+      target.textContent = "0 Points";
+    }
+  }
+
+  function renderAuthHeader() {
+    const button = $("#open-auth");
+    const label = $("#account-label");
+    const popover = $("#user-popover");
+    const register = $(".register-button");
+    const user = window.OlafStore?.currentUser?.() || state.user || null;
+    if (!button || !label) return;
+
+    button.classList.remove("is-auth-loading");
+    button.removeAttribute("aria-busy");
+
+    if (!user) {
+      button.innerHTML = `<i data-lucide="log-in"></i><span id="account-label">เข้าสู่ระบบ</span>`;
+      button.onclick = () => {
+        window.location.href = `login.html?return=${encodeURIComponent("free-random.html")}`;
+      };
+      if (register) register.style.display = "inline-flex";
+      if (popover) popover.hidden = true;
+      window.lucide?.createIcons?.();
+      return;
+    }
+
+    if (register) register.style.display = "none";
+    button.innerHTML = `<span class="free-auth-avatar">${escapeHtml(userInitial(user))}</span><span id="account-label">${escapeHtml(userName(user))}</span>`;
+    button.onclick = (event) => {
+      event.stopPropagation();
+      if (!popover) return;
+      popover.hidden = !popover.hidden;
+      if (!popover.hidden) hydrateAuthPoint(popover);
+    };
+
+    if (popover) {
+      popover.innerHTML = `
+        <a class="user-popover-header user-popover-header-link" href="profile.html#info">
+          <span class="user-popover-avatar">${escapeHtml(userInitial(user))}</span>
+          <span class="user-popover-info">
+            <strong>${escapeHtml(userName(user))}</strong>
+            <span>${escapeHtml(user.email || "")}</span>
+          </span>
+        </a>
+        <div class="user-popover-badge-row">
+          <span>${escapeHtml(user.role || "member")}</span>
+          <a class="user-badge-points" href="profile.html#info" data-free-auth-points>กำลังโหลด Point</a>
+        </div>
+        <div class="user-popover-divider"></div>
+        <div class="user-popover-menu">
+          <a href="profile.html#inventory"><i data-lucide="box"></i><span>คลังสินค้า</span></a>
+          <a href="profile.html#orders"><i data-lucide="receipt"></i><span>ประวัติคำสั่งซื้อ</span></a>
+          <a href="free-random.html"><i data-lucide="gift"></i><span>สุ่มเกมฟรี</span></a>
+          <button class="danger-item" type="button" data-free-auth-logout><i data-lucide="log-out"></i><span>ออกจากระบบ</span></button>
+        </div>
+      `;
+      popover.querySelector("[data-free-auth-logout]")?.addEventListener("click", async () => {
+        await window.OlafStore?.logout?.();
+        state.user = null;
+        popover.hidden = true;
+        renderAuthHeader();
+        renderStatus();
+      });
+      hydrateAuthPoint(popover);
+    }
+    window.lucide?.createIcons?.();
+  }
+
+  function bindAuthHeader() {
+    if (document.body.dataset.freeRandomAuthBound === "true") return;
+    document.body.dataset.freeRandomAuthBound = "true";
+    document.addEventListener("click", (event) => {
+      const popover = $("#user-popover");
+      if (!popover || popover.hidden) return;
+      if (event.target.closest("#open-auth, #user-popover")) return;
+      popover.hidden = true;
+    });
+  }
+
   async function handleSpin() {
     if (state.spinning) return;
-    if (!window.OlafStore?.currentUser?.()) {
+    if (!(window.OlafStore?.currentUser?.() || state.user)) {
       window.location.href = `login.html?return=${encodeURIComponent("free-random.html")}`;
       return;
     }
@@ -217,6 +380,8 @@
 
   async function init() {
     await window.OlafStore?.ready?.catch?.(() => null);
+    bindAuthHeader();
+    renderAuthHeader();
     $("#free-random-spin")?.addEventListener("click", handleSpin);
     await loadConfig();
   }

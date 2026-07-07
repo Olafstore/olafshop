@@ -23743,3 +23743,106 @@ body:has(dialog[open]) {
     border-radius: 20px;
   }
 }
+
+/* v29: unlimited premium spin + CS:GO-style center selector */
+.free-random-pointer {
+  left: 50% !important;
+  top: 66px !important;
+  bottom: 106px !important;
+  width: 3px !important;
+  height: auto !important;
+  transform: translateX(-50%) !important;
+  border-radius: 999px;
+  background:
+    linear-gradient(to bottom,
+      transparent 0%,
+      rgba(96, 165, 250, .15) 8%,
+      #60a5fa 26%,
+      #e0e7ff 50%,
+      #8b5cf6 74%,
+      rgba(139, 92, 246, .15) 92%,
+      transparent 100%) !important;
+  box-shadow:
+    0 0 0 1px rgba(147, 197, 253, .22),
+    0 0 16px rgba(96, 165, 250, .88),
+    0 0 34px rgba(124, 58, 237, .52);
+  z-index: 8;
+  pointer-events: none;
+}
+
+.free-random-pointer::before,
+.free-random-pointer::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  width: 0;
+  height: 0;
+  transform: translateX(-50%);
+  filter: drop-shadow(0 0 12px rgba(96, 165, 250, .72));
+}
+
+.free-random-pointer::before {
+  top: -11px;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-top: 11px solid #93c5fd;
+}
+
+.free-random-pointer::after {
+  bottom: -11px;
+  border-left: 9px solid transparent;
+  border-right: 9px solid transparent;
+  border-bottom: 11px solid #a78bfa;
+}
+
+.free-random-actions .primary-button,
+.free-random-actions .ghost-button,
+.free-random-actions .free-random-inventory-link {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 9px;
+  text-align: center;
+}
+
+.free-random-actions .primary-button span,
+.free-random-actions .ghost-button span,
+.free-random-actions .free-random-inventory-link span {
+  display: inline-block;
+  flex: 0 1 auto;
+  min-width: 0;
+  text-align: center;
+}
+
+.free-random-wallet-card #free-random-unlimited-label {
+  color: #dbeafe;
+  text-shadow: 0 0 24px rgba(96, 165, 250, .45);
+}
+
+.free-random-actions .free-random-inventory-link {
+  position: relative !important;
+}
+
+.free-random-actions .free-random-inventory-link svg {
+  position: absolute;
+  left: 24px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.free-random-actions .free-random-inventory-link span {
+  width: 100%;
+  padding: 0 42px;
+  text-align: center;
+}
+
+@media (max-width: 720px) {
+  .free-random-pointer {
+    top: 58px !important;
+    bottom: 150px !important;
+  }
+
+  .free-random-actions .free-random-inventory-link svg {
+    left: 22px;
+  }
+}

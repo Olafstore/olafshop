@@ -6,15 +6,14 @@
   const clean = (value) => window.OlafText?.clean?.(value) || String(value || "");
 
   const PREMIUM_TITLE = "Premium Spin 1 Point";
-  const PREMIUM_SUBTITLE = "ใช้ 1 Point ต่อการสุ่ม 1 ครั้ง ลุ้นรับเกมเข้าคลังทันที Point สะสม หรือรางวัลเกลือประจำวัน";
+  const PREMIUM_SUBTITLE = "ใช้ 1 Point ต่อการสุ่ม 1 ครั้ง ลุ้นรับเกมเข้าคลังทันที Point สะสม หรือรางวัลเกลือแบบไม่จำกัดต่อวัน";
 
   const state = {
-    config: { settings: { dailyLimit: 5, isActive: true, spinCostPoints: 1 }, slots: [] },
-    status: { dailyLimit: 5, spinsUsedToday: 0, spinsRemaining: 0, spinCostPoints: 1 },
+    config: { settings: { isActive: true, spinCostPoints: 1 }, slots: [] },
+    status: { spinsUsedToday: 0, spinCostPoints: 1, unlimited: true },
     pointBalance: 0,
     spinning: false,
-    user: null,
-    countdownTimer: null
+    user: null
   };
 
   function escapeHtml(value = "") {
@@ -38,7 +37,7 @@
 
   function premiumSubtitle(value) {
     const subtitle = clean(value || "");
-    if (!subtitle || /free|ฟรี/i.test(subtitle)) return PREMIUM_SUBTITLE;
+    if (!subtitle || /free|ฟรี|วันละ\s*5|จำกัดวันละ|จำนวนครั้งต่อวัน|รีเซ็ตสิทธิ์/i.test(subtitle)) return PREMIUM_SUBTITLE;
     return subtitle;
   }
 
@@ -152,24 +151,21 @@
   function renderStatus() {
     const settings = state.config.settings || {};
     const cost = spinCost();
-    const remainingCount = Number(state.status.spinsRemaining ?? settings.dailyLimit ?? 5);
-    const dailyLimit = Number(state.status.dailyLimit ?? settings.dailyLimit ?? 5);
+    const spinsUsed = Number(state.status.spinsUsedToday ?? state.status.totalSpins ?? 0);
     const hasUser = Boolean(window.OlafStore?.currentUser?.() || state.user);
     const hasPrize = availableSlots().length > 0;
     const canAfford = Number(state.pointBalance || 0) >= cost;
 
     const title = $("#free-random-title");
     const subtitle = $("#free-random-subtitle");
-    const remaining = $("#free-random-remaining");
-    const dailyLimitEl = $("#free-random-daily-limit");
+    const spinsUsedEl = $("#free-random-spins-used");
     const pointBalanceEl = $("#free-random-point-balance");
     const spinCostEl = $("#free-random-spin-cost");
     const spinButton = $("#free-random-spin");
 
     if (title) title.textContent = premiumTitle(settings.title);
     if (subtitle) subtitle.textContent = premiumSubtitle(settings.subtitle);
-    if (remaining) remaining.textContent = point(remainingCount);
-    if (dailyLimitEl) dailyLimitEl.textContent = point(dailyLimit);
+    if (spinsUsedEl) spinsUsedEl.textContent = point(spinsUsed);
     if (pointBalanceEl) pointBalanceEl.textContent = point(state.pointBalance);
     if (spinCostEl) spinCostEl.textContent = point(cost);
 
@@ -177,7 +173,6 @@
       const disabled = state.spinning
         || settings.isActive === false
         || !hasPrize
-        || remainingCount <= 0
         || (hasUser && !canAfford);
       spinButton.disabled = disabled;
       spinButton.classList.toggle("is-poor", hasUser && !canAfford);
@@ -189,46 +184,10 @@
             ? "ระบบสุ่มปิดอยู่"
             : !hasPrize
               ? "ยังไม่มีรางวัลพร้อมสุ่ม"
-              : remainingCount <= 0
-                ? "ครบ 5 ครั้งวันนี้แล้ว"
-                : !canAfford
+              : !canAfford
                   ? "Point ไม่พอ"
                   : `สุ่ม ${point(cost)} Point`;
     }
-    startResetCountdown();
-  }
-
-  function nextResetAt() {
-    const today = String(state.status?.today || "").trim();
-    if (/^\d{4}-\d{2}-\d{2}$/.test(today)) {
-      const reset = new Date(`${today}T00:00:00+07:00`);
-      if (!Number.isNaN(reset.getTime())) {
-        reset.setDate(reset.getDate() + 1);
-        return reset;
-      }
-    }
-    const now = new Date();
-    return new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1, 0, 0, 0, 0);
-  }
-
-  function formatDuration(ms) {
-    const total = Math.max(0, Math.floor(ms / 1000));
-    const hours = Math.floor(total / 3600);
-    const minutes = Math.floor((total % 3600) / 60);
-    const seconds = total % 60;
-    return [hours, minutes, seconds].map((value) => String(value).padStart(2, "0")).join(":");
-  }
-
-  function updateResetCountdown() {
-    const label = $("#free-random-reset-countdown");
-    if (!label) return;
-    label.textContent = formatDuration(nextResetAt().getTime() - Date.now());
-  }
-
-  function startResetCountdown() {
-    updateResetCountdown();
-    if (state.countdownTimer) return;
-    state.countdownTimer = window.setInterval(updateResetCountdown, 1000);
   }
 
   async function loadPointBalance() {
@@ -300,10 +259,9 @@
     if (!state.user) {
       state.pointBalance = 0;
       state.status = {
-        dailyLimit: state.config.settings.dailyLimit || 5,
         spinsUsedToday: 0,
-        spinsRemaining: state.config.settings.dailyLimit || 5,
-        spinCostPoints: state.config.settings.spinCostPoints || 1
+        spinCostPoints: state.config.settings.spinCostPoints || 1,
+        unlimited: true
       };
       renderStatus();
       return;
@@ -325,7 +283,7 @@
     } catch (error) {
       console.warn("Unable to load premium spin config", error);
       state.config = {
-        settings: { dailyLimit: 5, isActive: false, spinCostPoints: 1, title: PREMIUM_TITLE, subtitle: "ยังไม่ได้ตั้งค่ารางวัล" },
+        settings: { isActive: false, spinCostPoints: 1, title: PREMIUM_TITLE, subtitle: "ยังไม่ได้ตั้งค่ารางวัล" },
         slots: []
       };
     }
@@ -369,7 +327,6 @@
     const message = String(error?.message || error || "");
     if (message.includes("AUTH_REQUIRED")) return "กรุณาเข้าสู่ระบบก่อนสุ่ม";
     if (message.includes("FREE_RANDOM_INSUFFICIENT_POINTS")) return "Point ไม่พอสำหรับสุ่มครั้งนี้";
-    if (message.includes("FREE_RANDOM_DAILY_LIMIT_REACHED")) return "วันนี้สุ่มครบจำนวนแล้ว กลับมาใหม่หลังรีเซ็ต 24 ชั่วโมงนะครับ";
     if (message.includes("FREE_RANDOM_NO_AVAILABLE_PRIZES")) return "ยังไม่มีรางวัลที่พร้อมแจก หรือสต็อกหมด";
     if (message.includes("INSUFFICIENT_STOCK")) return "ของรางวัลช่องนี้สต็อกหมดพอดี กรุณาลองใหม่อีกครั้ง";
     if (message.includes("FREE_RANDOM_DISABLED")) return "ระบบสุ่มปิดอยู่ชั่วคราว";
@@ -487,11 +444,10 @@
       const result = await window.OlafFreeRandom.claimSpin();
       state.status = {
         today: result.today,
-        dailyLimit: result.dailyLimit,
         spinsUsedToday: result.spinsUsedToday,
-        spinsRemaining: result.spinsRemaining,
         spinCostPoints: result.spinCostPoints || spinCost(),
-        pointBalance: result.pointBalance
+        pointBalance: result.pointBalance,
+        unlimited: true
       };
       if (Number.isFinite(Number(result.pointBalance))) {
         state.pointBalance = Number(result.pointBalance);

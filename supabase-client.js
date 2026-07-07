@@ -1225,11 +1225,12 @@
     const settings = normalizeObject(payload.settings);
     return {
       settings: {
-        dailyLimit: Number(settings.dailyLimit ?? settings.daily_limit ?? 5),
+        dailyLimit: settings.dailyLimit ?? settings.daily_limit ?? null,
+        unlimited: settings.unlimited !== false && settings.isUnlimited !== false,
         isActive: settings.isActive !== false && settings.is_active !== false,
         spinCostPoints: Number(settings.spinCostPoints ?? settings.spin_cost_points ?? 1),
         title: settings.title || "OLAF Premium Spin",
-        subtitle: settings.subtitle || "สุ่มครั้งละ 1 Point วันละ 5 ครั้ง ลุ้นเกม, Point และรางวัลเกลือ"
+        subtitle: settings.subtitle || "สุ่มครั้งละ 1 Point แบบไม่จำกัดต่อวัน ลุ้นเกม, Point และรางวัลเกลือ"
       },
       slots: normalizeArray(payload.slots).map(mapFreeRandomSlot).sort((a, b) => a.slotNumber - b.slotNumber)
     };
@@ -1238,9 +1239,10 @@
   function normalizeFreeRandomStatus(payload = {}) {
     return {
       today: payload.today || "",
-      dailyLimit: Number(payload.dailyLimit ?? payload.daily_limit ?? 5),
+      dailyLimit: payload.dailyLimit ?? payload.daily_limit ?? null,
+      unlimited: payload.unlimited !== false && payload.isUnlimited !== false,
       spinsUsedToday: Number(payload.spinsUsedToday ?? payload.spins_used_today ?? 0),
-      spinsRemaining: Number(payload.spinsRemaining ?? payload.spins_remaining ?? 0),
+      spinsRemaining: Number(payload.spinsRemaining ?? payload.spins_remaining ?? Number.MAX_SAFE_INTEGER),
       spinCostPoints: Number(payload.spinCostPoints ?? payload.spin_cost_points ?? 1),
       pointBalance: Number(payload.pointBalance ?? payload.point_balance ?? 0),
       canAffordSpin: payload.canAffordSpin === true || payload.can_afford_spin === true
@@ -1314,9 +1316,9 @@
     return normalizeFreeRandomConfig(data || {});
   }
 
-  async function adminSaveFreeRandomSettings({ dailyLimit = 5, isActive = true, slots = [] } = {}) {
+  async function adminSaveFreeRandomSettings({ isActive = true, slots = [] } = {}) {
     const { data, error } = await requireClient().rpc("admin_save_free_random_settings", {
-      p_daily_limit: Number(dailyLimit || 5),
+      p_daily_limit: 2147483647,
       p_is_active: isActive !== false,
       p_slots: normalizeArray(slots).map((slot, index) => ({
         slotNumber: Number(slot.slotNumber || index + 1),

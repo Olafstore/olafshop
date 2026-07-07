@@ -41,7 +41,7 @@ const state = {
     verifications: { page: 1, pageSize: 20 }
   },
   freeRandom: {
-    settings: { dailyLimit: 5, isActive: true },
+    settings: { isActive: true, unlimited: true },
     slots: [],
     claims: []
   },
@@ -738,7 +738,7 @@ async function fetchAdminFinanceFromSupabase() {
 async function fetchAdminFreeRandomFromSupabase() {
   if (!window.OlafFreeRandom?.adminFetchSettings) {
     return {
-      settings: { dailyLimit: 5, isActive: true },
+      settings: { isActive: true, unlimited: true },
       slots: [],
       claims: []
     };
@@ -748,7 +748,7 @@ async function fetchAdminFreeRandomFromSupabase() {
     window.OlafFreeRandom.adminFetchClaims ? window.OlafFreeRandom.adminFetchClaims(100).catch(() => []) : Promise.resolve([])
   ]);
   return {
-    settings: config.settings || { dailyLimit: 5, isActive: true },
+    settings: config.settings || { isActive: true, unlimited: true },
     slots: Array.isArray(config.slots) ? config.slots : [],
     claims: Array.isArray(claims) ? claims : []
   };
@@ -907,7 +907,7 @@ async function loadData() {
         message: error?.message
       });
       return {
-        settings: { dailyLimit: 5, isActive: true },
+        settings: { isActive: true, unlimited: true },
         slots: [],
         claims: []
       };
@@ -1024,9 +1024,8 @@ function renderFreeRandomPanel() {
   const table = $("#free-random-history-table");
   if (!form || !grid || !summary || !table) return;
 
-  const settings = state.freeRandom?.settings || { dailyLimit: 5, isActive: true };
+  const settings = state.freeRandom?.settings || { isActive: true, unlimited: true };
   if (form.elements.isActive) form.elements.isActive.value = settings.isActive === false ? "false" : "true";
-  if (form.elements.dailyLimit) form.elements.dailyLimit.value = Number(settings.dailyLimit || 5);
 
   const slots = freeRandomSlots();
   const totalChance = slots.reduce((sum, slot) => sum + Number(slot.chancePercent || 0), 0);
@@ -1163,7 +1162,6 @@ async function saveFreeRandomSettings(event) {
   }
   try {
     const saved = await window.OlafFreeRandom.adminSaveSettings({
-      dailyLimit: Number(form.elements.dailyLimit?.value || 5),
       isActive: form.elements.isActive?.value !== "false",
       slots: readFreeRandomFormSlots()
     });

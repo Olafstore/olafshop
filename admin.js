@@ -902,7 +902,7 @@ async function loadData() {
       };
     }),
     fetchAdminFreeRandomFromSupabase().catch((error) => {
-      console.warn("Free random settings unavailable", {
+      console.warn("Premium spin settings unavailable", {
         code: error?.code,
         message: error?.message
       });
@@ -1150,7 +1150,7 @@ async function refreshFreeRandomPanel() {
 async function saveFreeRandomSettings(event) {
   event.preventDefault();
   if (!window.OlafFreeRandom?.adminSaveSettings) {
-    showAdminToast("ยังไม่พบ RPC ระบบสุ่มฟรี กรุณารัน supabase-free-random-game.sql ก่อน", "error", 8000);
+    showAdminToast("ยังไม่พบ RPC ระบบสุ่ม 1 Point กรุณารัน SQL ระบบสุ่มก่อน", "error", 8000);
     return;
   }
   const form = event.currentTarget;
@@ -1174,9 +1174,9 @@ async function saveFreeRandomSettings(event) {
       claims
     };
     renderFreeRandomPanel();
-    showAdminToast("บันทึกระบบสุ่มฟรีเรียบร้อยแล้ว", "success");
+    showAdminToast("บันทึกระบบสุ่ม 1 Point เรียบร้อยแล้ว", "success");
   } catch (error) {
-    showAdminToast(error.message || "บันทึกระบบสุ่มฟรีไม่สำเร็จ", "error", 9000);
+    showAdminToast(error.message || "บันทึกระบบสุ่ม 1 Point ไม่สำเร็จ", "error", 9000);
   } finally {
     if (button) {
       button.disabled = false;
@@ -1771,7 +1771,7 @@ function renderAll() {
   renderAdminSection("orders table", renderOrdersTable, errors);
   renderAdminSection("order form", renderOrderForm, errors);
   renderAdminSection("finance center", renderFinancePanel, errors);
-  renderAdminSection("free random", renderFreeRandomPanel, errors);
+  renderAdminSection("premium spin", renderFreeRandomPanel, errors);
   renderAdminSection("reviews table", renderReviewsTable, errors);
   renderAdminSection("review form", renderReviewForm, errors);
   renderAdminSection("widgets table", renderWidgetsTable, errors);
@@ -4772,9 +4772,9 @@ function bindEvents() {
     }
     try {
       await refreshFreeRandomPanel();
-      showAdminToast("โหลดข้อมูลสุ่มฟรีใหม่แล้ว", "success");
+      showAdminToast("โหลดข้อมูลสุ่ม 1 Point ใหม่แล้ว", "success");
     } catch (error) {
-      showAdminToast(error.message || "โหลดข้อมูลสุ่มฟรีไม่สำเร็จ", "error");
+      showAdminToast(error.message || "โหลดข้อมูลสุ่ม 1 Point ไม่สำเร็จ", "error");
     } finally {
       if (button) {
         button.disabled = false;

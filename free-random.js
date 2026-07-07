@@ -5,7 +5,7 @@
   const point = (value) => Number(value || 0).toLocaleString("th-TH", { maximumFractionDigits: 0 });
   const clean = (value) => window.OlafText?.clean?.(value) || String(value || "");
 
-  const PREMIUM_TITLE = "สุ่มเกม 1 Point";
+  const PREMIUM_TITLE = "Premium Spin 1 Point";
   const PREMIUM_SUBTITLE = "ใช้ 1 Point ต่อการสุ่ม 1 ครั้ง ลุ้นรับเกมเข้าคลังทันที Point สะสม หรือรางวัลเกลือประจำวัน";
 
   const state = {
@@ -63,8 +63,8 @@
   function slotIcon(slot) {
     const kind = slotKind(slot);
     if (kind === "points") return "coins";
-    if (kind === "empty") return "ban";
-    return "package-check";
+    if (kind === "empty") return "circle-slash";
+    return "gamepad-2";
   }
 
   function slotVisualHtml(slot) {
@@ -81,7 +81,7 @@
     if (kind === "empty") {
       return `
         <div class="free-random-card-symbol is-empty">
-          <i data-lucide="sparkle"></i>
+          <i data-lucide="circle-slash"></i>
           <strong>เกลือ</strong>
           <span>ลองใหม่รอบหน้า</span>
         </div>
@@ -259,7 +259,7 @@
     const imageHtml = prizeType === "points"
       ? `<div class="free-random-result-symbol is-points"><i data-lucide="coins"></i><strong>${point(pointAmount)}</strong><span>POINT</span></div>`
       : prizeType === "empty"
-        ? `<div class="free-random-result-symbol is-empty"><i data-lucide="sparkle"></i><strong>เกลือ</strong><span>รอบนี้ยังไม่มา</span></div>`
+        ? `<div class="free-random-result-symbol is-empty"><i data-lucide="circle-slash"></i><strong>เกลือ</strong><span>รอบนี้ยังไม่มา</span></div>`
         : `<div class="free-random-result-image"><img src="${escapeHtml(product.imageUrl || result.slot?.imageUrl || "assets/placeholder.svg")}" alt="${escapeHtml(name)}" /></div>`;
     const detail = prizeType === "points"
       ? `ใช้ ${point(spent)} Point และได้รับ ${point(pointAmount)} Point เข้าบัญชีทันที`
@@ -272,11 +272,11 @@
       <div class="free-random-result-card is-${escapeHtml(prizeType)}">
         ${imageHtml}
         <div>
-          <span class="eyebrow"><i data-lucide="${prizeType === "empty" ? "sparkle" : "trophy"}"></i> ${prizeType === "empty" ? "TRY AGAIN" : "YOU WON"}</span>
+          <span class="eyebrow"><i data-lucide="${prizeType === "empty" ? "circle-slash" : "trophy"}"></i> ${prizeType === "empty" ? "TRY AGAIN" : "YOU WON"}</span>
           <h2>${escapeHtml(name)}</h2>
           <p>${escapeHtml(detail)}</p>
           <div class="free-random-result-actions">
-            ${prizeType === "product" ? `<a class="primary-button" href="profile.html#inventory"><i data-lucide="archive"></i> เปิดคลังสินค้า</a>` : ""}
+            ${prizeType === "product" ? `<a class="primary-button" href="profile.html#inventory"><i data-lucide="package-open"></i> เปิดคลังสินค้า</a>` : ""}
             ${prizeType === "points" ? `<a class="primary-button" href="profile.html#info"><i data-lucide="coins"></i> เช็ค Point</a>` : ""}
             ${prizeType === "empty" ? `<button class="primary-button" type="button" data-spin-again><i data-lucide="rotate-cw"></i> สุ่มอีกครั้ง</button>` : ""}
             ${result.order?.id ? `<a class="ghost-button" href="profile.html?order=${encodeURIComponent(result.order.id)}#orders"><i data-lucide="receipt"></i> ดูออเดอร์</a>` : ""}
@@ -444,9 +444,9 @@
           <div class="user-popover-menu-title">เมนูบัญชี</div>
           ${user.role === "admin" ? '<a href="olaf-control.html"><i data-lucide="shield"></i><span>หลังบ้าน (Admin)</span></a>' : ""}
           <a href="profile.html#info"><i data-lucide="user"></i><span>ข้อมูลส่วนตัว</span></a>
-          <a href="profile.html#inventory"><i data-lucide="archive"></i><span>คลังสินค้า</span></a>
+          <a href="profile.html#inventory"><i data-lucide="package-open"></i><span>คลังสินค้า</span></a>
           <a href="profile.html#orders"><i data-lucide="receipt-text"></i><span>ประวัติคำสั่งซื้อ</span></a>
-          <a href="free-random.html"><i data-lucide="gem"></i><span>สุ่มเกม 1 Point</span></a>
+          <a href="free-random.html"><i data-lucide="sparkles"></i><span>สุ่มเกม 1 Point</span></a>
           <div class="user-popover-divider"></div>
           <button class="danger-item" type="button" data-free-auth-logout><i data-lucide="log-out"></i><span>ออกจากระบบ</span></button>
         </div>

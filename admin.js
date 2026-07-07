@@ -3256,6 +3256,7 @@ function pointTypeLabel(type) {
     credit_overpayment: "เงินเกินเข้า Point",
     credit_underpayment: "ยอดไม่พอเข้า Point",
     debit_order_discount: "ใช้ Point ลดราคา",
+    debit_free_random_spin: "ใช้ Point สุ่มเกม",
     refund_order_points: "คืน Point",
     admin_adjustment: "แอดมินปรับยอด"
   };

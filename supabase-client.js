@@ -1227,8 +1227,9 @@
       settings: {
         dailyLimit: Number(settings.dailyLimit ?? settings.daily_limit ?? 5),
         isActive: settings.isActive !== false && settings.is_active !== false,
-        title: settings.title || "สุ่มเกมฟรี",
-        subtitle: settings.subtitle || "สุ่มของรางวัลฟรี วันละ 5 ครั้ง"
+        spinCostPoints: Number(settings.spinCostPoints ?? settings.spin_cost_points ?? 1),
+        title: settings.title || "OLAF Premium Spin",
+        subtitle: settings.subtitle || "สุ่มครั้งละ 1 Point วันละ 5 ครั้ง ลุ้นเกม, Point และรางวัลเกลือ"
       },
       slots: normalizeArray(payload.slots).map(mapFreeRandomSlot).sort((a, b) => a.slotNumber - b.slotNumber)
     };
@@ -1239,7 +1240,10 @@
       today: payload.today || "",
       dailyLimit: Number(payload.dailyLimit ?? payload.daily_limit ?? 5),
       spinsUsedToday: Number(payload.spinsUsedToday ?? payload.spins_used_today ?? 0),
-      spinsRemaining: Number(payload.spinsRemaining ?? payload.spins_remaining ?? 0)
+      spinsRemaining: Number(payload.spinsRemaining ?? payload.spins_remaining ?? 0),
+      spinCostPoints: Number(payload.spinCostPoints ?? payload.spin_cost_points ?? 1),
+      pointBalance: Number(payload.pointBalance ?? payload.point_balance ?? 0),
+      canAffordSpin: payload.canAffordSpin === true || payload.can_afford_spin === true
     };
   }
 
@@ -1254,6 +1258,8 @@
       prizeType: row.prizeType || row.prize_type || row.prizeSnapshot?.prizeType || row.prize_snapshot?.prizeType || "product",
       pointAmount: Number(row.pointAmount ?? row.point_amount ?? row.prizeSnapshot?.pointAmount ?? row.prize_snapshot?.pointAmount ?? 0),
       pointTransactionId: row.pointTransactionId || row.point_transaction_id || "",
+      pointDebitTransactionId: row.pointDebitTransactionId || row.point_debit_transaction_id || "",
+      spinCostPoints: Number(row.spinCostPoints ?? row.spin_cost_points ?? row.prizeSnapshot?.spinCostPoints ?? row.prize_snapshot?.spinCostPoints ?? 0),
       productId: row.productId || row.product_id || "",
       productName: row.productName || row.product_name || "",
       orderId: row.orderId || row.order_id || "",
@@ -1294,6 +1300,9 @@
       },
       order: payload.order ? mapOrderRpcPayload({ order: payload.order, items: payload.items || [] }) : null,
       pointCredit: payload.pointCredit || payload.point_credit || null,
+      pointDebit: payload.pointDebit || payload.point_debit || null,
+      pointBalance: Number(payload.pointBalance ?? payload.point_balance ?? 0),
+      spinCostPoints: Number(payload.spinCostPoints ?? payload.spin_cost_points ?? 1),
       emptyPrize: payload.emptyPrize === true || payload.empty_prize === true,
       ...normalizeFreeRandomStatus(payload)
     };

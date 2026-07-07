@@ -2,11 +2,16 @@
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const money = (value) => `฿${Number(value || 0).toLocaleString("th-TH", { maximumFractionDigits: 0 })}`;
+  const point = (value) => Number(value || 0).toLocaleString("th-TH", { maximumFractionDigits: 0 });
   const clean = (value) => window.OlafText?.clean?.(value) || String(value || "");
 
+  const PREMIUM_TITLE = "สุ่มเกม 1 Point";
+  const PREMIUM_SUBTITLE = "ใช้ 1 Point ต่อการสุ่ม 1 ครั้ง ลุ้นรับเกมเข้าคลังทันที Point สะสม หรือรางวัลเกลือประจำวัน";
+
   const state = {
-    config: { settings: { dailyLimit: 5, isActive: true }, slots: [] },
-    status: { dailyLimit: 5, spinsUsedToday: 0, spinsRemaining: 0 },
+    config: { settings: { dailyLimit: 5, isActive: true, spinCostPoints: 1 }, slots: [] },
+    status: { dailyLimit: 5, spinsUsedToday: 0, spinsRemaining: 0, spinCostPoints: 1 },
+    pointBalance: 0,
     spinning: false,
     user: null,
     countdownTimer: null
@@ -19,6 +24,22 @@
       .replace(/>/g, "&gt;")
       .replace(/"/g, "&quot;")
       .replace(/'/g, "&#039;");
+  }
+
+  function spinCost() {
+    return Math.max(1, Number(state.status.spinCostPoints || state.config.settings.spinCostPoints || 1));
+  }
+
+  function premiumTitle(value) {
+    const title = clean(value || "");
+    if (!title || /free|ฟรี/i.test(title)) return PREMIUM_TITLE;
+    return title;
+  }
+
+  function premiumSubtitle(value) {
+    const subtitle = clean(value || "");
+    if (!subtitle || /free|ฟรี/i.test(subtitle)) return PREMIUM_SUBTITLE;
+    return subtitle;
   }
 
   function prizeImage(slot) {
@@ -39,13 +60,20 @@
     return slot.prizeType || "product";
   }
 
+  function slotIcon(slot) {
+    const kind = slotKind(slot);
+    if (kind === "points") return "coins";
+    if (kind === "empty") return "ban";
+    return "package-check";
+  }
+
   function slotVisualHtml(slot) {
     const kind = slotKind(slot);
     if (kind === "points") {
       return `
         <div class="free-random-card-symbol is-points">
           <i data-lucide="coins"></i>
-          <strong>${Number(slot.pointAmount || 0).toLocaleString("th-TH")}</strong>
+          <strong>${point(slot.pointAmount)}</strong>
           <span>POINT</span>
         </div>
       `;
@@ -53,9 +81,9 @@
     if (kind === "empty") {
       return `
         <div class="free-random-card-symbol is-empty">
-          <i data-lucide="circle-slash"></i>
+          <i data-lucide="sparkle"></i>
           <strong>เกลือ</strong>
-          <span>ไว้ลุ้นรอบหน้า</span>
+          <span>ลองใหม่รอบหน้า</span>
         </div>
       `;
     }
@@ -68,7 +96,7 @@
 
   function slotMeta(slot) {
     const kind = slotKind(slot);
-    if (kind === "points") return `${Number(slot.pointAmount || 0).toLocaleString("th-TH")} Point · เข้าบัญชีทันที`;
+    if (kind === "points") return `${point(slot.pointAmount)} Point · เข้า Wallet ทันที`;
     if (kind === "empty") return "ไม่ได้รับเกมหรือ Point";
     return `${clean(slot.category || "สินค้า")} · ${money(slot.price)}`;
   }
@@ -76,7 +104,7 @@
   function slotName(slot) {
     const kind = slotKind(slot);
     if (slot.label) return clean(slot.label);
-    if (kind === "points") return `${Number(slot.pointAmount || 0).toLocaleString("th-TH")} Point`;
+    if (kind === "points") return `${point(slot.pointAmount)} Point`;
     if (kind === "empty") return "เกลือ";
     return clean(slot.productName || `ช่องที่ ${slot.slotNumber}`);
   }
@@ -86,13 +114,13 @@
     const kind = slotKind(slot);
     return `
       <article class="free-random-card is-${escapeHtml(kind)}${compact ? " is-compact" : ""}" data-slot-number="${slot.slotNumber}">
+        <span class="free-random-card-chip"><i data-lucide="${slotIcon(slot)}"></i>${Number(slot.chancePercent || 0).toLocaleString("th-TH", { maximumFractionDigits: 2 })}%</span>
         ${slotVisualHtml(slot)}
         <div class="free-random-card-body">
           <span>ช่อง ${slot.slotNumber}</span>
           <h3>${escapeHtml(name)}</h3>
           <p>${escapeHtml(slotMeta(slot))}</p>
         </div>
-        <strong>${Number(slot.chancePercent || 0).toLocaleString("th-TH", { maximumFractionDigits: 2 })}%</strong>
       </article>
     `;
   }
@@ -109,6 +137,7 @@
     track.style.transition = "none";
     track.style.transform = "translate3d(0,0,0)";
     track.innerHTML = slots.map((slot) => cardHtml(slot, true)).join("");
+    window.lucide?.createIcons?.();
   }
 
   function renderPrizeGrid() {
@@ -117,28 +146,54 @@
     grid.innerHTML = state.config.slots.length
       ? state.config.slots.map((slot) => cardHtml(slot)).join("")
       : `<div class="free-random-empty">ยังไม่ได้ตั้งค่าของรางวัล</div>`;
+    window.lucide?.createIcons?.();
   }
 
   function renderStatus() {
+    const settings = state.config.settings || {};
+    const cost = spinCost();
+    const remainingCount = Number(state.status.spinsRemaining ?? settings.dailyLimit ?? 5);
+    const dailyLimit = Number(state.status.dailyLimit ?? settings.dailyLimit ?? 5);
+    const hasUser = Boolean(window.OlafStore?.currentUser?.() || state.user);
+    const hasPrize = availableSlots().length > 0;
+    const canAfford = Number(state.pointBalance || 0) >= cost;
+
     const title = $("#free-random-title");
     const subtitle = $("#free-random-subtitle");
     const remaining = $("#free-random-remaining");
+    const dailyLimitEl = $("#free-random-daily-limit");
+    const pointBalanceEl = $("#free-random-point-balance");
+    const spinCostEl = $("#free-random-spin-cost");
     const spinButton = $("#free-random-spin");
-    const settings = state.config.settings || {};
-    if (title) title.textContent = clean(settings.title || "สุ่มเกมฟรี");
-    if (subtitle) subtitle.textContent = clean(settings.subtitle || "สุ่มของรางวัลฟรี วันละ 5 ครั้ง");
-    if (remaining) remaining.textContent = Number(state.status.spinsRemaining ?? settings.dailyLimit ?? 5).toLocaleString("th-TH");
+
+    if (title) title.textContent = premiumTitle(settings.title);
+    if (subtitle) subtitle.textContent = premiumSubtitle(settings.subtitle);
+    if (remaining) remaining.textContent = point(remainingCount);
+    if (dailyLimitEl) dailyLimitEl.textContent = point(dailyLimit);
+    if (pointBalanceEl) pointBalanceEl.textContent = point(state.pointBalance);
+    if (spinCostEl) spinCostEl.textContent = point(cost);
+
     if (spinButton) {
-      const hasPrize = availableSlots().length > 0;
-      const disabled = state.spinning || settings.isActive === false || !hasPrize || Number(state.status.spinsRemaining || 0) <= 0;
+      const disabled = state.spinning
+        || settings.isActive === false
+        || !hasPrize
+        || remainingCount <= 0
+        || (hasUser && !canAfford);
       spinButton.disabled = disabled;
+      spinButton.classList.toggle("is-poor", hasUser && !canAfford);
       spinButton.querySelector("span").textContent = state.spinning
         ? "กำลังสุ่ม..."
-        : settings.isActive === false
-          ? "ระบบสุ่มปิดอยู่"
-          : Number(state.status.spinsRemaining || 0) <= 0
-            ? "ครบ 5 ครั้งวันนี้แล้ว"
-            : "เริ่มสุ่มฟรี";
+        : !hasUser
+          ? "เข้าสู่ระบบเพื่อสุ่ม"
+          : settings.isActive === false
+            ? "ระบบสุ่มปิดอยู่"
+            : !hasPrize
+              ? "ยังไม่มีรางวัลพร้อมสุ่ม"
+              : remainingCount <= 0
+                ? "ครบ 5 ครั้งวันนี้แล้ว"
+                : !canAfford
+                  ? "Point ไม่พอ"
+                  : `สุ่ม ${point(cost)} Point`;
     }
     startResetCountdown();
   }
@@ -176,33 +231,48 @@
     state.countdownTimer = window.setInterval(updateResetCountdown, 1000);
   }
 
+  async function loadPointBalance() {
+    if (!state.user || !window.OlafOrders?.fetchPointBalance) return;
+    try {
+      const wallet = await window.OlafOrders.fetchPointBalance();
+      state.pointBalance = Number(wallet?.balance || 0);
+      document.querySelectorAll("[data-topbar-point-balance], [data-free-auth-points]").forEach((item) => {
+        item.textContent = `${point(state.pointBalance)} Points`;
+      });
+    } catch (error) {
+      console.warn("Unable to load random point balance", error);
+    }
+  }
+
   function showResult(result) {
     const panel = $("#free-random-result");
     if (!panel) return;
     const product = result.product || {};
     const prizeType = result.claim?.prizeType || result.slot?.prizeType || "product";
     const pointAmount = Number(result.pointCredit?.amount || result.claim?.pointAmount || result.slot?.pointAmount || 0);
+    const spent = Number(result.pointDebit?.amount || result.spinCostPoints || spinCost() || 1);
     const name = prizeType === "points"
       ? `${pointAmount.toLocaleString("th-TH")} Point`
       : prizeType === "empty"
         ? "เกลือ!"
         : clean(product.name || result.slot?.label || "รางวัลของคุณ");
     const imageHtml = prizeType === "points"
-      ? `<div class="free-random-result-symbol is-points"><i data-lucide="coins"></i><strong>${pointAmount.toLocaleString("th-TH")}</strong><span>POINT</span></div>`
+      ? `<div class="free-random-result-symbol is-points"><i data-lucide="coins"></i><strong>${point(pointAmount)}</strong><span>POINT</span></div>`
       : prizeType === "empty"
-        ? `<div class="free-random-result-symbol is-empty"><i data-lucide="circle-slash"></i><strong>เกลือ</strong><span>ไม่ได้รางวัลรอบนี้</span></div>`
+        ? `<div class="free-random-result-symbol is-empty"><i data-lucide="sparkle"></i><strong>เกลือ</strong><span>รอบนี้ยังไม่มา</span></div>`
         : `<div class="free-random-result-image"><img src="${escapeHtml(product.imageUrl || result.slot?.imageUrl || "assets/placeholder.svg")}" alt="${escapeHtml(name)}" /></div>`;
     const detail = prizeType === "points"
-      ? `ระบบเติม ${pointAmount.toLocaleString("th-TH")} Point เข้าบัญชีของคุณทันทีแล้ว`
+      ? `ใช้ ${point(spent)} Point และได้รับ ${point(pointAmount)} Point เข้าบัญชีทันที`
       : prizeType === "empty"
-        ? "รอบนี้ยังไม่ได้เกมหรือ Point แต่ยังสามารถลุ้นต่อได้ถ้ายังเหลือจำนวนครั้งวันนี้"
-        : `ระบบสร้างออเดอร์ฟรีให้แล้ว ${result.order?.status === "delivered" ? "และจัดส่งเข้าคลังเรียบร้อย" : "รอแอดมินจัดส่งตามประเภทสินค้า"}`;
+        ? `ใช้ ${point(spent)} Point แล้ว รอบนี้ยังไม่ได้เกมหรือ Point ถ้ายังเหลือสิทธิ์สามารถลุ้นต่อได้`
+        : `ใช้ ${point(spent)} Point ระบบสร้างออเดอร์รางวัลให้แล้ว ${result.order?.status === "delivered" ? "และจัดส่งเข้าคลังเรียบร้อย" : "รอแอดมินจัดส่งตามประเภทสินค้า"}`;
+
     panel.hidden = false;
     panel.innerHTML = `
       <div class="free-random-result-card is-${escapeHtml(prizeType)}">
         ${imageHtml}
         <div>
-          <span class="eyebrow"><i data-lucide="${prizeType === "empty" ? "circle-slash" : "trophy"}"></i> ${prizeType === "empty" ? "TRY AGAIN" : "YOU WON"}</span>
+          <span class="eyebrow"><i data-lucide="${prizeType === "empty" ? "sparkle" : "trophy"}"></i> ${prizeType === "empty" ? "TRY AGAIN" : "YOU WON"}</span>
           <h2>${escapeHtml(name)}</h2>
           <p>${escapeHtml(detail)}</p>
           <div class="free-random-result-actions">
@@ -225,17 +295,27 @@
     } catch (error) {
       state.user = null;
     }
+
     renderAuthHeader();
     if (!state.user) {
-      state.status = { dailyLimit: state.config.settings.dailyLimit || 5, spinsUsedToday: 0, spinsRemaining: state.config.settings.dailyLimit || 5 };
+      state.pointBalance = 0;
+      state.status = {
+        dailyLimit: state.config.settings.dailyLimit || 5,
+        spinsUsedToday: 0,
+        spinsRemaining: state.config.settings.dailyLimit || 5,
+        spinCostPoints: state.config.settings.spinCostPoints || 1
+      };
       renderStatus();
       return;
     }
+
     try {
       state.status = await window.OlafFreeRandom.fetchStatus();
+      state.pointBalance = Number(state.status.pointBalance || state.pointBalance || 0);
     } catch (error) {
-      console.warn("Unable to load free random status", error);
+      console.warn("Unable to load premium spin status", error);
     }
+    await loadPointBalance();
     renderStatus();
   }
 
@@ -243,9 +323,13 @@
     try {
       state.config = await window.OlafFreeRandom.fetchConfig();
     } catch (error) {
-      console.warn("Unable to load free random config", error);
-      state.config = { settings: { dailyLimit: 5, isActive: false, title: "สุ่มเกมฟรี", subtitle: "ยังไม่ได้ตั้งค่ารางวัล" }, slots: [] };
+      console.warn("Unable to load premium spin config", error);
+      state.config = {
+        settings: { dailyLimit: 5, isActive: false, spinCostPoints: 1, title: PREMIUM_TITLE, subtitle: "ยังไม่ได้ตั้งค่ารางวัล" },
+        slots: []
+      };
     }
+    state.config.settings.spinCostPoints = Number(state.config.settings.spinCostPoints || 1);
     renderTrack();
     renderPrizeGrid();
     await refreshStatus();
@@ -264,6 +348,8 @@
     track.style.transition = "none";
     track.style.transform = "translate3d(0,0,0)";
     track.innerHTML = repeated.map((slot) => cardHtml(slot, true)).join("");
+    window.lucide?.createIcons?.();
+
     const cards = $$(".free-random-card", track);
     const targetCard = cards[winnerIndex >= 0 ? winnerIndex : cards.length - 1];
     if (!targetCard) return Promise.resolve();
@@ -272,20 +358,21 @@
     const left = targetCard.offsetLeft - viewportWidth / 2 + targetCard.offsetWidth / 2;
     return new Promise((resolve) => {
       requestAnimationFrame(() => {
-        track.style.transition = "transform 4.8s cubic-bezier(.12,.82,.12,1)";
+        track.style.transition = "transform 4.6s cubic-bezier(.12,.82,.12,1)";
         track.style.transform = `translate3d(${-Math.max(left, 0)}px,0,0)`;
-        window.setTimeout(resolve, 5000);
+        window.setTimeout(resolve, 4800);
       });
     });
   }
 
   function errorMessage(error) {
     const message = String(error?.message || error || "");
-    if (message.includes("AUTH_REQUIRED")) return "กรุณาเข้าสู่ระบบก่อนสุ่มฟรี";
-    if (message.includes("FREE_RANDOM_DAILY_LIMIT_REACHED")) return "วันนี้สุ่มครบจำนวนแล้ว กลับมาใหม่พรุ่งนี้นะครับ";
-    if (message.includes("FREE_RANDOM_NO_AVAILABLE_PRIZES")) return "ยังไม่มีของรางวัลที่พร้อมแจก หรือสต็อกหมด";
+    if (message.includes("AUTH_REQUIRED")) return "กรุณาเข้าสู่ระบบก่อนสุ่ม";
+    if (message.includes("FREE_RANDOM_INSUFFICIENT_POINTS")) return "Point ไม่พอสำหรับสุ่มครั้งนี้";
+    if (message.includes("FREE_RANDOM_DAILY_LIMIT_REACHED")) return "วันนี้สุ่มครบจำนวนแล้ว กลับมาใหม่หลังรีเซ็ต 24 ชั่วโมงนะครับ";
+    if (message.includes("FREE_RANDOM_NO_AVAILABLE_PRIZES")) return "ยังไม่มีรางวัลที่พร้อมแจก หรือสต็อกหมด";
     if (message.includes("INSUFFICIENT_STOCK")) return "ของรางวัลช่องนี้สต็อกหมดพอดี กรุณาลองใหม่อีกครั้ง";
-    if (message.includes("FREE_RANDOM_DISABLED")) return "ระบบสุ่มฟรีปิดอยู่ชั่วคราว";
+    if (message.includes("FREE_RANDOM_DISABLED")) return "ระบบสุ่มปิดอยู่ชั่วคราว";
     return "สุ่มไม่สำเร็จ กรุณาลองใหม่อีกครั้ง";
   }
 
@@ -299,13 +386,9 @@
 
   async function hydrateAuthPoint(popover) {
     const target = popover?.querySelector("[data-free-auth-points]");
-    if (!target || !window.OlafOrders?.fetchPointBalance) return;
-    try {
-      const wallet = await window.OlafOrders.fetchPointBalance();
-      target.textContent = `${Number(wallet?.balance || 0).toLocaleString("th-TH")} Points`;
-    } catch (error) {
-      target.textContent = "0 Points";
-    }
+    if (!target) return;
+    await loadPointBalance();
+    target.textContent = `${point(state.pointBalance)} Points`;
   }
 
   function renderAuthHeader() {
@@ -354,16 +437,16 @@
           </a>
           <div class="user-popover-badge-row">
             <span class="user-badge-role">${escapeHtml(user.role || "member")}</span>
-            <a class="user-badge-points" href="profile.html#info" data-free-auth-points data-topbar-point-balance>กำลังโหลด Point</a>
+            <a class="user-badge-points" href="profile.html#info" data-free-auth-points data-topbar-point-balance>${point(state.pointBalance)} Points</a>
           </div>
         </div>
         <div class="user-popover-menu">
-          <div class="user-popover-menu-title">หน้าหลัก</div>
+          <div class="user-popover-menu-title">เมนูบัญชี</div>
           ${user.role === "admin" ? '<a href="olaf-control.html"><i data-lucide="shield"></i><span>หลังบ้าน (Admin)</span></a>' : ""}
           <a href="profile.html#info"><i data-lucide="user"></i><span>ข้อมูลส่วนตัว</span></a>
           <a href="profile.html#inventory"><i data-lucide="archive"></i><span>คลังสินค้า</span></a>
           <a href="profile.html#orders"><i data-lucide="receipt-text"></i><span>ประวัติคำสั่งซื้อ</span></a>
-          <a href="free-random.html"><i data-lucide="dice-5"></i><span>สุ่มเกมฟรี</span></a>
+          <a href="free-random.html"><i data-lucide="gem"></i><span>สุ่มเกม 1 Point</span></a>
           <div class="user-popover-divider"></div>
           <button class="danger-item" type="button" data-free-auth-logout><i data-lucide="log-out"></i><span>ออกจากระบบ</span></button>
         </div>
@@ -371,12 +454,12 @@
       popover.querySelector("[data-free-auth-logout]")?.addEventListener("click", async () => {
         await window.OlafStore?.logout?.();
         state.user = null;
+        state.pointBalance = 0;
         popover.hidden = true;
         window.OlafNavigation?.closeTopbarPopovers?.();
         renderAuthHeader();
         renderStatus();
       });
-      hydrateAuthPoint(popover);
     }
     window.lucide?.createIcons?.();
   }
@@ -398,7 +481,6 @@
       window.location.href = `login.html?return=${encodeURIComponent("free-random.html")}`;
       return;
     }
-    const button = $("#free-random-spin");
     state.spinning = true;
     renderStatus();
     try {
@@ -407,18 +489,23 @@
         today: result.today,
         dailyLimit: result.dailyLimit,
         spinsUsedToday: result.spinsUsedToday,
-        spinsRemaining: result.spinsRemaining
+        spinsRemaining: result.spinsRemaining,
+        spinCostPoints: result.spinCostPoints || spinCost(),
+        pointBalance: result.pointBalance
       };
+      if (Number.isFinite(Number(result.pointBalance))) {
+        state.pointBalance = Number(result.pointBalance);
+      }
       await animateToWinner(result);
       showResult(result);
       await loadConfig();
     } catch (error) {
-      console.error("Free random spin failed", error);
+      console.error("Premium spin failed", error);
       alert(errorMessage(error));
     } finally {
       state.spinning = false;
       renderStatus();
-      if (button) button.blur();
+      $("#free-random-spin")?.blur();
     }
   }
 

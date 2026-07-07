@@ -4,22 +4,22 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="สุ่มเกมฟรี OLAF SHOP วันละ 5 ครั้ง ลุ้นรับสินค้าเข้าคลังทันที" />
-  <title>สุ่มเกมฟรี | OLAF SHOP</title>
+  <meta name="description" content="OLAF Premium Spin สุ่มรางวัลครั้งละ 1 Point วันละ 5 ครั้ง ลุ้นเกม Point และรางวัลเกลือ" />
+  <title>สุ่มเกม 1 Point | OLAF SHOP</title>
   <link rel="preconnect" href="https://cdn.jsdelivr.net" />
   <link rel="preconnect" href="https://wtvfgwacodfrzxapwoxj.supabase.co" />
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260706-topbar-random-v26" />
+  <link rel="stylesheet" href="styles.css?v=20260707-premium-spin-v27" />
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-  <script src="supabase-client.js?v=20260706-topbar-random-v26" defer></script>
+  <script src="supabase-client.js?v=20260707-premium-spin-v27" defer></script>
   <script src="platform-store.js?v=20260605-admin-users" defer></script>
   <script src="image-performance.js?v=20260607-performance" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-  <script src="site-navigation.js?v=20260706-topbar-random-v26" defer></script>
-  <script src="free-random.js?v=20260706-topbar-random-v26" defer></script>
+  <script src="site-navigation.js?v=20260707-premium-spin-v27" defer></script>
+  <script src="free-random.js?v=20260707-premium-spin-v27" defer></script>
 </head>
 
 <body class="free-random-page">
@@ -29,7 +29,7 @@
         <span class="brand-mark">O</span>
         <span>
           <strong>OLAF SHOP</strong>
-          <small>Free Random Game</small>
+          <small>Premium Spin</small>
         </span>
       </a>
 
@@ -37,7 +37,7 @@
         <a href="index.html">หน้าแรก</a>
         <a href="index.html#catalog">สินค้า</a>
         <a href="more-products.html">หมวดหมู่</a>
-        <a href="free-random.html" class="is-active">สุ่มฟรี</a>
+        <a href="free-random.html" class="is-active">สุ่ม 1 Point</a>
         <a href="profile.html#inventory">คลังสินค้า</a>
       </nav>
 
@@ -78,24 +78,42 @@
       </div>
     </header>
 
-    <main class="free-random-shell">
+    <main class="free-random-shell" aria-labelledby="free-random-title">
       <section class="free-random-hero">
         <div class="free-random-copy">
-          <span class="eyebrow"><i data-lucide="dice-5"></i> FREE DAILY SPIN</span>
-          <h1 id="free-random-title">สุ่มเกมฟรี</h1>
-          <p id="free-random-subtitle">สุ่มของรางวัลฟรี วันละ 5 ครั้ง ลุ้นรับสินค้าเข้าคลังทันที</p>
-          <div class="free-random-status">
-            <span><i data-lucide="ticket-check"></i> เหลือ <strong id="free-random-remaining">-</strong> ครั้งวันนี้</span>
-            <span><i data-lucide="database-zap"></i> จำกัดด้วยระบบฐานข้อมูล</span>
-            <span class="free-random-countdown-pill"><i data-lucide="timer-reset"></i> รีใหม่ใน <strong id="free-random-reset-countdown">--:--:--</strong></span>
+          <span class="eyebrow"><i data-lucide="sparkles"></i> OLAF PREMIUM CASE</span>
+          <h1 id="free-random-title">สุ่มเกม 1 Point</h1>
+          <p id="free-random-subtitle">ใช้ 1 Point ต่อการสุ่ม 1 ครั้ง ลุ้นรับเกมเข้าคลังทันที Point สะสม หรือรางวัลเกลือประจำวัน</p>
+
+          <div class="free-random-metrics" aria-label="สถานะการสุ่ม">
+            <article>
+              <span>Point คงเหลือ</span>
+              <strong><b id="free-random-point-balance">0</b> P</strong>
+            </article>
+            <article>
+              <span>ค่าสุ่ม</span>
+              <strong><b id="free-random-spin-cost">1</b> P</strong>
+            </article>
+            <article>
+              <span>สิทธิ์วันนี้</span>
+              <strong><b id="free-random-remaining">-</b>/<b id="free-random-daily-limit">5</b></strong>
+            </article>
           </div>
         </div>
-        <div class="free-random-orb" aria-hidden="true">
-          <i data-lucide="gem"></i>
-        </div>
+
+        <aside class="free-random-wallet-card" aria-label="Premium spin wallet">
+          <div class="free-random-wallet-orb"><i data-lucide="gem"></i></div>
+          <span>รีเซ็ตสิทธิ์ใน</span>
+          <strong id="free-random-reset-countdown">--:--:--</strong>
+          <p>ระบบหัก Point ก่อนสุ่ม และคืนผลลัพธ์ใน transaction เดียวกัน</p>
+        </aside>
       </section>
 
       <section class="free-random-machine" aria-live="polite">
+        <div class="free-random-machine-head">
+          <span><i data-lucide="scan-line"></i> Live Prize Reel</span>
+          <small>10 ช่องรางวัล · จำกัดวันละ 5 ครั้ง</small>
+        </div>
         <div class="free-random-pointer" aria-hidden="true"></div>
         <div class="free-random-viewport">
           <div class="free-random-track" id="free-random-track">
@@ -105,11 +123,11 @@
         <div class="free-random-actions">
           <button class="primary-button free-random-spin-button" id="free-random-spin" type="button" disabled>
             <i data-lucide="dice-5"></i>
-            <span>เริ่มสุ่มฟรี</span>
+            <span>สุ่ม 1 Point</span>
           </button>
           <a class="ghost-button" href="profile.html#inventory">
             <i data-lucide="archive"></i>
-            <span>ดูคลังสินค้า</span>
+            <span>คลังสินค้า</span>
           </a>
         </div>
       </section>
@@ -119,7 +137,8 @@
       <section class="free-random-prizes">
         <div class="section-heading">
           <span class="eyebrow">PRIZE POOL</span>
-          <h2>ของรางวัลทั้ง 10 ช่อง</h2>
+          <h2>รายการรางวัลทั้งหมด</h2>
+          <p>แอดมินสามารถตั้งสินค้าและเปอร์เซ็นต์ได้ครบ 10 ช่องจากหน้า Admin</p>
         </div>
         <div class="free-random-prize-grid" id="free-random-prizes"></div>
       </section>

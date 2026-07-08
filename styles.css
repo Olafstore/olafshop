@@ -23846,3 +23846,329 @@ body:has(dialog[open]) {
     left: 22px;
   }
 }
+
+/* v30: premium spin result popup modal */
+body.free-random-result-open {
+  overflow: hidden !important;
+  touch-action: none;
+}
+
+.free-random-result:not([hidden]) {
+  position: fixed;
+  inset: 0;
+  z-index: 13000;
+  display: grid;
+  place-items: center;
+  padding: clamp(14px, 3vw, 34px);
+  isolation: isolate;
+}
+
+.free-random-result-backdrop {
+  position: absolute;
+  inset: 0;
+  z-index: -2;
+  cursor: pointer;
+  background:
+    radial-gradient(circle at 50% 28%, rgba(59, 130, 246, .26), transparent 38rem),
+    radial-gradient(circle at 76% 64%, rgba(124, 58, 237, .20), transparent 34rem),
+    rgba(1, 5, 15, .78);
+  backdrop-filter: blur(18px) saturate(1.12);
+  -webkit-backdrop-filter: blur(18px) saturate(1.12);
+  animation: freeResultBackdropIn 180ms ease both;
+}
+
+.free-random-result-dialog.free-random-result-card {
+  position: relative;
+  width: min(940px, calc(100vw - 42px));
+  max-height: min(82vh, 780px);
+  margin: 0;
+  overflow: auto;
+  overscroll-behavior: contain;
+  grid-template-columns: minmax(230px, 330px) minmax(0, 1fr);
+  gap: clamp(18px, 3vw, 32px);
+  border-radius: clamp(24px, 4vw, 38px);
+  border: 1px solid rgba(147, 197, 253, .24);
+  padding: clamp(20px, 3.2vw, 34px);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(96, 165, 250, .18), transparent 24rem),
+    radial-gradient(circle at 86% 18%, rgba(167, 139, 250, .18), transparent 24rem),
+    linear-gradient(145deg, rgba(17, 27, 55, .96), rgba(4, 9, 23, .98));
+  box-shadow:
+    0 34px 100px rgba(0, 0, 0, .58),
+    0 0 0 1px rgba(255, 255, 255, .035) inset,
+    0 0 72px rgba(59, 130, 246, .18);
+  animation: freeResultDialogIn 360ms cubic-bezier(.16, 1, .3, 1) both;
+}
+
+.free-random-result.is-closing .free-random-result-backdrop {
+  animation: freeResultBackdropOut 180ms ease both;
+}
+
+.free-random-result.is-closing .free-random-result-dialog {
+  animation: freeResultDialogOut 180ms ease both;
+}
+
+.free-random-result-dialog.is-points {
+  border-color: rgba(250, 204, 21, .32);
+  box-shadow:
+    0 34px 100px rgba(0, 0, 0, .58),
+    0 0 0 1px rgba(255, 255, 255, .035) inset,
+    0 0 86px rgba(250, 204, 21, .18);
+}
+
+.free-random-result-dialog.is-empty {
+  border-color: rgba(167, 139, 250, .24);
+  box-shadow:
+    0 34px 100px rgba(0, 0, 0, .58),
+    0 0 0 1px rgba(255, 255, 255, .035) inset,
+    0 0 70px rgba(148, 163, 184, .12);
+}
+
+.free-random-result-close {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 4;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border: 1px solid rgba(148, 163, 184, .20);
+  border-radius: 15px;
+  color: #dbeafe;
+  background: rgba(15, 23, 42, .72);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .05);
+  cursor: pointer;
+  transition: transform 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.free-random-result-close:hover,
+.free-random-result-close:focus-visible {
+  transform: translateY(-1px);
+  border-color: rgba(96, 165, 250, .42);
+  background: rgba(30, 64, 175, .32);
+  outline: none;
+}
+
+.free-random-result-glow,
+.free-random-result-shine,
+.free-random-result-sparks {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  border-radius: inherit;
+}
+
+.free-random-result-glow {
+  z-index: -1;
+  background:
+    radial-gradient(circle at 27% 28%, rgba(96, 165, 250, .22), transparent 16rem),
+    radial-gradient(circle at 78% 74%, rgba(124, 58, 237, .18), transparent 18rem);
+}
+
+.free-random-result-shine::before {
+  content: "";
+  position: absolute;
+  inset: -45% auto -45% -30%;
+  width: 32%;
+  transform: rotate(18deg);
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .18), transparent);
+  animation: freeResultShine 1.15s 180ms ease both;
+}
+
+.free-random-result-sparks i {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 999px;
+  background: #93c5fd;
+  box-shadow: 0 0 16px rgba(96, 165, 250, .9);
+  animation: freeResultSpark 1.6s ease-in-out infinite;
+}
+
+.free-random-result-sparks i:nth-child(1) { top: 18%; left: 18%; animation-delay: .05s; }
+.free-random-result-sparks i:nth-child(2) { top: 24%; right: 22%; animation-delay: .22s; }
+.free-random-result-sparks i:nth-child(3) { bottom: 24%; left: 28%; animation-delay: .36s; }
+.free-random-result-sparks i:nth-child(4) { bottom: 18%; right: 18%; animation-delay: .5s; }
+.free-random-result-sparks i:nth-child(5) { top: 52%; right: 9%; animation-delay: .68s; }
+
+.free-random-result-dialog .free-random-result-image,
+.free-random-result-dialog .free-random-result-symbol {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-height: 220px;
+  border-radius: 26px;
+  box-shadow: 0 20px 54px rgba(0, 0, 0, .34);
+}
+
+.free-random-result-dialog .free-random-result-symbol {
+  display: grid;
+  place-items: center;
+  align-content: center;
+  gap: 8px;
+}
+
+.free-random-result-dialog > div:not(.free-random-result-image):not(.free-random-result-symbol):not(.free-random-result-sparks) {
+  position: relative;
+  z-index: 1;
+  padding-right: 42px;
+}
+
+.free-random-result-badge,
+.free-random-result-dialog .eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  border: 1px solid rgba(96, 165, 250, .26);
+  border-radius: 999px;
+  padding: 8px 12px;
+  background: rgba(37, 99, 235, .14);
+}
+
+.free-random-result-dialog h2 {
+  margin: 14px 0 10px;
+  font-size: clamp(1.55rem, 3.6vw, 2.55rem);
+  line-height: 1.08;
+}
+
+.free-random-result-dialog p {
+  max-width: 560px;
+  color: rgba(226, 236, 255, .78);
+}
+
+.free-random-result-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.free-random-result-actions .primary-button,
+.free-random-result-actions .ghost-button {
+  min-height: 46px;
+  justify-content: center;
+}
+
+@keyframes freeResultBackdropIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes freeResultBackdropOut {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@keyframes freeResultDialogIn {
+  from {
+    opacity: 0;
+    transform: translateY(18px) scale(.94);
+    filter: blur(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes freeResultDialogOut {
+  from {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: translateY(12px) scale(.96);
+  }
+}
+
+@keyframes freeResultShine {
+  from { transform: translateX(0) rotate(18deg); opacity: 0; }
+  20% { opacity: 1; }
+  to { transform: translateX(430%) rotate(18deg); opacity: 0; }
+}
+
+@keyframes freeResultSpark {
+  0%, 100% { transform: translateY(0) scale(.72); opacity: .28; }
+  50% { transform: translateY(-8px) scale(1.1); opacity: 1; }
+}
+
+@media (min-width: 721px) and (max-width: 1100px) {
+  .free-random-result-dialog.free-random-result-card {
+    width: min(820px, calc(100vw - 36px));
+    grid-template-columns: minmax(220px, 300px) minmax(0, 1fr);
+    max-height: calc(100dvh - 36px);
+  }
+
+  .free-random-result-dialog .free-random-result-image,
+  .free-random-result-dialog .free-random-result-symbol {
+    min-height: 200px;
+  }
+}
+
+@media (max-width: 720px) {
+  .free-random-result:not([hidden]) {
+    align-items: end;
+    padding: 10px;
+  }
+
+  .free-random-result-dialog.free-random-result-card {
+    width: 100%;
+    max-height: calc(100dvh - 20px);
+    grid-template-columns: 1fr;
+    gap: 15px;
+    border-radius: 28px 28px 22px 22px;
+    padding: 18px;
+    padding-top: 54px;
+  }
+
+  .free-random-result-close {
+    top: 12px;
+    right: 12px;
+    width: 40px;
+    height: 40px;
+  }
+
+  .free-random-result-dialog .free-random-result-image,
+  .free-random-result-dialog .free-random-result-symbol {
+    min-height: 178px;
+    max-height: 240px;
+    border-radius: 22px;
+  }
+
+  .free-random-result-dialog > div:not(.free-random-result-image):not(.free-random-result-symbol):not(.free-random-result-sparks) {
+    padding-right: 0;
+  }
+
+  .free-random-result-dialog h2 {
+    font-size: clamp(1.42rem, 8vw, 2rem);
+  }
+
+  .free-random-result-dialog p {
+    font-size: .88rem;
+    line-height: 1.65;
+  }
+
+  .free-random-result-actions {
+    display: grid;
+    grid-template-columns: 1fr;
+  }
+
+  .free-random-result-actions .primary-button,
+  .free-random-result-actions .ghost-button {
+    width: 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .free-random-result-backdrop,
+  .free-random-result-dialog,
+  .free-random-result-shine::before,
+  .free-random-result-sparks i {
+    animation: none !important;
+  }
+}

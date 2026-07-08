@@ -203,6 +203,18 @@
     }
   }
 
+  function closeResult() {
+    const panel = $("#free-random-result");
+    if (!panel || panel.hidden) return;
+    panel.classList.add("is-closing");
+    document.body.classList.remove("free-random-result-open");
+    window.setTimeout(() => {
+      panel.hidden = true;
+      panel.innerHTML = "";
+      panel.className = "free-random-result";
+    }, 190);
+  }
+
   function showResult(result) {
     const panel = $("#free-random-result");
     if (!panel) return;
@@ -227,6 +239,8 @@
         : `ใช้ ${point(spent)} Point ระบบสร้างออเดอร์รางวัลให้แล้ว ${result.order?.status === "delivered" ? "และจัดส่งเข้าคลังเรียบร้อย" : "รอแอดมินจัดส่งตามประเภทสินค้า"}`;
 
     panel.hidden = false;
+    panel.className = `free-random-result is-open is-${escapeHtml(prizeType)}`;
+    document.body.classList.add("free-random-result-open");
     panel.innerHTML = `
       <div class="free-random-result-card is-${escapeHtml(prizeType)}">
         ${imageHtml}
@@ -243,9 +257,26 @@
         </div>
       </div>
     `;
-    panel.querySelector("[data-spin-again]")?.addEventListener("click", handleSpin);
+    const resultCard = panel.querySelector(".free-random-result-card");
+    panel.insertAdjacentHTML("afterbegin", `<div class="free-random-result-backdrop" data-result-close></div>`);
+    resultCard?.classList.add("free-random-result-dialog");
+    resultCard?.setAttribute("role", "dialog");
+    resultCard?.setAttribute("aria-modal", "true");
+    resultCard?.insertAdjacentHTML("afterbegin", `
+      <button class="free-random-result-close" type="button" data-result-close aria-label="ปิดผลการสุ่ม">
+        <i data-lucide="x"></i>
+      </button>
+      <span class="free-random-result-glow" aria-hidden="true"></span>
+      <span class="free-random-result-shine" aria-hidden="true"></span>
+      <div class="free-random-result-sparks" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+    `);
+    panel.querySelectorAll("[data-result-close]").forEach((item) => item.addEventListener("click", closeResult));
+    panel.querySelector("[data-spin-again]")?.addEventListener("click", () => {
+      closeResult();
+      window.setTimeout(handleSpin, 210);
+    });
     window.lucide?.createIcons?.();
-    panel.scrollIntoView({ behavior: "smooth", block: "center" });
+    window.setTimeout(() => panel.querySelector(".free-random-result-close")?.focus?.(), 80);
   }
 
   async function refreshStatus() {
@@ -429,6 +460,9 @@
       if (!popover || popover.hidden) return;
       if (event.target.closest("#open-auth, #user-popover")) return;
       popover.hidden = true;
+    });
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeResult();
     });
   }
 

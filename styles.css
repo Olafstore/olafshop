@@ -23861,12 +23861,14 @@ body.free-random-result-open {
   place-items: center;
   padding: clamp(14px, 3vw, 34px);
   isolation: isolate;
+  overflow: hidden;
+  contain: layout paint;
 }
 
 .free-random-result-backdrop {
   position: absolute;
   inset: 0;
-  z-index: -2;
+  z-index: 0;
   cursor: pointer;
   background:
     radial-gradient(circle at 50% 28%, rgba(59, 130, 246, .26), transparent 38rem),
@@ -23879,10 +23881,11 @@ body.free-random-result-open {
 
 .free-random-result-dialog.free-random-result-card {
   position: relative;
+  z-index: 1;
   width: min(940px, calc(100vw - 42px));
   max-height: min(82vh, 780px);
   margin: 0;
-  overflow: auto;
+  overflow: hidden;
   overscroll-behavior: contain;
   grid-template-columns: minmax(230px, 330px) minmax(0, 1fr);
   gap: clamp(18px, 3vw, 32px);
@@ -23961,7 +23964,7 @@ body.free-random-result-open {
 }
 
 .free-random-result-glow {
-  z-index: -1;
+  z-index: 0;
   background:
     radial-gradient(circle at 27% 28%, rgba(96, 165, 250, .22), transparent 16rem),
     radial-gradient(circle at 78% 74%, rgba(124, 58, 237, .18), transparent 18rem);
@@ -23974,7 +23977,8 @@ body.free-random-result-open {
   width: 32%;
   transform: rotate(18deg);
   background: linear-gradient(90deg, transparent, rgba(255, 255, 255, .18), transparent);
-  animation: freeResultShine 1.15s 180ms ease both;
+  opacity: 0;
+  animation: freeResultShine 900ms 160ms ease-out both;
 }
 
 .free-random-result-sparks i {
@@ -23984,7 +23988,7 @@ body.free-random-result-open {
   border-radius: 999px;
   background: #93c5fd;
   box-shadow: 0 0 16px rgba(96, 165, 250, .9);
-  animation: freeResultSpark 1.6s ease-in-out infinite;
+  animation: freeResultSpark 1250ms ease-out both;
 }
 
 .free-random-result-sparks i:nth-child(1) { top: 18%; left: 18%; animation-delay: .05s; }
@@ -23996,7 +24000,7 @@ body.free-random-result-open {
 .free-random-result-dialog .free-random-result-image,
 .free-random-result-dialog .free-random-result-symbol {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   width: 100%;
   min-height: 220px;
   border-radius: 26px;
@@ -24012,8 +24016,12 @@ body.free-random-result-open {
 
 .free-random-result-dialog > div:not(.free-random-result-image):not(.free-random-result-symbol):not(.free-random-result-sparks) {
   position: relative;
-  z-index: 1;
+  z-index: 2;
   padding-right: 42px;
+  min-width: 0;
+  max-height: calc(min(82vh, 780px) - 68px);
+  overflow: auto;
+  overscroll-behavior: contain;
 }
 
 .free-random-result-badge,
@@ -24048,8 +24056,38 @@ body.free-random-result-open {
 
 .free-random-result-actions .primary-button,
 .free-random-result-actions .ghost-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  flex: 1 1 148px;
   min-height: 46px;
+  min-width: 0;
+  padding: 0 14px;
   justify-content: center;
+  text-align: center;
+  white-space: nowrap;
+  font-size: clamp(.82rem, 1.6vw, .92rem);
+  line-height: 1.15;
+}
+
+.free-random-result-actions .primary-button svg,
+.free-random-result-actions .ghost-button svg {
+  flex: 0 0 auto;
+  width: 17px;
+  height: 17px;
+}
+
+.free-random-result-actions .primary-button span,
+.free-random-result-actions .ghost-button span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.free-random-result-actions .free-random-order-button {
+  flex: 0 1 150px;
+  max-width: 170px;
+  letter-spacing: 0;
 }
 
 @keyframes freeResultBackdropIn {
@@ -24065,13 +24103,11 @@ body.free-random-result-open {
 @keyframes freeResultDialogIn {
   from {
     opacity: 0;
-    transform: translateY(18px) scale(.94);
-    filter: blur(8px);
+    transform: translate3d(0, 14px, 0) scale(.965);
   }
   to {
     opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: blur(0);
+    transform: translate3d(0, 0, 0) scale(1);
   }
 }
 
@@ -24088,13 +24124,14 @@ body.free-random-result-open {
 
 @keyframes freeResultShine {
   from { transform: translateX(0) rotate(18deg); opacity: 0; }
-  20% { opacity: 1; }
+  30% { opacity: .72; }
   to { transform: translateX(430%) rotate(18deg); opacity: 0; }
 }
 
 @keyframes freeResultSpark {
-  0%, 100% { transform: translateY(0) scale(.72); opacity: .28; }
-  50% { transform: translateY(-8px) scale(1.1); opacity: 1; }
+  0% { transform: translate3d(0, 6px, 0) scale(.72); opacity: 0; }
+  38% { opacity: .9; }
+  100% { transform: translate3d(0, -12px, 0) scale(.98); opacity: 0; }
 }
 
 @media (min-width: 721px) and (max-width: 1100px) {
@@ -24107,6 +24144,10 @@ body.free-random-result-open {
   .free-random-result-dialog .free-random-result-image,
   .free-random-result-dialog .free-random-result-symbol {
     min-height: 200px;
+  }
+
+  .free-random-result-dialog > div:not(.free-random-result-image):not(.free-random-result-symbol):not(.free-random-result-sparks) {
+    max-height: calc(100dvh - 120px);
   }
 }
 
@@ -24142,6 +24183,8 @@ body.free-random-result-open {
 
   .free-random-result-dialog > div:not(.free-random-result-image):not(.free-random-result-symbol):not(.free-random-result-sparks) {
     padding-right: 0;
+    max-height: none;
+    overflow: visible;
   }
 
   .free-random-result-dialog h2 {
@@ -24161,6 +24204,9 @@ body.free-random-result-open {
   .free-random-result-actions .primary-button,
   .free-random-result-actions .ghost-button {
     width: 100%;
+    max-width: none;
+    flex-basis: auto;
+    font-size: .9rem;
   }
 }
 

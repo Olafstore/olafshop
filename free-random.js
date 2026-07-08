@@ -252,7 +252,7 @@
             ${prizeType === "product" ? `<a class="primary-button" href="profile.html#inventory"><i data-lucide="package-open"></i> เปิดคลังสินค้า</a>` : ""}
             ${prizeType === "points" ? `<a class="primary-button" href="profile.html#info"><i data-lucide="coins"></i> เช็ค Point</a>` : ""}
             ${prizeType === "empty" ? `<button class="primary-button" type="button" data-spin-again><i data-lucide="rotate-cw"></i> สุ่มอีกครั้ง</button>` : ""}
-            ${result.order?.id ? `<a class="ghost-button" href="profile.html?order=${encodeURIComponent(result.order.id)}#orders"><i data-lucide="receipt"></i> ดูออเดอร์</a>` : ""}
+            ${result.order?.id ? `<a class="ghost-button free-random-order-button" href="profile.html?order=${encodeURIComponent(result.order.id)}#orders"><i data-lucide="clipboard-list"></i><span>ดูออเดอร์</span></a>` : ""}
           </div>
         </div>
       </div>

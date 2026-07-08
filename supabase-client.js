@@ -1240,6 +1240,7 @@
       orderId: row.orderId || row.order_id || claim.orderId || claim.order_id || "",
       orderNumber: row.orderNumber || row.order_number || claim.orderNumber || claim.order_number || "",
       claimedAt: row.claimedAt || row.claimed_at || claim.createdAt || claim.created_at || "",
+      resetAt: row.resetAt || row.reset_at || "",
       remaining: Number(row.remaining ?? 0),
       progress: Number(row.progress ?? 0)
     };
@@ -1256,6 +1257,8 @@
       threshold,
       claimId: payload.claimId || payload.claim_id || milestone.claimId || milestone.claim_id || "",
       freeRandomClaimId: payload.freeRandomClaimId || payload.free_random_claim_id || milestone.freeRandomClaimId || milestone.free_random_claim_id || "",
+      resetAt: payload.resetAt || payload.reset_at || milestone.resetAt || milestone.reset_at || "",
+      totalSpins: Number(payload.totalSpins ?? payload.total_spins ?? milestone.totalSpins ?? milestone.total_spins ?? 0),
       product: {
         id: product.id || milestone.productId || milestone.product_id || "",
         name: product.name || milestone.productName || milestone.product_name || milestone.label || "",
@@ -1384,6 +1387,14 @@
     return mapFreeRandomMilestoneReward(data || {});
   }
 
+  async function claimFreeRandomMilestone(threshold) {
+    const { data, error } = await requireClient().rpc("claim_free_random_milestone", {
+      p_threshold: Number(threshold || 0)
+    });
+    if (error) throw error;
+    return mapFreeRandomMilestoneReward(data || {});
+  }
+
   async function adminFetchFreeRandomSettings() {
     const { data, error } = await requireClient().rpc("admin_free_random_settings");
     if (error) throw error;
@@ -1427,6 +1438,18 @@
     });
     if (error) throw error;
     return normalizeArray(data).map(mapFreeRandomMilestone).sort((a, b) => a.threshold - b.threshold);
+  }
+
+  async function adminResetFreeRandomSpinCounts(note = "") {
+    const { data, error } = await requireClient().rpc("admin_reset_free_random_spin_counts", {
+      p_note: note || null
+    });
+    if (error) throw error;
+    const payload = normalizeObject(data || {});
+    return {
+      resetAt: payload.resetAt || payload.reset_at || "",
+      milestones: normalizeArray(payload.milestones).map(mapFreeRandomMilestone).sort((a, b) => a.threshold - b.threshold)
+    };
   }
 
   async function adminFetchFreeRandomClaims(limit = 100) {
@@ -1728,10 +1751,12 @@
     fetchMilestones: fetchFreeRandomMilestones,
     fetchMilestoneStatus: fetchMyFreeRandomMilestoneStatus,
     fetchMilestoneForClaim: fetchFreeRandomMilestoneForClaim,
+    claimMilestone: claimFreeRandomMilestone,
     adminFetchSettings: adminFetchFreeRandomSettings,
     adminSaveSettings: adminSaveFreeRandomSettings,
     adminFetchMilestones: adminFetchFreeRandomMilestones,
     adminSaveMilestones: adminSaveFreeRandomMilestones,
+    adminResetSpinCounts: adminResetFreeRandomSpinCounts,
     adminFetchClaims: adminFetchFreeRandomClaims
   };
   window.OlafStoreSettings = {

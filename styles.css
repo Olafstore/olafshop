@@ -24450,3 +24450,160 @@ body.free-random-result-open {
     width: 100%;
   }
 }
+
+/* v33: milestone claim lives inside the OLAF Premium Spin hero card */
+.free-random-bonus-card {
+  align-content: start;
+  gap: 14px;
+  min-height: 0;
+}
+
+.free-random-bonus-card::before {
+  inset: -20% -18% auto auto;
+  width: 220px;
+  height: 220px;
+  background: radial-gradient(circle, rgba(250, 204, 21, .20), transparent 68%);
+}
+
+.free-random-bonus-copy {
+  position: relative;
+  z-index: 1;
+}
+
+.free-random-bonus-copy span {
+  display: inline-flex;
+  align-items: center;
+  width: auto;
+  margin-bottom: 8px;
+  padding: 5px 10px;
+  border: 1px solid rgba(250, 204, 21, .18);
+  border-radius: 999px;
+  color: #fde68a;
+  background: rgba(250, 204, 21, .08);
+  font-size: .68rem;
+  font-weight: 800;
+  letter-spacing: .16em;
+}
+
+.free-random-bonus-copy strong {
+  display: block;
+  font-size: clamp(1.08rem, 2vw, 1.45rem);
+}
+
+.free-random-bonus-copy p {
+  max-width: 320px;
+  margin-top: 8px;
+  color: rgba(226, 232, 240, .72);
+}
+
+.free-random-milestone-grid.is-hero-card {
+  position: relative;
+  z-index: 1;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  width: 100%;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-card {
+  grid-template-columns: 58px minmax(0, 1fr);
+  gap: 10px;
+  padding: 10px;
+  border-color: rgba(250, 204, 21, .18);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(250, 204, 21, .10), transparent 12rem),
+    rgba(12, 20, 43, .70);
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-image {
+  width: 58px;
+  border-radius: 14px;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-body h3 {
+  font-size: .88rem;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-body p {
+  margin-bottom: 8px;
+  font-size: .74rem;
+}
+
+.free-random-milestone-empty {
+  width: 100%;
+  padding: 14px;
+  border: 1px dashed rgba(250, 204, 21, .25);
+  border-radius: 16px;
+  color: rgba(226, 232, 240, .72);
+  background: rgba(15, 23, 42, .48);
+  font-size: .82rem;
+}
+
+.free-random-milestone-claim {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: 34px;
+  margin-top: 9px;
+  padding: 0 12px;
+  border: 1px solid rgba(96, 165, 250, .30);
+  border-radius: 999px;
+  color: #f8fbff;
+  background: linear-gradient(135deg, rgba(37, 99, 235, .92), rgba(124, 58, 237, .86));
+  box-shadow: 0 12px 30px rgba(59, 130, 246, .18);
+  font-family: inherit;
+  font-size: .78rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 160ms ease, opacity 160ms ease, box-shadow 160ms ease;
+}
+
+.free-random-milestone-claim svg {
+  width: 15px;
+  height: 15px;
+}
+
+.free-random-milestone-claim:not(:disabled):hover {
+  transform: translateY(-1px);
+  box-shadow: 0 16px 36px rgba(59, 130, 246, .26);
+}
+
+.free-random-milestone-claim:not(:disabled):active {
+  transform: translateY(0) scale(.985);
+}
+
+.free-random-milestone-claim:disabled {
+  cursor: not-allowed;
+  opacity: .56;
+  background: rgba(30, 41, 59, .82);
+  box-shadow: none;
+}
+
+@media (min-width: 721px) and (max-width: 1100px) {
+  .free-random-milestone-grid.is-hero-card {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .free-random-bonus-card {
+    padding: 18px;
+    border-radius: 24px;
+  }
+
+  .free-random-milestone-grid.is-hero-card {
+    grid-template-columns: 1fr;
+  }
+
+  .free-random-milestone-grid.is-hero-card .free-random-milestone-card {
+    grid-template-columns: 54px minmax(0, 1fr);
+  }
+
+  .free-random-milestone-grid.is-hero-card .free-random-milestone-image {
+    width: 54px;
+  }
+
+  .free-random-milestone-claim {
+    width: 100%;
+  }
+}

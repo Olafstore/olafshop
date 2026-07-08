@@ -11,15 +11,15 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260708-premium-milestone-v32" />
+  <link rel="stylesheet" href="styles.css?v=20260708-premium-claim-v33" />
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-  <script src="supabase-client.js?v=20260708-premium-milestone-v32" defer></script>
+  <script src="supabase-client.js?v=20260708-premium-claim-v33" defer></script>
   <script src="platform-store.js?v=20260605-admin-users" defer></script>
   <script src="image-performance.js?v=20260607-performance" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-  <script src="site-navigation.js?v=20260708-premium-milestone-v32" defer></script>
-  <script src="free-random.js?v=20260708-premium-milestone-v32" defer></script>
+  <script src="site-navigation.js?v=20260708-premium-claim-v33" defer></script>
+  <script src="free-random.js?v=20260708-premium-claim-v33" defer></script>
 </head>
 
 <body class="free-random-page">
@@ -101,21 +101,24 @@
           </div>
         </div>
 
-        <aside class="free-random-wallet-card" aria-label="Premium spin wallet">
+        <aside class="free-random-wallet-card free-random-bonus-card" id="free-random-milestones" aria-label="Milestone bonus">
           <div class="free-random-wallet-orb"><i data-lucide="gem"></i></div>
-          <span>สถานะระบบ</span>
-          <strong id="free-random-unlimited-label">ไม่จำกัดต่อวัน</strong>
-          <p>ระบบหัก Point ก่อนสุ่ม และคืนผลลัพธ์ใน transaction เดียวกัน สุ่มได้ต่อเนื่องตราบใดที่มี Point</p>
+          <div class="free-random-bonus-copy">
+            <span>MILESTONE BONUS</span>
+            <strong>โบนัสสุ่มครบรับเกมฟรี</strong>
+            <p>สุ่มครบ 50 / 100 / 150 / 200 ครั้ง แล้วกดรับเกมฟรีตามที่แอดมินตั้งค่าไว้</p>
+          </div>
+          <div class="free-random-milestone-grid is-hero-card" id="free-random-milestone-grid"></div>
         </aside>
       </section>
 
-      <section class="free-random-milestones" id="free-random-milestones" hidden>
+      <section class="free-random-milestones is-retired-section" hidden aria-hidden="true">
         <div class="section-heading">
           <span class="eyebrow"><i data-lucide="flag"></i> MILESTONE BONUS</span>
           <h2>โบนัสสุ่มครบรับเกมฟรี</h2>
           <p>เมื่อสุ่มครบ 50 / 100 / 150 / 200 ครั้ง ระบบจะเพิ่มเกมฟรีตามที่แอดมินตั้งค่าให้ 1 เกมโดยอัตโนมัติ</p>
         </div>
-        <div class="free-random-milestone-grid" id="free-random-milestone-grid"></div>
+        <div class="free-random-milestone-grid" data-retired-milestone-grid></div>
       </section>
 
       <section class="free-random-machine" aria-live="polite">

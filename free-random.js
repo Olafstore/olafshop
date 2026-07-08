@@ -166,17 +166,28 @@
       ? state.milestoneStatus.milestones
       : (state.config.milestones || []);
     const milestones = configured.filter((item) => Number(item.threshold || 0) > 0);
-    wrap.hidden = milestones.length === 0;
     if (!milestones.length) {
-      grid.innerHTML = "";
+      wrap.hidden = false;
+      grid.innerHTML = `<div class="free-random-milestone-empty">รอตั้งค่าโบนัสในหน้า Admin</div>`;
       return;
     }
+    wrap.hidden = false;
     grid.innerHTML = milestones.map((milestone) => {
       const threshold = Math.max(1, Number(milestone.threshold || 0));
       const claimed = milestone.claimed === true;
       const progress = Math.max(0, Math.min(100, claimed ? 100 : (totalSpins / threshold) * 100));
       const remaining = Math.max(0, threshold - totalSpins);
       const title = milestoneTitle(milestone);
+      const ready = totalSpins >= threshold;
+      const configured = milestone.isActive !== false && milestone.productId && milestone.productIsActive !== false && Number(milestone.stock || 0) > 0;
+      const claimable = Boolean(state.user && ready && configured && !claimed);
+      const statusText = claimed
+        ? "รับแล้ว"
+        : !configured
+          ? "รอตั้งค่า"
+          : ready
+            ? "พร้อมรับ"
+            : `เหลือ ${point(remaining)}`;
       return `
         <article class="free-random-milestone-card ${claimed ? "is-claimed" : ""}">
           <div class="free-random-milestone-image">
@@ -185,14 +196,21 @@
           <div class="free-random-milestone-body">
             <span class="free-random-milestone-kicker"><i data-lucide="${claimed ? "badge-check" : "flag"}"></i> ครบ ${point(threshold)} ครั้ง</span>
             <h3>${escapeHtml(title)}</h3>
-            <p>${claimed ? "รับโบนัสนี้แล้ว" : remaining === 0 ? "พร้อมรับเมื่อสุ่มครั้งถัดไป" : `เหลืออีก ${point(remaining)} ครั้ง`}</p>
+            <p>${escapeHtml(statusText)}${!claimed && configured && !ready ? " ครั้ง" : ""}</p>
             <div class="free-random-milestone-progress" aria-label="progress ${Math.round(progress)}%">
               <i style="width:${progress}%"></i>
             </div>
+            <button class="free-random-milestone-claim" type="button" data-claim-milestone="${threshold}" ${claimable ? "" : "disabled"}>
+              <i data-lucide="${claimed ? "badge-check" : "gift"}"></i>
+              <span>${claimed ? "รับแล้ว" : claimable ? "รับเกม" : ready ? "ยังไม่พร้อม" : "ยังไม่ครบ"}</span>
+            </button>
           </div>
         </article>
       `;
     }).join("");
+    grid.querySelectorAll("[data-claim-milestone]").forEach((button) => {
+      button.addEventListener("click", () => claimMilestone(Number(button.dataset.claimMilestone || 0)));
+    });
     window.lucide?.createIcons?.();
   }
 
@@ -422,6 +440,52 @@
     window.setTimeout(() => panel.querySelector(".free-random-result-close")?.focus?.(), 80);
   }
 
+  function showMilestoneClaimPopup(reward) {
+    const product = reward?.product || {};
+    showResultPopup({
+      claim: { prizeType: "product" },
+      product,
+      order: reward?.order || null,
+      slot: { label: product.name, imageUrl: product.imageUrl },
+      spinCostPoints: 0,
+      pointDebit: { amount: 0 },
+      milestoneReward: {
+        threshold: reward?.threshold || 0,
+        product,
+        order: reward?.order || null
+      }
+    });
+  }
+
+  async function claimMilestone(threshold) {
+    if (!threshold || state.spinning) return;
+    if (!(window.OlafStore?.currentUser?.() || state.user)) {
+      window.location.href = `login.html?return=${encodeURIComponent("free-random.html")}`;
+      return;
+    }
+    const button = document.querySelector(`[data-claim-milestone="${threshold}"]`);
+    const original = button?.innerHTML || "";
+    if (button) {
+      button.disabled = true;
+      button.innerHTML = '<i data-lucide="loader-circle"></i><span>กำลังรับ...</span>';
+      window.lucide?.createIcons?.();
+    }
+    try {
+      const reward = await window.OlafFreeRandom.claimMilestone(threshold);
+      await refreshStatus();
+      showMilestoneClaimPopup(reward);
+    } catch (error) {
+      console.error("Milestone claim failed", error);
+      alert(errorMessage(error));
+      await refreshStatus();
+    } finally {
+      if (button) {
+        button.innerHTML = original;
+        window.lucide?.createIcons?.();
+      }
+    }
+  }
+
   async function refreshStatus() {
     try {
       state.user = window.OlafStore?.currentUser?.() || (await window.OlafSupabaseAuth?.getCurrentUser?.());
@@ -509,6 +573,10 @@
   function errorMessage(error) {
     const message = String(error?.message || error || "");
     if (message.includes("AUTH_REQUIRED")) return "กรุณาเข้าสู่ระบบก่อนสุ่ม";
+    if (message.includes("FREE_RANDOM_MILESTONE_NOT_READY")) return "ยังสุ่มไม่ครบจำนวนสำหรับรับโบนัสนี้";
+    if (message.includes("FREE_RANDOM_MILESTONE_ALREADY_CLAIMED")) return "รับโบนัสนี้ไปแล้วในรอบนับปัจจุบัน";
+    if (message.includes("FREE_RANDOM_MILESTONE_NOT_CONFIGURED")) return "โบนัสนี้ยังไม่ได้ตั้งค่าสินค้า หรือสต็อกหมด";
+    if (message.includes("FREE_RANDOM_MILESTONE_REWARD_UNAVAILABLE")) return "สินค้าของโบนัสนี้หมดพอดี กรุณาแจ้งแอดมิน";
     if (message.includes("FREE_RANDOM_INSUFFICIENT_POINTS")) return "Point ไม่พอสำหรับสุ่มครั้งนี้";
     if (message.includes("FREE_RANDOM_NO_AVAILABLE_PRIZES")) return "ยังไม่มีรางวัลที่พร้อมแจก หรือสต็อกหมด";
     if (message.includes("INSUFFICIENT_STOCK")) return "ของรางวัลช่องนี้สต็อกหมดพอดี กรุณาลองใหม่อีกครั้ง";

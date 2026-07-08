@@ -2789,6 +2789,16 @@ body {
     linear-gradient(180deg, rgba(14, 25, 54, .86), rgba(8, 13, 28, .92));
 }
 
+#free-random-reset-counts {
+  border-color: rgba(248, 113, 113, .36);
+  background: rgba(127, 29, 29, .16);
+}
+
+#free-random-reset-counts:hover {
+  border-color: rgba(248, 113, 113, .58);
+  background: rgba(127, 29, 29, .24);
+}
+
 @media (max-width: 1180px) {
   .free-random-admin-grid,
   .free-random-slot-grid,

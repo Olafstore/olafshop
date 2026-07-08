@@ -1258,6 +1258,38 @@ async function saveFreeRandomSettings(event) {
   }
 }
 
+async function resetFreeRandomSpinCounts() {
+  if (!window.OlafFreeRandom?.adminResetSpinCounts) {
+    showAdminToast("ยังไม่พบ RPC รีจำนวนสุ่ม กรุณารัน SQL milestone เวอร์ชันล่าสุดก่อน", "error", 8000);
+    return;
+  }
+  const confirmed = window.confirm(
+    "รีจำนวนสุ่มทั้งหมดของ Premium Spin?\n\nระบบจะไม่ลบประวัติสุ่ม ไม่ลบออเดอร์ และไม่ลบ Point แต่จะเริ่มนับ milestone ใหม่ตั้งแต่เวลานี้"
+  );
+  if (!confirmed) return;
+
+  const button = $("#free-random-reset-counts");
+  const originalText = button?.innerHTML || "";
+  if (button) {
+    button.disabled = true;
+    button.innerHTML = '<i data-lucide="loader-circle"></i> กำลังรีเซ็ต';
+    createIconSet();
+  }
+  try {
+    await window.OlafFreeRandom.adminResetSpinCounts("Reset from admin Premium Spin panel");
+    await refreshFreeRandomPanel();
+    showAdminToast("รีจำนวนสุ่มทั้งหมดเรียบร้อยแล้ว เริ่มนับโบนัสรอบใหม่โดยไม่ลบประวัติเดิม", "success", 8000);
+  } catch (error) {
+    showAdminToast(error.message || "รีจำนวนสุ่มไม่สำเร็จ", "error", 9000);
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.innerHTML = originalText;
+      createIconSet();
+    }
+  }
+}
+
 function setInventorySummaries(rows = []) {
   state.inventorySummaries = Object.fromEntries(
     (rows || [])
@@ -4834,6 +4866,7 @@ function bindEvents() {
   $("#order-form").addEventListener("submit", saveOrderFromForm);
   $("#widget-form").addEventListener("submit", saveWidgetFromForm);
   $("#free-random-form")?.addEventListener("submit", saveFreeRandomSettings);
+  $("#free-random-reset-counts")?.addEventListener("click", resetFreeRandomSpinCounts);
   $("#free-random-refresh")?.addEventListener("click", async () => {
     const button = $("#free-random-refresh");
     const originalText = button?.innerHTML || "";

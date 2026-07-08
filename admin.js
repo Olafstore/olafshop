@@ -740,16 +740,19 @@ async function fetchAdminFreeRandomFromSupabase() {
     return {
       settings: { isActive: true, unlimited: true },
       slots: [],
+      milestones: [],
       claims: []
     };
   }
-  const [config, claims] = await Promise.all([
+  const [config, milestones, claims] = await Promise.all([
     window.OlafFreeRandom.adminFetchSettings(),
+    window.OlafFreeRandom.adminFetchMilestones ? window.OlafFreeRandom.adminFetchMilestones().catch(() => []) : Promise.resolve([]),
     window.OlafFreeRandom.adminFetchClaims ? window.OlafFreeRandom.adminFetchClaims(100).catch(() => []) : Promise.resolve([])
   ]);
   return {
     settings: config.settings || { isActive: true, unlimited: true },
     slots: Array.isArray(config.slots) ? config.slots : [],
+    milestones: Array.isArray(milestones) && milestones.length ? milestones : (Array.isArray(config.milestones) ? config.milestones : []),
     claims: Array.isArray(claims) ? claims : []
   };
 }
@@ -1001,6 +1004,22 @@ function freeRandomSlots() {
   });
 }
 
+function freeRandomMilestones() {
+  const defaults = [50, 100, 150, 200];
+  const existing = new Map((state.freeRandom?.milestones || []).map((item) => [Number(item.threshold), item]));
+  return defaults.map((threshold) => ({
+    threshold,
+    productId: "",
+    isActive: false,
+    label: "",
+    imageUrl: "",
+    productName: "",
+    stock: 0,
+    productIsActive: false,
+    ...(existing.get(threshold) || {})
+  }));
+}
+
 function freeRandomProductOptions(selectedId = "") {
   const selected = String(selectedId || "");
   const sorted = [...products()].sort((a, b) => {
@@ -1020,6 +1039,7 @@ function freeRandomProductOptions(selectedId = "") {
 function renderFreeRandomPanel() {
   const form = $("#free-random-form");
   const grid = $("#free-random-slot-grid");
+  const milestoneGrid = $("#free-random-milestone-grid");
   const summary = $("#free-random-admin-summary");
   const table = $("#free-random-history-table");
   if (!form || !grid || !summary || !table) return;
@@ -1051,6 +1071,45 @@ function renderFreeRandomPanel() {
     </div>
     <p>ระบบจะ normalize น้ำหนักให้อัตโนมัติ แม้รวมไม่ครบ 100% แต่แนะนำให้ตั้งรวม 100 เพื่ออ่านง่าย</p>
   `;
+
+  if (milestoneGrid) {
+    const milestones = freeRandomMilestones();
+    milestoneGrid.innerHTML = milestones.map((milestone) => {
+      const product = products().find((item) => item.id === milestone.productId);
+      const stock = Number(product?.stock ?? milestone.stock ?? 0);
+      const ready = Boolean(milestone.isActive && milestone.productId && product?.isActive !== false && stock > 0);
+      return `
+        <article class="free-random-slot-card free-random-milestone-admin-card" data-free-random-milestone="${milestone.threshold}">
+          <div class="free-random-slot-head">
+            <strong>ครบ ${Number(milestone.threshold).toLocaleString("th-TH")} ครั้ง</strong>
+            <span class="status-pill ${ready ? "ok" : milestone.isActive ? "warn" : ""}">${ready ? "พร้อมแจก" : milestone.isActive ? "เช็กสินค้า" : "ปิด"}</span>
+          </div>
+          <label>
+            เกมฟรีที่จะรับ
+            <select name="productId">${freeRandomProductOptions(milestone.productId)}</select>
+          </label>
+          <div class="form-row">
+            <label>
+              สถานะ
+              <select name="isActive">
+                <option value="true"${milestone.isActive ? " selected" : ""}>เปิด</option>
+                <option value="false"${!milestone.isActive ? " selected" : ""}>ปิด</option>
+              </select>
+            </label>
+            <label>
+              ชื่อแสดงผล
+              <input name="label" type="text" value="${escapeHtml(milestone.label || "")}" placeholder="เว้นว่าง = ใช้ชื่อสินค้า" />
+            </label>
+          </div>
+          <label>
+            รูปเฉพาะโบนัส (ไม่บังคับ)
+            <input name="imageUrl" type="url" value="${escapeHtml(milestone.imageUrl || "")}" placeholder="https://..." />
+          </label>
+          <small>สินค้า: ${escapeHtml(product?.name || milestone.productName || "ยังไม่เลือก")} · Stock ${stock.toLocaleString("th-TH")}</small>
+        </article>
+      `;
+    }).join("");
+  }
 
   grid.innerHTML = slots.map((slot) => {
     const product = products().find((item) => item.id === slot.productId);
@@ -1140,6 +1199,16 @@ function readFreeRandomFormSlots() {
   }));
 }
 
+function readFreeRandomMilestones() {
+  return $$("#free-random-milestone-grid [data-free-random-milestone]").map((card) => ({
+    threshold: Number(card.dataset.freeRandomMilestone || 0),
+    productId: card.querySelector('[name="productId"]')?.value || "",
+    isActive: card.querySelector('[name="isActive"]')?.value === "true",
+    label: card.querySelector('[name="label"]')?.value?.trim() || "",
+    imageUrl: card.querySelector('[name="imageUrl"]')?.value?.trim() || ""
+  }));
+}
+
 async function refreshFreeRandomPanel() {
   state.freeRandom = await fetchAdminFreeRandomFromSupabase();
   renderFreeRandomPanel();
@@ -1165,10 +1234,15 @@ async function saveFreeRandomSettings(event) {
       isActive: form.elements.isActive?.value !== "false",
       slots: readFreeRandomFormSlots()
     });
+    let milestones = state.freeRandom.milestones || [];
+    if (window.OlafFreeRandom.adminSaveMilestones) {
+      milestones = await window.OlafFreeRandom.adminSaveMilestones(readFreeRandomMilestones());
+    }
     const claims = window.OlafFreeRandom.adminFetchClaims ? await window.OlafFreeRandom.adminFetchClaims(100).catch(() => state.freeRandom.claims || []) : [];
     state.freeRandom = {
       settings: saved.settings,
       slots: saved.slots,
+      milestones,
       claims
     };
     renderFreeRandomPanel();

@@ -11,6 +11,7 @@
   const state = {
     config: { settings: { isActive: true, spinCostPoints: 1 }, slots: [] },
     status: { spinsUsedToday: 0, spinCostPoints: 1, unlimited: true },
+    milestoneStatus: { totalSpins: 0, milestones: [] },
     pointBalance: 0,
     spinning: false,
     user: null
@@ -148,10 +149,57 @@
     window.lucide?.createIcons?.();
   }
 
+  function milestoneTitle(milestone) {
+    return clean(milestone.label || milestone.productName || `โบนัสครบ ${point(milestone.threshold)} ครั้ง`);
+  }
+
+  function milestoneImage(milestone) {
+    return milestone.imageUrl || "assets/placeholder.svg";
+  }
+
+  function renderMilestones() {
+    const wrap = $("#free-random-milestones");
+    const grid = $("#free-random-milestone-grid");
+    if (!wrap || !grid) return;
+    const totalSpins = Number(state.milestoneStatus.totalSpins || state.status.totalSpins || state.status.spinsUsedToday || 0);
+    const configured = Array.isArray(state.milestoneStatus.milestones) && state.milestoneStatus.milestones.length
+      ? state.milestoneStatus.milestones
+      : (state.config.milestones || []);
+    const milestones = configured.filter((item) => Number(item.threshold || 0) > 0);
+    wrap.hidden = milestones.length === 0;
+    if (!milestones.length) {
+      grid.innerHTML = "";
+      return;
+    }
+    grid.innerHTML = milestones.map((milestone) => {
+      const threshold = Math.max(1, Number(milestone.threshold || 0));
+      const claimed = milestone.claimed === true;
+      const progress = Math.max(0, Math.min(100, claimed ? 100 : (totalSpins / threshold) * 100));
+      const remaining = Math.max(0, threshold - totalSpins);
+      const title = milestoneTitle(milestone);
+      return `
+        <article class="free-random-milestone-card ${claimed ? "is-claimed" : ""}">
+          <div class="free-random-milestone-image">
+            <img src="${escapeHtml(milestoneImage(milestone))}" alt="${escapeHtml(title)}" loading="lazy" decoding="async" />
+          </div>
+          <div class="free-random-milestone-body">
+            <span class="free-random-milestone-kicker"><i data-lucide="${claimed ? "badge-check" : "flag"}"></i> ครบ ${point(threshold)} ครั้ง</span>
+            <h3>${escapeHtml(title)}</h3>
+            <p>${claimed ? "รับโบนัสนี้แล้ว" : remaining === 0 ? "พร้อมรับเมื่อสุ่มครั้งถัดไป" : `เหลืออีก ${point(remaining)} ครั้ง`}</p>
+            <div class="free-random-milestone-progress" aria-label="progress ${Math.round(progress)}%">
+              <i style="width:${progress}%"></i>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join("");
+    window.lucide?.createIcons?.();
+  }
+
   function renderStatus() {
     const settings = state.config.settings || {};
     const cost = spinCost();
-    const spinsUsed = Number(state.status.spinsUsedToday ?? state.status.totalSpins ?? 0);
+    const spinsUsed = Number(state.milestoneStatus.totalSpins || state.status.totalSpins || state.status.spinsUsedToday || 0);
     const hasUser = Boolean(window.OlafStore?.currentUser?.() || state.user);
     const hasPrize = availableSlots().length > 0;
     const canAfford = Number(state.pointBalance || 0) >= cost;
@@ -168,6 +216,7 @@
     if (spinsUsedEl) spinsUsedEl.textContent = point(spinsUsed);
     if (pointBalanceEl) pointBalanceEl.textContent = point(state.pointBalance);
     if (spinCostEl) spinCostEl.textContent = point(cost);
+    renderMilestones();
 
     if (spinButton) {
       const disabled = state.spinning
@@ -201,6 +250,28 @@
     } catch (error) {
       console.warn("Unable to load random point balance", error);
     }
+  }
+
+  async function loadMilestoneStatus() {
+    try {
+      if (state.user && window.OlafFreeRandom?.fetchMilestoneStatus) {
+        state.milestoneStatus = await window.OlafFreeRandom.fetchMilestoneStatus();
+      } else if (window.OlafFreeRandom?.fetchMilestones) {
+        const milestones = await window.OlafFreeRandom.fetchMilestones();
+        state.milestoneStatus = { totalSpins: 0, milestones };
+      } else {
+        state.milestoneStatus = {
+          totalSpins: Number(state.status.totalSpins || state.status.spinsUsedToday || 0),
+          milestones: state.config.milestones || []
+        };
+      }
+    } catch (error) {
+      state.milestoneStatus = {
+        totalSpins: Number(state.status.totalSpins || state.status.spinsUsedToday || 0),
+        milestones: state.config.milestones || []
+      };
+    }
+    renderMilestones();
   }
 
   function closeResult() {
@@ -279,6 +350,78 @@
     window.setTimeout(() => panel.querySelector(".free-random-result-close")?.focus?.(), 80);
   }
 
+  function showResultPopup(result) {
+    const panel = $("#free-random-result");
+    if (!panel) return;
+    const product = result.product || {};
+    const prizeType = result.claim?.prizeType || result.slot?.prizeType || "product";
+    const pointAmount = Number(result.pointCredit?.amount || result.claim?.pointAmount || result.slot?.pointAmount || 0);
+    const spent = Number(result.pointDebit?.amount || result.spinCostPoints || spinCost() || 1);
+    const name = prizeType === "points"
+      ? `${point(pointAmount)} Point`
+      : prizeType === "empty"
+        ? "เกลือ!"
+        : clean(product.name || result.slot?.label || "รางวัลของคุณ");
+    const imageHtml = prizeType === "points"
+      ? `<div class="free-random-result-symbol is-points"><i data-lucide="coins"></i><strong>${point(pointAmount)}</strong><span>POINT</span></div>`
+      : prizeType === "empty"
+        ? `<div class="free-random-result-symbol is-empty"><i data-lucide="circle-slash"></i><strong>เกลือ</strong><span>รอบนี้ยังไม่มา</span></div>`
+        : `<div class="free-random-result-image"><img src="${escapeHtml(product.imageUrl || result.slot?.imageUrl || "assets/placeholder.svg")}" alt="${escapeHtml(name)}" /></div>`;
+    const detail = prizeType === "points"
+      ? `ใช้ ${point(spent)} Point และได้รับ ${point(pointAmount)} Point เข้าบัญชีทันที`
+      : prizeType === "empty"
+        ? `ใช้ ${point(spent)} Point แล้ว รอบนี้ยังไม่ได้เกมหรือ Point ลองสุ่มต่อได้ถ้ายังมี Point`
+        : `ใช้ ${point(spent)} Point ระบบสร้างออเดอร์รางวัลให้แล้ว ${result.order?.status === "delivered" ? "และจัดส่งเข้าคลังเรียบร้อย" : "รอแอดมินจัดส่งตามประเภทสินค้า"}`;
+    const milestone = result.milestoneReward || null;
+    const milestoneProduct = milestone?.product || {};
+    const milestoneHtml = milestone && milestoneProduct.name ? `
+      <div class="free-random-milestone-win">
+        <div class="free-random-milestone-win-image">
+          <img src="${escapeHtml(milestoneProduct.imageUrl || "assets/placeholder.svg")}" alt="${escapeHtml(clean(milestoneProduct.name))}" />
+        </div>
+        <div>
+          <span><i data-lucide="gift"></i> โบนัสครบ ${point(milestone.threshold)} ครั้ง</span>
+          <strong>${escapeHtml(clean(milestoneProduct.name))}</strong>
+          <p>ระบบสร้างออเดอร์เกมฟรีให้เรียบร้อยแล้ว</p>
+        </div>
+      </div>
+    ` : "";
+
+    panel.hidden = false;
+    panel.className = `free-random-result is-open is-${escapeHtml(prizeType)}`;
+    document.body.classList.add("free-random-result-open");
+    panel.innerHTML = `
+      <div class="free-random-result-backdrop" data-result-close></div>
+      <div class="free-random-result-card free-random-result-dialog is-${escapeHtml(prizeType)}" role="dialog" aria-modal="true">
+        <button class="free-random-result-close" type="button" data-result-close aria-label="ปิดผลการสุ่ม">
+          <i data-lucide="x"></i>
+        </button>
+        <span class="free-random-result-glow" aria-hidden="true"></span>
+        ${imageHtml}
+        <div>
+          <span class="eyebrow"><i data-lucide="${prizeType === "empty" ? "circle-slash" : "trophy"}"></i> ${prizeType === "empty" ? "TRY AGAIN" : "YOU WON"}</span>
+          <h2>${escapeHtml(name)}</h2>
+          <p>${escapeHtml(detail)}</p>
+          ${milestoneHtml}
+          <div class="free-random-result-actions">
+            <button class="primary-button free-random-spin-again" type="button" data-spin-again><i data-lucide="refresh-cw"></i><span>สุ่มอีกครั้ง</span></button>
+            ${prizeType === "product" ? `<a class="primary-button" href="profile.html#inventory"><i data-lucide="package-open"></i><span>เปิดคลังสินค้า</span></a>` : ""}
+            ${prizeType === "points" ? `<a class="primary-button" href="profile.html#info"><i data-lucide="coins"></i><span>เช็ค Point</span></a>` : ""}
+            ${milestone?.order?.id ? `<a class="ghost-button free-random-order-button" href="profile.html?order=${encodeURIComponent(milestone.order.id)}#orders"><i data-lucide="gift"></i><span>โบนัสฟรี</span></a>` : ""}
+            ${result.order?.id ? `<a class="ghost-button free-random-order-button" href="profile.html?order=${encodeURIComponent(result.order.id)}#orders"><i data-lucide="clipboard-list"></i><span>ดูออเดอร์</span></a>` : ""}
+          </div>
+        </div>
+      </div>
+    `;
+    panel.querySelectorAll("[data-result-close]").forEach((item) => item.addEventListener("click", closeResult));
+    panel.querySelector("[data-spin-again]")?.addEventListener("click", () => {
+      closeResult();
+      window.setTimeout(handleSpin, 210);
+    });
+    window.lucide?.createIcons?.();
+    window.setTimeout(() => panel.querySelector(".free-random-result-close")?.focus?.(), 80);
+  }
+
   async function refreshStatus() {
     try {
       state.user = window.OlafStore?.currentUser?.() || (await window.OlafSupabaseAuth?.getCurrentUser?.());
@@ -295,6 +438,7 @@
         unlimited: true
       };
       renderStatus();
+      await loadMilestoneStatus();
       return;
     }
 
@@ -305,6 +449,7 @@
       console.warn("Unable to load premium spin status", error);
     }
     await loadPointBalance();
+    await loadMilestoneStatus();
     renderStatus();
   }
 
@@ -319,6 +464,13 @@
       };
     }
     state.config.settings.spinCostPoints = Number(state.config.settings.spinCostPoints || 1);
+    if (window.OlafFreeRandom?.fetchMilestones) {
+      try {
+        state.config.milestones = await window.OlafFreeRandom.fetchMilestones();
+      } catch (error) {
+        state.config.milestones = state.config.milestones || [];
+      }
+    }
     renderTrack();
     renderPrizeGrid();
     await refreshStatus();
@@ -476,9 +628,17 @@
     renderStatus();
     try {
       const result = await window.OlafFreeRandom.claimSpin();
+      if (!result.milestoneReward && result.claim?.id && window.OlafFreeRandom?.fetchMilestoneForClaim) {
+        try {
+          result.milestoneReward = await window.OlafFreeRandom.fetchMilestoneForClaim(result.claim.id);
+        } catch (error) {
+          result.milestoneReward = null;
+        }
+      }
       state.status = {
         today: result.today,
         spinsUsedToday: result.spinsUsedToday,
+        totalSpins: result.totalSpins ?? result.spinsUsedToday,
         spinCostPoints: result.spinCostPoints || spinCost(),
         pointBalance: result.pointBalance,
         unlimited: true
@@ -487,7 +647,7 @@
         state.pointBalance = Number(result.pointBalance);
       }
       await animateToWinner(result);
-      showResult(result);
+      showResultPopup(result);
       await loadConfig();
     } catch (error) {
       console.error("Premium spin failed", error);

@@ -2756,6 +2756,39 @@ body {
   color: var(--muted, #9aa8c7);
 }
 
+.free-random-admin-section-title {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 12px;
+  margin: 18px 0 12px;
+  padding: 14px 16px;
+  border: 1px solid rgba(124, 158, 255, .16);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(37, 99, 235, .14), rgba(15, 23, 42, .62));
+}
+
+.free-random-admin-section-title strong {
+  color: #f8fbff;
+  letter-spacing: .04em;
+}
+
+.free-random-admin-section-title span {
+  color: var(--muted, #9aa8c7);
+  font-size: .88rem;
+}
+
+.free-random-milestone-grid {
+  margin-bottom: 8px;
+}
+
+.free-random-milestone-admin-card {
+  border-color: rgba(250, 204, 21, .24);
+  background:
+    radial-gradient(circle at 18% 0%, rgba(250, 204, 21, .12), transparent 18rem),
+    linear-gradient(180deg, rgba(14, 25, 54, .86), rgba(8, 13, 28, .92));
+}
+
 @media (max-width: 1180px) {
   .free-random-admin-grid,
   .free-random-slot-grid,

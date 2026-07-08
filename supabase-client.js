@@ -1221,6 +1221,54 @@
     };
   }
 
+  function mapFreeRandomMilestone(row = {}) {
+    const product = normalizeObject(row.product || row.product_snapshot || row.productSnapshot);
+    const claim = normalizeObject(row.claim || row.claim_snapshot || row.claimSnapshot);
+    return {
+      threshold: Number(row.threshold ?? row.spinThreshold ?? row.spin_threshold ?? 0),
+      productId: row.productId || row.product_id || product.id || "",
+      productName: row.productName || row.product_name || product.name || "",
+      imageUrl: row.imageUrl || row.image_url || product.imageUrl || product.image_url || "",
+      category: row.category || product.category || "",
+      price: Number(row.price ?? product.price ?? 0),
+      stock: Number(row.stock ?? product.stock ?? 0),
+      productIsActive: row.productIsActive !== false && row.product_is_active !== false,
+      isActive: row.isActive === true || row.is_active === true,
+      label: row.label || "",
+      claimed: row.claimed === true || Boolean(claim.id || row.claimId || row.claim_id),
+      claimId: row.claimId || row.claim_id || claim.id || "",
+      orderId: row.orderId || row.order_id || claim.orderId || claim.order_id || "",
+      orderNumber: row.orderNumber || row.order_number || claim.orderNumber || claim.order_number || "",
+      claimedAt: row.claimedAt || row.claimed_at || claim.createdAt || claim.created_at || "",
+      remaining: Number(row.remaining ?? 0),
+      progress: Number(row.progress ?? 0)
+    };
+  }
+
+  function mapFreeRandomMilestoneReward(payload = {}) {
+    if (!payload || typeof payload !== "object") return null;
+    const milestone = normalizeObject(payload.milestone || payload);
+    const product = normalizeObject(payload.product);
+    const orderPayload = payload.order ? mapOrderRpcPayload({ order: payload.order, items: payload.items || [] }) : null;
+    const threshold = Number(milestone.threshold ?? milestone.spinThreshold ?? milestone.spin_threshold ?? payload.threshold ?? 0);
+    if (!threshold && !product.id && !payload.order) return null;
+    return {
+      threshold,
+      claimId: payload.claimId || payload.claim_id || milestone.claimId || milestone.claim_id || "",
+      freeRandomClaimId: payload.freeRandomClaimId || payload.free_random_claim_id || milestone.freeRandomClaimId || milestone.free_random_claim_id || "",
+      product: {
+        id: product.id || milestone.productId || milestone.product_id || "",
+        name: product.name || milestone.productName || milestone.product_name || milestone.label || "",
+        imageUrl: product.imageUrl || product.image_url || milestone.imageUrl || milestone.image_url || "",
+        category: product.category || milestone.category || "",
+        price: Number(product.price ?? milestone.price ?? 0),
+        stock: Number(product.stock ?? milestone.stock ?? 0)
+      },
+      order: orderPayload,
+      items: orderPayload?.items || normalizeArray(payload.items)
+    };
+  }
+
   function normalizeFreeRandomConfig(payload = {}) {
     const settings = normalizeObject(payload.settings);
     return {
@@ -1232,7 +1280,8 @@
         title: settings.title || "OLAF Premium Spin",
         subtitle: settings.subtitle || "สุ่มครั้งละ 1 Point แบบไม่จำกัดต่อวัน ลุ้นเกม, Point และรางวัลเกลือ"
       },
-      slots: normalizeArray(payload.slots).map(mapFreeRandomSlot).sort((a, b) => a.slotNumber - b.slotNumber)
+      slots: normalizeArray(payload.slots).map(mapFreeRandomSlot).sort((a, b) => a.slotNumber - b.slotNumber),
+      milestones: normalizeArray(payload.milestones).map(mapFreeRandomMilestone).sort((a, b) => a.threshold - b.threshold)
     };
   }
 
@@ -1243,9 +1292,12 @@
       unlimited: payload.unlimited !== false && payload.isUnlimited !== false,
       spinsUsedToday: Number(payload.spinsUsedToday ?? payload.spins_used_today ?? 0),
       spinsRemaining: Number(payload.spinsRemaining ?? payload.spins_remaining ?? Number.MAX_SAFE_INTEGER),
+      totalSpins: Number(payload.totalSpins ?? payload.total_spins ?? payload.spinsUsedTotal ?? payload.spins_used_total ?? payload.spinsUsedToday ?? payload.spins_used_today ?? 0),
       spinCostPoints: Number(payload.spinCostPoints ?? payload.spin_cost_points ?? 1),
       pointBalance: Number(payload.pointBalance ?? payload.point_balance ?? 0),
-      canAffordSpin: payload.canAffordSpin === true || payload.can_afford_spin === true
+      canAffordSpin: payload.canAffordSpin === true || payload.can_afford_spin === true,
+      milestones: normalizeArray(payload.milestones).map(mapFreeRandomMilestone).sort((a, b) => a.threshold - b.threshold),
+      nextMilestone: mapFreeRandomMilestone(normalizeObject(payload.nextMilestone || payload.next_milestone))
     };
   }
 
@@ -1306,8 +1358,30 @@
       pointBalance: Number(payload.pointBalance ?? payload.point_balance ?? 0),
       spinCostPoints: Number(payload.spinCostPoints ?? payload.spin_cost_points ?? 1),
       emptyPrize: payload.emptyPrize === true || payload.empty_prize === true,
+      milestoneReward: mapFreeRandomMilestoneReward(payload.milestoneReward || payload.milestone_reward),
       ...normalizeFreeRandomStatus(payload)
     };
+  }
+
+  async function fetchFreeRandomMilestones() {
+    const { data, error } = await requireClient().rpc("get_free_random_milestones");
+    if (error) throw error;
+    return normalizeArray(data).map(mapFreeRandomMilestone).sort((a, b) => a.threshold - b.threshold);
+  }
+
+  async function fetchMyFreeRandomMilestoneStatus() {
+    const { data, error } = await requireClient().rpc("get_my_free_random_milestone_status");
+    if (error) throw error;
+    return normalizeFreeRandomStatus(data || {});
+  }
+
+  async function fetchFreeRandomMilestoneForClaim(claimId) {
+    if (!claimId) return null;
+    const { data, error } = await requireClient().rpc("get_free_random_milestone_for_claim", {
+      p_claim_id: claimId
+    });
+    if (error) throw error;
+    return mapFreeRandomMilestoneReward(data || {});
   }
 
   async function adminFetchFreeRandomSettings() {
@@ -1333,6 +1407,26 @@
     });
     if (error) throw error;
     return normalizeFreeRandomConfig(data || {});
+  }
+
+  async function adminFetchFreeRandomMilestones() {
+    const { data, error } = await requireClient().rpc("admin_free_random_milestones");
+    if (error) throw error;
+    return normalizeArray(data).map(mapFreeRandomMilestone).sort((a, b) => a.threshold - b.threshold);
+  }
+
+  async function adminSaveFreeRandomMilestones(milestones = []) {
+    const { data, error } = await requireClient().rpc("admin_save_free_random_milestones", {
+      p_milestones: normalizeArray(milestones).map((milestone) => ({
+        threshold: Number(milestone.threshold || 0),
+        productId: milestone.productId || null,
+        isActive: milestone.isActive === true,
+        label: milestone.label || null,
+        imageUrl: milestone.imageUrl || null
+      }))
+    });
+    if (error) throw error;
+    return normalizeArray(data).map(mapFreeRandomMilestone).sort((a, b) => a.threshold - b.threshold);
   }
 
   async function adminFetchFreeRandomClaims(limit = 100) {
@@ -1631,8 +1725,13 @@
     fetchConfig: fetchFreeRandomConfig,
     fetchStatus: fetchMyFreeRandomStatus,
     claimSpin: claimFreeRandomSpin,
+    fetchMilestones: fetchFreeRandomMilestones,
+    fetchMilestoneStatus: fetchMyFreeRandomMilestoneStatus,
+    fetchMilestoneForClaim: fetchFreeRandomMilestoneForClaim,
     adminFetchSettings: adminFetchFreeRandomSettings,
     adminSaveSettings: adminSaveFreeRandomSettings,
+    adminFetchMilestones: adminFetchFreeRandomMilestones,
+    adminSaveMilestones: adminSaveFreeRandomMilestones,
     adminFetchClaims: adminFetchFreeRandomClaims
   };
   window.OlafStoreSettings = {

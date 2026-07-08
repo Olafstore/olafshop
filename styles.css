@@ -24218,3 +24218,235 @@ body.free-random-result-open {
     animation: none !important;
   }
 }
+
+/* v32: premium spin milestone rewards and calmer result actions */
+.free-random-milestones {
+  margin: clamp(18px, 3vw, 30px) 0;
+  padding: clamp(18px, 3vw, 26px);
+  border: 1px solid rgba(96, 165, 250, .18);
+  border-radius: clamp(24px, 3vw, 34px);
+  background:
+    radial-gradient(circle at 20% 0%, rgba(59, 130, 246, .14), transparent 28rem),
+    linear-gradient(145deg, rgba(10, 18, 40, .86), rgba(4, 8, 20, .94));
+  box-shadow: 0 24px 80px rgba(0, 0, 0, .28);
+}
+
+.free-random-milestone-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.free-random-milestone-card {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  gap: 12px;
+  min-width: 0;
+  padding: 12px;
+  border: 1px solid rgba(148, 163, 184, .16);
+  border-radius: 20px;
+  background: rgba(15, 23, 42, .58);
+  transition: transform 180ms ease, border-color 180ms ease, background 180ms ease;
+}
+
+.free-random-milestone-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(96, 165, 250, .34);
+  background: rgba(17, 31, 68, .68);
+}
+
+.free-random-milestone-card.is-claimed {
+  border-color: rgba(74, 222, 128, .28);
+  background:
+    radial-gradient(circle at 0% 0%, rgba(74, 222, 128, .12), transparent 14rem),
+    rgba(15, 23, 42, .62);
+}
+
+.free-random-milestone-image {
+  width: 76px;
+  aspect-ratio: 1 / 1;
+  border-radius: 16px;
+  overflow: hidden;
+  background: rgba(15, 23, 42, .75);
+}
+
+.free-random-milestone-image img,
+.free-random-milestone-win-image img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+}
+
+.free-random-milestone-body {
+  min-width: 0;
+}
+
+.free-random-milestone-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #93c5fd;
+  font-size: .74rem;
+  font-weight: 700;
+  letter-spacing: .04em;
+}
+
+.free-random-milestone-kicker svg {
+  width: 14px;
+  height: 14px;
+}
+
+.free-random-milestone-body h3 {
+  margin: 5px 0 2px;
+  color: #f8fbff;
+  font-size: clamp(.88rem, 1.4vw, 1rem);
+  line-height: 1.25;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.free-random-milestone-body p {
+  margin: 0 0 9px;
+  color: rgba(203, 213, 225, .78);
+  font-size: .78rem;
+}
+
+.free-random-milestone-progress {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(30, 41, 59, .92);
+}
+
+.free-random-milestone-progress i {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #3b82f6, #8b5cf6, #22c55e);
+  box-shadow: 0 0 18px rgba(96, 165, 250, .32);
+  transition: width 420ms cubic-bezier(.2, .8, .2, 1);
+}
+
+.free-random-milestone-win {
+  display: grid;
+  grid-template-columns: 84px minmax(0, 1fr);
+  gap: 12px;
+  align-items: center;
+  margin-top: 14px;
+  padding: 12px;
+  border: 1px solid rgba(250, 204, 21, .24);
+  border-radius: 20px;
+  background:
+    radial-gradient(circle at 10% 0%, rgba(250, 204, 21, .18), transparent 16rem),
+    rgba(15, 23, 42, .70);
+}
+
+.free-random-milestone-win-image {
+  width: 84px;
+  aspect-ratio: 16 / 10;
+  overflow: hidden;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, .82);
+}
+
+.free-random-milestone-win span {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: #fde68a;
+  font-size: .78rem;
+  font-weight: 700;
+}
+
+.free-random-milestone-win span svg {
+  width: 15px;
+  height: 15px;
+}
+
+.free-random-milestone-win strong {
+  display: block;
+  margin-top: 4px;
+  color: #fff;
+  font-size: .98rem;
+  line-height: 1.25;
+}
+
+.free-random-milestone-win p {
+  margin: 3px 0 0;
+  font-size: .78rem;
+}
+
+.free-random-result-dialog .free-random-result-shine,
+.free-random-result-dialog .free-random-result-sparks {
+  display: none !important;
+}
+
+.free-random-result-actions .primary-button,
+.free-random-result-actions .ghost-button {
+  position: relative;
+  overflow: hidden;
+  min-width: 0;
+  border-radius: 16px;
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease, background 160ms ease;
+}
+
+.free-random-result-actions .primary-button::after,
+.free-random-result-actions .ghost-button::after {
+  display: none !important;
+}
+
+.free-random-result-actions .primary-button:hover,
+.free-random-result-actions .ghost-button:hover {
+  transform: translateY(-1px);
+}
+
+.free-random-result-actions .primary-button:active,
+.free-random-result-actions .ghost-button:active {
+  transform: translateY(0) scale(.985);
+}
+
+.free-random-result-actions .free-random-spin-again {
+  flex: 1 1 170px;
+}
+
+@media (max-width: 1100px) {
+  .free-random-milestone-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 720px) {
+  .free-random-milestones {
+    padding: 16px;
+    border-radius: 24px;
+  }
+
+  .free-random-milestone-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .free-random-milestone-card {
+    grid-template-columns: 70px minmax(0, 1fr);
+    padding: 10px;
+  }
+
+  .free-random-milestone-image {
+    width: 70px;
+  }
+
+  .free-random-milestone-win {
+    grid-template-columns: 72px minmax(0, 1fr);
+  }
+
+  .free-random-milestone-win-image {
+    width: 72px;
+  }
+
+  .free-random-result-actions .free-random-order-button,
+  .free-random-result-actions .free-random-spin-again {
+    max-width: none;
+    width: 100%;
+  }
+}

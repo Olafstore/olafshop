@@ -2686,6 +2686,43 @@ function adminUserErrorMessage(error) {
   return message || "บันทึก user ไม่สำเร็จ";
 }
 
+function adminPointAdjustErrorMessage(error) {
+  const code = String(error?.code || "");
+  const message = String(error?.message || "");
+  const details = String(error?.details || "");
+  const hint = String(error?.hint || "");
+  const combined = `${code} ${message} ${details} ${hint}`;
+  const lower = combined.toLowerCase();
+
+  if (combined.includes("POINT_BALANCE_WOULD_BE_NEGATIVE")) {
+    return "Point คงเหลือไม่พอสำหรับการลดจำนวนนี้";
+  }
+  if (combined.includes("POINT_AMOUNT_REQUIRED")) {
+    return "กรุณาใส่จำนวน Point ที่ต้องการปรับ เช่น 50 หรือ -20";
+  }
+  if (combined.includes("USER_REQUIRED")) {
+    return "กรุณาเลือกลูกค้าก่อนปรับ Point";
+  }
+  if (combined.includes("ADMIN_REQUIRED")) {
+    return "บัญชีนี้ยังไม่มีสิทธิ์แอดมินสำหรับปรับ Point";
+  }
+  if (
+    code === "PGRST202" ||
+    code === "42883" ||
+    lower.includes("admin_adjust_user_points") ||
+    lower.includes("schema cache")
+  ) {
+    return "ยังไม่ได้รัน supabase-admin-point-adjust-fix.sql หรือ RPC admin_adjust_user_points ยังไม่พร้อมใน Supabase";
+  }
+  if (lower.includes("point_transactions_type_check")) {
+    return "ชนข้อจำกัดประวัติ Point กรุณารัน supabase-admin-point-adjust-fix.sql อีกครั้ง";
+  }
+  if (lower.includes("permission") || lower.includes("rls")) {
+    return "บัญชีนี้ไม่มีสิทธิ์ปรับ Point ใน Supabase";
+  }
+  return message || "ปรับ Point ไม่สำเร็จ";
+}
+
 function productFromForm(form) {
   const name = form.elements.name.value.trim();
   const id = form.elements.id.value.trim() || slugify(name);
@@ -3071,9 +3108,13 @@ async function adjustSelectedUserPoints() {
     showAdminToast("ปรับ Point ลูกค้าเรียบร้อยแล้ว", "success");
     setStatus(`ปรับ Point ${user.email || user.username} แล้ว`);
   } catch (error) {
-    const message = error?.message?.includes("POINT_BALANCE_WOULD_BE_NEGATIVE")
-      ? "Point คงเหลือไม่พอสำหรับการลดจำนวนนี้"
-      : error?.message || "ปรับ Point ไม่สำเร็จ";
+    console.error("Supabase admin point adjustment failed", {
+      code: error?.code,
+      message: error?.message,
+      details: error?.details,
+      hint: error?.hint
+    });
+    const message = adminPointAdjustErrorMessage(error);
     showAdminToast(message, "error");
     setStatus(message);
   } finally {

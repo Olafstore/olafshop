@@ -20,10 +20,18 @@
     <section class="admin-login-screen" id="admin-login-screen">
       <form class="admin-login-card" id="admin-login-form">
         <span class="admin-brand-mark">O</span>
-        <p class="eyebrow">Admin Secure Access</p>
-        <h1>OLAF SHOP Control Center</h1>
-        <label>อีเมลแอดมิน <input name="email" type="email" placeholder="admin@example.com" autocomplete="email" required /></label>
-        <label>Password <input name="password" type="password" required /></label>
+        <div>
+          <p class="eyebrow">Admin Secure Access</p>
+          <h1>OLAF SHOP Control Center</h1>
+        </div>
+        <label>
+          อีเมลแอดมิน
+          <input name="email" type="email" placeholder="admin@example.com" autocomplete="email" required />
+        </label>
+        <label>
+          Password
+          <input name="password" type="password" placeholder="••••••••" required />
+        </label>
         <button class="primary-button" type="submit"><i data-lucide="lock-keyhole"></i> เข้าหลังบ้าน</button>
         <p class="form-message" id="admin-login-message"></p>
       </form>
@@ -104,22 +112,25 @@
       <main class="admin-main">
         <header class="admin-header">
           <div>
-            <p class="eyebrow">Admin Console</p>
-            <h1>ระบบหลังบ้านร้านเกม Steam</h1>
+            <p class="eyebrow">OLAF SHOP — Admin</p>
+            <h1>ระบบหลังบ้าน</h1>
           </div>
           <div class="admin-actions">
-            <span class="save-state" id="save-state">กำลังโหลดข้อมูล</span>
-            <button class="ghost-button" id="reload-data" type="button">
+            <span class="save-state" id="save-state">
+              <i data-lucide="loader" style="width:12px;height:12px;"></i>
+              กำลังโหลด
+            </span>
+            <button class="ghost-button" id="reload-data" type="button" title="โหลดข้อมูลใหม่">
               <i data-lucide="refresh-cw"></i>
               โหลดใหม่
             </button>
-            <a class="primary-link" href="index.html">
-              <i data-lucide="external-link"></i>
-              ดูหน้าร้าน
+            <a class="ghost-button" href="index.html" title="ดูหน้าร้าน">
+              <i data-lucide="store"></i>
+              หน้าร้าน
             </a>
-            <button class="danger-button" id="admin-logout" type="button">
+            <button class="danger-button" id="admin-logout" type="button" title="ออกจากระบบ">
               <i data-lucide="log-out"></i>
-              Logout
+              ออก
             </button>
           </div>
         </header>
@@ -303,6 +314,8 @@
                 <span id="editing-product-id">ยังไม่ได้เลือก</span>
               </div>
               <form class="admin-form" id="product-form">
+                <!-- ── ข้อมูลหลัก ── -->
+                <p class="form-section-divider">ข้อมูลหลัก</p>
                 <div class="form-row">
                   <label>
                     Product ID
@@ -327,6 +340,21 @@
                     <input name="label" type="text" placeholder="ขายดี, ลดราคา" />
                   </label>
                 </div>
+                <div class="form-row">
+                  <label>
+                    สถานะสินค้า
+                    <select name="isActive">
+                      <option value="true">เปิดขาย</option>
+                      <option value="false">ปิดชั่วคราว</option>
+                    </select>
+                  </label>
+                  <label>
+                    ลำดับแสดงผล
+                    <input name="sortOrder" type="number" min="0" step="1" />
+                  </label>
+                </div>
+                <!-- ── ราคาและสต็อก ── -->
+                <p class="form-section-divider">ราคาและสต็อก</p>
                 <div class="form-row three">
                   <label>
                     ราคาขาย
@@ -349,19 +377,6 @@
                   <label>
                     รีวิว
                     <input name="rating" type="text" placeholder="แง่บวกเป็นอย่างมาก" />
-                  </label>
-                </div>
-                <div class="form-row">
-                  <label>
-                    สถานะสินค้า
-                    <select name="isActive">
-                      <option value="true">เปิดขาย</option>
-                      <option value="false">ปิดชั่วคราว</option>
-                    </select>
-                  </label>
-                  <label>
-                    ลำดับแสดงผล
-                    <input name="sortOrder" type="number" min="0" step="1" />
                   </label>
                 </div>
                 <section class="offline-stock-editor" id="offline-stock-editor" hidden aria-label="Steam Offline stock items">
@@ -413,25 +428,31 @@
                   แท็ก (คั่นด้วยลูกน้ำ ,)
                   <input name="tags" type="text" placeholder="Steam, Action, Survival" />
                 </label>
+                <!-- ── รูปภาพ ── -->
+                <p class="form-section-divider">รูปภาพ</p>
                 <label>
                   แกลเลอรีรูปสินค้า (1 URL ต่อบรรทัด)
-                  <textarea name="gallery" rows="5" placeholder="https://example.com/screenshot-1.jpg&#10;https://example.com/screenshot-2.jpg"></textarea>
+                  <textarea name="gallery" rows="4" placeholder="https://example.com/screenshot-1.jpg&#10;https://example.com/screenshot-2.jpg"></textarea>
                 </label>
-                <label>
-                  รูปสินค้า
-                  <input name="image" type="url" placeholder="https://..." />
-                </label>
-                <label>
-                  รูป Hero
-                  <input name="heroImage" type="url" placeholder="https://..." />
-                </label>
+                <div class="form-row">
+                  <label>
+                    รูปสินค้า
+                    <input name="image" type="url" placeholder="https://..." />
+                  </label>
+                  <label>
+                    รูป Hero
+                    <input name="heroImage" type="url" placeholder="https://..." />
+                  </label>
+                </div>
+                <!-- ── รายละเอียดเพิ่มเติม ── -->
+                <p class="form-section-divider">รายละเอียดและลิงก์</p>
                 <label>
                   ลิงก์แพลตฟอร์ม (ชื่อ|URL|ไอคอน ต่อบรรทัด)
-                  <textarea name="platformLinks" rows="6" placeholder="Steam|https://store.steampowered.com/...|store&#10;Discord|https://discord.com/...|messages-square&#10;คู่มือ|https://olaf-shop.gitbook.io/manual-olaf-shop/undefined/undefined|book-open-check"></textarea>
+                  <textarea name="platformLinks" rows="4" placeholder="Steam|https://store.steampowered.com/...|store&#10;Discord|https://discord.com/...|messages-square"></textarea>
                 </label>
                 <label>
                   กล่องฟีเจอร์ในหน้ารายละเอียด (ไอคอน|หัวข้อ|รายละเอียด ต่อบรรทัด)
-                  <textarea name="featureBlocks" rows="5" placeholder="truck|จัดส่ง|รอแอดมินตรวจสลิปและจัดส่งเอง&#10;shield-check|รับประกัน|ดูแลหลังการขายตามเงื่อนไขร้าน"></textarea>
+                  <textarea name="featureBlocks" rows="4" placeholder="truck|จัดส่ง|รอแอดมินตรวจสลิปและจัดส่งเอง&#10;shield-check|รับประกัน|ดูแลหลังการขายตามเงื่อนไขร้าน"></textarea>
                 </label>
                 <label>
                   Section รายละเอียดเพิ่มเติม (หัวข้อ|เนื้อหา ต่อบรรทัด)
@@ -452,17 +473,21 @@
                     <textarea name="systemRequirementsRecommended" rows="5" placeholder="OS: Windows 10/11 64-bit&#10;CPU: Intel i5 / Ryzen 5 หรือสูงกว่า&#10;RAM: 16 GB&#10;Storage: SSD แนะนำ"></textarea>
                   </label>
                 </div>
-                <label>
-                  การจัดส่ง
-                  <input name="delivery" type="text" placeholder="ส่งคีย์ทันทีหลังชำระเงิน" />
-                </label>
-                <label>
-                  รับประกัน
-                  <input name="warranty" type="text" placeholder="รับประกัน 7 วัน" />
-                </label>
+                <!-- ── ข้อมูลร้าน ── -->
+                <p class="form-section-divider">ข้อมูลร้านและรับประกัน</p>
+                <div class="form-row">
+                  <label>
+                    การจัดส่ง
+                    <input name="delivery" type="text" placeholder="ส่งคีย์ทันทีหลังชำระเงิน" />
+                  </label>
+                  <label>
+                    รับประกัน
+                    <input name="warranty" type="text" placeholder="รับประกัน 7 วัน" />
+                  </label>
+                </div>
                 <label>
                   รายละเอียดสินค้า
-                  <textarea name="description" rows="12" placeholder="รายละเอียดที่แสดงในหน้าสินค้า"></textarea>
+                  <textarea name="description" rows="10" placeholder="รายละเอียดที่แสดงในหน้าสินค้า"></textarea>
                 </label>
                 <div class="form-actions">
                   <button class="primary-button" type="submit">

@@ -5,7 +5,7 @@
     { href: "index.html#catalog", label: "สินค้า", icon: "shopping-bag", matchHash: "#catalog" },
     { href: "more-products.html", label: "หมวดหมู่", icon: "layout-grid", match: ["more-products.html"] },
     { href: "free-random.html", label: "สุ่ม 1 Point", icon: "sparkles", match: ["free-random.html"] },
-    { href: ORDER_DESTINATION, label: "คลังสินค้า", icon: "package-open", match: ["profile.html"], matchHash: "#inventory" },
+    { href: ORDER_DESTINATION, label: "คลังสินค้า", icon: "archive", match: ["profile.html"], matchHash: "#inventory" },
     { href: "https://www.facebook.com/byOlafshop", label: "ติดต่อเรา", icon: "messages-square", external: true }
   ];
 
@@ -232,6 +232,17 @@
       if (!root.style.getPropertyValue("--olaf-mobile-scroll-y")) {
         root.style.setProperty("--olaf-mobile-scroll-y", `${scrollY}px`);
       }
+      root.style.overflow = "hidden";
+      root.style.overscrollBehavior = "none";
+      root.style.height = "100%";
+      body.style.position = "fixed";
+      body.style.top = `-${scrollY}px`;
+      body.style.left = "0";
+      body.style.right = "0";
+      body.style.width = "100%";
+      body.style.overflow = "hidden";
+      body.style.overscrollBehavior = "none";
+      body.style.height = "100%";
       return;
     }
 
@@ -239,6 +250,7 @@
       root.style.removeProperty("--olaf-mobile-scroll-y");
       return;
     }
+    const restoreScrollY = Number(body.dataset.mobileNavScrollY || "0") || 0;
     delete body.dataset.mobileNavScrollLocked;
     delete body.dataset.mobileNavScrollY;
     root.style.overflow = "";
@@ -253,6 +265,7 @@
     body.style.top = "";
     body.style.left = "";
     body.style.right = "";
+    window.scrollTo(0, restoreScrollY);
   }
 
   window.OlafNavigation = {
@@ -266,7 +279,13 @@
           nav.style.removeProperty("--olaf-mobile-scroll-y");
         });
       });
-      removePortalMobileMenuArtifacts();
+      document.querySelectorAll(".olaf-mobile-drawer").forEach((drawer) => {
+        drawer.classList.remove("is-open");
+        drawer.setAttribute("aria-hidden", "true");
+      });
+      document.querySelectorAll("[data-olaf-mobile-backdrop]").forEach((backdrop) => {
+        backdrop.classList.remove("is-open");
+      });
       document.documentElement.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
       document.body?.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
       setMobilePageScrollLock(false);
@@ -472,9 +491,18 @@
       const languageButton = event.target.closest("#lang-toggle");
       const notificationButton = event.target.closest("#open-notifications");
       const authButton = event.target.closest("#open-auth");
-      if (languageButton) scheduleTopbarPopoverPosition("#language-popover", "#lang-toggle");
-      if (notificationButton) scheduleTopbarPopoverPosition("#notification-popover", "#open-notifications");
-      if (authButton) scheduleTopbarPopoverPosition("#user-popover", "#open-auth");
+      if (languageButton) {
+        closeTopbarPopovers("language");
+        scheduleTopbarPopoverPosition("#language-popover", "#lang-toggle");
+      }
+      if (notificationButton) {
+        closeTopbarPopovers("notifications");
+        scheduleTopbarPopoverPosition("#notification-popover", "#open-notifications");
+      }
+      if (authButton) {
+        closeTopbarPopovers("user");
+        scheduleTopbarPopoverPosition("#user-popover", "#open-auth");
+      }
     }, true);
 
     const updateActive = () => {
@@ -549,9 +577,11 @@
     const nav = header.querySelector(".main-nav");
     if (!nav) return;
     removePortalMobileMenuArtifacts();
+    const drawer = ensureMobileDrawer(index);
+    const backdrop = ensureMobileBackdrop();
 
     const syncMobileNavState = () => {
-      const isAnyOpen = Boolean(document.querySelector(".topbar.is-mobile-nav-open, .topbar.site-topbar-unified.is-mobile-nav-open"));
+      const isAnyOpen = Boolean(document.querySelector(".olaf-mobile-drawer.is-open"));
       document.documentElement.classList.toggle("olaf-mobile-nav-open", isAnyOpen);
       document.body?.classList.toggle("olaf-mobile-nav-open", isAnyOpen);
       document.body?.classList.toggle("olaf-topbar-overlay-open", isAnyOpen);
@@ -559,35 +589,26 @@
     };
 
     const setMobileNavOpen = (isOpen) => {
-      const positionMobileDrawer = () => {
-        if (!isOpen || !isMobileNavigationViewport()) return;
-        const scrollY = Math.max(
-          window.scrollY || 0,
-          document.documentElement.scrollTop || 0,
-          document.body?.scrollTop || 0
-        );
-        const offset = `${Math.round(scrollY)}px`;
-        document.documentElement.style.setProperty("--olaf-mobile-scroll-y", offset);
-        nav.style.setProperty("--olaf-mobile-scroll-y", offset);
-        nav.style.top = offset;
-      };
+      const shouldOpen = Boolean(isOpen) && isMobileNavigationViewport();
 
-      if (isOpen) {
-        positionMobileDrawer();
+      if (shouldOpen) {
+        renderMobileDrawer(drawer);
         ["#user-popover", "#notification-popover", "#language-popover", "#filter-popover"].forEach((selector) => {
           hideMobileFloatingPanel(document.querySelector(selector));
         });
         header.querySelector("#open-auth")?.classList.remove("is-active");
         header.querySelector("#lang-toggle")?.setAttribute("aria-expanded", "false");
-        requestAnimationFrame(() => requestAnimationFrame(positionMobileDrawer));
-        window.setTimeout(positionMobileDrawer, 90);
       } else {
         nav.style.top = "";
         nav.style.removeProperty("--olaf-mobile-scroll-y");
       }
-      header.classList.toggle("is-mobile-nav-open", Boolean(isOpen));
-      toggle?.setAttribute("aria-expanded", String(Boolean(isOpen)));
+      header.classList.toggle("is-mobile-nav-open", shouldOpen);
+      drawer.classList.toggle("is-open", shouldOpen);
+      backdrop.classList.toggle("is-open", shouldOpen);
+      drawer.setAttribute("aria-hidden", String(!shouldOpen));
+      toggle?.setAttribute("aria-expanded", String(shouldOpen));
       syncMobileNavState();
+      if (shouldOpen) window.requestAnimationFrame(() => window.lucide?.createIcons?.());
     };
 
     nav.dataset.mobileMenu = "clean-v14";
@@ -607,10 +628,12 @@
     toggle.setAttribute("aria-controls", nav.id);
     toggle.setAttribute("aria-expanded", "false");
 
-    toggle.addEventListener("click", () => {
-      setMobileNavOpen(!header.classList.contains("is-mobile-nav-open"));
-    });
-    nav.addEventListener("click", async (event) => {
+    toggle.addEventListener("click", (event) => {
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      setMobileNavOpen(!drawer.classList.contains("is-open"));
+    }, true);
+    const handleMobileNavClick = async (event) => {
       if (event.target.closest("[data-mobile-menu-close]")) {
         event.preventDefault();
         setMobileNavOpen(false);
@@ -633,10 +656,14 @@
 
       if (!event.target.closest("a")) return;
       setMobileNavOpen(false);
-    });
+    };
+    nav.addEventListener("click", handleMobileNavClick);
+    drawer.addEventListener("click", handleMobileNavClick);
+    backdrop.addEventListener("click", () => setMobileNavOpen(false));
 
     const refreshNavForAuth = () => {
       renderMainNav(nav);
+      renderMobileDrawer(drawer);
     };
     const storeReady = window.OlafStore?.ready;
     if (storeReady && typeof storeReady.finally === "function") storeReady.finally(refreshNavForAuth);
@@ -650,7 +677,7 @@
     }, true);
 
     document.addEventListener("click", (event) => {
-      if (nav.contains(event.target) || toggle?.contains(event.target)) return;
+      if (drawer.contains(event.target) || nav.contains(event.target) || toggle?.contains(event.target)) return;
       setMobileNavOpen(false);
     });
 

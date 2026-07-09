@@ -25495,3 +25495,323 @@ body.free-random-result-open {
     min-height: 22px;
   }
 }
+
+/* v38: mobile popup stability, single drawer menu, and compact premium spin stats */
+@media (min-width: 1101px) {
+  .free-random-copy {
+    grid-template-columns: minmax(0, 1fr) minmax(238px, 318px);
+    column-gap: clamp(16px, 2.2vw, 28px);
+  }
+
+  .free-random-metrics {
+    width: min(318px, 100%);
+    justify-self: end;
+    gap: 7px;
+  }
+
+  .free-random-metrics article {
+    min-height: 52px;
+    padding: 8px 11px;
+    border-radius: 15px;
+  }
+
+  .free-random-metrics span {
+    font-size: .66rem;
+  }
+
+  .free-random-metrics strong {
+    font-size: 1.02rem;
+  }
+}
+
+@media (max-width: 768px) {
+  html.olaf-mobile-nav-open,
+  body.olaf-mobile-nav-open {
+    width: 100%;
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+    touch-action: none !important;
+  }
+
+  body.olaf-mobile-nav-open .discord-floating-link,
+  body:has(.topbar-popover-fixed:not([hidden])) .discord-floating-link {
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translateY(10px) scale(.96) !important;
+  }
+
+  .topbar.site-topbar-unified.is-mobile-nav-open::before,
+  .topbar.site-topbar-unified.is-mobile-nav-open::after,
+  .topbar.site-topbar-unified > .main-nav[data-mobile-menu="clean-v14"],
+  .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav[data-mobile-menu="clean-v14"],
+  html.olaf-mobile-nav-open body .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav[data-mobile-menu="clean-v14"],
+  body.olaf-mobile-nav-open .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav[data-mobile-menu="clean-v14"] {
+    content: none !important;
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: none !important;
+  }
+
+  .olaf-mobile-menu-backdrop {
+    all: unset !important;
+    box-sizing: border-box !important;
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 10040 !important;
+    display: block !important;
+    width: 100vw !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    background:
+      radial-gradient(circle at 10% 0%, rgba(37, 99, 235, .18), transparent 30rem),
+      rgba(2, 6, 23, .76) !important;
+    backdrop-filter: blur(14px) saturate(1.08) !important;
+    -webkit-backdrop-filter: blur(14px) saturate(1.08) !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transition: opacity 190ms ease, visibility 0s linear 190ms !important;
+  }
+
+  .olaf-mobile-menu-backdrop.is-open {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transition: opacity 190ms ease, visibility 0s !important;
+  }
+
+  .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] {
+    all: unset !important;
+    box-sizing: border-box !important;
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    z-index: 10060 !important;
+    display: flex !important;
+    width: min(292px, calc(100vw - 28px)) !important;
+    max-width: calc(100vw - 28px) !important;
+    height: 100vh !important;
+    height: 100dvh !important;
+    flex-direction: column !important;
+    overflow: hidden auto !important;
+    color: #e5edff !important;
+    border-right: 1px solid rgba(96, 165, 250, .18) !important;
+    border-radius: 0 22px 22px 0 !important;
+    background:
+      radial-gradient(circle at 16% 0%, rgba(59, 130, 246, .18), transparent 18rem),
+      linear-gradient(180deg, rgba(7, 12, 28, .988), rgba(2, 6, 23, .992)) !important;
+    box-shadow: 26px 0 74px rgba(0, 0, 0, .52) !important;
+    backdrop-filter: blur(22px) saturate(1.08) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(1.08) !important;
+    opacity: 0 !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    transform: translate3d(-106%, 0, 0) scaleX(.985) !important;
+    transform-origin: left center !important;
+    transition:
+      transform 260ms cubic-bezier(.16, 1, .3, 1),
+      opacity 180ms ease,
+      visibility 0s linear 260ms !important;
+    will-change: transform, opacity !important;
+    contain: layout paint style !important;
+  }
+
+  .olaf-mobile-drawer[data-mobile-menu="drawer-v16"].is-open {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transform: translate3d(0, 0, 0) scaleX(1) !important;
+    transition:
+      transform 280ms cubic-bezier(.16, 1, .3, 1),
+      opacity 190ms ease,
+      visibility 0s !important;
+  }
+
+  .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] .mobile-menu-head {
+    min-height: 74px !important;
+    padding: calc(12px + env(safe-area-inset-top, 0px)) 12px 12px !important;
+  }
+
+  .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] .mobile-menu-brand-mark {
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 14px !important;
+  }
+
+  .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] .mobile-menu-brand-text {
+    font-size: 1rem !important;
+    font-weight: 650 !important;
+  }
+
+  .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] .mobile-menu-close {
+    width: 34px !important;
+    height: 34px !important;
+  }
+
+  .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] > a {
+    min-height: 44px !important;
+    gap: 11px !important;
+    margin: 0 10px 4px !important;
+    padding: 0 12px !important;
+    border-radius: 14px !important;
+    font-size: .9rem !important;
+    font-weight: 380 !important;
+  }
+
+  .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] > a > svg,
+  .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] > a > i,
+  .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] .mobile-menu-auth-btn svg {
+    width: 19px !important;
+    height: 19px !important;
+    min-width: 19px !important;
+    stroke-width: 1.9 !important;
+  }
+
+  .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] .mobile-menu-footer {
+    gap: 7px !important;
+    padding: 11px 10px calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] .mobile-menu-auth-btn {
+    min-height: 42px !important;
+    border-radius: 14px !important;
+    font-size: .88rem !important;
+    font-weight: 460 !important;
+  }
+
+  .language-popover.topbar-popover-fixed:not([hidden]),
+  .notification-popover.topbar-popover-fixed:not([hidden]),
+  #user-popover.topbar-popover-fixed:not([hidden]),
+  .user-popover.topbar-popover-fixed:not([hidden]) {
+    position: fixed !important;
+    top: calc(env(safe-area-inset-top, 0px) + 72px) !important;
+    left: 50% !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: min(342px, calc(100vw - 24px)) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - 88px - env(safe-area-inset-bottom, 0px)) !important;
+    overflow: auto !important;
+    transform: translate3d(-50%, 0, 0) !important;
+    z-index: 10140 !important;
+    border-radius: 21px !important;
+    animation: olafMobilePopoverIn 180ms cubic-bezier(.16, 1, .3, 1) both !important;
+    overscroll-behavior: contain !important;
+  }
+
+  .language-popover.topbar-popover-fixed:not([hidden]) {
+    width: min(236px, calc(100vw - 24px)) !important;
+  }
+
+  .notification-popover.topbar-popover-fixed:not([hidden]) {
+    width: min(360px, calc(100vw - 24px)) !important;
+  }
+
+  #user-popover[data-mobile-portal="true"]:not([hidden]),
+  .user-popover[data-mobile-portal="true"]:not([hidden]),
+  body > #user-popover.topbar-popover-fixed:not([hidden]),
+  body > .user-popover.topbar-popover-fixed:not([hidden]) {
+    display: block !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  .topbar.site-topbar-unified .user-popover-wrap > #user-popover:not(.topbar-popover-fixed):not([hidden]),
+  .topbar.site-topbar-unified .user-popover-wrap > .user-popover:not(.topbar-popover-fixed):not([hidden]) {
+    top: calc(env(safe-area-inset-top, 0px) + 72px) !important;
+    left: 50% !important;
+    right: auto !important;
+    width: min(342px, calc(100vw - 24px)) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: calc(100dvh - 88px - env(safe-area-inset-bottom, 0px)) !important;
+    transform: translate3d(-50%, 0, 0) !important;
+    transform-origin: top center !important;
+  }
+
+  .user-popover:not([hidden]) .user-popover-header {
+    padding: 11px !important;
+    border-radius: 17px !important;
+  }
+
+  .user-popover:not([hidden]) .user-popover-avatar,
+  .user-popover:not([hidden]) .user-avatar,
+  .user-popover:not([hidden]) .profile-avatar {
+    width: 48px !important;
+    height: 48px !important;
+    min-width: 48px !important;
+    border-radius: 999px !important;
+    font-size: 1.05rem !important;
+  }
+
+  .user-popover:not([hidden]) .user-popover-menu a,
+  .user-popover:not([hidden]) .user-popover-menu button {
+    min-height: 40px !important;
+    font-size: .88rem !important;
+  }
+
+  dialog.premium-dialog[open],
+  dialog.qr-payment-dialog[open],
+  dialog.checkout-order-dialog[open],
+  dialog.site-cart-dialog[open] {
+    position: fixed !important;
+    inset: 0 !important;
+    width: min(94vw, 430px) !important;
+    max-width: calc(100vw - 18px) !important;
+    max-height: calc(100dvh - 18px) !important;
+    margin: auto !important;
+    overflow: hidden !important;
+    transform: none !important;
+    animation: olafMobileDialogIn 200ms cubic-bezier(.16, 1, .3, 1) both !important;
+  }
+
+  dialog.premium-dialog .premium-dialog-inner,
+  dialog.qr-payment-dialog .premium-dialog-inner,
+  dialog.checkout-order-dialog .premium-dialog-inner,
+  dialog.site-cart-dialog .site-cart-shell {
+    max-height: calc(100dvh - 18px) !important;
+    overflow: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .free-random-result:not([hidden]) {
+    display: grid !important;
+    place-items: center !important;
+    align-items: center !important;
+    justify-items: center !important;
+    padding: max(10px, env(safe-area-inset-top, 0px)) 10px max(10px, env(safe-area-inset-bottom, 0px)) !important;
+    overflow: hidden !important;
+  }
+
+  .free-random-result-dialog.free-random-result-card {
+    width: min(94vw, 390px) !important;
+    max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    margin: auto !important;
+    overflow: auto !important;
+    border-radius: 26px !important;
+    transform-origin: center !important;
+  }
+}
+
+@keyframes olafMobilePopoverIn {
+  from {
+    opacity: 0;
+    transform: translate3d(-50%, -8px, 0) scale(.975);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(-50%, 0, 0) scale(1);
+  }
+}
+
+@keyframes olafMobileDialogIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(.975);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}

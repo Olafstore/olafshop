@@ -1,10 +1,10 @@
-<!doctype html>
+﻿<!doctype html>
 <html lang="th">
 
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>รายละเอียดสินค้า | OLAF SHOP</title>
+  <title>à¸£à¸²à¸¢à¸¥à¸°à¹€à¸­à¸µà¸¢à¸”à¸ªà¸´à¸™à¸„à¹‰à¸² | OLAF SHOP</title>
   <link rel="preconnect" href="https://cdn.cloudflare.steamstatic.com" />
   <link rel="preconnect" href="https://shared.fastly.steamstatic.com" />
   <link rel="preconnect" href="https://shared.akamai.steamstatic.com" />
@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260709-mobile-desktop-controls-v46" />
+  <link rel="stylesheet" href="styles.css?v=20260709-mobile-user-topbar-v50" />
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
@@ -23,9 +23,9 @@
   <script src="platform-store.js?v=20260605-admin-users" defer></script>
   <script src="image-performance.js?v=20260629-points" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-  <script src="site-navigation.js?v=20260709-mobile-desktop-controls-v46" defer></script>
+  <script src="site-navigation.js?v=20260709-mobile-user-topbar-v50" defer></script>
   <script src="extra-products.js?v=20260629-rockstar-gta-v" defer></script>
-<script src="product.js?v=20260709-mobile-desktop-controls-v46" defer></script>
+<script src="product.js?v=20260709-mobile-user-topbar-v50" defer></script>
 </head>
 
 <body class="product-detail-page">
@@ -35,53 +35,53 @@
         <span class="brand-mark">O</span>
         <span>
           <strong>OLAF SHOP</strong>
-          <small>ร้านเกม Steam</small>
+          <small>à¸£à¹‰à¸²à¸™à¹€à¸à¸¡ Steam</small>
         </span>
       </a>
 
-      <nav class="main-nav" aria-label="เมนูหลัก">
-        <a href="index.html">หน้าแรก</a>
-        <a href="index.html#catalog">สินค้า</a>
-        <a href="more-products.html">หมวดหมู่</a>
-        <a href="profile.html#inventory" data-i18n="navOrders">คลังสินค้า</a>
-        <a href="https://www.facebook.com/byOlafshop" target="_blank">ติดต่อ</a>
+      <nav class="main-nav" aria-label="à¹€à¸¡à¸™à¸¹à¸«à¸¥à¸±à¸">
+        <a href="index.html">à¸«à¸™à¹‰à¸²à¹à¸£à¸</a>
+        <a href="index.html#catalog">à¸ªà¸´à¸™à¸„à¹‰à¸²</a>
+        <a href="more-products.html">à¸«à¸¡à¸§à¸”à¸«à¸¡à¸¹à¹ˆ</a>
+        <a href="profile.html#inventory" data-i18n="navOrders">à¸„à¸¥à¸±à¸‡à¸ªà¸´à¸™à¸„à¹‰à¸²</a>
+        <a href="https://www.facebook.com/byOlafshop" target="_blank">à¸•à¸´à¸”à¸•à¹ˆà¸­</a>
       </nav>
 
       <div class="topbar-actions">
         <div class="topbar-search-wrap" id="topbar-search-wrap">
           <form class="topbar-search-form" id="topbar-search-form" role="search" autocomplete="off">
             <button class="icon-button topbar-search-toggle" id="topbar-search-toggle" type="button"
-              aria-label="ค้นหาสินค้า">
+              aria-label="à¸„à¹‰à¸™à¸«à¸²à¸ªà¸´à¸™à¸„à¹‰à¸²">
               <i data-lucide="search"></i>
             </button>
-            <input class="topbar-search-input" id="topbar-search-input" type="search" placeholder="ค้นหาสินค้า..."
-              aria-label="ค้นหาสินค้า" aria-autocomplete="list" aria-controls="search-suggestions-list" />
+            <input class="topbar-search-input" id="topbar-search-input" type="search" placeholder="à¸„à¹‰à¸™à¸«à¸²à¸ªà¸´à¸™à¸„à¹‰à¸²..."
+              aria-label="à¸„à¹‰à¸™à¸«à¸²à¸ªà¸´à¸™à¸„à¹‰à¸²" aria-autocomplete="list" aria-controls="search-suggestions-list" />
           </form>
           <div class="search-suggestions" id="search-suggestions-list" hidden role="listbox"></div>
         </div>
         <div class="language-switcher">
-          <button class="icon-button lang-toggle" id="lang-toggle" type="button" aria-label="เปลี่ยนภาษา"
+          <button class="icon-button lang-toggle" id="lang-toggle" type="button" aria-label="à¹€à¸›à¸¥à¸µà¹ˆà¸¢à¸™à¸ à¸²à¸©à¸²"
             aria-expanded="false">
             <i data-lucide="globe"></i>
           </button>
           <div class="language-popover" id="language-popover" hidden>
-            <button type="button" data-lang-option="th"><strong>ภาษาไทย</strong><span>TH</span></button>
+            <button type="button" data-lang-option="th"><strong>à¸ à¸²à¸©à¸²à¹„à¸—à¸¢</strong><span>TH</span></button>
             <button type="button" data-lang-option="en"><strong>English</strong><span>EN</span></button>
           </div>
         </div>
         <div class="notification-wrap" style="position:relative">
-          <button class="icon-button notification-button" id="open-notifications" type="button" aria-label="แจ้งเตือน">
+          <button class="icon-button notification-button" id="open-notifications" type="button" aria-label="à¹à¸ˆà¹‰à¸‡à¹€à¸•à¸·à¸­à¸™">
             <i data-lucide="bell"></i>
             <span class="notification-badge" id="notification-badge" hidden></span>
           </button>
           <div class="notification-popover" id="notification-popover" hidden>
             <div class="notification-header">
-              <h3>การแจ้งเตือน</h3>
+              <h3>à¸à¸²à¸£à¹à¸ˆà¹‰à¸‡à¹€à¸•à¸·à¸­à¸™</h3>
             </div>
             <div class="notification-body" id="notification-list">
               <div class="notification-empty">
                 <i data-lucide="bell"></i>
-                <p>ยังไม่มีการแจ้งเตือน</p>
+                <p>à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¸¡à¸µà¸à¸²à¸£à¹à¸ˆà¹‰à¸‡à¹€à¸•à¸·à¸­à¸™</p>
               </div>
             </div>
           </div>
@@ -89,14 +89,14 @@
         <div class="user-popover-wrap" style="position:relative">
           <button class="account-button is-auth-loading" id="open-auth" type="button" aria-busy="true">
             <i data-lucide="loader-circle"></i>
-            <span id="account-label">กำลังโหลดข้อมูล</span>
+            <span id="account-label">à¸à¸³à¸¥à¸±à¸‡à¹‚à¸«à¸¥à¸”à¸‚à¹‰à¸­à¸¡à¸¹à¸¥</span>
           </button>
           <div class="user-popover" id="user-popover" hidden></div>
         </div>
         <a class="primary-button register-button" href="register.html"
           style="display: none; padding: 0 14px; min-height: 38px; gap: 8px;">
           <i data-lucide="user-plus"></i>
-          <span>สมัครสมาชิก</span>
+          <span>à¸ªà¸¡à¸±à¸„à¸£à¸ªà¸¡à¸²à¸Šà¸´à¸</span>
         </a>
       </div>
     </header>
@@ -128,19 +128,19 @@
             </span>
             <span class="brand-text" data-olaf-store-name>OLAF SHOP</span>
           </a>
-          <p>จำหน่ายเกมแท้ราคาคุ้มค่า ทั้งระบบออฟไลน์และออนไลน์ พร้อมระบบสั่งซื้อตลอด 24 ชั่วโมง และทีมงานดูแลเวลา 12:00–23:00 น.</p>
+          <p>à¸ˆà¸³à¸«à¸™à¹ˆà¸²à¸¢à¹€à¸à¸¡à¹à¸—à¹‰à¸£à¸²à¸„à¸²à¸„à¸¸à¹‰à¸¡à¸„à¹ˆà¸² à¸—à¸±à¹‰à¸‡à¸£à¸°à¸šà¸šà¸­à¸­à¸Ÿà¹„à¸¥à¸™à¹Œà¹à¸¥à¸°à¸­à¸­à¸™à¹„à¸¥à¸™à¹Œ à¸žà¸£à¹‰à¸­à¸¡à¸£à¸°à¸šà¸šà¸ªà¸±à¹ˆà¸‡à¸‹à¸·à¹‰à¸­à¸•à¸¥à¸­à¸” 24 à¸Šà¸±à¹ˆà¸§à¹‚à¸¡à¸‡ à¹à¸¥à¸°à¸—à¸µà¸¡à¸‡à¸²à¸™à¸”à¸¹à¹à¸¥à¹€à¸§à¸¥à¸² 12:00â€“23:00 à¸™.</p>
         </div>
         
         <div class="footer-links">
-          <h4>ช่วยเหลือ</h4>
+          <h4>à¸Šà¹ˆà¸§à¸¢à¹€à¸«à¸¥à¸·à¸­</h4>
           <ul>
-            <li><a href="#">ศูนย์ช่วยเหลือ</a></li>
-            <li><a href="https://www.facebook.com/byOlafshop" target="_blank">ติดต่อเรา</a></li>
+            <li><a href="#">à¸¨à¸¹à¸™à¸¢à¹Œà¸Šà¹ˆà¸§à¸¢à¹€à¸«à¸¥à¸·à¸­</a></li>
+            <li><a href="https://www.facebook.com/byOlafshop" target="_blank">à¸•à¸´à¸”à¸•à¹ˆà¸­à¹€à¸£à¸²</a></li>
           </ul>
         </div>
         
         <div class="footer-payments">
-          <h4>ช่องทางชำระเงิน</h4>
+          <h4>à¸Šà¹ˆà¸­à¸‡à¸—à¸²à¸‡à¸Šà¸³à¸£à¸°à¹€à¸‡à¸´à¸™</h4>
           <div class="payment-badges">
             <span class="payment-badge">PromptPay</span>
             <span class="payment-badge">TrueMoney Wallet</span>
@@ -149,10 +149,10 @@
       </div>
       
       <div class="footer-bottom">
-        <p>&copy; 2026 OLAF SHOP สงวนลิขสิทธิ์</p>
+        <p>&copy; 2026 OLAF SHOP à¸ªà¸‡à¸§à¸™à¸¥à¸´à¸‚à¸ªà¸´à¸—à¸˜à¸´à¹Œ</p>
         <div class="footer-bottom-links">
-          <a href="#">ข้อกำหนดและเงื่อนไข</a>
-          <a href="#">นโยบายความเป็นส่วนตัว</a>
+          <a href="#">à¸‚à¹‰à¸­à¸à¸³à¸«à¸™à¸”à¹à¸¥à¸°à¹€à¸‡à¸·à¹ˆà¸­à¸™à¹„à¸‚</a>
+          <a href="#">à¸™à¹‚à¸¢à¸šà¸²à¸¢à¸„à¸§à¸²à¸¡à¹€à¸›à¹‡à¸™à¸ªà¹ˆà¸§à¸™à¸•à¸±à¸§</a>
         </div>
       </div>
     </footer>
@@ -161,15 +161,15 @@
   <!-- Confirm Order Modal (Premium) -->
   <dialog class="premium-dialog checkout-order-dialog" id="order-dialog">
     <div class="premium-dialog-inner">
-      <button class="dialog-close" id="close-order" type="button" aria-label="ปิดคำสั่งซื้อ">
+      <button class="dialog-close" id="close-order" type="button" aria-label="à¸›à¸´à¸”à¸„à¸³à¸ªà¸±à¹ˆà¸‡à¸‹à¸·à¹‰à¸­">
         <i data-lucide="x"></i>
       </button>
       <div class="premium-dialog-header">
         <div class="premium-icon-box"><i data-lucide="shield-check"></i></div>
-        <h2>ยืนยันคำสั่งซื้อ</h2>
-        <p>ตรวจสอบรายละเอียดและเลือกช่องทางชำระเงิน</p>
+        <h2>à¸¢à¸·à¸™à¸¢à¸±à¸™à¸„à¸³à¸ªà¸±à¹ˆà¸‡à¸‹à¸·à¹‰à¸­</h2>
+        <p>à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸šà¸£à¸²à¸¢à¸¥à¸°à¹€à¸­à¸µà¸¢à¸”à¹à¸¥à¸°à¹€à¸¥à¸·à¸­à¸à¸Šà¹ˆà¸­à¸‡à¸—à¸²à¸‡à¸Šà¸³à¸£à¸°à¹€à¸‡à¸´à¸™</p>
         <div class="order-ref-number" data-checkout-order-container hidden>
-          หมายเลขคำสั่งซื้อ: <span data-checkout-order-number>#ORDER_NUMBER</span>
+          à¸«à¸¡à¸²à¸¢à¹€à¸¥à¸‚à¸„à¸³à¸ªà¸±à¹ˆà¸‡à¸‹à¸·à¹‰à¸­: <span data-checkout-order-number>#ORDER_NUMBER</span>
         </div>
       </div>
 
@@ -181,31 +181,31 @@
         <!-- Product Summary Card -->
         <div class="premium-product-card">
           <div class="premium-product-thumb">
-            <img alt="สินค้า" loading="lazy" decoding="async" data-checkout-product-image />
+            <img alt="à¸ªà¸´à¸™à¸„à¹‰à¸²" loading="lazy" decoding="async" data-checkout-product-image />
           </div>
           <div class="premium-product-info">
-            <h3 data-checkout-product-name>ชื่อสินค้า</h3>
-            <span class="premium-product-label" data-checkout-product-label>ประเภท: </span>
-            <span class="premium-product-qty" data-checkout-product-qty>จำนวน: 1</span>
+            <h3 data-checkout-product-name>à¸Šà¸·à¹ˆà¸­à¸ªà¸´à¸™à¸„à¹‰à¸²</h3>
+            <span class="premium-product-label" data-checkout-product-label>à¸›à¸£à¸°à¹€à¸ à¸—: </span>
+            <span class="premium-product-qty" data-checkout-product-qty>à¸ˆà¸³à¸™à¸§à¸™: 1</span>
           </div>
           <div class="premium-product-price" hidden>
-            <strong data-checkout-product-price>฿0</strong>
+            <strong data-checkout-product-price>à¸¿0</strong>
           </div>
         </div>
 
         <!-- Order Summary -->
         <div class="premium-summary-card">
           <div class="premium-summary-row" hidden>
-            <span>ราคาสินค้า</span>
-            <strong data-checkout-price-subtotal>฿0</strong>
+            <span>à¸£à¸²à¸„à¸²à¸ªà¸´à¸™à¸„à¹‰à¸²</span>
+            <strong data-checkout-price-subtotal>à¸¿0</strong>
           </div>
           <div class="premium-summary-row" hidden>
-            <span>ค่าธรรมเนียม (VAT)</span>
-            <strong data-checkout-fee>฿0</strong>
+            <span>à¸„à¹ˆà¸²à¸˜à¸£à¸£à¸¡à¹€à¸™à¸µà¸¢à¸¡ (VAT)</span>
+            <strong data-checkout-fee>à¸¿0</strong>
           </div>
           <div class="premium-summary-row total-row" style="margin-top: 0; padding-top: 0; border-top: none;">
-            <span>ยอดที่ต้องชำระ</span>
-            <strong class="premium-total-price" data-checkout-total>฿0</strong>
+            <span>à¸¢à¸­à¸”à¸—à¸µà¹ˆà¸•à¹‰à¸­à¸‡à¸Šà¸³à¸£à¸°</span>
+            <strong class="premium-total-price" data-checkout-total>à¸¿0</strong>
           </div>
         </div>
 
@@ -214,26 +214,26 @@
             <input type="checkbox" data-checkout-use-points />
             <span class="premium-points-icon"><i data-lucide="coins"></i></span>
             <span class="premium-points-copy">
-              <strong>ใช้พอยท์ในเว็บลดราคา</strong>
-              <small>พอยท์คงเหลือ <b data-checkout-points-balance>0</b> Point</small>
+              <strong>à¹ƒà¸Šà¹‰à¸žà¸­à¸¢à¸—à¹Œà¹ƒà¸™à¹€à¸§à¹‡à¸šà¸¥à¸”à¸£à¸²à¸„à¸²</strong>
+              <small>à¸žà¸­à¸¢à¸—à¹Œà¸„à¸‡à¹€à¸«à¸¥à¸·à¸­ <b data-checkout-points-balance>0</b> Point</small>
             </span>
             <span class="premium-points-switch" aria-hidden="true"></span>
           </label>
           <div class="premium-points-summary">
-            <span>ใช้พอยท์ลด</span>
-            <strong data-checkout-points-discount>-฿0</strong>
+            <span>à¹ƒà¸Šà¹‰à¸žà¸­à¸¢à¸—à¹Œà¸¥à¸”</span>
+            <strong data-checkout-points-discount>-à¸¿0</strong>
           </div>
           <div class="premium-points-final">
-            <span>ยอดหลังใช้ Point</span>
-            <b data-checkout-points-final>฿0</b>
+            <span>à¸¢à¸­à¸”à¸«à¸¥à¸±à¸‡à¹ƒà¸Šà¹‰ Point</span>
+            <b data-checkout-points-final>à¸¿0</b>
           </div>
-          <p data-checkout-points-note>1 Point = 1 บาท ใช้ลดราคาได้สูงสุดตามยอดคำสั่งซื้อ</p>
+          <p data-checkout-points-note>1 Point = 1 à¸šà¸²à¸— à¹ƒà¸Šà¹‰à¸¥à¸”à¸£à¸²à¸„à¸²à¹„à¸”à¹‰à¸ªà¸¹à¸‡à¸ªà¸¸à¸”à¸•à¸²à¸¡à¸¢à¸­à¸”à¸„à¸³à¸ªà¸±à¹ˆà¸‡à¸‹à¸·à¹‰à¸­</p>
         </div>
 
         <!-- Payment Method Selection -->
         <div class="premium-payment-section" data-checkout-payment-section>
           <div class="premium-payment-header">
-            <span>เลือกช่องทางการชำระเงิน</span>
+            <span>à¹€à¸¥à¸·à¸­à¸à¸Šà¹ˆà¸­à¸‡à¸—à¸²à¸‡à¸à¸²à¸£à¸Šà¸³à¸£à¸°à¹€à¸‡à¸´à¸™</span>
             <span class="payment-line"></span>
           </div>
 
@@ -242,8 +242,8 @@
               <input type="radio" name="paymentMethod" value="promptpay" checked />
               <div class="payment-card-content">
                 <i data-lucide="qr-code"></i>
-                <strong>สแกนจ่ายพร้อมเพย์</strong>
-                <span>แอปธนาคาร</span>
+                <strong>à¸ªà¹à¸à¸™à¸ˆà¹ˆà¸²à¸¢à¸žà¸£à¹‰à¸­à¸¡à¹€à¸žà¸¢à¹Œ</strong>
+                <span>à¹à¸­à¸›à¸˜à¸™à¸²à¸„à¸²à¸£</span>
               </div>
               <div class="payment-check"><i data-lucide="check-circle-2"></i></div>
             </label>
@@ -251,7 +251,7 @@
               <input type="radio" name="paymentMethod" value="wallet" />
               <div class="payment-card-content">
                 <i data-lucide="wallet"></i>
-                <strong>ทรูมันนี่วอลเล็ท</strong>
+                <strong>à¸—à¸£à¸¹à¸¡à¸±à¸™à¸™à¸µà¹ˆà¸§à¸­à¸¥à¹€à¸¥à¹‡à¸—</strong>
                 <span>TrueMoney</span>
               </div>
               <div class="payment-check"><i data-lucide="check-circle-2"></i></div>
@@ -263,10 +263,10 @@
         <div class="premium-actions">
           <button class="primary-button submit-order-btn" id="submit-order" type="submit">
             <i data-lucide="receipt-text"></i>
-            <span>สร้างคำสั่งซื้อ</span>
+            <span>à¸ªà¸£à¹‰à¸²à¸‡à¸„à¸³à¸ªà¸±à¹ˆà¸‡à¸‹à¸·à¹‰à¸­</span>
           </button>
           <button class="secondary-button cancel-order-btn" type="button" data-close-dialog>
-            กลับไปดูสินค้า
+            à¸à¸¥à¸±à¸šà¹„à¸›à¸”à¸¹à¸ªà¸´à¸™à¸„à¹‰à¸²
           </button>
         </div>
       </form>
@@ -276,77 +276,77 @@
   <!-- QR Payment Modal (Premium) -->
   <dialog class="premium-dialog qr-payment-dialog" id="qr-dialog">
     <div class="premium-dialog-inner">
-      <button class="dialog-close" type="button" aria-label="ปิด" data-qr-close-btn>
+      <button class="dialog-close" type="button" aria-label="à¸›à¸´à¸”" data-qr-close-btn>
         <i data-lucide="x"></i>
       </button>
       <div class="premium-dialog-header">
         <div class="premium-icon-box qr-icon"><i data-lucide="scan-line"></i></div>
-        <h2>สแกน QR เพื่อชำระเงิน</h2>
-        <p>ชำระเงินตามยอดที่แสดง แล้วแนบสลิปเพื่อรอตรวจสอบ</p>
+        <h2>à¸ªà¹à¸à¸™ QR à¹€à¸žà¸·à¹ˆà¸­à¸Šà¸³à¸£à¸°à¹€à¸‡à¸´à¸™</h2>
+        <p>à¸Šà¸³à¸£à¸°à¹€à¸‡à¸´à¸™à¸•à¸²à¸¡à¸¢à¸­à¸”à¸—à¸µà¹ˆà¹à¸ªà¸”à¸‡ à¹à¸¥à¹‰à¸§à¹à¸™à¸šà¸ªà¸¥à¸´à¸›à¹€à¸žà¸·à¹ˆà¸­à¸£à¸­à¸•à¸£à¸§à¸ˆà¸ªà¸­à¸š</p>
       </div>
 
       <div class="qr-payment-content">
         <div class="qr-method-badge" data-qr-method-badge>
-          <i data-lucide="qr-code"></i> QR พร้อมเพย์
+          <i data-lucide="qr-code"></i> QR à¸žà¸£à¹‰à¸­à¸¡à¹€à¸žà¸¢à¹Œ
         </div>
 
         <div class="qr-image-frame">
-          <div class="qr-loading" data-qr-loading>กำลังโหลด QR สำหรับชำระเงิน...</div>
-          <img alt="คิวอาร์สำหรับชำระเงิน" class="qr-image" loading="eager" decoding="async" fetchpriority="high" data-qr-image hidden />
-          <div class="qr-unavailable" data-qr-unavailable hidden>ยังไม่พบ QR สำหรับช่องทางนี้</div>
+          <div class="qr-loading" data-qr-loading>à¸à¸³à¸¥à¸±à¸‡à¹‚à¸«à¸¥à¸” QR à¸ªà¸³à¸«à¸£à¸±à¸šà¸Šà¸³à¸£à¸°à¹€à¸‡à¸´à¸™...</div>
+          <img alt="à¸„à¸´à¸§à¸­à¸²à¸£à¹Œà¸ªà¸³à¸«à¸£à¸±à¸šà¸Šà¸³à¸£à¸°à¹€à¸‡à¸´à¸™" class="qr-image" loading="eager" decoding="async" fetchpriority="high" data-qr-image hidden />
+          <div class="qr-unavailable" data-qr-unavailable hidden>à¸¢à¸±à¸‡à¹„à¸¡à¹ˆà¸žà¸š QR à¸ªà¸³à¸«à¸£à¸±à¸šà¸Šà¹ˆà¸­à¸‡à¸—à¸²à¸‡à¸™à¸µà¹‰</div>
         </div>
 
         <div class="qr-order-details">
           <div class="qr-detail-row">
-            <span>หมายเลขคำสั่งซื้อ</span>
+            <span>à¸«à¸¡à¸²à¸¢à¹€à¸¥à¸‚à¸„à¸³à¸ªà¸±à¹ˆà¸‡à¸‹à¸·à¹‰à¸­</span>
             <strong data-qr-order-id>#ORDER_ID</strong>
           </div>
           <div class="qr-detail-row">
-            <span>ยอดชำระ</span>
-            <strong class="qr-total-highlight" data-qr-total>฿0</strong>
+            <span>à¸¢à¸­à¸”à¸Šà¸³à¸£à¸°</span>
+            <strong class="qr-total-highlight" data-qr-total>à¸¿0</strong>
           </div>
         </div>
 
         <div class="qr-store-note" data-qr-note style="width: 100%;"></div>
 
         <div class="qr-status-badge">
-          <i data-lucide="clock"></i> รอการชำระเงิน
+          <i data-lucide="clock"></i> à¸£à¸­à¸à¸²à¸£à¸Šà¸³à¸£à¸°à¹€à¸‡à¸´à¸™
         </div>
       </div>
 
       <div class="premium-actions" style="padding: 0 24px 24px;">
         <button class="primary-button submit-order-btn" type="button" data-qr-upload-slip-btn>
           <i data-lucide="upload-cloud"></i>
-          <span>แนบสลิปการชำระเงิน</span>
+          <span>à¹à¸™à¸šà¸ªà¸¥à¸´à¸›à¸à¸²à¸£à¸Šà¸³à¸£à¸°à¹€à¸‡à¸´à¸™</span>
         </button>
         <button class="secondary-button cancel-order-btn" type="button" data-qr-view-order-btn>
-          ดูคำสั่งซื้อ
+          à¸”à¸¹à¸„à¸³à¸ªà¸±à¹ˆà¸‡à¸‹à¸·à¹‰à¸­
         </button>
         <button class="text-button text-danger" type="button" data-qr-cancel-btn style="margin-top: 8px;">
-          ยกเลิกรายการ
+          à¸¢à¸à¹€à¸¥à¸´à¸à¸£à¸²à¸¢à¸à¸²à¸£
         </button>
       </div>
     </div>
   </dialog>
 
   <dialog class="payment-dialog" id="platform-dialog">
-    <button class="dialog-close" id="close-platform" type="button" aria-label="ปิดลิงก์แพลตฟอร์ม">
+    <button class="dialog-close" id="close-platform" type="button" aria-label="à¸›à¸´à¸”à¸¥à¸´à¸‡à¸à¹Œà¹à¸žà¸¥à¸•à¸Ÿà¸­à¸£à¹Œà¸¡">
       <i data-lucide="x"></i>
     </button>
     <div class="payment-result" id="platform-dialog-content"></div>
   </dialog>
 
-  <!-- ═══ Order Confirm / Terms Dialog ═══ -->
+  <!-- â•â•â• Order Confirm / Terms Dialog â•â•â• -->
   <dialog class="order-confirm-dialog" id="order-confirm-dialog" aria-modal="true"
     aria-labelledby="order-confirm-title">
     <div class="order-confirm-inner">
       <!-- Header -->
       <div class="order-confirm-header">
         <div>
-          <h2 class="order-confirm-title" id="order-confirm-title">เงื่อนไขการสั่งซื้อ</h2>
-          <p class="order-confirm-subtitle">กรุณาอ่านและยอมรับเงื่อนไขก่อนดำเนินการต่อ</p>
+          <h2 class="order-confirm-title" id="order-confirm-title">à¹€à¸‡à¸·à¹ˆà¸­à¸™à¹„à¸‚à¸à¸²à¸£à¸ªà¸±à¹ˆà¸‡à¸‹à¸·à¹‰à¸­</h2>
+          <p class="order-confirm-subtitle">à¸à¸£à¸¸à¸“à¸²à¸­à¹ˆà¸²à¸™à¹à¸¥à¸°à¸¢à¸­à¸¡à¸£à¸±à¸šà¹€à¸‡à¸·à¹ˆà¸­à¸™à¹„à¸‚à¸à¹ˆà¸­à¸™à¸”à¸³à¹€à¸™à¸´à¸™à¸à¸²à¸£à¸•à¹ˆà¸­</p>
         </div>
-        <button class="dialog-close" id="close-order-confirm" type="button" aria-label="ปิด">
+        <button class="dialog-close" id="close-order-confirm" type="button" aria-label="à¸›à¸´à¸”">
           <i data-lucide="x"></i>
         </button>
       </div>
@@ -356,15 +356,15 @@
         <div class="order-confirm-terms-scroll">
           <div class="order-confirm-terms-block">
             <div class="terms-check-icon"><i data-lucide="shield-check"></i></div>
-            <p class="terms-section-title"><strong>การรับประกัน</strong></p>
+            <p class="terms-section-title"><strong>à¸à¸²à¸£à¸£à¸±à¸šà¸›à¸£à¸°à¸à¸±à¸™</strong></p>
             <ul>
-              <li>แอดมินซัพพอร์ตช่วยเหลือปัญหาอย่างเต็มที่</li>
-              <li>แอดมินซัพพอร์ต 12:00 - 23:00น.</li>
-              <li>หากนำไอดีไปจำหน่ายต่อ (หมดประกันทันที)</li>
+              <li>à¹à¸­à¸”à¸¡à¸´à¸™à¸‹à¸±à¸žà¸žà¸­à¸£à¹Œà¸•à¸Šà¹ˆà¸§à¸¢à¹€à¸«à¸¥à¸·à¸­à¸›à¸±à¸à¸«à¸²à¸­à¸¢à¹ˆà¸²à¸‡à¹€à¸•à¹‡à¸¡à¸—à¸µà¹ˆ</li>
+              <li>à¹à¸­à¸”à¸¡à¸´à¸™à¸‹à¸±à¸žà¸žà¸­à¸£à¹Œà¸• 12:00 - 23:00à¸™.</li>
+              <li>à¸«à¸²à¸à¸™à¸³à¹„à¸­à¸”à¸µà¹„à¸›à¸ˆà¸³à¸«à¸™à¹ˆà¸²à¸¢à¸•à¹ˆà¸­ (à¸«à¸¡à¸”à¸›à¸£à¸°à¸à¸±à¸™à¸—à¸±à¸™à¸—à¸µ)</li>
             </ul>
             <div class="terms-warning-box">
-              <strong>หมายเหตุ:</strong> หลังทำการชำระเงินแล้ว หากไม่ทำตามคู่มือและเกิดปัญหา
-              ทางร้านจะช่วยเหลืออย่างเต็มที่เท่าที่จะช่วยได้ (ติดต่อเพจเพื่อสอบถามเพิ่มเติม)
+              <strong>à¸«à¸¡à¸²à¸¢à¹€à¸«à¸•à¸¸:</strong> à¸«à¸¥à¸±à¸‡à¸—à¸³à¸à¸²à¸£à¸Šà¸³à¸£à¸°à¹€à¸‡à¸´à¸™à¹à¸¥à¹‰à¸§ à¸«à¸²à¸à¹„à¸¡à¹ˆà¸—à¸³à¸•à¸²à¸¡à¸„à¸¹à¹ˆà¸¡à¸·à¸­à¹à¸¥à¸°à¹€à¸à¸´à¸”à¸›à¸±à¸à¸«à¸²
+              à¸—à¸²à¸‡à¸£à¹‰à¸²à¸™à¸ˆà¸°à¸Šà¹ˆà¸§à¸¢à¹€à¸«à¸¥à¸·à¸­à¸­à¸¢à¹ˆà¸²à¸‡à¹€à¸•à¹‡à¸¡à¸—à¸µà¹ˆà¹€à¸—à¹ˆà¸²à¸—à¸µà¹ˆà¸ˆà¸°à¸Šà¹ˆà¸§à¸¢à¹„à¸”à¹‰ (à¸•à¸´à¸”à¸•à¹ˆà¸­à¹€à¸žà¸ˆà¹€à¸žà¸·à¹ˆà¸­à¸ªà¸­à¸šà¸–à¸²à¸¡à¹€à¸žà¸´à¹ˆà¸¡à¹€à¸•à¸´à¸¡)
             </div>
           </div>
         </div>
@@ -374,35 +374,35 @@
       <div class="order-confirm-coupon-block">
         <div class="order-confirm-coupon-header">
           <i data-lucide="ticket"></i>
-          <span>โค้ดส่วนลดของคุณ</span>
+          <span>à¹‚à¸„à¹‰à¸”à¸ªà¹ˆà¸§à¸™à¸¥à¸”à¸‚à¸­à¸‡à¸„à¸¸à¸“</span>
         </div>
-        <p class="order-confirm-coupon-empty" id="order-confirm-coupon-text">คุณไม่มีโค้ดส่วนลดที่ใช้ได้</p>
+        <p class="order-confirm-coupon-empty" id="order-confirm-coupon-text">à¸„à¸¸à¸“à¹„à¸¡à¹ˆà¸¡à¸µà¹‚à¸„à¹‰à¸”à¸ªà¹ˆà¸§à¸™à¸¥à¸”à¸—à¸µà¹ˆà¹ƒà¸Šà¹‰à¹„à¸”à¹‰</p>
       </div>
 
       <!-- Price Summary -->
       <div class="order-confirm-price-block" hidden>
         <div class="order-confirm-price-row">
-          <span>ราคาสินค้า</span>
-          <span id="order-confirm-price-product">฿0</span>
+          <span>à¸£à¸²à¸„à¸²à¸ªà¸´à¸™à¸„à¹‰à¸²</span>
+          <span id="order-confirm-price-product">à¸¿0</span>
         </div>
         <div class="order-confirm-price-row total-row">
-          <strong>ราคาสุทธิ (VAT)</strong>
-          <strong class="order-confirm-total" id="order-confirm-price-total">฿0</strong>
+          <strong>à¸£à¸²à¸„à¸²à¸ªà¸¸à¸—à¸˜à¸´ (VAT)</strong>
+          <strong class="order-confirm-total" id="order-confirm-price-total">à¸¿0</strong>
         </div>
       </div>
 
       <!-- Checkbox Accept -->
       <label class="order-confirm-accept-label" for="order-confirm-accept">
         <input type="checkbox" id="order-confirm-accept" />
-        <span>ฉันได้อ่านและยอมรับเงื่อนไขการสั่งซื้อ</span>
+        <span>à¸‰à¸±à¸™à¹„à¸”à¹‰à¸­à¹ˆà¸²à¸™à¹à¸¥à¸°à¸¢à¸­à¸¡à¸£à¸±à¸šà¹€à¸‡à¸·à¹ˆà¸­à¸™à¹„à¸‚à¸à¸²à¸£à¸ªà¸±à¹ˆà¸‡à¸‹à¸·à¹‰à¸­</span>
       </label>
 
       <!-- Action Buttons -->
       <div class="order-confirm-actions">
-        <button class="secondary-button" type="button" id="order-confirm-cancel-btn">ยกเลิก</button>
+        <button class="secondary-button" type="button" id="order-confirm-cancel-btn">à¸¢à¸à¹€à¸¥à¸´à¸</button>
         <button class="primary-button order-confirm-submit-btn" type="button" id="order-confirm-submit-btn" disabled>
           <i data-lucide="receipt"></i>
-          <span id="order-confirm-submit-label">ยืนยันการสั่งซื้อ ฿0</span>
+          <span id="order-confirm-submit-label">à¸¢à¸·à¸™à¸¢à¸±à¸™à¸à¸²à¸£à¸ªà¸±à¹ˆà¸‡à¸‹à¸·à¹‰à¸­ à¸¿0</span>
         </button>
       </div>
     </div>
@@ -415,24 +415,24 @@
         <div class="premium-icon-box" style="background: rgba(239, 68, 68, 0.1); color: #ef4444; margin: 0 auto 16px; width: 56px; height: 56px;">
           <i data-lucide="alert-triangle" style="width: 28px; height: 28px;"></i>
         </div>
-        <h2 style="font-size: 1.4rem;">ยกเลิกคำสั่งซื้อ?</h2>
-        <p style="color: #94a3b8; font-size: 0.95rem; line-height: 1.5; margin-top: 12px;">คุณแน่ใจหรือไม่ว่าต้องการยกเลิกคำสั่งซื้อนี้?<br>รายการนี้จะไม่สามารถกู้คืนได้</p>
+        <h2 style="font-size: 1.4rem;">à¸¢à¸à¹€à¸¥à¸´à¸à¸„à¸³à¸ªà¸±à¹ˆà¸‡à¸‹à¸·à¹‰à¸­?</h2>
+        <p style="color: #94a3b8; font-size: 0.95rem; line-height: 1.5; margin-top: 12px;">à¸„à¸¸à¸“à¹à¸™à¹ˆà¹ƒà¸ˆà¸«à¸£à¸·à¸­à¹„à¸¡à¹ˆà¸§à¹ˆà¸²à¸•à¹‰à¸­à¸‡à¸à¸²à¸£à¸¢à¸à¹€à¸¥à¸´à¸à¸„à¸³à¸ªà¸±à¹ˆà¸‡à¸‹à¸·à¹‰à¸­à¸™à¸µà¹‰?<br>à¸£à¸²à¸¢à¸à¸²à¸£à¸™à¸µà¹‰à¸ˆà¸°à¹„à¸¡à¹ˆà¸ªà¸²à¸¡à¸²à¸£à¸–à¸à¸¹à¹‰à¸„à¸·à¸™à¹„à¸”à¹‰</p>
       </div>
       <div class="premium-actions" style="margin-top: 28px; display: flex; flex-direction: column; gap: 12px; padding: 0;">
         <button class="primary-button" id="cancel-confirm-yes-btn" style="background: linear-gradient(135deg, #ef4444, #dc2626); border: none; width: 100%; height: 48px; border-radius: 12px;">
-          ยืนยันการยกเลิก
+          à¸¢à¸·à¸™à¸¢à¸±à¸™à¸à¸²à¸£à¸¢à¸à¹€à¸¥à¸´à¸
         </button>
         <button class="secondary-button" id="cancel-confirm-no-btn" style="width: 100%; height: 48px; border-radius: 12px; border-color: rgba(255, 255, 255, 0.1);">
-          กลับไปชำระเงิน
+          à¸à¸¥à¸±à¸šà¹„à¸›à¸Šà¸³à¸£à¸°à¹€à¸‡à¸´à¸™
         </button>
       </div>
     </div>
   </dialog>
 
-  <a class="discord-floating-link" href="https://discord.gg/6axb2QbDHN" target="_blank" rel="noopener noreferrer" aria-label="ติดต่อ Discord" data-discord-link>
+  <a class="discord-floating-link" href="https://discord.gg/6axb2QbDHN" target="_blank" rel="noopener noreferrer" aria-label="à¸•à¸´à¸”à¸•à¹ˆà¸­ Discord" data-discord-link>
     <span><i data-lucide="message-circle"></i></span>
     <strong>Discord</strong>
-    <small>ติดต่อร้าน</small>
+    <small>à¸•à¸´à¸”à¸•à¹ˆà¸­à¸£à¹‰à¸²à¸™</small>
   </a>
 
   <div class="toast-container" id="toast-container"></div>

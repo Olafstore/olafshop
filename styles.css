@@ -26510,3 +26510,357 @@ body.free-random-result-open {
     transform: translate3d(0, 0, 0) scale(1);
   }
 }
+
+/* v47: mobile topbar final pass — search/lang/bell/user/menu in one clean row */
+@media (max-width: 768px) {
+  .topbar.site-topbar-unified,
+  body.home-page .topbar.site-topbar-unified,
+  body.product-detail-page .topbar.site-topbar-unified,
+  body.extras-page .topbar.site-topbar-unified,
+  .profile-page .topbar.site-topbar-unified {
+    gap: 6px !important;
+    padding-inline: 10px !important;
+    overflow: visible !important;
+  }
+
+  .topbar.site-topbar-unified .brand-mark {
+    width: 40px !important;
+    height: 40px !important;
+    min-width: 40px !important;
+    border-radius: 13px !important;
+  }
+
+  .topbar.site-topbar-unified .topbar-actions,
+  body.home-page .topbar.site-topbar-unified .topbar-actions,
+  body.product-detail-page .topbar.site-topbar-unified .topbar-actions,
+  body.extras-page .topbar.site-topbar-unified .topbar-actions,
+  .profile-page .topbar.site-topbar-unified .topbar-actions {
+    gap: 5px !important;
+    flex-wrap: nowrap !important;
+    overflow: visible !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search,
+  .topbar.site-topbar-unified .topbar-search-wrap,
+  .topbar.site-topbar-unified .language-switcher,
+  .topbar.site-topbar-unified .notification-wrap,
+  .topbar.site-topbar-unified .user-popover-wrap {
+    display: inline-flex !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    position: relative !important;
+    flex: 0 0 auto !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    margin: 0 !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search-toggle,
+  .topbar.site-topbar-unified .topbar-search-toggle,
+  .topbar.site-topbar-unified .lang-toggle,
+  .topbar.site-topbar-unified .notification-button,
+  .topbar.site-topbar-unified .account-button,
+  .topbar.site-topbar-unified > .mobile-nav-toggle {
+    display: inline-grid !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    place-items: center !important;
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+    min-height: 36px !important;
+    padding: 0 !important;
+    border-radius: 12px !important;
+    color: rgba(226, 232, 240, .92) !important;
+    border: 1px solid rgba(148, 163, 184, .17) !important;
+    background: rgba(15, 23, 42, .38) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, .04) !important;
+  }
+
+  .topbar.site-topbar-unified .account-button {
+    font-size: 0 !important;
+    gap: 0 !important;
+  }
+
+  .topbar.site-topbar-unified .account-button > span,
+  .topbar.site-topbar-unified .account-button .free-auth-avatar,
+  .topbar.site-topbar-unified .account-button .user-avatar,
+  .topbar.site-topbar-unified .account-button .account-avatar {
+    display: none !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search-toggle svg,
+  .topbar.site-topbar-unified .topbar-search-toggle svg,
+  .topbar.site-topbar-unified .lang-toggle svg,
+  .topbar.site-topbar-unified .notification-button svg,
+  .topbar.site-topbar-unified .account-button svg,
+  .topbar.site-topbar-unified .account-button i,
+  .topbar.site-topbar-unified > .mobile-nav-toggle svg,
+  .topbar.site-topbar-unified > .mobile-nav-toggle i {
+    display: block !important;
+    width: 18px !important;
+    height: 18px !important;
+    min-width: 18px !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search-toggle:hover,
+  .topbar.site-topbar-unified .topbar-search-toggle:hover,
+  .topbar.site-topbar-unified .lang-toggle:hover,
+  .topbar.site-topbar-unified .notification-button:hover,
+  .topbar.site-topbar-unified .account-button:hover,
+  .topbar.site-topbar-unified > .mobile-nav-toggle:hover,
+  .topbar.site-topbar-unified .site-global-search-toggle:focus-visible,
+  .topbar.site-topbar-unified .topbar-search-toggle:focus-visible,
+  .topbar.site-topbar-unified .lang-toggle:focus-visible,
+  .topbar.site-topbar-unified .notification-button:focus-visible,
+  .topbar.site-topbar-unified .account-button:focus-visible,
+  .topbar.site-topbar-unified > .mobile-nav-toggle:focus-visible,
+  .topbar.site-topbar-unified .lang-toggle.is-active,
+  .topbar.site-topbar-unified .notification-button.is-active,
+  .topbar.site-topbar-unified .account-button.is-active,
+  .topbar.site-topbar-unified.is-mobile-nav-open > .mobile-nav-toggle {
+    color: #ffffff !important;
+    border-color: rgba(96, 165, 250, .42) !important;
+    background: rgba(37, 99, 235, .18) !important;
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, .10), inset 0 1px 0 rgba(255, 255, 255, .06) !important;
+  }
+
+  .topbar.site-topbar-unified .register-button,
+  .topbar.site-topbar-unified .site-cart-button {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  #user-popover.topbar-popover-fixed:not([hidden]),
+  .user-popover.topbar-popover-fixed:not([hidden]),
+  #user-popover:not(.olaf-user-popover-duplicate):not([hidden]),
+  .user-popover:not(.olaf-user-popover-duplicate):not([hidden]) {
+    display: block !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    position: fixed !important;
+    top: var(--olaf-popover-top, 76px) !important;
+    left: max(12px, env(safe-area-inset-left)) !important;
+    right: max(12px, env(safe-area-inset-right)) !important;
+    width: auto !important;
+    max-width: none !important;
+    max-height: min(74vh, calc(100svh - 96px)) !important;
+    overflow-y: auto !important;
+    transform: none !important;
+    z-index: 12082 !important;
+    border-radius: 22px !important;
+    border: 1px solid rgba(96, 165, 250, .24) !important;
+    background:
+      radial-gradient(circle at 18% 0%, rgba(59, 130, 246, .18), transparent 42%),
+      linear-gradient(180deg, rgba(12, 20, 42, .985), rgba(5, 10, 24, .985)) !important;
+    box-shadow:
+      0 24px 70px rgba(0, 0, 0, .54),
+      inset 0 1px 0 rgba(255, 255, 255, .045) !important;
+    backdrop-filter: blur(22px) saturate(1.12) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(1.12) !important;
+    animation: mobileTopbarPanelIn 190ms cubic-bezier(.18, .9, .28, 1.06) both !important;
+  }
+
+  #user-popover.is-closing,
+  .user-popover.is-closing {
+    pointer-events: none !important;
+    animation: mobileNotificationSheetOut 180ms cubic-bezier(.4, 0, .2, 1) both !important;
+  }
+
+  .topbar.site-topbar-unified > .mobile-nav-toggle {
+    order: 3 !important;
+    margin-left: 0 !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .topbar.site-topbar-unified,
+  body.home-page .topbar.site-topbar-unified,
+  body.product-detail-page .topbar.site-topbar-unified,
+  body.extras-page .topbar.site-topbar-unified,
+  .profile-page .topbar.site-topbar-unified {
+    gap: 5px !important;
+    padding-inline: 8px !important;
+  }
+
+  .topbar.site-topbar-unified .brand-mark {
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search,
+  .topbar.site-topbar-unified .topbar-search-wrap,
+  .topbar.site-topbar-unified .language-switcher,
+  .topbar.site-topbar-unified .notification-wrap,
+  .topbar.site-topbar-unified .user-popover-wrap,
+  .topbar.site-topbar-unified .site-global-search-toggle,
+  .topbar.site-topbar-unified .topbar-search-toggle,
+  .topbar.site-topbar-unified .lang-toggle,
+  .topbar.site-topbar-unified .notification-button,
+  .topbar.site-topbar-unified .account-button,
+  .topbar.site-topbar-unified > .mobile-nav-toggle {
+    width: 34px !important;
+    height: 34px !important;
+    min-width: 34px !important;
+    max-width: 34px !important;
+    border-radius: 11px !important;
+  }
+}
+
+/* v48: keep mobile header controls alive while search opens as its own sheet below the bar */
+@media (max-width: 768px) {
+  .topbar.site-topbar-unified.is-search-active .brand,
+  .topbar.site-topbar-unified.is-search-active .topbar-actions,
+  .topbar.site-topbar-unified.is-search-active > .mobile-nav-toggle {
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    transform: none !important;
+  }
+
+  .topbar.site-topbar-unified.is-search-active .topbar-actions {
+    width: auto !important;
+    min-width: 0 !important;
+    flex: 0 1 auto !important;
+    gap: 5px !important;
+  }
+
+  .topbar.site-topbar-unified.is-search-active .topbar-actions > :not(.site-global-search):not(.topbar-search-wrap),
+  body.home-page .topbar.site-topbar-unified.is-search-active .topbar-actions > :not(.site-global-search):not(.topbar-search-wrap),
+  body.product-detail-page .topbar.site-topbar-unified.is-search-active .topbar-actions > :not(.site-global-search):not(.topbar-search-wrap),
+  body.extras-page .topbar.site-topbar-unified.is-search-active .topbar-actions > :not(.site-global-search):not(.topbar-search-wrap),
+  .profile-page .topbar.site-topbar-unified.is-search-active .topbar-actions > :not(.site-global-search):not(.topbar-search-wrap) {
+    display: inline-flex !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    width: 36px !important;
+    min-width: 36px !important;
+    height: 36px !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search.is-search-open,
+  .topbar.site-topbar-unified .topbar-search-wrap.is-search-open,
+  .profile-page .topbar.site-topbar-unified .topbar-search-wrap.is-search-open {
+    position: fixed !important;
+    top: var(--olaf-popover-top, 76px) !important;
+    left: max(12px, env(safe-area-inset-left)) !important;
+    right: max(12px, env(safe-area-inset-right)) !important;
+    width: auto !important;
+    max-width: none !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    min-width: 0 !important;
+    padding: 5px 10px !important;
+    z-index: 12084 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    border-radius: 18px !important;
+    border: 1px solid rgba(96, 165, 250, .28) !important;
+    background:
+      radial-gradient(circle at 8% 0%, rgba(59, 130, 246, .18), transparent 38%),
+      linear-gradient(180deg, rgba(11, 18, 36, .98), rgba(6, 12, 28, .98)) !important;
+    box-shadow: 0 18px 48px rgba(0, 0, 0, .42), inset 0 1px 0 rgba(255, 255, 255, .055) !important;
+    backdrop-filter: blur(18px) saturate(1.1) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.1) !important;
+    animation: mobileTopbarPanelIn 170ms cubic-bezier(.18, .9, .28, 1.06) both !important;
+  }
+
+  .topbar.site-topbar-unified .topbar-search-wrap.is-search-open .topbar-search-form {
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search.is-search-open .site-global-search-toggle,
+  .topbar.site-topbar-unified .topbar-search-wrap.is-search-open .topbar-search-toggle {
+    flex: 0 0 34px !important;
+    width: 34px !important;
+    min-width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    border-radius: 12px !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search.is-search-open input,
+  .topbar.site-topbar-unified .topbar-search-wrap.is-search-open .topbar-search-input {
+    display: block !important;
+    flex: 1 1 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    height: 36px !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    color: #eaf2ff !important;
+    font-size: 0.9rem !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search.is-search-open .site-global-search-results:not([hidden]),
+  .topbar.site-topbar-unified .topbar-search-wrap.is-search-open .search-suggestions:not([hidden]) {
+    position: fixed !important;
+    top: calc(var(--olaf-popover-top, 76px) + 56px) !important;
+    left: max(12px, env(safe-area-inset-left)) !important;
+    right: max(12px, env(safe-area-inset-right)) !important;
+    width: auto !important;
+    max-width: none !important;
+    z-index: 12083 !important;
+  }
+
+  #user-mini-card {
+    display: none !important;
+  }
+}
+
+/* v49: product page can set --olaf-popover-top for anchored panels; mobile search must always live below the header */
+@media (max-width: 768px) {
+  .topbar.site-topbar-unified .site-global-search.is-search-open,
+  .topbar.site-topbar-unified .topbar-search-wrap.is-search-open,
+  .profile-page .topbar.site-topbar-unified .topbar-search-wrap.is-search-open {
+    top: calc(76px + env(safe-area-inset-top)) !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search.is-search-open .site-global-search-results:not([hidden]),
+  .topbar.site-topbar-unified .topbar-search-wrap.is-search-open .search-suggestions:not([hidden]) {
+    top: calc(132px + env(safe-area-inset-top)) !important;
+  }
+}
+
+/* v50: outrank older .site-unified-search mobile-search rules */
+@media (max-width: 768px) {
+  body.home-page .topbar.site-topbar-unified .site-global-search.is-search-open,
+  body.product-detail-page .topbar.site-topbar-unified .topbar-search-wrap.site-unified-search.is-search-open,
+  body.extras-page .topbar.site-topbar-unified .site-global-search.is-search-open,
+  body.free-random-page .topbar.site-topbar-unified .site-global-search.is-search-open,
+  .topbar.site-topbar-unified .site-global-search.site-unified-search.is-search-open,
+  .topbar.site-topbar-unified .topbar-search-wrap.site-unified-search.is-search-open {
+    position: fixed !important;
+    top: 76px !important;
+    left: max(12px, env(safe-area-inset-left)) !important;
+    right: max(12px, env(safe-area-inset-right)) !important;
+    width: auto !important;
+    max-width: none !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    z-index: 12084 !important;
+  }
+
+  body.product-detail-page .topbar.site-topbar-unified .topbar-search-wrap.site-unified-search.is-search-open .search-suggestions:not([hidden]),
+  .topbar.site-topbar-unified .topbar-search-wrap.site-unified-search.is-search-open .search-suggestions:not([hidden]),
+  .topbar.site-topbar-unified .site-global-search.site-unified-search.is-search-open .site-global-search-results:not([hidden]) {
+    top: 132px !important;
+    z-index: 12083 !important;
+  }
+}

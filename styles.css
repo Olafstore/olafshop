@@ -25233,3 +25233,265 @@ body.free-random-result-open {
     font-size: .52rem;
   }
 }
+
+/* v37: restore full hero card and move milestone bonus into the bottom strip */
+.free-random-hero {
+  width: 100%;
+  margin-inline: 0;
+  display: grid;
+  grid-template-columns: 1fr;
+  align-items: stretch;
+  gap: clamp(14px, 2vw, 20px);
+  padding: clamp(20px, 3vw, 34px);
+}
+
+.free-random-copy {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 420px);
+  grid-template-areas:
+    "eyebrow metrics"
+    "title metrics"
+    "subtitle metrics";
+  align-items: center;
+  column-gap: clamp(18px, 3vw, 34px);
+  row-gap: 8px;
+}
+
+.free-random-copy .eyebrow {
+  grid-area: eyebrow;
+}
+
+.free-random-copy h1 {
+  grid-area: title;
+  margin: 0;
+  font-size: clamp(2.1rem, 4.4vw, 3.55rem);
+}
+
+.free-random-copy p {
+  grid-area: subtitle;
+  max-width: 720px;
+  margin: 0;
+}
+
+.free-random-metrics {
+  grid-area: metrics;
+  max-width: none;
+  width: 100%;
+  margin: 0;
+  grid-template-columns: 1fr;
+  gap: 9px;
+}
+
+.free-random-metrics article {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 11px 14px;
+}
+
+.free-random-metrics strong {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.free-random-bonus-card {
+  display: grid;
+  grid-template-columns: 38px minmax(190px, 250px) minmax(0, 1fr);
+  grid-template-areas: "orb copy grid";
+  align-items: center;
+  justify-self: stretch;
+  width: 100%;
+  max-width: none;
+  min-height: 0;
+  gap: clamp(10px, 1.6vw, 16px);
+  padding: clamp(12px, 1.8vw, 16px);
+  border-radius: 22px;
+  border-color: rgba(96, 165, 250, .18);
+  background:
+    radial-gradient(circle at 8% 0%, rgba(59, 130, 246, .14), transparent 12rem),
+    radial-gradient(circle at 96% 18%, rgba(250, 204, 21, .10), transparent 14rem),
+    linear-gradient(135deg, rgba(10, 18, 40, .74), rgba(7, 12, 28, .86));
+}
+
+.free-random-bonus-card::before {
+  opacity: .45;
+}
+
+.free-random-bonus-card .free-random-wallet-orb {
+  grid-area: orb;
+  width: 38px;
+  height: 38px;
+  margin: 0;
+  border-radius: 14px;
+}
+
+.free-random-bonus-copy {
+  grid-area: copy;
+  min-width: 0;
+}
+
+.free-random-bonus-copy span {
+  margin-bottom: 5px;
+  padding: 3px 8px;
+  font-size: .58rem;
+}
+
+.free-random-bonus-copy strong {
+  font-size: clamp(.98rem, 1.25vw, 1.22rem);
+}
+
+.free-random-bonus-copy p {
+  max-width: 250px;
+  margin-top: 5px;
+  font-size: .66rem;
+  line-height: 1.35;
+  -webkit-line-clamp: 2;
+}
+
+.free-random-milestone-grid.is-hero-card {
+  grid-area: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 8px;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-card {
+  display: grid;
+  grid-template-columns: 76px minmax(0, 1fr);
+  align-items: center;
+  gap: 8px;
+  min-height: 82px;
+  padding: 7px;
+  border-radius: 15px;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-image {
+  width: 76px;
+  aspect-ratio: 16 / 10;
+  border-radius: 11px;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-body {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+  grid-template-rows: auto auto auto auto;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-kicker {
+  font-size: .52rem;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-body h3 {
+  min-height: 0;
+  font-size: .62rem;
+  line-height: 1.08;
+  -webkit-line-clamp: 2;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-body p {
+  font-size: .52rem;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-progress {
+  height: 3px;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-claim {
+  width: auto;
+  min-height: 21px;
+  justify-self: start;
+  margin-top: 1px;
+  padding-inline: 8px;
+  font-size: .52rem;
+}
+
+@media (min-width: 721px) and (max-width: 1100px) {
+  .free-random-copy {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "eyebrow"
+      "title"
+      "subtitle"
+      "metrics";
+  }
+
+  .free-random-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    margin-top: 8px;
+  }
+
+  .free-random-bonus-card {
+    grid-template-columns: 34px minmax(0, 1fr);
+    grid-template-areas:
+      "orb copy"
+      "grid grid";
+    align-items: start;
+  }
+
+  .free-random-bonus-copy p {
+    max-width: 520px;
+  }
+
+  .free-random-milestone-grid.is-hero-card {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 720px) {
+  .free-random-copy {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "eyebrow"
+      "title"
+      "subtitle"
+      "metrics";
+  }
+
+  .free-random-copy h1 {
+    font-size: clamp(1.72rem, 8vw, 2.35rem);
+  }
+
+  .free-random-metrics {
+    grid-template-columns: 1fr;
+    margin-top: 6px;
+  }
+
+  .free-random-bonus-card {
+    grid-template-columns: 32px minmax(0, 1fr);
+    grid-template-areas:
+      "orb copy"
+      "grid grid";
+    gap: 9px 10px;
+    padding: 12px;
+    border-radius: 20px;
+  }
+
+  .free-random-bonus-card .free-random-wallet-orb {
+    width: 32px;
+    height: 32px;
+  }
+
+  .free-random-bonus-copy p {
+    max-width: none;
+  }
+
+  .free-random-milestone-grid.is-hero-card {
+    grid-template-columns: 1fr !important;
+    gap: 8px;
+  }
+
+  .free-random-milestone-grid.is-hero-card .free-random-milestone-card {
+    grid-template-columns: 84px minmax(0, 1fr);
+    min-height: 84px;
+    padding: 7px;
+  }
+
+  .free-random-milestone-grid.is-hero-card .free-random-milestone-image {
+    width: 84px;
+  }
+
+  .free-random-milestone-grid.is-hero-card .free-random-milestone-claim {
+    min-height: 22px;
+  }
+}

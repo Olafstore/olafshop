@@ -384,6 +384,7 @@
   let activeTopbarPopover = null;
   let activeTopbarAnchor = null;
   let topbarPortalCounter = 0;
+  const popoverCloseTimers = new WeakMap();
 
   function ensureAccountButtonIcon(button = document.querySelector("#open-auth")) {
     if (!button) return;
@@ -579,6 +580,52 @@
     });
   }
 
+  function clearTopbarPopoverCloseTimer(popover) {
+    const timer = popover ? popoverCloseTimers.get(popover) : null;
+    if (timer) {
+      window.clearTimeout(timer);
+      popoverCloseTimers.delete(popover);
+    }
+  }
+
+  function hideTopbarPopover(popoverTarget, buttonTarget, options = {}) {
+    const popover = resolveNode(popoverTarget);
+    const button = resolveNode(buttonTarget);
+    if (!popover) return;
+
+    const shouldAnimate =
+      !options.immediate &&
+      isMobileNavigationViewport() &&
+      !popover.hidden &&
+      popover.classList.contains("topbar-popover-fixed");
+
+    clearTopbarPopoverCloseTimer(popover);
+    popover.classList.remove("is-open");
+    popover.classList.add("is-closing");
+    button?.classList.remove("is-active");
+    button?.setAttribute("aria-expanded", "false");
+
+    const finish = () => {
+      popover.hidden = true;
+      popover.classList.remove("is-open", "is-closing");
+      clearTopbarPopoverPosition(popover);
+    };
+
+    if (shouldAnimate) {
+      popoverCloseTimers.set(popover, window.setTimeout(finish, 180));
+      return;
+    }
+
+    finish();
+  }
+
+  function hasOpenTopbarPopover() {
+    return ["#language-popover", "#notification-popover", "#user-popover"].some((selector) => {
+      const popover = document.querySelector(selector);
+      return Boolean(popover && !popover.hidden);
+    });
+  }
+
   function closeTopbarPopovers(except = "") {
     [
       ["language", "#language-popover", "#lang-toggle"],
@@ -588,13 +635,7 @@
       if (key === except) return;
       const popover = document.querySelector(popoverSelector);
       const button = document.querySelector(buttonSelector);
-      if (popover) {
-        popover.hidden = true;
-        popover.classList.remove("is-open");
-        clearTopbarPopoverPosition(popover);
-      }
-      button?.classList.remove("is-active");
-      button?.setAttribute("aria-expanded", "false");
+      hideTopbarPopover(popover, button);
     });
   }
 
@@ -603,8 +644,11 @@
     if (key === "user") syncMobileUserPopoverPortal();
     closeTopbarSearches();
     closeTopbarPopovers(key);
+    clearTopbarPopoverCloseTimer(popover);
     popover.hidden = false;
+    popover.classList.remove("is-closing", "hidden");
     popover.classList.add("is-open");
+    popover.removeAttribute("aria-hidden");
     button.classList.add("is-active");
     button.setAttribute("aria-expanded", "true");
     positionTopbarPopover(popover, button);
@@ -621,6 +665,43 @@
     if (key === "user") renderFallbackUserPopover(popover, currentNavUser());
     openTopbarPopover(key, popover, button);
   }
+
+  window.OlafTopbarPopovers = {
+    ...(window.OlafTopbarPopovers || {}),
+    isUnified: true,
+    close: closeTopbarPopovers,
+    closeOne: (key) => {
+      const map = {
+        language: ["#language-popover", "#lang-toggle"],
+        notifications: ["#notification-popover", "#open-notifications"],
+        user: ["#user-popover", "#open-auth"]
+      };
+      const [popoverSelector, buttonSelector] = map[key] || [];
+      hideTopbarPopover(document.querySelector(popoverSelector), document.querySelector(buttonSelector));
+    },
+    open: (key) => {
+      const map = {
+        language: ["#language-popover", "#lang-toggle"],
+        notifications: ["#notification-popover", "#open-notifications"],
+        user: ["#user-popover", "#open-auth"]
+      };
+      const [popoverSelector, buttonSelector] = map[key] || [];
+      const popover = document.querySelector(popoverSelector);
+      const button = document.querySelector(buttonSelector);
+      if (key === "user") renderFallbackUserPopover(popover, currentNavUser());
+      openTopbarPopover(key, popover, button);
+    },
+    toggle: (key) => {
+      const map = {
+        language: ["#language-popover", "#lang-toggle"],
+        notifications: ["#notification-popover", "#open-notifications"],
+        user: ["#user-popover", "#open-auth"]
+      };
+      const [popoverSelector, buttonSelector] = map[key] || [];
+      const button = document.querySelector(buttonSelector);
+      if (button) toggleTopbarPopover(key, popoverSelector, button);
+    }
+  };
 
   function setupTopbarPopoverAnchoring() {
     if (document.body?.dataset.olafTopbarPopoverAnchorBound === "true") return;
@@ -661,8 +742,19 @@
       }
 
       if (!event.target.closest(".topbar-popover-fixed, .language-switcher, .notification-wrap, .user-popover-wrap")) {
+        const hadOpenPopover = hasOpenTopbarPopover();
         closeTopbarPopovers("");
+        if (hadOpenPopover && isMobileNavigationViewport()) {
+          event.preventDefault();
+          event.stopImmediatePropagation();
+        }
       }
+    }, true);
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key !== "Escape" || !hasOpenTopbarPopover()) return;
+      closeTopbarPopovers("");
+      if (isMobileNavigationViewport()) event.stopImmediatePropagation();
     }, true);
 
     const updateActive = () => {

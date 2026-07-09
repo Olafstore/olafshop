@@ -2892,6 +2892,10 @@ function selectLanguage(lang) {
 }
 
 function closeNotificationMenu() {
+  if (window.OlafTopbarPopovers?.isUnified) {
+    window.OlafTopbarPopovers.closeOne?.("notifications");
+    return;
+  }
   const popover = $("#notification-popover");
   const toggle = $("#open-notifications");
   if (popover) popover.hidden = true;
@@ -2907,6 +2911,10 @@ function closeUserPopover() {
 }
 
 function toggleNotificationMenu() {
+  if (window.OlafTopbarPopovers?.isUnified) {
+    window.OlafTopbarPopovers.toggle?.("notifications");
+    return;
+  }
   const popover = $("#notification-popover");
   const toggle = $("#open-notifications");
   if (!popover || !toggle) return;

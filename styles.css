@@ -25986,3 +25986,110 @@ body.free-random-result-open {
     white-space: nowrap;
   }
 }
+
+/* v43: single stable mobile notification popover with smooth open/close */
+@media (max-width: 768px) {
+  .notification-popover.topbar-popover-fixed,
+  .language-popover.topbar-popover-fixed,
+  #user-popover.topbar-popover-fixed,
+  .user-popover.topbar-popover-fixed {
+    right: auto !important;
+    bottom: auto !important;
+    transform: none !important;
+    will-change: opacity, transform, filter !important;
+  }
+
+  .notification-popover.topbar-popover-fixed:not([hidden]) {
+    display: flex !important;
+    flex-direction: column !important;
+    width: min(348px, calc(100vw - 20px)) !important;
+    max-height: min(var(--olaf-popover-max-height, 62vh), 62vh) !important;
+    overflow: hidden !important;
+    border-radius: 22px !important;
+    border: 1px solid rgba(96, 165, 250, .24) !important;
+    background:
+      radial-gradient(circle at 18% 0%, rgba(59, 130, 246, .18), transparent 42%),
+      linear-gradient(180deg, rgba(12, 20, 42, .98), rgba(5, 10, 24, .98)) !important;
+    box-shadow:
+      0 24px 70px rgba(0, 0, 0, .52),
+      0 0 0 1px rgba(255, 255, 255, .035) inset !important;
+    animation: mobileNotificationIn 190ms cubic-bezier(.18, .9, .28, 1.08) both !important;
+  }
+
+  .notification-popover.topbar-popover-fixed.is-closing {
+    pointer-events: none !important;
+    animation: mobileNotificationOut 170ms cubic-bezier(.4, 0, .2, 1) both !important;
+  }
+
+  .notification-popover.topbar-popover-fixed .notification-header {
+    flex: 0 0 auto !important;
+    padding: 13px 14px !important;
+    border-bottom: 1px solid rgba(148, 163, 184, .14) !important;
+  }
+
+  .notification-popover.topbar-popover-fixed .notification-header h3 {
+    font-size: .92rem !important;
+    font-weight: 700 !important;
+    letter-spacing: .01em !important;
+  }
+
+  .notification-popover.topbar-popover-fixed .notification-body {
+    flex: 1 1 auto !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+
+  .notification-popover.topbar-popover-fixed .notification-item {
+    margin: 8px !important;
+    border-radius: 16px !important;
+    border: 1px solid rgba(148, 163, 184, .13) !important;
+    background: rgba(15, 23, 42, .52) !important;
+  }
+
+  .notification-popover.topbar-popover-fixed .notification-empty {
+    min-height: 170px !important;
+    padding: 28px 14px !important;
+  }
+
+  .notification-popover.topbar-popover-fixed .notification-body::-webkit-scrollbar {
+    width: 6px;
+  }
+
+  .notification-popover.topbar-popover-fixed .notification-body::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, .42);
+    border-radius: 999px;
+  }
+
+  .notification-popover.topbar-popover-fixed .notification-body::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, rgba(96, 165, 250, .72), rgba(79, 70, 229, .72));
+    border-radius: 999px;
+  }
+}
+
+@keyframes mobileNotificationIn {
+  from {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translate3d(0, -8px, 0) scale(.975);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes mobileNotificationOut {
+  from {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    filter: blur(4px);
+    transform: translate3d(0, -7px, 0) scale(.982);
+  }
+}

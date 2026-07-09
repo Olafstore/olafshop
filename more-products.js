@@ -178,6 +178,10 @@
   }
 
   function closePopovers(except = "") {
+    if (window.OlafTopbarPopovers?.isUnified) {
+      window.OlafTopbarPopovers.close?.(except);
+      return;
+    }
     if (except !== "language") {
       const language = $("#language-popover");
       if (language) language.hidden = true;
@@ -287,6 +291,10 @@
 
     $("#open-notifications")?.addEventListener("click", (event) => {
       event.stopPropagation();
+      if (window.OlafTopbarPopovers?.isUnified) {
+        window.OlafTopbarPopovers.toggle?.("notifications");
+        return;
+      }
       const popover = $("#notification-popover");
       if (!popover) return;
       const nextOpen = popover.hidden;

@@ -338,7 +338,7 @@
           <h2>${escapeHtml(name)}</h2>
           <p>${escapeHtml(detail)}</p>
           <div class="free-random-result-actions">
-            ${prizeType === "product" ? `<a class="primary-button" href="profile.html#inventory"><i data-lucide="package-open"></i> เปิดคลังสินค้า</a>` : ""}
+            ${prizeType === "product" ? `<a class="primary-button" href="profile.html#inventory"><i data-lucide="archive"></i> เปิดคลังสินค้า</a>` : ""}
             ${prizeType === "points" ? `<a class="primary-button" href="profile.html#info"><i data-lucide="coins"></i> เช็ค Point</a>` : ""}
             ${prizeType === "empty" ? `<button class="primary-button" type="button" data-spin-again><i data-lucide="rotate-cw"></i> สุ่มอีกครั้ง</button>` : ""}
             ${result.order?.id ? `<a class="ghost-button free-random-order-button" href="profile.html?order=${encodeURIComponent(result.order.id)}#orders"><i data-lucide="clipboard-list"></i><span>ดูออเดอร์</span></a>` : ""}
@@ -423,7 +423,7 @@
           ${milestoneHtml}
           <div class="free-random-result-actions">
             <button class="primary-button free-random-spin-again" type="button" data-spin-again><i data-lucide="refresh-cw"></i><span>สุ่มอีกครั้ง</span></button>
-            ${prizeType === "product" ? `<a class="primary-button" href="profile.html#inventory"><i data-lucide="package-open"></i><span>เปิดคลังสินค้า</span></a>` : ""}
+            ${prizeType === "product" ? `<a class="primary-button" href="profile.html#inventory"><i data-lucide="archive"></i><span>เปิดคลังสินค้า</span></a>` : ""}
             ${prizeType === "points" ? `<a class="primary-button" href="profile.html#info"><i data-lucide="coins"></i><span>เช็ค Point</span></a>` : ""}
             ${milestone?.order?.id ? `<a class="ghost-button free-random-order-button" href="profile.html?order=${encodeURIComponent(milestone.order.id)}#orders"><i data-lucide="gift"></i><span>โบนัสฟรี</span></a>` : ""}
             ${result.order?.id ? `<a class="ghost-button free-random-order-button" href="profile.html?order=${encodeURIComponent(result.order.id)}#orders"><i data-lucide="clipboard-list"></i><span>ดูออเดอร์</span></a>` : ""}
@@ -652,7 +652,7 @@
           <div class="user-popover-menu-title">เมนูบัญชี</div>
           ${user.role === "admin" ? '<a href="olaf-control.html"><i data-lucide="shield"></i><span>หลังบ้าน (Admin)</span></a>' : ""}
           <a href="profile.html#info"><i data-lucide="user"></i><span>ข้อมูลส่วนตัว</span></a>
-          <a href="profile.html#inventory"><i data-lucide="package-open"></i><span>คลังสินค้า</span></a>
+          <a href="profile.html#inventory"><i data-lucide="archive"></i><span>คลังสินค้า</span></a>
           <a href="profile.html#orders"><i data-lucide="receipt-text"></i><span>ประวัติคำสั่งซื้อ</span></a>
           <a href="free-random.html"><i data-lucide="sparkles"></i><span>สุ่มเกม 1 Point</span></a>
           <div class="user-popover-divider"></div>

@@ -25815,3 +25815,127 @@ body.free-random-result-open {
     transform: translate3d(0, 0, 0) scale(1);
   }
 }
+
+/* v39: one mobile UI layer only. Header nav stays desktop-only; mobile uses the body drawer. */
+@media (max-width: 768px) {
+  .topbar.site-topbar-unified > .main-nav[data-mobile-menu="clean-v14"],
+  .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav[data-mobile-menu="clean-v14"],
+  html.olaf-mobile-nav-open .topbar.site-topbar-unified > .main-nav[data-mobile-menu="clean-v14"],
+  body.olaf-mobile-nav-open .topbar.site-topbar-unified > .main-nav[data-mobile-menu="clean-v14"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: none !important;
+    width: 0 !important;
+    height: 0 !important;
+    overflow: hidden !important;
+  }
+
+  .topbar.site-topbar-unified.is-mobile-nav-open::before,
+  .topbar.site-topbar-unified.is-mobile-nav-open::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  body > .olaf-mobile-drawer:not([data-mobile-menu="drawer-v16"]),
+  body > .olaf-mobile-menu-backdrop:not([data-olaf-mobile-backdrop]),
+  body > #user-popover:not(.topbar-popover-fixed):not(.olaf-user-popover-single),
+  body > .user-popover:not(#user-popover):not(.topbar-popover-fixed):not(.olaf-user-popover-single) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+  }
+
+  .topbar.site-topbar-unified .account-button {
+    display: inline-grid !important;
+    width: 38px !important;
+    height: 38px !important;
+    min-width: 38px !important;
+    max-width: 38px !important;
+    padding: 0 !important;
+    place-items: center !important;
+    border-radius: 14px !important;
+    overflow: hidden !important;
+  }
+
+  .topbar.site-topbar-unified .account-button > svg,
+  .topbar.site-topbar-unified .account-button > i {
+    display: block !important;
+    width: 19px !important;
+    height: 19px !important;
+    min-width: 19px !important;
+    color: rgba(226, 232, 240, .9) !important;
+    stroke-width: 1.95 !important;
+  }
+
+  .topbar.site-topbar-unified .account-button .free-auth-avatar,
+  .topbar.site-topbar-unified .account-button .user-avatar,
+  .topbar.site-topbar-unified .account-button .account-avatar {
+    display: grid !important;
+    width: 30px !important;
+    height: 30px !important;
+    min-width: 30px !important;
+    place-items: center !important;
+    border-radius: 999px !important;
+    font-size: .82rem !important;
+  }
+
+  .topbar.site-topbar-unified .account-button > span:not(.free-auth-avatar):not(.user-avatar):not(.account-avatar) {
+    display: none !important;
+  }
+
+  .language-popover.topbar-popover-fixed:not([hidden]),
+  .notification-popover.topbar-popover-fixed:not([hidden]),
+  #user-popover.topbar-popover-fixed:not([hidden]) {
+    margin: 0 !important;
+    transform: translate3d(-50%, 0, 0) !important;
+  }
+}
+
+/* v40: strict single mobile header UI + restored account icon */
+@media (max-width: 768px) {
+  .topbar.site-topbar-unified > .main-nav[data-mobile-menu="clean-v14"] .mobile-menu-head,
+  .topbar.site-topbar-unified > .main-nav[data-mobile-menu="clean-v14"] .mobile-menu-footer,
+  .topbar.site-topbar-unified > .main-nav[data-mobile-menu="clean-v14"] [data-mobile-menu-close] {
+    display: none !important;
+  }
+
+  .topbar.site-topbar-unified .account-button > .free-auth-avatar,
+  .topbar.site-topbar-unified .account-button > .user-avatar,
+  .topbar.site-topbar-unified .account-button > .account-avatar {
+    display: none !important;
+  }
+
+  .topbar.site-topbar-unified .account-button > [data-olaf-account-icon],
+  .topbar.site-topbar-unified .account-button > svg,
+  .topbar.site-topbar-unified .account-button > i {
+    display: block !important;
+  }
+
+  .language-popover.topbar-popover-fixed:not([hidden]),
+  .notification-popover.topbar-popover-fixed:not([hidden]),
+  #user-popover.topbar-popover-fixed:not([hidden]),
+  .user-popover.topbar-popover-fixed:not([hidden]) {
+    transform: none !important;
+    max-width: calc(100vw - 20px) !important;
+    z-index: 12050 !important;
+  }
+
+  html.olaf-mobile-nav-open .language-popover.topbar-popover-fixed:not([hidden]),
+  html.olaf-mobile-nav-open .notification-popover.topbar-popover-fixed:not([hidden]),
+  html.olaf-mobile-nav-open #user-popover.topbar-popover-fixed:not([hidden]),
+  html.olaf-mobile-nav-open .user-popover.topbar-popover-fixed:not([hidden]) {
+    display: none !important;
+  }
+
+  .olaf-mobile-drawer[data-mobile-menu="drawer-v16"]:not(.is-open),
+  .olaf-mobile-menu-backdrop:not(.is-open) {
+    pointer-events: none !important;
+  }
+
+  .olaf-mobile-drawer[data-mobile-menu="drawer-v16"].is-open {
+    contain: layout paint;
+  }
+}

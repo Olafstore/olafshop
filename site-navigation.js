@@ -161,12 +161,16 @@
       </div>`;
   }
 
+  function mainNavHtml() {
+    return NAV_ITEMS.map(navLinkHtml).join("");
+  }
+
   function mobileDrawerHtml() {
     return `${mobileNavHeaderHtml()}${NAV_ITEMS.map(navLinkHtml).join("")}${mobileNavFooterHtml()}`;
   }
 
   function renderMainNav(nav) {
-    nav.innerHTML = mobileDrawerHtml();
+    nav.innerHTML = mainNavHtml();
     window.lucide?.createIcons?.();
   }
 
@@ -353,9 +357,104 @@
     node.setAttribute("aria-hidden", "true");
   }
 
+  function dedupeMobileNavigationLayers() {
+    const drawers = [...document.querySelectorAll(".olaf-mobile-drawer")];
+    const primaryDrawer = drawers.find((drawer) => drawer.dataset.mobileMenu === "drawer-v16") || drawers[0] || null;
+    drawers.forEach((drawer) => {
+      if (drawer === primaryDrawer) return;
+      drawer.classList.remove("is-open");
+      drawer.setAttribute("aria-hidden", "true");
+      drawer.remove();
+    });
+
+    const backdrops = [...document.querySelectorAll("[data-olaf-mobile-backdrop], .olaf-mobile-menu-backdrop")];
+    const primaryBackdrop = backdrops.find((backdrop) => backdrop.hasAttribute("data-olaf-mobile-backdrop")) || backdrops[0] || null;
+    backdrops.forEach((backdrop) => {
+      if (backdrop === primaryBackdrop) return;
+      backdrop.classList.remove("is-open");
+      backdrop.remove();
+    });
+
+    document.querySelectorAll(".topbar.site-topbar-unified > .main-nav[data-mobile-menu='clean-v14']").forEach((nav) => {
+      nav.querySelectorAll(".mobile-menu-head, .mobile-menu-footer, [data-mobile-menu-close]").forEach((node) => node.remove());
+      nav.dataset.mobileMenu = "clean-v14";
+    });
+  }
+
   let activeTopbarPopover = null;
   let activeTopbarAnchor = null;
   let topbarPortalCounter = 0;
+
+  function ensureAccountButtonIcon(button = document.querySelector("#open-auth")) {
+    if (!button) return;
+    const prefersIconOnly = window.matchMedia?.("(max-width: 768px)")?.matches;
+    const hasIcon = button.querySelector("svg, i");
+    const hasVisual = button.querySelector("svg, i, .free-auth-avatar, .user-avatar, .account-avatar");
+    let needsIconRefresh = false;
+    if (!hasVisual || (prefersIconOnly && !hasIcon)) {
+      const icon = document.createElement("i");
+      icon.dataset.olafAccountIcon = "true";
+      icon.setAttribute("data-lucide", currentNavUser() ? "circle-user-round" : "log-in");
+      button.prepend(icon);
+      needsIconRefresh = true;
+    }
+    if (button.classList.contains("is-auth-loading")) {
+      const icon = button.querySelector("i, svg");
+      if (icon?.tagName?.toLowerCase() === "i" && icon.getAttribute("data-lucide") !== "circle-user-round") {
+        icon.setAttribute("data-lucide", "circle-user-round");
+        needsIconRefresh = true;
+      }
+    }
+    if (needsIconRefresh) window.lucide?.createIcons?.();
+  }
+
+  function setupAccountButtonIconGuard(header) {
+    const button = header.querySelector("#open-auth");
+    if (!button || button.dataset.olafAccountIconGuard === "true") return;
+    button.dataset.olafAccountIconGuard = "true";
+    ensureAccountButtonIcon(button);
+    const observer = new MutationObserver(() => ensureAccountButtonIcon(button));
+    observer.observe(button, { childList: true, subtree: false, attributes: true, attributeFilter: ["class"] });
+  }
+
+  function renderFallbackUserPopover(popover, user) {
+    if (!popover || !user || popover.children.length) return;
+    const displayName = cleanDisplayText(user.displayName || user.username || user.email || "Member");
+    const initial = displayName.trim().charAt(0).toUpperCase() || "U";
+    const role = cleanDisplayText(user.role || "member");
+    popover.innerHTML = `
+      <div class="user-profile-card">
+        <a class="user-popover-header user-popover-header-link" href="profile.html#info">
+          <span class="user-popover-avatar">${escapeHtml(initial)}</span>
+          <span class="user-popover-info">
+            <strong>${escapeHtml(displayName)}</strong>
+            <span>${escapeHtml(user.email || "")}</span>
+          </span>
+        </a>
+        <div class="user-popover-badge-row">
+          <span class="user-badge-role">${escapeHtml(role)}</span>
+          <a class="user-badge-points" href="profile.html#info" data-topbar-point-balance>0 Points</a>
+        </div>
+      </div>
+      <div class="user-popover-menu">
+        <div class="user-popover-menu-title">เมนูบัญชี</div>
+        ${role === "admin" ? '<a href="olaf-control.html"><i data-lucide="shield"></i><span>หลังบ้าน (Admin)</span></a>' : ""}
+        <a href="profile.html#info"><i data-lucide="circle-user-round"></i><span>ข้อมูลส่วนตัว</span></a>
+        <a href="profile.html#inventory"><i data-lucide="archive"></i><span>คลังสินค้า</span></a>
+        <a href="profile.html#orders"><i data-lucide="receipt-text"></i><span>ประวัติคำสั่งซื้อ</span></a>
+        <a href="free-random.html"><i data-lucide="sparkles"></i><span>สุ่มเกม 1 Point</span></a>
+        <div class="user-popover-divider"></div>
+        <button class="danger-item" type="button" data-olaf-nav-logout><i data-lucide="log-out"></i><span>ออกจากระบบ</span></button>
+      </div>
+    `;
+    popover.querySelector("[data-olaf-nav-logout]")?.addEventListener("click", async () => {
+      await window.OlafStore?.logout?.();
+      popover.hidden = true;
+      closeTopbarPopovers("");
+      window.location.href = "index.html";
+    });
+    window.lucide?.createIcons?.();
+  }
 
   function resolveNode(target) {
     if (!target) return null;
@@ -476,11 +575,35 @@
       const button = document.querySelector(buttonSelector);
       if (popover) {
         popover.hidden = true;
+        popover.classList.remove("is-open");
         clearTopbarPopoverPosition(popover);
       }
       button?.classList.remove("is-active");
       button?.setAttribute("aria-expanded", "false");
     });
+  }
+
+  function openTopbarPopover(key, popover, button) {
+    if (!popover || !button) return;
+    if (key === "user") syncMobileUserPopoverPortal();
+    closeTopbarPopovers(key);
+    popover.hidden = false;
+    popover.classList.add("is-open");
+    button.classList.add("is-active");
+    button.setAttribute("aria-expanded", "true");
+    positionTopbarPopover(popover, button);
+  }
+
+  function toggleTopbarPopover(key, popoverSelector, button) {
+    const popover = document.querySelector(popoverSelector);
+    if (!popover || !button) return;
+    const shouldOpen = Boolean(popover.hidden);
+    if (!shouldOpen) {
+      closeTopbarPopovers("");
+      return;
+    }
+    if (key === "user") renderFallbackUserPopover(popover, currentNavUser());
+    openTopbarPopover(key, popover, button);
   }
 
   function setupTopbarPopoverAnchoring() {
@@ -492,16 +615,34 @@
       const notificationButton = event.target.closest("#open-notifications");
       const authButton = event.target.closest("#open-auth");
       if (languageButton) {
-        closeTopbarPopovers("language");
-        scheduleTopbarPopoverPosition("#language-popover", "#lang-toggle");
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        toggleTopbarPopover("language", "#language-popover", languageButton);
+        return;
       }
       if (notificationButton) {
-        closeTopbarPopovers("notifications");
-        scheduleTopbarPopoverPosition("#notification-popover", "#open-notifications");
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        toggleTopbarPopover("notifications", "#notification-popover", notificationButton);
+        return;
       }
       if (authButton) {
-        closeTopbarPopovers("user");
-        scheduleTopbarPopoverPosition("#user-popover", "#open-auth");
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        syncMobileUserPopoverPortal();
+        ensureAccountButtonIcon(authButton);
+        if (authButton.classList.contains("is-auth-loading")) return;
+        const user = currentNavUser();
+        if (!user) {
+          window.location.href = `login.html?return=${mobileReturnUrl()}`;
+          return;
+        }
+        toggleTopbarPopover("user", "#user-popover", authButton);
+        return;
+      }
+
+      if (!event.target.closest(".topbar-popover-fixed, .language-switcher, .notification-wrap, .user-popover-wrap")) {
+        closeTopbarPopovers("");
       }
     }, true);
 
@@ -592,6 +733,7 @@
       const shouldOpen = Boolean(isOpen) && isMobileNavigationViewport();
 
       if (shouldOpen) {
+        dedupeMobileNavigationLayers();
         renderMobileDrawer(drawer);
         ["#user-popover", "#notification-popover", "#language-popover", "#filter-popover"].forEach((selector) => {
           hideMobileFloatingPanel(document.querySelector(selector));
@@ -664,6 +806,7 @@
     const refreshNavForAuth = () => {
       renderMainNav(nav);
       renderMobileDrawer(drawer);
+      setupAccountButtonIconGuard(header);
     };
     const storeReady = window.OlafStore?.ready;
     if (storeReady && typeof storeReady.finally === "function") storeReady.finally(refreshNavForAuth);
@@ -967,6 +1110,7 @@
   function setupSiteNavigation() {
     replaceLegacyOrderLinks();
     syncMobileUserPopoverPortal();
+    dedupeMobileNavigationLayers();
     const headers = [...document.querySelectorAll(".topbar")];
     headers.forEach((header, index) => {
       header.classList.add("site-topbar-unified");
@@ -974,10 +1118,32 @@
       setupUniversalSearch(header);
       setupResponsiveSearch(header);
       setupFallbackTopbarControls(header);
+      setupAccountButtonIconGuard(header);
     });
     setupTopbarPopoverAnchoring();
     setupStickyState(headers);
-    setTimeout(syncMobileUserPopoverPortal, 600);
+    setTimeout(() => {
+      syncMobileUserPopoverPortal();
+      dedupeMobileNavigationLayers();
+      headers.forEach(setupAccountButtonIconGuard);
+    }, 600);
+
+    let cleanupQueued = false;
+    const queueSingleUiCleanup = () => {
+      if (cleanupQueued) return;
+      cleanupQueued = true;
+      window.requestAnimationFrame(() => {
+        cleanupQueued = false;
+        syncMobileUserPopoverPortal();
+        dedupeMobileNavigationLayers();
+        headers.forEach((header) => ensureAccountButtonIcon(header.querySelector("#open-auth")));
+      });
+    };
+    new MutationObserver(queueSingleUiCleanup).observe(document.body, {
+      childList: true,
+      subtree: true
+    });
+
     let resizeQueued = false;
     window.addEventListener("resize", () => {
       if (resizeQueued) return;
@@ -985,6 +1151,7 @@
       window.requestAnimationFrame(() => {
         resizeQueued = false;
         syncMobileUserPopoverPortal();
+        headers.forEach(setupAccountButtonIconGuard);
         if (window.innerWidth > 1180) {
           window.OlafNavigation?.closeMobileMenus?.();
           headers.forEach((header) => {

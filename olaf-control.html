@@ -1052,9 +1052,15 @@
                   </label>
                 </div>
                 <div class="free-random-admin-summary" id="free-random-admin-summary"></div>
-                <div class="free-random-admin-section-title">
-                  <strong>Milestone Bonus</strong>
-                  <span>ตั้งเกมฟรีเมื่อสุ่มครบ 50 / 100 / 150 / 200 ครั้ง</span>
+                <div class="free-random-admin-section-title free-random-milestone-admin-title">
+                  <div>
+                    <strong>Milestone Bonus</strong>
+                    <span>ตั้งเกมฟรีเมื่อสุ่มครบ 50 / 100 / 150 / 200 ครั้ง</span>
+                  </div>
+                  <button class="danger-button free-random-reset-bonus" id="free-random-reset-counts" type="button">
+                    <i data-lucide="rotate-ccw"></i>
+                    รีรอบโบนัสกิจกรรม
+                  </button>
                 </div>
                 <div class="free-random-slot-grid free-random-milestone-grid" id="free-random-milestone-grid"></div>
                 <div class="free-random-admin-section-title">
@@ -1070,10 +1076,6 @@
                   <button class="ghost-button" id="free-random-refresh" type="button">
                     <i data-lucide="refresh-cw"></i>
                     โหลดข้อมูลใหม่
-                  </button>
-                  <button class="danger-button" id="free-random-reset-counts" type="button">
-                    <i data-lucide="rotate-ccw"></i>
-                    รีจำนวนสุ่มทั้งหมด
                   </button>
                 </div>
               </form>

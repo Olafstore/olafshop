@@ -2799,10 +2799,38 @@ body {
   background: rgba(127, 29, 29, .24);
 }
 
+.free-random-milestone-admin-title {
+  align-items: center;
+}
+
+.free-random-milestone-admin-title > div {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+
+.free-random-milestone-admin-title .free-random-reset-bonus {
+  width: auto;
+  min-height: 40px;
+  flex: 0 0 auto;
+  border-radius: 14px;
+}
+
 @media (max-width: 1180px) {
   .free-random-admin-grid,
   .free-random-slot-grid,
   .free-random-admin-summary {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .free-random-milestone-admin-title {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .free-random-milestone-admin-title .free-random-reset-bonus {
+    width: 100%;
   }
 }

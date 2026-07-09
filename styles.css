@@ -25025,3 +25025,211 @@ body.free-random-result-open {
     font-size: .52rem;
   }
 }
+
+/* v36: balance the Premium Spin hero so the bonus panel feels like one card */
+.free-random-hero {
+  width: min(1040px, 100%);
+  margin-inline: auto;
+  grid-template-columns: minmax(0, 1fr) minmax(248px, 296px);
+  align-items: stretch;
+  gap: clamp(14px, 2vw, 22px);
+  padding: clamp(18px, 2.8vw, 30px);
+}
+
+.free-random-copy {
+  display: grid;
+  align-content: center;
+  min-width: 0;
+}
+
+.free-random-copy h1 {
+  margin-block: 10px 8px;
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.free-random-copy p {
+  max-width: 640px;
+  line-height: 1.55;
+}
+
+.free-random-metrics {
+  max-width: 660px;
+  margin-top: 18px;
+}
+
+.free-random-metrics article {
+  padding: 10px 12px;
+  border-radius: 16px;
+}
+
+.free-random-bonus-card {
+  display: grid;
+  grid-template-columns: 1fr;
+  justify-self: end;
+  align-content: start;
+  width: 100%;
+  max-width: 296px;
+  min-height: 0;
+  gap: 8px;
+  padding: 12px;
+  border-radius: 24px;
+}
+
+.free-random-bonus-card .free-random-wallet-orb {
+  width: 34px;
+  height: 34px;
+  margin: 0 0 4px;
+  border-radius: 13px;
+}
+
+.free-random-bonus-copy span {
+  margin-bottom: 6px;
+  padding: 3px 8px;
+  font-size: .56rem;
+  letter-spacing: .12em;
+}
+
+.free-random-bonus-copy strong {
+  font-size: clamp(1rem, 1.3vw, 1.22rem);
+  line-height: 1.08;
+}
+
+.free-random-bonus-copy p {
+  max-width: 260px;
+  margin-top: 6px;
+  font-size: .66rem;
+  line-height: 1.35;
+}
+
+.free-random-milestone-grid.is-hero-card {
+  gap: 7px;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-card {
+  min-height: 148px;
+  padding: 6px;
+  border-radius: 14px;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-card::after {
+  opacity: .48;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-image {
+  aspect-ratio: 16 / 6.5;
+  border-radius: 10px;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-body {
+  gap: 3px;
+  grid-template-rows: auto minmax(2em, auto) auto auto auto;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-kicker {
+  font-size: .50rem;
+  letter-spacing: .02em;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-kicker svg {
+  width: 9px;
+  height: 9px;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-body h3 {
+  min-height: 2em;
+  font-size: clamp(.55rem, .95vw, .64rem);
+  line-height: 1.02;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-body p {
+  font-size: .50rem;
+  line-height: 1.12;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-progress {
+  height: 3px;
+  margin-top: 1px;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-claim {
+  min-height: 22px;
+  margin-top: 3px;
+  padding-inline: 7px;
+  font-size: .50rem;
+}
+
+.free-random-milestone-grid.is-hero-card .free-random-milestone-claim svg {
+  width: 10px;
+  height: 10px;
+}
+
+@media (min-width: 900px) and (max-width: 1120px) {
+  .free-random-hero {
+    grid-template-columns: minmax(0, 1fr) minmax(240px, 286px);
+    width: min(960px, 100%);
+  }
+}
+
+@media (min-width: 721px) and (max-width: 899px) {
+  .free-random-hero {
+    width: min(720px, 100%);
+    grid-template-columns: 1fr;
+  }
+
+  .free-random-bonus-card {
+    justify-self: stretch;
+    max-width: none;
+  }
+
+  .free-random-bonus-copy p {
+    max-width: 520px;
+  }
+
+  .free-random-milestone-grid.is-hero-card .free-random-milestone-card {
+    min-height: 138px;
+  }
+}
+
+@media (max-width: 720px) {
+  .free-random-hero {
+    width: 100%;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .free-random-bonus-card {
+    display: grid;
+    grid-template-columns: 1fr;
+    justify-self: stretch;
+    max-width: none;
+    padding: 12px;
+    gap: 8px;
+  }
+
+  .free-random-bonus-card .free-random-wallet-orb {
+    grid-row: auto;
+    width: 32px;
+    height: 32px;
+    margin: 0 0 3px;
+  }
+
+  .free-random-milestone-grid.is-hero-card {
+    gap: 7px;
+  }
+
+  .free-random-milestone-grid.is-hero-card .free-random-milestone-card {
+    min-height: 142px;
+    padding: 6px;
+  }
+}
+
+@media (max-width: 390px) {
+  .free-random-milestone-grid.is-hero-card .free-random-milestone-card {
+    min-height: 136px;
+    border-radius: 13px;
+  }
+
+  .free-random-milestone-grid.is-hero-card .free-random-milestone-body h3 {
+    font-size: .52rem;
+  }
+}

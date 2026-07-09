@@ -1537,7 +1537,14 @@
       p_order_id: orderId
     });
     if (error) throw error;
-    return withPaymentSlipUrl(mapOrderRpcPayload(data));
+    const payload = data && typeof data === "string" ? JSON.parse(data) : data;
+    const order = await withPaymentSlipUrl(mapOrderRpcPayload(payload));
+    if (!order) return order;
+    return {
+      ...order,
+      pointRefundAmount: Number(payload?.pointRefundAmount ?? payload?.point_refund_amount ?? 0),
+      pointRefunded: payload?.pointRefunded === true || payload?.point_refunded === true
+    };
   }
 
   async function fetchAdminOrders() {

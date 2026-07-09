@@ -480,6 +480,21 @@
     }
   }
 
+  function closeTopbarSearches(except = null) {
+    document.querySelectorAll(".topbar.site-topbar-unified").forEach((header) => {
+      const search = header.querySelector(".topbar-search-wrap, .site-global-search");
+      if (!search || search === except) return;
+      search.classList.remove("is-search-open");
+      header.classList.remove("is-search-active");
+      const toggle = search.querySelector(".topbar-search-toggle, .site-global-search-toggle");
+      toggle?.setAttribute("aria-expanded", "false");
+      search.querySelectorAll(".search-suggestions, .site-global-search-results").forEach((panel) => {
+        panel.hidden = true;
+        if (panel.classList.contains("site-global-search-results")) panel.innerHTML = "";
+      });
+    });
+  }
+
   function ensureTopbarPortalId(node) {
     if (!node) return "";
     if (!node.dataset.olafTopbarPortalId) {
@@ -586,6 +601,7 @@
   function openTopbarPopover(key, popover, button) {
     if (!popover || !button) return;
     if (key === "user") syncMobileUserPopoverPortal();
+    closeTopbarSearches();
     closeTopbarPopovers(key);
     popover.hidden = false;
     popover.classList.add("is-open");
@@ -617,12 +633,14 @@
       if (languageButton) {
         event.preventDefault();
         event.stopImmediatePropagation();
+        closeTopbarSearches();
         toggleTopbarPopover("language", "#language-popover", languageButton);
         return;
       }
       if (notificationButton) {
         event.preventDefault();
         event.stopImmediatePropagation();
+        closeTopbarSearches();
         toggleTopbarPopover("notifications", "#notification-popover", notificationButton);
         return;
       }
@@ -631,6 +649,7 @@
         event.stopImmediatePropagation();
         syncMobileUserPopoverPortal();
         ensureAccountButtonIcon(authButton);
+        closeTopbarSearches();
         if (authButton.classList.contains("is-auth-loading")) return;
         const user = currentNavUser();
         if (!user) {
@@ -1064,6 +1083,10 @@
     if (!search || !input || !toggle) return;
 
     const setOpen = (open, focus = false) => {
+      if (open) {
+        closeTopbarPopovers("");
+        closeTopbarSearches(search);
+      }
       search.classList.toggle("is-search-open", open);
       header.classList.toggle("is-search-active", open);
       toggle.setAttribute("aria-expanded", String(open));

@@ -26093,3 +26093,92 @@ body.free-random-result-open {
     transform: translate3d(0, -7px, 0) scale(.982);
   }
 }
+
+/* v44: hard mobile notification fallback — never let legacy absolute popovers overflow right */
+@media (max-width: 768px) {
+  .notification-popover:not([hidden]) {
+    position: fixed !important;
+    top: var(--olaf-popover-top, 76px) !important;
+    left: max(12px, env(safe-area-inset-left)) !important;
+    right: max(12px, env(safe-area-inset-right)) !important;
+    bottom: auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    max-width: none !important;
+    max-height: min(var(--olaf-popover-max-height, 62vh), calc(100svh - 94px)) !important;
+    transform: none !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    z-index: 12080 !important;
+    border-radius: 22px !important;
+    border: 1px solid rgba(96, 165, 250, .24) !important;
+    background:
+      radial-gradient(circle at 18% 0%, rgba(59, 130, 246, .18), transparent 42%),
+      linear-gradient(180deg, rgba(12, 20, 42, .985), rgba(5, 10, 24, .985)) !important;
+    box-shadow:
+      0 24px 70px rgba(0, 0, 0, .54),
+      inset 0 1px 0 rgba(255, 255, 255, .045) !important;
+    backdrop-filter: blur(22px) saturate(1.12) !important;
+    -webkit-backdrop-filter: blur(22px) saturate(1.12) !important;
+    animation: mobileNotificationSheetIn 210ms cubic-bezier(.18, .9, .28, 1.08) both !important;
+    transform-origin: top center !important;
+  }
+
+  .notification-popover.is-closing {
+    pointer-events: none !important;
+    animation: mobileNotificationSheetOut 180ms cubic-bezier(.4, 0, .2, 1) both !important;
+  }
+
+  .notification-popover:not([hidden]) .notification-header {
+    padding: 13px 14px !important;
+    flex: 0 0 auto !important;
+  }
+
+  .notification-popover:not([hidden]) .notification-body {
+    flex: 1 1 auto !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+  }
+
+  .notification-popover:not([hidden]) .notification-item {
+    grid-template-columns: 46px minmax(0, 1fr) !important;
+    gap: 10px !important;
+  }
+
+  .notification-popover:not([hidden]) .notification-content,
+  .notification-popover:not([hidden]) .notification-content strong,
+  .notification-popover:not([hidden]) .notification-content p,
+  .notification-popover:not([hidden]) .notification-content span {
+    min-width: 0 !important;
+    overflow-wrap: anywhere !important;
+  }
+}
+
+@keyframes mobileNotificationSheetIn {
+  from {
+    opacity: 0;
+    filter: blur(6px);
+    transform: translate3d(0, -10px, 0) scale(.972);
+  }
+  to {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes mobileNotificationSheetOut {
+  from {
+    opacity: 1;
+    filter: blur(0);
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  to {
+    opacity: 0;
+    filter: blur(5px);
+    transform: translate3d(0, -9px, 0) scale(.978);
+  }
+}

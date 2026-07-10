@@ -28567,3 +28567,225 @@ a.profile-nav-item {
     height: 40px;
   }
 }
+
+/* 2026-07-11 v59 — mobile topbar polish: exact red notification dot, circular search, smooth menus */
+.notification-button {
+  position: relative !important;
+  overflow: visible !important;
+  isolation: isolate !important;
+}
+
+.notification-button.has-notifications::after,
+.notification-button.has-notifications::before {
+  content: none !important;
+  display: none !important;
+  opacity: 0 !important;
+  animation: none !important;
+}
+
+.notification-button .notification-badge {
+  position: absolute !important;
+  top: 3px !important;
+  right: 3px !important;
+  width: 8px !important;
+  height: 8px !important;
+  min-width: 8px !important;
+  max-width: 8px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 999px !important;
+  background: #ef4444 !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  box-shadow:
+    0 0 0 2px rgba(2, 6, 23, 0.98),
+    0 0 12px rgba(239, 68, 68, 0.7) !important;
+  transform: translate3d(0, 0, 0) !important;
+  z-index: 6 !important;
+  pointer-events: none !important;
+}
+
+.notification-button .notification-badge[hidden] {
+  display: none !important;
+}
+
+@keyframes olafTopbarMenuIn {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0) scale(0.975);
+    filter: blur(5px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes olafTopbarMenuOut {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -7px, 0) scale(0.975);
+    filter: blur(5px);
+  }
+}
+
+@keyframes olafMobileDrawerIn {
+  0% {
+    transform: translate3d(-104%, 0, 0);
+    filter: blur(4px);
+  }
+  100% {
+    transform: translate3d(0, 0, 0);
+    filter: blur(0);
+  }
+}
+
+@keyframes olafMobileBackdropIn {
+  0% { opacity: 0; }
+  100% { opacity: 1; }
+}
+
+@media (max-width: 768px) {
+  .topbar.site-topbar-unified .site-global-search,
+  .topbar.site-topbar-unified .topbar-search-wrap,
+  .profile-page .topbar.site-topbar-unified .topbar-search-wrap {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    flex: 0 0 40px !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 999px !important;
+  }
+
+  .topbar.site-topbar-unified .topbar-search-form,
+  .topbar.site-topbar-unified .topbar-search-wrap.site-unified-search .topbar-search-form {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    display: grid !important;
+    place-items: center !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 999px !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search-toggle,
+  .topbar.site-topbar-unified .topbar-search-toggle {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    display: grid !important;
+    place-items: center !important;
+    padding: 0 !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 999px !important;
+    line-height: 0 !important;
+    overflow: visible !important;
+    transition:
+      transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 180ms ease,
+      background 180ms ease,
+      box-shadow 180ms ease !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search-toggle svg,
+  .topbar.site-topbar-unified .topbar-search-toggle svg {
+    width: 18px !important;
+    height: 18px !important;
+    margin: 0 !important;
+    flex: 0 0 auto !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search-toggle:active,
+  .topbar.site-topbar-unified .topbar-search-toggle:active {
+    transform: scale(0.94) !important;
+  }
+
+  .language-popover.topbar-popover-fixed:not([hidden]),
+  .notification-popover.topbar-popover-fixed:not([hidden]),
+  #user-popover.topbar-popover-fixed:not([hidden]),
+  .user-popover.topbar-popover-fixed:not([hidden]) {
+    animation: olafTopbarMenuIn 240ms cubic-bezier(0.16, 1, 0.3, 1) both !important;
+    transform-origin: top center !important;
+    will-change: opacity, transform, filter !important;
+    z-index: 15050 !important;
+  }
+
+  .language-popover.topbar-popover-fixed.is-closing,
+  .notification-popover.topbar-popover-fixed.is-closing,
+  #user-popover.topbar-popover-fixed.is-closing,
+  .user-popover.topbar-popover-fixed.is-closing {
+    animation: olafTopbarMenuOut 220ms ease both !important;
+    pointer-events: none !important;
+  }
+
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v54"] {
+    transition:
+      transform 260ms cubic-bezier(0.16, 1, 0.3, 1),
+      box-shadow 260ms ease,
+      filter 220ms ease !important;
+  }
+
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v54"].is-open {
+    animation: olafMobileDrawerIn 260ms cubic-bezier(0.16, 1, 0.3, 1) both !important;
+  }
+
+  .olaf-mobile-menu-backdrop,
+  body > .olaf-mobile-menu-backdrop[data-olaf-mobile-backdrop] {
+    transition:
+      opacity 240ms ease,
+      visibility 240ms ease,
+      backdrop-filter 240ms ease !important;
+  }
+
+  .olaf-mobile-menu-backdrop.is-open,
+  body > .olaf-mobile-menu-backdrop[data-olaf-mobile-backdrop].is-open {
+    animation: olafMobileBackdropIn 240ms ease both !important;
+  }
+
+  .olaf-mobile-search-shell.is-open .olaf-mobile-search-card {
+    animation: olafMobileSearchIn 280ms cubic-bezier(0.16, 1, 0.3, 1) both !important;
+  }
+
+  .olaf-mobile-search-shell.is-closing .olaf-mobile-search-card {
+    animation: olafMobileSearchOut 240ms ease both !important;
+  }
+
+  .discord-floating-link,
+  body:has(dialog[open]) .discord-floating-link,
+  body:has(.inventory-modal:not([hidden])) .discord-floating-link,
+  body:has(.topbar.site-topbar-unified.is-mobile-nav-open) .discord-floating-link,
+  body:has(.user-popover:not([hidden])) .discord-floating-link,
+  body:has(.notification-popover:not([hidden])) .discord-floating-link,
+  body:has(.language-popover:not([hidden])) .discord-floating-link,
+  body:has(.topbar-popover-fixed:not([hidden])) .discord-floating-link,
+  html.olaf-topbar-overlay-open .discord-floating-link,
+  body.olaf-topbar-overlay-open .discord-floating-link,
+  html.olaf-mobile-nav-open .discord-floating-link,
+  body.olaf-mobile-nav-open .discord-floating-link,
+  html.olaf-mobile-search-open .discord-floating-link,
+  body.olaf-mobile-search-open .discord-floating-link,
+  html.olaf-dialog-open .discord-floating-link,
+  body.olaf-dialog-open .discord-floating-link {
+    display: inline-grid !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+    z-index: 17050 !important;
+  }
+}

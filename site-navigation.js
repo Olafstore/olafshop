@@ -643,7 +643,7 @@
     };
 
     if (shouldAnimate) {
-      popoverCloseTimers.set(popover, window.setTimeout(finish, 180));
+      popoverCloseTimers.set(popover, window.setTimeout(finish, 260));
       return;
     }
 

@@ -673,6 +673,7 @@
   function openTopbarPopover(key, popover, button) {
     if (!popover || !button) return;
     if (key === "user") syncMobileUserPopoverPortal();
+    closeMobileSearch();
     closeMobileNavigationOnly();
     closeTopbarSearches();
     closeTopbarPopovers(key);
@@ -879,6 +880,7 @@
       const shouldOpen = Boolean(isOpen) && isMobileNavigationViewport();
 
       if (shouldOpen) {
+        closeMobileSearch();
         closeTopbarPopovers("");
         closeTopbarSearches();
         dedupeMobileNavigationLayers();
@@ -981,6 +983,8 @@
 
   let searchableProductsPromise = null;
   let universalSearchRequest = 0;
+  let mobileSearchRequest = 0;
+  let mobileSearchCloseTimer = null;
 
   function escapeHtml(value = "") {
     return String(value || "")
@@ -1139,6 +1143,184 @@
     panel.hidden = false;
   }
 
+  function ensureMobileSearchShell() {
+    let shell = document.querySelector("#olaf-mobile-search-shell");
+    if (shell) return shell;
+
+    shell = document.createElement("section");
+    shell.id = "olaf-mobile-search-shell";
+    shell.className = "olaf-mobile-search-shell";
+    shell.hidden = true;
+    shell.setAttribute("role", "dialog");
+    shell.setAttribute("aria-modal", "true");
+    shell.setAttribute("aria-label", "ค้นหาสินค้า");
+    shell.innerHTML = `
+      <button class="olaf-mobile-search-backdrop" type="button" data-mobile-search-close aria-label="ปิดค้นหา"></button>
+      <div class="olaf-mobile-search-card">
+        <div class="olaf-mobile-search-head">
+          <span class="olaf-mobile-search-icon"><i data-lucide="search"></i></span>
+          <div>
+            <strong>ค้นหาสินค้า</strong>
+            <p>พิมพ์ชื่อเกม หมวดหมู่ หรือแพลตฟอร์มที่ต้องการ</p>
+          </div>
+          <button class="olaf-mobile-search-close" type="button" data-mobile-search-close aria-label="ปิดค้นหา">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
+        <form class="olaf-mobile-search-form" data-mobile-search-form autocomplete="off" role="search">
+          <i data-lucide="search" aria-hidden="true"></i>
+          <input data-mobile-search-input type="search" placeholder="ค้นหาเกม..." aria-label="ค้นหาสินค้า" />
+          <button type="submit">ค้นหา</button>
+        </form>
+        <div class="olaf-mobile-search-results" data-mobile-search-results role="listbox">
+          <div class="olaf-mobile-search-empty">เริ่มพิมพ์เพื่อค้นหาสินค้าในร้าน</div>
+        </div>
+      </div>
+    `;
+    document.body?.appendChild(shell);
+
+    shell.addEventListener("click", (event) => {
+      if (event.target.closest("[data-mobile-search-close]")) {
+        event.preventDefault();
+        closeMobileSearch();
+        return;
+      }
+      const productLink = event.target.closest("[data-mobile-search-product]");
+      if (productLink) closeMobileSearch();
+    });
+
+    shell.querySelector("[data-mobile-search-form]")?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      const input = shell.querySelector("[data-mobile-search-input]");
+      const query = input?.value.trim() || "";
+      if (!query) {
+        input?.focus();
+        return;
+      }
+      closeMobileSearch({ immediate: true });
+      if (syncIndexCatalogSearch(query, true)) {
+        document.querySelector("#catalog")?.scrollIntoView({ behavior: "smooth", block: "start" });
+        return;
+      }
+      window.location.href = `index.html?search=${encodeURIComponent(query)}#catalog`;
+    });
+
+    shell.querySelector("[data-mobile-search-input]")?.addEventListener("input", (event) => {
+      renderMobileSearchResults(event.target.value || "");
+    });
+
+    window.lucide?.createIcons?.();
+    return shell;
+  }
+
+  async function renderMobileSearchResults(query = "") {
+    const shell = ensureMobileSearchShell();
+    const panel = shell.querySelector("[data-mobile-search-results]");
+    const keyword = query.trim();
+    const requestId = ++mobileSearchRequest;
+    if (!panel) return;
+
+    if (!keyword) {
+      panel.innerHTML = `<div class="olaf-mobile-search-empty">เริ่มพิมพ์เพื่อค้นหาสินค้าในร้าน</div>`;
+      return;
+    }
+
+    panel.innerHTML = `<div class="olaf-mobile-search-loading"><i data-lucide="loader-circle"></i><span>กำลังค้นหา...</span></div>`;
+    window.lucide?.createIcons?.();
+
+    const products = await loadSearchableProducts();
+    if (requestId !== mobileSearchRequest) return;
+    const matches = findSearchMatches(products, keyword, 8);
+
+    if (!matches.length) {
+      panel.innerHTML = `<div class="olaf-mobile-search-empty">ไม่พบสินค้าที่ตรงกับ “${escapeHtml(keyword)}”</div>`;
+      return;
+    }
+
+    panel.innerHTML = matches
+      .map((product) => {
+        const image = productImage(product);
+        const name = cleanDisplayText(product?.name || "สินค้า");
+        const meta = cleanDisplayText(product?.publisher || product?.category || "");
+        const price = productPrice(product);
+        return `
+          <a class="olaf-mobile-search-item" href="product.html?id=${encodeURIComponent(product.id)}" data-mobile-search-product role="option">
+            <span class="olaf-mobile-search-thumb">
+              ${image ? `<img src="${escapeHtml(image)}" alt="" loading="lazy" />` : `<i data-lucide="gamepad-2"></i>`}
+            </span>
+            <span class="olaf-mobile-search-info">
+              <strong>${escapeHtml(name)}</strong>
+              <small>${escapeHtml(meta)}</small>
+            </span>
+            <span class="olaf-mobile-search-price">${escapeHtml(price)}</span>
+          </a>
+        `;
+      })
+      .join("");
+    window.lucide?.createIcons?.();
+  }
+
+  function openMobileSearch() {
+    if (!isMobileNavigationViewport()) return false;
+    const shell = ensureMobileSearchShell();
+    const input = shell.querySelector("[data-mobile-search-input]");
+    clearTimeout(mobileSearchCloseTimer);
+    closeTopbarPopovers("");
+    closeMobileNavigationOnly();
+    closeTopbarSearches();
+
+    shell.hidden = false;
+    shell.classList.remove("is-closing");
+    shell.classList.add("is-open");
+    document.documentElement.classList.add("olaf-mobile-search-open");
+    document.body?.classList.add("olaf-mobile-search-open");
+    setMobilePageScrollLock(true);
+    window.requestAnimationFrame(() => {
+      input?.focus();
+      window.lucide?.createIcons?.();
+    });
+    return true;
+  }
+
+  function closeMobileSearch(options = {}) {
+    const shell = document.querySelector("#olaf-mobile-search-shell");
+    if (!shell || shell.hidden) return;
+    clearTimeout(mobileSearchCloseTimer);
+    shell.classList.remove("is-open");
+    shell.classList.add("is-closing");
+    document.documentElement.classList.remove("olaf-mobile-search-open");
+    document.body?.classList.remove("olaf-mobile-search-open");
+
+    const finish = () => {
+      shell.hidden = true;
+      shell.classList.remove("is-closing");
+      if (!document.querySelector(".olaf-mobile-drawer.is-open")) setMobilePageScrollLock(false);
+    };
+
+    if (options.immediate || !isMobileNavigationViewport()) {
+      finish();
+      return;
+    }
+    mobileSearchCloseTimer = window.setTimeout(finish, 180);
+  }
+
+  function setupMobileSearchController() {
+    if (document.body?.dataset.olafMobileSearchBound === "true") return;
+    document.body.dataset.olafMobileSearchBound = "true";
+
+    document.addEventListener("click", (event) => {
+      const searchToggle = event.target.closest(".topbar-search-toggle, .site-global-search-toggle");
+      if (!searchToggle || !isMobileNavigationViewport()) return;
+      event.preventDefault();
+      event.stopImmediatePropagation();
+      openMobileSearch();
+    }, true);
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape") closeMobileSearch();
+    }, true);
+  }
+
   function setupUniversalSearch(header) {
     const legacySearch = header.querySelector(".topbar-search-wrap");
     if (legacySearch) {
@@ -1271,6 +1453,7 @@
       normalizeMainNavigation(header, index);
       setupUniversalSearch(header);
       setupResponsiveSearch(header);
+      setupMobileSearchController();
       setupFallbackTopbarControls(header);
       setupAccountButtonIconGuard(header);
     });
@@ -1307,6 +1490,7 @@
         syncMobileUserPopoverPortal();
         headers.forEach(setupAccountButtonIconGuard);
         if (window.innerWidth > 1180) {
+          closeMobileSearch({ immediate: true });
           window.OlafNavigation?.closeMobileMenus?.();
           headers.forEach((header) => {
             header.classList.remove("is-search-active");

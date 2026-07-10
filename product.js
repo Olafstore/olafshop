@@ -20,9 +20,9 @@ let checkoutPointState = {
 
 const productEndpoints = [
   window.OLAF_CONFIG?.productsEndpoint,
-  "api/products.json",
-  "/api/products.json",
-  "./api/products.json"
+  "api/products.json?v=20260710-thai-text-fix-v51",
+  "/api/products.json?v=20260710-thai-text-fix-v51",
+  "./api/products.json?v=20260710-thai-text-fix-v51"
 ].filter(Boolean);
 
 const steamAppCacheEndpoints = [
@@ -733,27 +733,27 @@ function getSidebarDisplayTags(product) {
 
 function cleanDisplayText(value = "") {
   const replacements = [
-    ["à¹à¸‡à¹ˆà¸šà¸§à¸à¹€à¸›à¹‡à¸™à¸­à¸¢à¹ˆà¸²à¸‡à¸¡à¸²à¸", "แง่บวกเป็นอย่างมาก"],
-    ["à¹à¸‡à¹ˆà¸šà¸§à¸à¹€à¸›à¹‡à¸™à¸ªà¹ˆà¸§à¸™à¸¡à¸²à¸", "แง่บวกเป็นส่วนมาก"],
-    ["à¸œà¸ªà¸¡à¸à¸±à¸™", "ผสมกัน"],
-    ["à¸£à¸µà¸§à¸´à¸§", "รีวิว"],
-    ["Â®", "®"],
-    ["Â©", "©"],
-    ["Â", ""],
-    ["â„¢", "™"],
-    ["â€¢", "•"],
-    ["â€“", "–"],
-    ["â€”", "—"],
-    ["â€¦", "..."],
-    ["â€˜", "‘"],
-    ["â€™", "’"],
-    ["â€œ", "“"],
-    ["â€", "”"],
-    ["ã€€", " "],
+    ["แง่บวกเป็นอย่างมาก", "แง่บวกเป็นอย่างมาก"],
+    ["แง่บวกเป็นส่วนมาก", "แง่บวกเป็นส่วนมาก"],
+    ["ผสมกัน", "ผสมกัน"],
+    ["รีวิว", "รีวิว"],
+    ["\u00c2®", "®"],
+    ["\u00c2©", "©"],
+    ["\u00c2", ""],
+    ["\u00e2\u201e¢", "\u2122"],
+    ["\u00e2\u20ac¢", "\u2022"],
+    ["–", "–"],
+    ["—", "—"],
+    ["…", "..."],
+    ["\u00e2\u20ac\u02dc", "\u2018"],
+    ["\u00e2\u20ac\u2122", "\u2019"],
+    ["\u00e2\u20ac\u0153", "\u201c"],
+    ["\u00e2\u20ac\u009d", "\u201d"],
+    ["　", " "],
     ["\u00a0", " "]
   ];
   let next = String(value || "");
-  const mojibakePattern = /(?:à¸|à¹|Ã.|Â.|â€|â„¢|ã€€|ï¿½|�)/g;
+  const mojibakePattern = /(?:\u00e0\u00b8|\u00e0\u00b9|\u00c3.|\u00c2.|\u00e2\u20ac|\u00e2\u201e¢|\u00e3\u20ac\u20ac|\u00ef¿½|\ufffd)/g;
   const mojibakeScore = (text) => (String(text || "").match(mojibakePattern) || []).length;
   const windows1252Bytes = new Map([
     [0x20ac, 0x80], [0x201a, 0x82], [0x0192, 0x83], [0x201e, 0x84],
@@ -2078,7 +2078,7 @@ function renderCheckoutPoints() {
   if (finalEl) finalEl.textContent = formatPrice(finalTotal);
   if (noteEl) {
     noteEl.textContent = finalTotal <= 0 && discount > 0
-      ? "พอยท์ครอบคลุมยอดทั้งหมด ระบบจะยืนยันออเดอร์ทันทีโดยไม่ต้องแนบสลิป"
+      ? "Point ครอบคลุมยอดทั้งหมด ระบบจะยืนยันออเดอร์ทันทีโดยไม่ต้องแนบสลิป"
       : discount > 0
         ? `ใช้ ${formatPointAmount(discount)} Point ลดราคา เหลือยอดชำระ ${formatPrice(finalTotal)}`
         : "1 Point = 1 บาท ใช้ลดราคาได้สูงสุดตามยอดคำสั่งซื้อ";
@@ -2088,7 +2088,7 @@ function renderCheckoutPoints() {
   if (paymentSection) paymentSection.hidden = finalTotal <= 0 && discount > 0;
   if (submitLabel) {
     submitLabel.textContent = finalTotal <= 0 && discount > 0
-      ? "ใช้พอยท์สั่งซื้อทันที"
+      ? "ใช้ Point สั่งซื้อทันที"
       : "ดำเนินการชำระเงิน";
   }
 }
@@ -2253,7 +2253,7 @@ function orderErrorMessage(error) {
   if (message.includes("AUTH_REQUIRED")) return "กรุณาเข้าสู่ระบบก่อนสั่งซื้อ";
   if (message.includes("PRODUCT_NOT_FOUND")) return "ไม่พบสินค้านี้หรือสินค้าถูกปิดชั่วคราว";
   if (message.includes("INVALID_QUANTITY")) return "จำนวนสินค้าไม่ถูกต้อง";
-  if (message.includes("POINT_BALANCE_INSUFFICIENT")) return "พอยท์คงเหลือไม่เพียงพอ กรุณารีเฟรชยอดพอยท์แล้วลองใหม่";
+  if (message.includes("POINT_BALANCE_INSUFFICIENT")) return "Point คงเหลือไม่เพียงพอ กรุณารีเฟรชยอด Point แล้วลองใหม่";
   return "ไม่สามารถสร้างคำสั่งซื้อได้ กรุณาลองใหม่อีกครั้ง";
 }
 
@@ -2290,8 +2290,8 @@ async function submitOrder(formData) {
       if (mobilePaymentFlow && $("#qr-dialog")?.open) $("#qr-dialog")?.close();
       showToast(
         savedOrder?.status === "delivered"
-          ? "ใช้พอยท์สั่งซื้อสำเร็จ และจัดส่งสินค้า Offline แล้ว"
-          : "ใช้พอยท์สั่งซื้อสำเร็จ รอแอดมินจัดส่งสินค้า",
+          ? "ใช้ Point สั่งซื้อสำเร็จ และจัดส่งสินค้า Offline แล้ว"
+          : "ใช้ Point สั่งซื้อสำเร็จ รอแอดมินจัดส่งสินค้า",
         "payment",
         5500
       );
@@ -2607,7 +2607,7 @@ function showPaymentSlipError(error) {
     isUnderpaid ? 15000 : 6000,
     isUnderpaid
       ? {
-          label: "Check Point",
+          label: "เช็ค Point",
           href: "profile.html#info",
           target: "_self"
         }
@@ -2951,6 +2951,7 @@ function renderUserPopover() {
     <div class="user-popover-menu">
       ${user.role === "admin" ? '<a href="olaf-control.html"><i data-lucide="shield"></i>หลังบ้าน (Admin)</a>' : ""}
       <a href="profile.html"><i data-lucide="user"></i>ข้อมูลส่วนตัว</a>
+      <a href="point-topup.html"><i data-lucide="coins"></i>เติม Point</a>
       <a href="profile.html#inventory"><i data-lucide="package"></i>คลังสินค้า (ID/Pass)</a>
       <a href="profile.html#orders"><i data-lucide="receipt-text"></i>ประวัติคำสั่งซื้อ</a>
       <div class="user-popover-divider"></div>

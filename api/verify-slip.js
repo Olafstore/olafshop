@@ -22,7 +22,7 @@ const PUBLIC_ERROR_MESSAGES = {
   DUPLICATE_SLIP: "สลิปนี้ถูกใช้กับออเดอร์อื่นแล้ว",
   VERIFICATION_IN_PROGRESS: "ระบบกำลังตรวจสลิปนี้อยู่ กรุณารอสักครู่",
   PAYMENT_AMOUNT_MISMATCH: "ยอดเงินในสลิปไม่ตรงกับยอดออเดอร์",
-  PAYMENT_AMOUNT_INSUFFICIENT: "จำนวนเงินไม่เพียงพอ ระบบจะแปลงยอดที่ชำระเป็นพอยท์ในเว็บไซต์",
+  PAYMENT_AMOUNT_INSUFFICIENT: "จำนวนเงินไม่เพียงพอ ระบบจะแปลงยอดที่ชำระเป็น Point ในเว็บไซต์",
   PAYMENT_TIME_MISMATCH: "เวลาชำระเงินในสลิปไม่ตรงกับช่วงเวลาของออเดอร์",
   RECEIVER_ALLOWLIST_REQUIRED: "ยังไม่ได้ตั้งค่าชื่อหรือบัญชีผู้รับเงินสำหรับตรวจสอบ",
   RECEIVER_MISMATCH: "ข้อมูลผู้รับเงินในสลิปไม่ตรงกับบัญชีของร้าน",
@@ -36,7 +36,6 @@ const PUBLIC_ERROR_MESSAGES = {
   PAYMENT_VERIFICATION_FAILED: "ตรวจสอบสลิปไม่สำเร็จ กรุณาลองใหม่หรือติดต่อแอดมิน",
   DATABASE_MIGRATION_REQUIRED: "ระบบฐานข้อมูลตรวจสลิปยังไม่พร้อม กรุณารัน SQL migration ล่าสุด"
 };
-
 class VerificationError extends Error {
   constructor(code, status = 400, options = {}) {
     super(PUBLIC_ERROR_MESSAGES[code] || code);
@@ -458,6 +457,31 @@ export function matchVerifiedAmount(rawAmount, expectedTotal) {
   return matched;
 }
 
+function isPointTopupOrder(order = {}) {
+  const items = Array.isArray(order.order_items) ? order.order_items : [];
+  return items.length > 0 && items.every((item) => clean(item.product_id) === "point-topup");
+}
+
+export function matchPointTopupAmount(rawAmount, expectedHint = 0) {
+  const amount = parseNumeric(rawAmount);
+  if (amount === null) throw new VerificationError("PAYMENT_AMOUNT_MISMATCH", 422);
+  const candidates = unique([
+    amount.toFixed(2),
+    (amount / 100).toFixed(2)
+  ])
+    .map(Number)
+    .filter((candidate) => Number.isFinite(candidate) && candidate > 0);
+  if (!candidates.length) throw new VerificationError("PAYMENT_AMOUNT_MISMATCH", 422);
+
+  const expected = Number(expectedHint || 0);
+  if (Number.isFinite(expected) && expected > 0) {
+    return candidates.reduce((best, candidate) =>
+      Math.abs(candidate - expected) < Math.abs(best - expected) ? candidate : best
+    );
+  }
+  return candidates[0];
+}
+
 function parseTransferredAt(candidates) {
   const direct = firstKnownValue(candidates, [
     "transferredAt",
@@ -821,7 +845,9 @@ export default async function handler(request, response) {
       const channel = await fetchPaymentChannel(orderMethod, config);
       verifyReceiverIdentity(normalized, channel, config);
       await assertProviderTransactionUnused(normalized.transactionId || payloadInfo.transactionId, config);
-      normalized.amount = matchVerifiedAmount(normalized.amountValue, order.total);
+      normalized.amount = isPointTopupOrder(order)
+        ? matchPointTopupAmount(normalized.amountValue, order.total)
+        : matchVerifiedAmount(normalized.amountValue, order.total);
     } catch (error) {
       if (error?.code === "PAYMENT_AMOUNT_INSUFFICIENT") {
         const rejected = await rejectUnderpaidOrder({
@@ -855,7 +881,9 @@ export default async function handler(request, response) {
       throw error;
     }
 
-    const fulfilled = await callRpc("server_verify_payment_and_fulfill_order", {
+    const fulfilled = await callRpc(isPointTopupOrder(order)
+      ? "server_verify_point_topup_order"
+      : "server_verify_payment_and_fulfill_order", {
       p_attempt_id: attemptId,
       p_provider_transaction_id: normalized.transactionId,
       p_verified_amount: normalized.amount,

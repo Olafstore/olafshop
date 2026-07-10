@@ -76,7 +76,7 @@ const fallbackPayload = {
 };
 
 const appConfig = {
-  productsEndpoint: "api/products.json",
+  productsEndpoint: "api/products.json?v=20260710-thai-text-fix-v51",
   paymentEndpoint: "",
   serviceFee: 0,
   promptPayId: "0812345678",
@@ -95,7 +95,7 @@ const storageKeys = {
 
 const i18n = {
   th: {
-    navOrders: "คำสั่งซื้อ",
+    navOrders: "คลังสินค้า",
     heroEyebrow: "Steam Blue Luxury Store",
     heroTitle: "ไอดีเกม Steam คีย์เกม และ Steam Offline พร้อมสต็อกจริง",
     safeOrder: "สั่งซื้อแบบปลอดภัย",
@@ -105,7 +105,7 @@ const i18n = {
     account: "เข้าสู่ระบบ"
   },
   en: {
-    navOrders: "Orders",
+    navOrders: "Inventory",
     heroEyebrow: "Steam Blue Luxury Store",
     heroTitle: "Steam accounts, game keys, and offline games with live stock",
     safeOrder: "Secure checkout",
@@ -1771,6 +1771,7 @@ function renderUserPopover() {
     <div class="user-popover-menu">
       <div class="user-popover-menu-title">หน้าหลัก</div>
       <a href="profile.html"><i data-lucide="user"></i>ข้อมูลส่วนตัว</a>
+      <a href="point-topup.html"><i data-lucide="coins"></i>เติม Point</a>
       <a href="profile.html#inventory"><i data-lucide="package"></i>คลังสินค้า (ID/Pass)</a>
       <a href="profile.html#orders"><i data-lucide="list"></i>ประวัติคำสั่งซื้อ</a>
       <a href="#"><i data-lucide="ticket"></i>โค้ดส่วนลด</a>
@@ -2272,12 +2273,12 @@ function bindEvents() {
     }
 
     if (addButton) {
-      showToast("à¸£à¸°à¸šà¸šà¸•à¸°à¸à¸£à¹‰à¸²à¸–à¸¹à¸à¸›à¸´à¸”à¹ƒà¸Šà¹‰à¸‡à¸²à¸™ à¸à¸£à¸¸à¸“à¸²à¸ªà¸±à¹ˆà¸‡à¸‹à¸·à¹‰à¸­à¸ˆà¸²à¸à¸«à¸™à¹‰à¸²à¸£à¸²à¸¢à¸¥à¸°à¹€à¸­à¸µà¸¢à¸”à¸ªà¸´à¸™à¸„à¹‰à¸²", "info");
+      showToast("ระบบตะกร้าถูกปิดใช้งาน กรุณาสั่งซื้อจากหน้ารายละเอียดสินค้า", "info");
       return;
     }
 
     if (detailAddButton) {
-      showToast("à¸£à¸°à¸šà¸šà¸•à¸°à¸à¸£à¹‰à¸²à¸–à¸¹à¸à¸›à¸´à¸”à¹ƒà¸Šà¹‰à¸‡à¸²à¸™ à¸à¸£à¸¸à¸“à¸²à¸ªà¸±à¹ˆà¸‡à¸‹à¸·à¹‰à¸­à¸ˆà¸²à¸à¸«à¸™à¹‰à¸²à¸£à¸²à¸¢à¸¥à¸°à¹€à¸­à¸µà¸¢à¸”à¸ªà¸´à¸™à¸„à¹‰à¸²", "info");
+      showToast("ระบบตะกร้าถูกปิดใช้งาน กรุณาสั่งซื้อจากหน้ารายละเอียดสินค้า", "info");
       return;
     }
 
@@ -2428,10 +2429,10 @@ function bindEvents() {
     toggleNotificationMenu();
   });
   $(selectors.openCart)?.addEventListener("click", () => {
-    showToast("à¸£à¸°à¸šà¸šà¸•à¸°à¸à¸£à¹‰à¸²à¸–à¸¹à¸à¸›à¸´à¸”à¹ƒà¸Šà¹‰à¸‡à¸²à¸™", "info");
+    showToast("ระบบตะกร้าถูกปิดใช้งาน", "info");
   });
   $(selectors.openCheckout)?.addEventListener("click", () => {
-    showToast("à¸£à¸°à¸šà¸šà¸•à¸°à¸à¸£à¹‰à¸²à¸–à¸¹à¸à¸›à¸´à¸”à¹ƒà¸Šà¹‰à¸‡à¸²à¸™", "info");
+    showToast("ระบบตะกร้าถูกปิดใช้งาน", "info");
   });
   $(selectors.openAuth).addEventListener("click", (event) => {
     event.stopPropagation();

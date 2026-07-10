@@ -652,6 +652,7 @@
           <div class="user-popover-menu-title">เมนูบัญชี</div>
           ${user.role === "admin" ? '<a href="olaf-control.html"><i data-lucide="shield"></i><span>หลังบ้าน (Admin)</span></a>' : ""}
           <a href="profile.html#info"><i data-lucide="user"></i><span>ข้อมูลส่วนตัว</span></a>
+          <a href="point-topup.html"><i data-lucide="coins"></i><span>เติม Point</span></a>
           <a href="profile.html#inventory"><i data-lucide="archive"></i><span>คลังสินค้า</span></a>
           <a href="profile.html#orders"><i data-lucide="receipt-text"></i><span>ประวัติคำสั่งซื้อ</span></a>
           <a href="free-random.html"><i data-lucide="sparkles"></i><span>สุ่มเกม 1 Point</span></a>

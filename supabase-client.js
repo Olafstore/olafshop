@@ -1504,6 +1504,21 @@
     return withPaymentSlipUrl(mapOrderRpcPayload(data));
   }
 
+  async function createPointTopupOrder({ amount, paymentMethod, customerName }) {
+    const normalizedAmount = Number(amount || 0);
+    if (!Number.isFinite(normalizedAmount) || normalizedAmount < 1) {
+      throw new Error("INVALID_POINT_TOPUP_AMOUNT");
+    }
+
+    const { data, error } = await requireClient().rpc("create_point_topup_order", {
+      p_amount: normalizedAmount,
+      p_payment_method: paymentMethod || "promptpay",
+      p_customer_name: customerName || ""
+    });
+    if (error) throw error;
+    return withPaymentSlipUrl(mapOrderRpcPayload(data));
+  }
+
   async function fetchMyOrders() {
     const { data, error } = await requireClient()
       .from("orders")
@@ -1778,6 +1793,7 @@
     mapOrderRow,
     createOrder,
     createCartOrder,
+    createPointTopupOrder,
     fetchMyOrders,
     fetchOrderById,
     cancelMyOrder,

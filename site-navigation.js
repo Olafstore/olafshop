@@ -4,6 +4,7 @@
     { href: "index.html", label: "หน้าหลัก", icon: "house", match: ["index.html", ""] },
     { href: "index.html#catalog", label: "สินค้า", icon: "shopping-bag", matchHash: "#catalog" },
     { href: "more-products.html", label: "หมวดหมู่", icon: "layout-grid", match: ["more-products.html"] },
+    { href: "point-topup.html", label: "เติม Point", icon: "coins", match: ["point-topup.html"] },
     { href: "free-random.html", label: "สุ่ม 1 Point", icon: "sparkles", match: ["free-random.html"] },
     { href: ORDER_DESTINATION, label: "คลังสินค้า", icon: "archive", match: ["profile.html"], matchHash: "#inventory" },
     { href: "https://www.facebook.com/byOlafshop", label: "ติดต่อเรา", icon: "messages-square", external: true }
@@ -19,7 +20,7 @@
       [0x02dc, 0x98], [0x2122, 0x99], [0x0161, 0x9a], [0x203a, 0x9b],
       [0x0153, 0x9c], [0x017e, 0x9e], [0x0178, 0x9f]
     ]);
-    const mojibakePattern = /(?:à¸|à¹|Ã|Â|â(?:€|„|™)|ã€|ï¿½)/g;
+    const mojibakePattern = /(?:\u00e0\u00b8|\u00e0\u00b9|\u00c3|\u00c2|\u00e2(?:\u20ac|\u201e|\u2122)|\u00e3\u20ac|\u00ef¿½)/g;
     const score = (text) => (String(text || "").match(mojibakePattern) || []).length;
 
     function legacyBytes(text) {
@@ -49,15 +50,15 @@
         }
       }
       return next
-        .replace(/Â®/g, "®")
-        .replace(/Â©/g, "©")
-        .replace(/Â/g, "")
-        .replace(/â„¢/g, "™")
-        .replace(/â€¢/g, "•")
-        .replace(/â€“/g, "–")
-        .replace(/â€”/g, "—")
-        .replace(/â€¦/g, "…")
-        .replace(/ã€€/g, " ")
+        .replace(/\u00c2®/g, "®")
+        .replace(/\u00c2©/g, "©")
+        .replace(/\u00c2/g, "")
+        .replace(/\u00e2\u201e¢/g, "\u2122")
+        .replace(/\u00e2\u20ac¢/g, "\u2022")
+        .replace(/–/g, "–")
+        .replace(/—/g, "—")
+        .replace(/\u00e2\u20ac¦/g, "\u2026")
+        .replace(/　/g, " ")
         .replace(/\uFFFD/g, "")
         .trim();
     };
@@ -441,6 +442,7 @@
         <div class="user-popover-menu-title">เมนูบัญชี</div>
         ${role === "admin" ? '<a href="olaf-control.html"><i data-lucide="shield"></i><span>หลังบ้าน (Admin)</span></a>' : ""}
         <a href="profile.html#info"><i data-lucide="circle-user-round"></i><span>ข้อมูลส่วนตัว</span></a>
+        <a href="point-topup.html"><i data-lucide="coins"></i><span>เติม Point</span></a>
         <a href="profile.html#inventory"><i data-lucide="archive"></i><span>คลังสินค้า</span></a>
         <a href="profile.html#orders"><i data-lucide="receipt-text"></i><span>ประวัติคำสั่งซื้อ</span></a>
         <a href="free-random.html"><i data-lucide="sparkles"></i><span>สุ่มเกม 1 Point</span></a>
@@ -999,7 +1001,7 @@
       }
 
       try {
-        const response = await fetch("api/products.json", { cache: "no-store" });
+        const response = await fetch("api/products.json?v=20260710-thai-text-fix-v51", { cache: "no-store" });
         if (!response.ok) return [];
         const payload = await response.json();
         return Array.isArray(payload) ? payload : Array.isArray(payload?.products) ? payload.products : [];

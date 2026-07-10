@@ -210,6 +210,7 @@
       <div class="user-popover-menu">
         ${user.role === "admin" ? '<a href="olaf-control.html"><i data-lucide="shield"></i>หลังบ้าน (Admin)</a>' : ""}
         <a href="profile.html"><i data-lucide="user"></i>ข้อมูลส่วนตัว</a>
+        <a href="point-topup.html"><i data-lucide="coins"></i>เติม Point</a>
         <a href="profile.html#orders"><i data-lucide="receipt-text"></i>ประวัติคำสั่งซื้อ</a>
         <div class="user-popover-divider"></div>
         <button type="button" class="danger-item" id="extras-logout"><i data-lucide="log-out"></i>ออกจากระบบ</button>

@@ -1,0 +1,3018 @@
+{
+  "updatedAt": "2026-06-17T12:26:21.638Z",
+  "totalProducts": 303,
+  "remainingBeforeRun": 302,
+  "resolved": [
+    {
+      "id": "elden-ring",
+      "name": "ELDEN RING",
+      "category": "steam-account",
+      "appid": 1245620,
+      "matchedTitle": "ELDEN RING",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "ELDEN RING"
+    },
+    {
+      "id": "monster-hunter-wilds",
+      "name": "Monster Hunter Wilds",
+      "category": "steam-key",
+      "appid": 2246340,
+      "matchedTitle": "Monster Hunter Wilds",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Monster Hunter Wilds"
+    },
+    {
+      "id": "helldivers-2",
+      "name": "HELLDIVERS 2",
+      "category": "offline",
+      "appid": 553850,
+      "matchedTitle": "HELLDIVERS™ 2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "HELLDIVERS 2"
+    },
+    {
+      "id": "red-dead-redemption-2",
+      "name": "Red Dead Redemption 2",
+      "category": "steam-account",
+      "appid": 1174180,
+      "matchedTitle": "Red Dead Redemption 2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Red Dead Redemption 2"
+    },
+    {
+      "id": "forza-horizon-5",
+      "name": "Forza Horizon 5",
+      "category": "steam-key",
+      "appid": 1551360,
+      "matchedTitle": "Forza Horizon 5",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Forza Horizon 5"
+    },
+    {
+      "id": "hogwarts-legacy",
+      "name": "Hogwarts Legacy",
+      "category": "offline",
+      "appid": 990080,
+      "matchedTitle": "Hogwarts Legacy",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "Hogwarts Legacy"
+    },
+    {
+      "id": "resident-evil-4",
+      "name": "Resident Evil 4",
+      "category": "steam-key",
+      "appid": 2050650,
+      "matchedTitle": "Resident Evil 4",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Resident Evil 4"
+    },
+    {
+      "id": "god-of-war-pack",
+      "name": "God of War",
+      "category": "bundle",
+      "appid": 1593500,
+      "matchedTitle": "God of War",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "God of War"
+    },
+    {
+      "id": "black-myth-wukong",
+      "name": "Black Myth: Wukong",
+      "category": "steam-account",
+      "appid": 2358720,
+      "matchedTitle": "Black Myth: Wukong",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "Black Myth: Wukong"
+    },
+    {
+      "id": "offline-1-stellar-blade-complete-edition",
+      "name": "Stellar Blade",
+      "category": "offline",
+      "appid": 3489700,
+      "matchedTitle": "Stellar Blade™",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Stellar Blade"
+    },
+    {
+      "id": "offline-2-football-manager-26-ingame-editor",
+      "name": "Football Manager 26 In-Game Editor",
+      "category": "offline",
+      "appid": 3551410,
+      "matchedTitle": "Football Manager 26 In-Game Editor",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Football Manager 26 In-Game Editor"
+    },
+    {
+      "id": "offline-3-the-elder-scrolls-iv-oblivion-remastered-deluxe-edition",
+      "name": "The Elder Scrolls IV: Oblivion Remastered",
+      "category": "offline",
+      "appid": 2623190,
+      "matchedTitle": "The Elder Scrolls IV: Oblivion Remastered",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "The Elder Scrolls IV: Oblivion Remastered"
+    },
+    {
+      "id": "offline-4-nba-2k-26",
+      "name": "NBA 2K25",
+      "category": "offline",
+      "appid": 2878980,
+      "matchedTitle": "NBA 2K25",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "NBA 2K25"
+    },
+    {
+      "id": "offline-5-elden-ring-nightreign-deluxe-edition",
+      "name": "ELDEN RING NIGHTREIGN",
+      "category": "offline",
+      "appid": 2622380,
+      "matchedTitle": "ELDEN RING NIGHTREIGN",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "ELDEN RING NIGHTREIGN"
+    },
+    {
+      "id": "offline-6-inzoi",
+      "name": "inZOI",
+      "category": "offline",
+      "appid": 2456740,
+      "matchedTitle": "inZOI",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "inZOI"
+    },
+    {
+      "id": "offline-7-elden-ring-shadow-of-the-erdtree-edition",
+      "name": "ELDEN RING Shadow of the Erdtree",
+      "category": "offline",
+      "appid": 2778580,
+      "matchedTitle": "ELDEN RING Shadow of the Erdtree",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "ELDEN RING Shadow of the Erdtree"
+    },
+    {
+      "id": "offline-8-ark-survival-ascended",
+      "name": "ARK: Survival Ascended",
+      "category": "offline",
+      "appid": 2399830,
+      "matchedTitle": "ARK: Survival Ascended",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "ARK: Survival Ascended"
+    },
+    {
+      "id": "offline-9-ark-survival-evolved",
+      "name": "ARK: Survival Evolved",
+      "category": "offline",
+      "appid": 346110,
+      "matchedTitle": "ARK: Survival Evolved",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "ARK: Survival Evolved"
+    },
+    {
+      "id": "offline-10-wwe-2k-23",
+      "name": "WWE 2K23",
+      "category": "offline",
+      "appid": 1942660,
+      "matchedTitle": "WWE 2K23",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "WWE 2K23"
+    },
+    {
+      "id": "offline-11-nba-2k-23",
+      "name": "NBA 2K23",
+      "category": "offline",
+      "appid": 1919590,
+      "matchedTitle": "NBA 2K23",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "NBA 2K23"
+    },
+    {
+      "id": "offline-12-nba-2k-24",
+      "name": "NBA 2K24",
+      "category": "offline",
+      "appid": 2338770,
+      "matchedTitle": "NBA 2K24",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "NBA 2K24"
+    },
+    {
+      "id": "offline-13-nba-2k-25",
+      "name": "NBA 2K25",
+      "category": "offline",
+      "appid": 2878980,
+      "matchedTitle": "NBA 2K25",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "NBA 2K25"
+    },
+    {
+      "id": "offline-14-streamer-life-bundle",
+      "name": "Streamer Life Simulator 2",
+      "category": "offline",
+      "appid": 2890830,
+      "matchedTitle": "Streamer Life Simulator 2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Streamer Life Simulator 2"
+    },
+    {
+      "id": "offline-15-green-hell",
+      "name": "Green Hell",
+      "category": "offline",
+      "appid": 815370,
+      "matchedTitle": "Green Hell",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Green Hell"
+    },
+    {
+      "id": "offline-16-black-myth-wukong",
+      "name": "Black Myth: Wukong",
+      "category": "offline",
+      "appid": 2358720,
+      "matchedTitle": "Black Myth: Wukong",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "Black Myth: Wukong"
+    },
+    {
+      "id": "offline-17-far-cry-6",
+      "name": "Far Cry 6",
+      "category": "offline",
+      "appid": 2369390,
+      "matchedTitle": "Far Cry® 6",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Far Cry 6"
+    },
+    {
+      "id": "offline-18-far-cry-5",
+      "name": "Far Cry 5",
+      "category": "offline",
+      "appid": 552520,
+      "matchedTitle": "Far Cry® 5",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Far Cry 5"
+    },
+    {
+      "id": "offline-19-final-fantasy-xvi-complete-edition",
+      "name": "FINAL FANTASY XVI",
+      "category": "offline",
+      "appid": 2515020,
+      "matchedTitle": "FINAL FANTASY XVI",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "FINAL FANTASY XVI"
+    },
+    {
+      "id": "offline-20-final-fantasy-vii-remake",
+      "name": "FINAL FANTASY VII REMAKE INTERGRADE",
+      "category": "offline",
+      "appid": 1462040,
+      "matchedTitle": "FINAL FANTASY VII REMAKE INTERGRADE",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "FINAL FANTASY VII REMAKE INTERGRADE"
+    },
+    {
+      "id": "offline-21-final-fantasy-xv",
+      "name": "FINAL FANTASY XV WINDOWS EDITION",
+      "category": "offline",
+      "appid": 637650,
+      "matchedTitle": "FINAL FANTASY XV WINDOWS EDITION",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "FINAL FANTASY XV WINDOWS EDITION"
+    },
+    {
+      "id": "offline-22-hogwarts-legacy-digital-deluxe-edition",
+      "name": "Hogwarts Legacy",
+      "category": "offline",
+      "appid": 990080,
+      "matchedTitle": "Hogwarts Legacy",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "Hogwarts Legacy"
+    },
+    {
+      "id": "offline-23-resident-evil-5",
+      "name": "Resident Evil 5",
+      "category": "offline",
+      "appid": 21690,
+      "matchedTitle": "Resident Evil 5",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Resident Evil 5"
+    },
+    {
+      "id": "offline-24-resident-evil-4",
+      "name": "Resident Evil 4",
+      "category": "offline",
+      "appid": 2050650,
+      "matchedTitle": "Resident Evil 4",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Resident Evil 4"
+    },
+    {
+      "id": "offline-25-resident-evil-7-biohazard",
+      "name": "Resident Evil 7 Biohazard",
+      "category": "offline",
+      "appid": 418370,
+      "matchedTitle": "Resident Evil 7 Biohazard",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Resident Evil 7 Biohazard"
+    },
+    {
+      "id": "offline-26-resident-evil-4-remake-dlc",
+      "name": "Resident Evil 4",
+      "category": "offline",
+      "appid": 2050650,
+      "matchedTitle": "Resident Evil 4",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Resident Evil 4"
+    },
+    {
+      "id": "offline-27-resident-evil-2-dlc",
+      "name": "Resident Evil 2",
+      "category": "offline",
+      "appid": 883710,
+      "matchedTitle": "Resident Evil 2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Resident Evil 2"
+    },
+    {
+      "id": "offline-28-resident-evil-village-winters-expansion",
+      "name": "Resident Evil Village - Winters' Expansion",
+      "category": "offline",
+      "appid": 1731080,
+      "matchedTitle": "Resident Evil Village - Winters’ Expansion",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "Resident Evil Village Winters Expansion"
+    },
+    {
+      "id": "offline-29-dragon-ball-sparking-zero-ultimate-edition",
+      "name": "DRAGON BALL: Sparking! ZERO",
+      "category": "offline",
+      "appid": 1790600,
+      "matchedTitle": "DRAGON BALL: Sparking! ZERO",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "DRAGON BALL: Sparking! ZERO"
+    },
+    {
+      "id": "offline-30-demon-slayer-kimetsu-no-yaiba-the-hinokami-chronicles-all-dlc",
+      "name": "Demon Slayer -Kimetsu no Yaiba- The Hinokami Chronicles",
+      "category": "offline",
+      "appid": 1490890,
+      "matchedTitle": "Demon Slayer -Kimetsu no Yaiba- The Hinokami Chronicles",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Demon Slayer -Kimetsu no Yaiba- The Hinokami Chronicles"
+    },
+    {
+      "id": "offline-31-schedule-i",
+      "name": "Schedule I",
+      "category": "offline",
+      "appid": 3164500,
+      "matchedTitle": "Schedule I",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Schedule I"
+    },
+    {
+      "id": "offline-32-sekiro-shadows-die-twice-goty",
+      "name": "Sekiro: Shadows Die Twice - GOTY Edition",
+      "category": "offline",
+      "appid": 814380,
+      "matchedTitle": "Sekiro™: Shadows Die Twice - GOTY Edition",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Sekiro: Shadows Die Twice - GOTY Edition"
+    },
+    {
+      "id": "offline-33-marvels-spiderman-2-digital-deluxe-upgrade",
+      "name": "Marvel's Spider-Man 2 - Digital Deluxe Upgrade",
+      "category": "offline",
+      "appid": 3172660,
+      "matchedTitle": "Marvel's Spider-Man 2 - Digital Deluxe Upgrade",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "Marvel's Spider-Man 2 Digital Deluxe Upgrade"
+    },
+    {
+      "id": "offline-34-marvels-spiderman-miles-morales",
+      "name": "Marvel's Spider-Man: Miles Morales",
+      "category": "offline",
+      "appid": 1817190,
+      "matchedTitle": "Marvel’s Spider-Man: Miles Morales",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Marvel's Spider-Man: Miles Morales"
+    },
+    {
+      "id": "offline-35-spiderman-remastered-miles",
+      "name": "Marvel's Spider-Man Remastered",
+      "category": "offline",
+      "appid": 1817070,
+      "matchedTitle": "Marvel’s Spider-Man Remastered",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Marvel's Spider-Man Remastered"
+    },
+    {
+      "id": "offline-36-god-of-war-ragnark",
+      "name": "God of War Ragnarök",
+      "category": "offline",
+      "appid": 2322010,
+      "matchedTitle": "God of War Ragnarök",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "God of War Ragnarök"
+    },
+    {
+      "id": "offline-37-god-of-war",
+      "name": "God of War",
+      "category": "offline",
+      "appid": 1593500,
+      "matchedTitle": "God of War",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "God of War"
+    },
+    {
+      "id": "offline-38-the-last-of-us-ii",
+      "name": "The Last of Us II Remastered",
+      "category": "offline",
+      "appid": 2531310,
+      "matchedTitle": "The Last of Us™ Part II Remastered",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "The Last of Us II Remastered"
+    },
+    {
+      "id": "offline-39-the-last-of-us-i",
+      "name": "The Last of Us I",
+      "category": "offline",
+      "appid": 1888930,
+      "matchedTitle": "The Last of Us™ Part I",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "The Last of Us I"
+    },
+    {
+      "id": "offline-40-little-nightmares-2-part",
+      "name": "Little Nightmares II",
+      "category": "offline",
+      "appid": 860510,
+      "matchedTitle": "Little Nightmares II",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Little Nightmares II"
+    },
+    {
+      "id": "offline-41-forza-horizon-4-ultimate-edition",
+      "name": "Forza Horizon 4",
+      "category": "offline",
+      "appid": 1293830,
+      "matchedTitle": "Forza Horizon 4",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "Forza Horizon 4"
+    },
+    {
+      "id": "offline-42-forza-horizon-5",
+      "name": "Forza Horizon 5",
+      "category": "offline",
+      "appid": 1551360,
+      "matchedTitle": "Forza Horizon 5",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Forza Horizon 5"
+    },
+    {
+      "id": "offline-43-assetto-corsa-ultimate-edition",
+      "name": "Assetto Corsa",
+      "category": "offline",
+      "appid": 244210,
+      "matchedTitle": "Assetto Corsa",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Assetto Corsa"
+    },
+    {
+      "id": "offline-44-yakuza-0",
+      "name": "Yakuza 0 Director's Cut",
+      "category": "offline",
+      "appid": 2988580,
+      "matchedTitle": "Yakuza 0 Director's Cut",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Yakuza 0 Director's Cut"
+    },
+    {
+      "id": "offline-45-yakuza-like-a-dragon",
+      "name": "Yakuza: Like a Dragon",
+      "category": "offline",
+      "appid": 1235140,
+      "matchedTitle": "Yakuza: Like a Dragon",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Yakuza: Like a Dragon"
+    },
+    {
+      "id": "offline-46-dirt-rally-20",
+      "name": "DiRT Rally 2.0",
+      "category": "offline",
+      "appid": 690790,
+      "matchedTitle": "DiRT Rally 2.0",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "DiRT Rally 2.0"
+    },
+    {
+      "id": "offline-47-ride-4",
+      "name": "RIDE 4",
+      "category": "offline",
+      "appid": 1259980,
+      "matchedTitle": "RIDE 4",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "RIDE 4"
+    },
+    {
+      "id": "offline-48-my-hero-ones-justice-2-ultimate-edition",
+      "name": "MY HERO ONE'S JUSTICE 2",
+      "category": "offline",
+      "appid": 1058450,
+      "matchedTitle": "MY HERO ONE'S JUSTICE 2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "MY HERO ONE'S JUSTICE 2"
+    },
+    {
+      "id": "offline-49-ready-or-not",
+      "name": "Ready or Not",
+      "category": "offline",
+      "appid": 1144200,
+      "matchedTitle": "Ready or Not",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Ready or Not"
+    },
+    {
+      "id": "offline-50-car-mechanic-simulator-2018",
+      "name": "Car Mechanic Simulator 2018",
+      "category": "offline",
+      "appid": 645630,
+      "matchedTitle": "Car Mechanic Simulator 2018",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Car Mechanic Simulator 2018"
+    },
+    {
+      "id": "offline-51-subnautica-2-part",
+      "name": "Subnautica 2",
+      "category": "offline",
+      "appid": 1962700,
+      "matchedTitle": "Subnautica 2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Subnautica 2"
+    },
+    {
+      "id": "offline-52-batman-arkham-city-goty",
+      "name": "Batman: Arkham City - Game of the Year Edition",
+      "category": "offline",
+      "appid": 200260,
+      "matchedTitle": "Batman: Arkham City - Game of the Year Edition",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Batman: Arkham City - Game of the Year Edition"
+    },
+    {
+      "id": "offline-53-call-of-duty-advanced-warfare",
+      "name": "Call of Duty: Advanced Warfare - Gold Edition",
+      "category": "offline",
+      "appid": 209650,
+      "matchedTitle": "Call of Duty®: Advanced Warfare - Gold Edition",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Call of Duty: Advanced Warfare - Gold Edition"
+    },
+    {
+      "id": "offline-54-palworld",
+      "name": "Palworld",
+      "category": "offline",
+      "appid": 1623730,
+      "matchedTitle": "Palworld",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Palworld"
+    },
+    {
+      "id": "offline-55-dying-light-2-stay-human",
+      "name": "Dying Light 2 Stay Human: Reloaded Edition",
+      "category": "offline",
+      "appid": 534380,
+      "matchedTitle": "Dying Light 2 Stay Human: Reloaded Edition",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Dying Light 2 Stay Human: Reloaded Edition"
+    },
+    {
+      "id": "offline-56-borderlands-3",
+      "name": "Borderlands 3",
+      "category": "offline",
+      "appid": 397540,
+      "matchedTitle": "Borderlands 3",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Borderlands 3"
+    },
+    {
+      "id": "offline-57-jump-force-game-pack",
+      "name": "JUMP FORCE",
+      "category": "offline",
+      "appid": 816020,
+      "matchedTitle": "JUMP FORCE",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "JUMP FORCE"
+    },
+    {
+      "id": "offline-58-mortal-kombat-x",
+      "name": "Mortal Kombat X",
+      "category": "offline",
+      "appid": 307780,
+      "matchedTitle": "Mortal Kombat X",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Mortal Kombat X"
+    },
+    {
+      "id": "offline-59-mad-max",
+      "name": "Mad Max",
+      "category": "offline",
+      "appid": 234140,
+      "matchedTitle": "Mad Max",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Mad Max"
+    },
+    {
+      "id": "offline-60-thehunter-call-of-the-wild",
+      "name": "theHunter: Call of the Wild",
+      "category": "offline",
+      "appid": 518790,
+      "matchedTitle": "theHunter: Call of the Wild™",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "theHunter: Call of the Wild"
+    },
+    {
+      "id": "offline-61-grounded",
+      "name": "Grounded",
+      "category": "offline",
+      "appid": 962130,
+      "matchedTitle": "Grounded",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Grounded"
+    },
+    {
+      "id": "offline-62-manor-lords",
+      "name": "Manor Lords",
+      "category": "offline",
+      "appid": 1363080,
+      "matchedTitle": "Manor Lords",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Manor Lords"
+    },
+    {
+      "id": "offline-63-gas-station-simulator",
+      "name": "Gas Station Simulator",
+      "category": "offline",
+      "appid": 1149620,
+      "matchedTitle": "Gas Station Simulator",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Gas Station Simulator"
+    },
+    {
+      "id": "offline-64-bus-simulator-18",
+      "name": "Bus Simulator 18",
+      "category": "offline",
+      "appid": 515180,
+      "matchedTitle": "Bus Simulator 18",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Bus Simulator 18"
+    },
+    {
+      "id": "offline-66-gotham-knights",
+      "name": "Gotham Knights",
+      "category": "offline",
+      "appid": 1496790,
+      "matchedTitle": "Gotham Knights",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Gotham Knights"
+    },
+    {
+      "id": "offline-67-sons-of-the-forest",
+      "name": "Sons Of The Forest",
+      "category": "offline",
+      "appid": 1326470,
+      "matchedTitle": "Sons Of The Forest",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Sons Of The Forest"
+    },
+    {
+      "id": "offline-68-wallpaper-engine",
+      "name": "Wallpaper Engine",
+      "category": "offline",
+      "appid": 431960,
+      "matchedTitle": "Wallpaper Engine",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Wallpaper Engine"
+    },
+    {
+      "id": "offline-69-the-evil-within",
+      "name": "The Evil Within",
+      "category": "offline",
+      "appid": 268050,
+      "matchedTitle": "The Evil Within",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "The Evil Within"
+    },
+    {
+      "id": "offline-70-mall-simulator",
+      "name": "Mall Simulator",
+      "category": "offline",
+      "appid": 3180150,
+      "matchedTitle": "Mall Simulator",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Mall Simulator"
+    },
+    {
+      "id": "offline-71-one-piece-pirate-warriors-4",
+      "name": "ONE PIECE: PIRATE WARRIORS 4",
+      "category": "offline",
+      "appid": 1089090,
+      "matchedTitle": "ONE PIECE: PIRATE WARRIORS 4",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "ONE PIECE: PIRATE WARRIORS 4"
+    },
+    {
+      "id": "offline-72-gundam-breaker-4",
+      "name": "GUNDAM BREAKER 4",
+      "category": "offline",
+      "appid": 1672500,
+      "matchedTitle": "GUNDAM BREAKER 4",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "GUNDAM BREAKER 4"
+    },
+    {
+      "id": "offline-73-tekken-7-ultimate-edition",
+      "name": "TEKKEN 7",
+      "category": "offline",
+      "appid": 389730,
+      "matchedTitle": "TEKKEN 7",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "TEKKEN 7"
+    },
+    {
+      "id": "offline-74-arma-3",
+      "name": "Arma 3",
+      "category": "offline",
+      "appid": 107410,
+      "matchedTitle": "Arma 3",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Arma 3"
+    },
+    {
+      "id": "offline-76-thief-simulator-2",
+      "name": "Thief Simulator 2",
+      "category": "offline",
+      "appid": 1332720,
+      "matchedTitle": "Thief Simulator 2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Thief Simulator 2"
+    },
+    {
+      "id": "offline-77-forspoken",
+      "name": "Forspoken",
+      "category": "offline",
+      "appid": 1680880,
+      "matchedTitle": "Forspoken",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Forspoken"
+    },
+    {
+      "id": "offline-78-tcg-card-shop-simulator",
+      "name": "TCG Card Shop Simulator",
+      "category": "offline",
+      "appid": 3070070,
+      "matchedTitle": "TCG Card Shop Simulator",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "TCG Card Shop Simulator"
+    },
+    {
+      "id": "offline-79-tales-of-arise",
+      "name": "Tales of ARISE",
+      "category": "offline",
+      "appid": 740130,
+      "matchedTitle": "Tales of ARISE",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Tales of ARISE"
+    },
+    {
+      "id": "offline-80-planet-zoo",
+      "name": "Planet Zoo",
+      "category": "offline",
+      "appid": 703080,
+      "matchedTitle": "Planet Zoo",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Planet Zoo"
+    },
+    {
+      "id": "offline-81-hitman-world-of-assassination",
+      "name": "HITMAN World of Assassination",
+      "category": "offline",
+      "appid": 1659040,
+      "matchedTitle": "HITMAN World of Assassination",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "HITMAN World of Assassination"
+    },
+    {
+      "id": "offline-82-a-plague-tale",
+      "name": "A Plague Tale: Innocence",
+      "category": "offline",
+      "appid": 752590,
+      "matchedTitle": "A Plague Tale: Innocence",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "A Plague Tale: Innocence"
+    },
+    {
+      "id": "offline-83-sleeping-dogs",
+      "name": "Sleeping Dogs",
+      "category": "offline",
+      "appid": 202170,
+      "matchedTitle": "Sleeping Dogs",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Sleeping Dogs"
+    },
+    {
+      "id": "offline-84-project-zomboid",
+      "name": "Project Zomboid",
+      "category": "offline",
+      "appid": 108600,
+      "matchedTitle": "Project Zomboid",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Project Zomboid"
+    },
+    {
+      "id": "offline-85-raft",
+      "name": "Raft",
+      "category": "offline",
+      "appid": 648800,
+      "matchedTitle": "Raft",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Raft"
+    },
+    {
+      "id": "offline-86-naruto-to-boruto-shinobi-striker",
+      "name": "NARUTO TO BORUTO: SHINOBI STRIKER",
+      "category": "offline",
+      "appid": 633230,
+      "matchedTitle": "NARUTO TO BORUTO: SHINOBI STRIKER",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "NARUTO TO BORUTO: SHINOBI STRIKER"
+    },
+    {
+      "id": "offline-88-dealers-life-2",
+      "name": "Dealer's Life 2",
+      "category": "offline",
+      "appid": 1343670,
+      "matchedTitle": "Dealer's Life 2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Dealer's Life 2"
+    },
+    {
+      "id": "offline-90-resident-evil-3",
+      "name": "Resident Evil 3",
+      "category": "offline",
+      "appid": 952060,
+      "matchedTitle": "Resident Evil 3",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Resident Evil 3"
+    },
+    {
+      "id": "offline-91-crusader-kings-iii",
+      "name": "Crusader Kings III",
+      "category": "offline",
+      "appid": 1158310,
+      "matchedTitle": "Crusader Kings III",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Crusader Kings III"
+    },
+    {
+      "id": "offline-92-prototype-2",
+      "name": "Prototype 2",
+      "category": "offline",
+      "appid": 115320,
+      "matchedTitle": "Prototype 2",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "Prototype 2"
+    },
+    {
+      "id": "offline-93-supermarket-simulator",
+      "name": "Supermarket Simulator",
+      "category": "offline",
+      "appid": 2670630,
+      "matchedTitle": "Supermarket Simulator",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Supermarket Simulator"
+    },
+    {
+      "id": "offline-94-dragon-ball-z-kakarot-dlc",
+      "name": "DRAGON BALL Z: KAKAROT",
+      "category": "offline",
+      "appid": 851850,
+      "matchedTitle": "DRAGON BALL Z: KAKAROT",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "DRAGON BALL Z: KAKAROT"
+    },
+    {
+      "id": "offline-95-internet-cafe-simulator-2-part",
+      "name": "Internet Cafe Simulator 2",
+      "category": "offline",
+      "appid": 1563180,
+      "matchedTitle": "Internet Cafe Simulator 2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Internet Cafe Simulator 2"
+    },
+    {
+      "id": "offline-96-the-forest",
+      "name": "The Forest",
+      "category": "offline",
+      "appid": 242760,
+      "matchedTitle": "The Forest",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "The Forest"
+    },
+    {
+      "id": "offline-97-days-gone",
+      "name": "Days Gone",
+      "category": "offline",
+      "appid": 1259420,
+      "matchedTitle": "Days Gone",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Days Gone"
+    },
+    {
+      "id": "offline-98-the-elder-scrolls-v-skyrim",
+      "name": "The Elder Scrolls V: Skyrim Special Edition",
+      "category": "offline",
+      "appid": 489830,
+      "matchedTitle": "The Elder Scrolls V: Skyrim Special Edition",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "The Elder Scrolls V: Skyrim Special Edition"
+    },
+    {
+      "id": "offline-99-wo-long-fallen-dynasty",
+      "name": "Wo Long: Fallen Dynasty",
+      "category": "offline",
+      "appid": 1448440,
+      "matchedTitle": "Wo Long: Fallen Dynasty",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Wo Long: Fallen Dynasty"
+    },
+    {
+      "id": "offline-100-pixark",
+      "name": "PixARK",
+      "category": "offline",
+      "appid": 593600,
+      "matchedTitle": "PixARK",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "PixARK"
+    },
+    {
+      "id": "offline-101-jujutsu-kaisen-cursed-clash",
+      "name": "Jujutsu Kaisen Cursed Clash",
+      "category": "offline",
+      "appid": 1877020,
+      "matchedTitle": "Jujutsu Kaisen Cursed Clash",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Jujutsu Kaisen Cursed Clash"
+    },
+    {
+      "id": "offline-102-scania-truck-driving-simulator",
+      "name": "Scania Truck Driving Simulator",
+      "category": "offline",
+      "appid": 258760,
+      "matchedTitle": "Scania Truck Driving Simulator",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Scania Truck Driving Simulator"
+    },
+    {
+      "id": "offline-103-cyberpunk-2077-phantom-liberty",
+      "name": "Cyberpunk 2077: Phantom Liberty",
+      "category": "offline",
+      "appid": 2138330,
+      "matchedTitle": "Cyberpunk 2077: Phantom Liberty",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Cyberpunk 2077: Phantom Liberty"
+    },
+    {
+      "id": "offline-104-kena",
+      "name": "Kena: Scars of Kosmora",
+      "category": "offline",
+      "appid": 3485810,
+      "matchedTitle": "Kena: Scars of Kosmora",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Kena: Scars of Kosmora"
+    },
+    {
+      "id": "offline-105-mortal-kombat-11-ultimate",
+      "name": "Mortal Kombat 11",
+      "category": "offline",
+      "appid": 976310,
+      "matchedTitle": "Mortal Kombat 11",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Mortal Kombat 11"
+    },
+    {
+      "id": "offline-106-coral-island",
+      "name": "Coral Island",
+      "category": "offline",
+      "appid": 1158160,
+      "matchedTitle": "Coral Island",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Coral Island"
+    },
+    {
+      "id": "offline-107-doom-eternal",
+      "name": "DOOM Eternal",
+      "category": "offline",
+      "appid": 782330,
+      "matchedTitle": "DOOM Eternal",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "DOOM Eternal"
+    },
+    {
+      "id": "offline-108-ghostrunner",
+      "name": "Ghostrunner",
+      "category": "offline",
+      "appid": 1139900,
+      "matchedTitle": "Ghostrunner",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Ghostrunner"
+    },
+    {
+      "id": "offline-109-outriders",
+      "name": "OUTRIDERS",
+      "category": "offline",
+      "appid": 680420,
+      "matchedTitle": "OUTRIDERS",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "OUTRIDERS"
+    },
+    {
+      "id": "offline-110-contraband-police",
+      "name": "Contraband Police",
+      "category": "offline",
+      "appid": 756800,
+      "matchedTitle": "Contraband Police",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Contraband Police"
+    },
+    {
+      "id": "offline-111-house-flipper",
+      "name": "House Flipper",
+      "category": "offline",
+      "appid": 613100,
+      "matchedTitle": "House Flipper",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "House Flipper"
+    },
+    {
+      "id": "offline-112-home-sweet-home-ep-12",
+      "name": "Home Sweet Home",
+      "category": "offline",
+      "appid": 617160,
+      "matchedTitle": "Home Sweet Home",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Home Sweet Home"
+    },
+    {
+      "id": "offline-113-need-for-speed-heat",
+      "name": "Need for Speed Heat",
+      "category": "offline",
+      "appid": 1222680,
+      "matchedTitle": "Need for Speed™ Heat",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Need for Speed Heat"
+    },
+    {
+      "id": "offline-114-one-piece-odyssey",
+      "name": "ONE PIECE ODYSSEY",
+      "category": "offline",
+      "appid": 814000,
+      "matchedTitle": "ONE PIECE ODYSSEY",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "ONE PIECE ODYSSEY"
+    },
+    {
+      "id": "offline-115-naruto-x-boruto-ultimate-ninja-storm-connections",
+      "name": "NARUTO X BORUTO Ultimate Ninja STORM CONNECTIONS",
+      "category": "offline",
+      "appid": 1020790,
+      "matchedTitle": "NARUTO X BORUTO Ultimate Ninja STORM CONNECTIONS",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "NARUTO X BORUTO Ultimate Ninja STORM CONNECTIONS"
+    },
+    {
+      "id": "offline-116-naruto-shippuden-ultimate-ninja-storm-4",
+      "name": "NARUTO SHIPPUDEN: Ultimate Ninja STORM 4",
+      "category": "offline",
+      "appid": 349040,
+      "matchedTitle": "NARUTO SHIPPUDEN: Ultimate Ninja STORM 4",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "NARUTO SHIPPUDEN: Ultimate Ninja STORM 4"
+    },
+    {
+      "id": "offline-117-sid-meiers-civilization-vi",
+      "name": "Sid Meier's Civilization VI",
+      "category": "offline",
+      "appid": 289070,
+      "matchedTitle": "Sid Meier’s Civilization® VI",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Sid Meier's Civilization VI"
+    },
+    {
+      "id": "offline-118-pc-building-simulator",
+      "name": "PC Building Simulator",
+      "category": "offline",
+      "appid": 621060,
+      "matchedTitle": "PC Building Simulator",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "PC Building Simulator"
+    },
+    {
+      "id": "offline-119-only-up",
+      "name": "Only UP",
+      "category": "offline",
+      "appid": 2567040,
+      "matchedTitle": "Only UP",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Only UP"
+    },
+    {
+      "id": "offline-120-monster-hunter-world-iceborne",
+      "name": "Monster Hunter World: Iceborne",
+      "category": "offline",
+      "appid": 1118010,
+      "matchedTitle": "Monster Hunter World: Iceborne",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Monster Hunter World: Iceborne"
+    },
+    {
+      "id": "offline-121-planet-coaster-dlc",
+      "name": "Planet Coaster",
+      "category": "offline",
+      "appid": 493340,
+      "matchedTitle": "Planet Coaster",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Planet Coaster"
+    },
+    {
+      "id": "offline-122-star-wars-jedi-fallen-order",
+      "name": "STAR WARS Jedi: Fallen Order",
+      "category": "offline",
+      "appid": 1172380,
+      "matchedTitle": "STAR WARS Jedi: Fallen Order™",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "STAR WARS Jedi: Fallen Order"
+    },
+    {
+      "id": "offline-123-pragmata-deluxe-edition",
+      "name": "PRAGMATA",
+      "category": "offline",
+      "appid": 3357650,
+      "matchedTitle": "PRAGMATA",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "PRAGMATA"
+    },
+    {
+      "id": "offline-124-devil-may-cry-5",
+      "name": "Devil May Cry 5",
+      "category": "offline",
+      "appid": 601150,
+      "matchedTitle": "Devil May Cry 5",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Devil May Cry 5"
+    },
+    {
+      "id": "offline-125-complete-edition-avatar-frontiers-of-pandora",
+      "name": "Avatar: Frontiers of Pandora",
+      "category": "offline",
+      "appid": 2840770,
+      "matchedTitle": "Avatar: Frontiers of Pandora™",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Avatar: Frontiers of Pandora"
+    },
+    {
+      "id": "offline-126-horizon-zero-dawn-complete-edition",
+      "name": "Horizon Zero Dawn Complete Edition",
+      "category": "offline",
+      "appid": 1151640,
+      "matchedTitle": "Horizon Zero Dawn™ Complete Edition",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Horizon Zero Dawn Complete Edition"
+    },
+    {
+      "id": "offline-127-terraria",
+      "name": "Terraria",
+      "category": "offline",
+      "appid": 105600,
+      "matchedTitle": "Terraria",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Terraria"
+    },
+    {
+      "id": "offline-128-need-for-speed-unbound",
+      "name": "Need for Speed Unbound",
+      "category": "offline",
+      "appid": 1846380,
+      "matchedTitle": "Need for Speed™ Unbound",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Need for Speed Unbound"
+    },
+    {
+      "id": "offline-129-ride-6",
+      "name": "RIDE 6",
+      "category": "offline",
+      "appid": 2815070,
+      "matchedTitle": "RIDE 6",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "RIDE 6"
+    },
+    {
+      "id": "offline-130-tiny-glade",
+      "name": "Tiny Glade",
+      "category": "offline",
+      "appid": 2198150,
+      "matchedTitle": "Tiny Glade",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Tiny Glade"
+    },
+    {
+      "id": "offline-131-walk-of-life-no-time-to-relax",
+      "name": "Walk of Life",
+      "category": "offline",
+      "appid": 1910150,
+      "matchedTitle": "Walk of Life",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Walk of Life"
+    },
+    {
+      "id": "offline-132-quarantine-zone",
+      "name": "Quarantine Zone: The Last Check",
+      "category": "offline",
+      "appid": 3419520,
+      "matchedTitle": "Quarantine Zone: The Last Check",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Quarantine Zone: The Last Check"
+    },
+    {
+      "id": "offline-133-suicide-squad-kill-the-justice-league-digital-deluxe-edition",
+      "name": "Suicide Squad: Kill the Justice League",
+      "category": "offline",
+      "appid": 315210,
+      "matchedTitle": "Suicide Squad: Kill the Justice League",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Suicide Squad: Kill the Justice League"
+    },
+    {
+      "id": "offline-134-ride-5",
+      "name": "RIDE 5",
+      "category": "offline",
+      "appid": 1650010,
+      "matchedTitle": "RIDE 5",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "RIDE 5"
+    },
+    {
+      "id": "offline-135-ghostwire-tokyo",
+      "name": "Ghostwire: Tokyo",
+      "category": "offline",
+      "appid": 1475810,
+      "matchedTitle": "Ghostwire: Tokyo",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Ghostwire: Tokyo"
+    },
+    {
+      "id": "offline-136-dead-island-definitive-edition",
+      "name": "Dead Island Definitive Edition",
+      "category": "offline",
+      "appid": 383150,
+      "matchedTitle": "Dead Island Definitive Edition",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Dead Island Definitive Edition"
+    },
+    {
+      "id": "offline-137-my-dream-setup",
+      "name": "My Dream Setup",
+      "category": "offline",
+      "appid": 2200780,
+      "matchedTitle": "My Dream Setup",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "My Dream Setup"
+    },
+    {
+      "id": "sa-1-rematch",
+      "name": "REMATCH",
+      "category": "steam-account",
+      "appid": 2138720,
+      "matchedTitle": "REMATCH",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "REMATCH"
+    },
+    {
+      "id": "sa-2-battlefield-6",
+      "name": "Battlefield 6",
+      "category": "steam-account",
+      "appid": 2807960,
+      "matchedTitle": "Battlefield™ 6",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Battlefield 6"
+    },
+    {
+      "id": "sa-3-solo-leveling-arise-overdrive",
+      "name": "Solo Leveling: ARISE OVERDRIVE",
+      "category": "steam-account",
+      "appid": 2373990,
+      "matchedTitle": "Solo Leveling: ARISE OVERDRIVE",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Solo Leveling: ARISE OVERDRIVE"
+    },
+    {
+      "id": "sa-4-dying-light-the-beast",
+      "name": "Dying Light: The Beast",
+      "category": "steam-account",
+      "appid": 3008130,
+      "matchedTitle": "Dying Light: The Beast",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Dying Light: The Beast"
+    },
+    {
+      "id": "sa-5-ea-sports-fc-26",
+      "name": "EA SPORTS FC 26",
+      "category": "steam-account",
+      "appid": 3405690,
+      "matchedTitle": "EA SPORTS FC™ 26",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "EA SPORTS FC 26"
+    },
+    {
+      "id": "sa-6-nba-2k26",
+      "name": "NBA 2K26",
+      "category": "steam-account",
+      "appid": 3472040,
+      "matchedTitle": "NBA 2K26",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "NBA 2K26"
+    },
+    {
+      "id": "sa-7-grand-theft-auto-v-legacy",
+      "name": "Grand Theft Auto V Legacy",
+      "category": "steam-account",
+      "appid": 271590,
+      "matchedTitle": "Grand Theft Auto V Legacy",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "Grand Theft Auto V Legacy"
+    },
+    {
+      "id": "sa-8-red-dead-redemption-2",
+      "name": "Red Dead Redemption 2",
+      "category": "steam-account",
+      "appid": 1174180,
+      "matchedTitle": "Red Dead Redemption 2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Red Dead Redemption 2"
+    },
+    {
+      "id": "sa-9-rust",
+      "name": "Rust",
+      "category": "steam-account",
+      "appid": 252490,
+      "matchedTitle": "Rust",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Rust"
+    },
+    {
+      "id": "sa-10-scum",
+      "name": "SCUM",
+      "category": "steam-account",
+      "appid": 513710,
+      "matchedTitle": "SCUM",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "SCUM"
+    },
+    {
+      "id": "sa-11-dayz",
+      "name": "DayZ",
+      "category": "steam-account",
+      "appid": 221100,
+      "matchedTitle": "DayZ",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "DayZ"
+    },
+    {
+      "id": "sa-12-hollow-knight",
+      "name": "Hollow Knight",
+      "category": "steam-account",
+      "appid": 367520,
+      "matchedTitle": "Hollow Knight",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Hollow Knight"
+    },
+    {
+      "id": "sa-13-football-manager-26",
+      "name": "Football Manager 26",
+      "category": "steam-account",
+      "appid": 3551340,
+      "matchedTitle": "Football Manager 26",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Football Manager 26"
+    },
+    {
+      "id": "sa-14-hollow-knight-silksong",
+      "name": "Hollow Knight: Silksong",
+      "category": "steam-account",
+      "appid": 1030300,
+      "matchedTitle": "Hollow Knight: Silksong",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Hollow Knight: Silksong"
+    },
+    {
+      "id": "sa-15-sea-of-thieves",
+      "name": "Sea of Thieves: 2026 Edition",
+      "category": "steam-account",
+      "appid": 1172620,
+      "matchedTitle": "Sea of Thieves: 2026 Edition",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Sea of Thieves: 2026 Edition"
+    },
+    {
+      "id": "sa-16-ea-sports-fc-24",
+      "name": "EA SPORTS FC 24",
+      "category": "steam-account",
+      "appid": 2195250,
+      "matchedTitle": "EA SPORTS FC™ 24",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "EA SPORTS FC 24"
+    },
+    {
+      "id": "sa-17-ea-sports-fc-25",
+      "name": "EA SPORTS FC 25",
+      "category": "steam-account",
+      "appid": 2669320,
+      "matchedTitle": "EA SPORTS FC™ 25",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "EA SPORTS FC 25"
+    },
+    {
+      "id": "sa-18-gray-zone-warfare",
+      "name": "Gray Zone Warfare",
+      "category": "steam-account",
+      "appid": 2479810,
+      "matchedTitle": "Gray Zone Warfare",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Gray Zone Warfare"
+    },
+    {
+      "id": "sa-19-call-of-dutymodern-warfare-2019",
+      "name": "Call of Duty: Modern Warfare",
+      "category": "steam-account",
+      "appid": 2000950,
+      "matchedTitle": "Call of Duty®: Modern Warfare®",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Call of Duty: Modern Warfare"
+    },
+    {
+      "id": "sa-20-call-of-dutymodern-warfare-iii-2023",
+      "name": "Call of Duty: Modern Warfare III",
+      "category": "steam-account",
+      "appid": 3595270,
+      "matchedTitle": "Call of Duty®: Modern Warfare® III",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Call of Duty: Modern Warfare III"
+    },
+    {
+      "id": "sa-21-call-of-dutymodern-warfare-ii-2022",
+      "name": "Call of Duty: Modern Warfare II",
+      "category": "steam-account",
+      "appid": 3595230,
+      "matchedTitle": "Call of Duty®: Modern Warfare® II",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Call of Duty: Modern Warfare II"
+    },
+    {
+      "id": "sa-22-tom-clancys-rainbow-six-siege",
+      "name": "Tom Clancy's Rainbow Six Siege",
+      "category": "steam-account",
+      "appid": 359550,
+      "matchedTitle": "Tom Clancy's Rainbow Six Siege",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Tom Clancy's Rainbow Six Siege"
+    },
+    {
+      "id": "sa-23-battlefield-v",
+      "name": "Battlefield V",
+      "category": "steam-account",
+      "appid": 1238810,
+      "matchedTitle": "Battlefield™ V",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Battlefield V"
+    },
+    {
+      "id": "sa-24-squad",
+      "name": "Squad",
+      "category": "steam-account",
+      "appid": 393380,
+      "matchedTitle": "Squad",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Squad"
+    },
+    {
+      "id": "sa-25-battlefield-2042",
+      "name": "Battlefield 2042",
+      "category": "steam-account",
+      "appid": 1517290,
+      "matchedTitle": "Battlefield™ 2042",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Battlefield 2042"
+    },
+    {
+      "id": "sa-26-ghost-recon-wildlands",
+      "name": "Tom Clancy's Ghost Recon Wildlands",
+      "category": "steam-account",
+      "appid": 460930,
+      "matchedTitle": "Tom Clancy's Ghost Recon® Wildlands",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Tom Clancy's Ghost Recon Wildlands"
+    },
+    {
+      "id": "sa-27-ready-or-not",
+      "name": "Ready or Not",
+      "category": "steam-account",
+      "appid": 1144200,
+      "matchedTitle": "Ready or Not",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Ready or Not"
+    },
+    {
+      "id": "sa-28-tom-clancys-ghost-recon-breakpoint",
+      "name": "Tom Clancy's Ghost Recon Breakpoint",
+      "category": "steam-account",
+      "appid": 2231380,
+      "matchedTitle": "Tom Clancy's Ghost Recon® Breakpoint",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Tom Clancy's Ghost Recon Breakpoint"
+    },
+    {
+      "id": "sa-29-raft",
+      "name": "Raft",
+      "category": "steam-account",
+      "appid": 648800,
+      "matchedTitle": "Raft",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Raft"
+    },
+    {
+      "id": "sa-30-project-zomboid",
+      "name": "Project Zomboid",
+      "category": "steam-account",
+      "appid": 108600,
+      "matchedTitle": "Project Zomboid",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Project Zomboid"
+    },
+    {
+      "id": "sa-31-nba-2k-24",
+      "name": "NBA 2K24",
+      "category": "steam-account",
+      "appid": 2338770,
+      "matchedTitle": "NBA 2K24",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "NBA 2K24"
+    },
+    {
+      "id": "sa-32-nba-2k-25",
+      "name": "NBA 2K25",
+      "category": "steam-account",
+      "appid": 2878980,
+      "matchedTitle": "NBA 2K25",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "NBA 2K25"
+    },
+    {
+      "id": "sa-33-nba-2k-23",
+      "name": "NBA 2K23",
+      "category": "steam-account",
+      "appid": 1919590,
+      "matchedTitle": "NBA 2K23",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "NBA 2K23"
+    },
+    {
+      "id": "sa-34-forza-horizon-5",
+      "name": "Forza Horizon 5",
+      "category": "steam-account",
+      "appid": 1551360,
+      "matchedTitle": "Forza Horizon 5",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Forza Horizon 5"
+    },
+    {
+      "id": "sa-35-forza-horizon-4",
+      "name": "Forza Horizon 4",
+      "category": "steam-account",
+      "appid": 1293830,
+      "matchedTitle": "Forza Horizon 4",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "Forza Horizon 4"
+    },
+    {
+      "id": "sa-36-need-for-speed-heat",
+      "name": "Need for Speed Heat",
+      "category": "steam-account",
+      "appid": 1222680,
+      "matchedTitle": "Need for Speed™ Heat",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Need for Speed Heat"
+    },
+    {
+      "id": "sa-37-need-for-speed-unbound",
+      "name": "Need for Speed Unbound",
+      "category": "steam-account",
+      "appid": 1846380,
+      "matchedTitle": "Need for Speed™ Unbound",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Need for Speed Unbound"
+    },
+    {
+      "id": "sa-38-marvels-spiderman-miles-morales",
+      "name": "Marvel's Spider-Man: Miles Morales",
+      "category": "steam-account",
+      "appid": 1817190,
+      "matchedTitle": "Marvel’s Spider-Man: Miles Morales",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Marvel's Spider-Man: Miles Morales"
+    },
+    {
+      "id": "sa-39-marvels-spiderman-remastered",
+      "name": "Marvel's Spider-Man Remastered",
+      "category": "steam-account",
+      "appid": 1817070,
+      "matchedTitle": "Marvel’s Spider-Man Remastered",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Marvel's Spider-Man Remastered"
+    },
+    {
+      "id": "sa-40-marvels-spiderman-2",
+      "name": "Marvel's Spider-Man 2",
+      "category": "steam-account",
+      "appid": 2651280,
+      "matchedTitle": "Marvel's Spider-Man 2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Marvel's Spider-Man 2"
+    },
+    {
+      "id": "sa-41-grounded",
+      "name": "Grounded",
+      "category": "steam-account",
+      "appid": 962130,
+      "matchedTitle": "Grounded",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Grounded"
+    },
+    {
+      "id": "sa-42-grounded-2",
+      "name": "Grounded 2",
+      "category": "steam-account",
+      "appid": 2661300,
+      "matchedTitle": "Grounded 2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Grounded 2"
+    },
+    {
+      "id": "sa-43-far-cry-6",
+      "name": "Far Cry 6",
+      "category": "steam-account",
+      "appid": 2369390,
+      "matchedTitle": "Far Cry® 6",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Far Cry 6"
+    },
+    {
+      "id": "sa-44-far-cry-5",
+      "name": "Far Cry 5",
+      "category": "steam-account",
+      "appid": 552520,
+      "matchedTitle": "Far Cry® 5",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Far Cry 5"
+    },
+    {
+      "id": "sa-45-ark-survival-evolved",
+      "name": "ARK: Survival Evolved",
+      "category": "steam-account",
+      "appid": 346110,
+      "matchedTitle": "ARK: Survival Evolved",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "ARK: Survival Evolved"
+    },
+    {
+      "id": "sa-46-ark-survival-ascended",
+      "name": "ARK: Survival Ascended",
+      "category": "steam-account",
+      "appid": 2399830,
+      "matchedTitle": "ARK: Survival Ascended",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "ARK: Survival Ascended"
+    },
+    {
+      "id": "sa-47-stellar-blade-complete-edition",
+      "name": "Stellar Blade",
+      "category": "steam-account",
+      "appid": 3489700,
+      "matchedTitle": "Stellar Blade™",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Stellar Blade"
+    },
+    {
+      "id": "sa-48-stellar-blade",
+      "name": "Stellar Blade",
+      "category": "steam-account",
+      "appid": 3489700,
+      "matchedTitle": "Stellar Blade™",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Stellar Blade"
+    },
+    {
+      "id": "sa-49-elden-ring-nightreign-deluxe-edition",
+      "name": "ELDEN RING NIGHTREIGN",
+      "category": "steam-account",
+      "appid": 2622380,
+      "matchedTitle": "ELDEN RING NIGHTREIGN",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "ELDEN RING NIGHTREIGN"
+    },
+    {
+      "id": "sa-50-elden-ring-shadow-of-the-erdtree",
+      "name": "ELDEN RING Shadow of the Erdtree",
+      "category": "steam-account",
+      "appid": 2778580,
+      "matchedTitle": "ELDEN RING Shadow of the Erdtree",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "ELDEN RING Shadow of the Erdtree"
+    },
+    {
+      "id": "sa-51-elden-ring-nightreign",
+      "name": "ELDEN RING NIGHTREIGN",
+      "category": "steam-account",
+      "appid": 2622380,
+      "matchedTitle": "ELDEN RING NIGHTREIGN",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "ELDEN RING NIGHTREIGN"
+    },
+    {
+      "id": "sa-52-elden-ring",
+      "name": "ELDEN RING",
+      "category": "steam-account",
+      "appid": 1245620,
+      "matchedTitle": "ELDEN RING",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "ELDEN RING"
+    },
+    {
+      "id": "sa-53-inzoi",
+      "name": "inZOI",
+      "category": "steam-account",
+      "appid": 2456740,
+      "matchedTitle": "inZOI",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "inZOI"
+    },
+    {
+      "id": "sa-54-it-takes-two",
+      "name": "It Takes Two",
+      "category": "steam-account",
+      "appid": 1426210,
+      "matchedTitle": "It Takes Two",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "It Takes Two"
+    },
+    {
+      "id": "sa-55-pragmata",
+      "name": "PRAGMATA",
+      "category": "steam-account",
+      "appid": 3357650,
+      "matchedTitle": "PRAGMATA",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "PRAGMATA"
+    },
+    {
+      "id": "sa-57-the-forest",
+      "name": "The Forest",
+      "category": "steam-account",
+      "appid": 242760,
+      "matchedTitle": "The Forest",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "The Forest"
+    },
+    {
+      "id": "sa-58-terraria",
+      "name": "Terraria",
+      "category": "steam-account",
+      "appid": 105600,
+      "matchedTitle": "Terraria",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Terraria"
+    },
+    {
+      "id": "sa-59-dead-by-daylight",
+      "name": "Dead by Daylight",
+      "category": "steam-account",
+      "appid": 381210,
+      "matchedTitle": "Dead by Daylight",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Dead by Daylight"
+    },
+    {
+      "id": "sa-60-left-4-dead-2",
+      "name": "Left 4 Dead 2",
+      "category": "steam-account",
+      "appid": 550,
+      "matchedTitle": "Left 4 Dead 2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Left 4 Dead 2"
+    },
+    {
+      "id": "sa-61-black-myth-wukong",
+      "name": "Black Myth: Wukong",
+      "category": "steam-account",
+      "appid": 2358720,
+      "matchedTitle": "Black Myth: Wukong",
+      "matchType": "override-appid",
+      "score": null,
+      "query": "Black Myth: Wukong"
+    },
+    {
+      "id": "sa-62-granblue-fantasy-relink",
+      "name": "Granblue Fantasy: Relink",
+      "category": "steam-account",
+      "appid": 881020,
+      "matchedTitle": "Granblue Fantasy: Relink",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Granblue Fantasy: Relink"
+    },
+    {
+      "id": "sa-63-back-4-blood",
+      "name": "Back 4 Blood",
+      "category": "steam-account",
+      "appid": 924970,
+      "matchedTitle": "Back 4 Blood",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Back 4 Blood"
+    },
+    {
+      "id": "sa-64-dave-the-diver",
+      "name": "DAVE THE DIVER",
+      "category": "steam-account",
+      "appid": 1868140,
+      "matchedTitle": "DAVE THE DIVER",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "DAVE THE DIVER"
+    },
+    {
+      "id": "sa-65-the-isle",
+      "name": "The Isle",
+      "category": "steam-account",
+      "appid": 376210,
+      "matchedTitle": "The Isle",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "The Isle"
+    },
+    {
+      "id": "sa-66-planet-coaster",
+      "name": "Planet Coaster",
+      "category": "steam-account",
+      "appid": 493340,
+      "matchedTitle": "Planet Coaster",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Planet Coaster"
+    },
+    {
+      "id": "sa-67-bodycam",
+      "name": "Bodycam",
+      "category": "steam-account",
+      "appid": 2406770,
+      "matchedTitle": "Bodycam",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Bodycam"
+    },
+    {
+      "id": "sa-68-human-fall-flat",
+      "name": "Human Fall Flat",
+      "category": "steam-account",
+      "appid": 477160,
+      "matchedTitle": "Human Fall Flat",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Human Fall Flat"
+    },
+    {
+      "id": "sa-69-a-way-out",
+      "name": "A Way Out",
+      "category": "steam-account",
+      "appid": 1222700,
+      "matchedTitle": "A Way Out",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "A Way Out"
+    },
+    {
+      "id": "sa-70-helldivers-2",
+      "name": "HELLDIVERS 2",
+      "category": "steam-account",
+      "appid": 553850,
+      "matchedTitle": "HELLDIVERS™ 2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "HELLDIVERS 2"
+    },
+    {
+      "id": "sa-71-palworld",
+      "name": "Palworld",
+      "category": "steam-account",
+      "appid": 1623730,
+      "matchedTitle": "Palworld",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Palworld"
+    },
+    {
+      "id": "sa-72-sons-of-the-forest",
+      "name": "Sons Of The Forest",
+      "category": "steam-account",
+      "appid": 1326470,
+      "matchedTitle": "Sons Of The Forest",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Sons Of The Forest"
+    },
+    {
+      "id": "sa-73-cyberpunk-2077",
+      "name": "Cyberpunk 2077",
+      "category": "steam-account",
+      "appid": 1091500,
+      "matchedTitle": "Cyberpunk 2077",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Cyberpunk 2077"
+    },
+    {
+      "id": "sa-74-the-witcher-3-wild-hunt",
+      "name": "The Witcher 3: Wild Hunt",
+      "category": "steam-account",
+      "appid": 292030,
+      "matchedTitle": "The Witcher 3: Wild Hunt",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "The Witcher 3: Wild Hunt"
+    },
+    {
+      "id": "sa-75-green-hell",
+      "name": "Green Hell",
+      "category": "steam-account",
+      "appid": 815370,
+      "matchedTitle": "Green Hell",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Green Hell"
+    },
+    {
+      "id": "sa-76-dont-starve-together",
+      "name": "Don't Starve Together",
+      "category": "steam-account",
+      "appid": 322330,
+      "matchedTitle": "Don't Starve Together",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Don't Starve Together"
+    },
+    {
+      "id": "sa-77-content-warning",
+      "name": "Content Warning",
+      "category": "steam-account",
+      "appid": 2881650,
+      "matchedTitle": "Content Warning",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Content Warning"
+    },
+    {
+      "id": "sa-78-manor-lords",
+      "name": "Manor Lords",
+      "category": "steam-account",
+      "appid": 1363080,
+      "matchedTitle": "Manor Lords",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Manor Lords"
+    },
+    {
+      "id": "sa-79-hunt-showdown-1896",
+      "name": "Hunt: Showdown 1896",
+      "category": "steam-account",
+      "appid": 594650,
+      "matchedTitle": "Hunt: Showdown 1896",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Hunt: Showdown 1896"
+    },
+    {
+      "id": "sa-80-baldurs-gate-3",
+      "name": "Baldur's Gate 3",
+      "category": "steam-account",
+      "appid": 1086940,
+      "matchedTitle": "Baldur's Gate 3",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Baldur's Gate 3"
+    },
+    {
+      "id": "sa-81-stardew-valley",
+      "name": "Stardew Valley",
+      "category": "steam-account",
+      "appid": 413150,
+      "matchedTitle": "Stardew Valley",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Stardew Valley"
+    },
+    {
+      "id": "sa-82-nioh-3-with-early-purchase-bonus",
+      "name": "Nioh 3",
+      "category": "steam-account",
+      "appid": 3681010,
+      "matchedTitle": "Nioh 3",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Nioh 3"
+    },
+    {
+      "id": "sa-83-sekiro-shadows-die-twice-goty",
+      "name": "Sekiro: Shadows Die Twice - GOTY Edition",
+      "category": "steam-account",
+      "appid": 814380,
+      "matchedTitle": "Sekiro™: Shadows Die Twice - GOTY Edition",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Sekiro: Shadows Die Twice - GOTY Edition"
+    },
+    {
+      "id": "sa-84-the-first-berserker-khazan",
+      "name": "The First Berserker: Khazan",
+      "category": "steam-account",
+      "appid": 2680010,
+      "matchedTitle": "The First Berserker: Khazan",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "The First Berserker: Khazan"
+    },
+    {
+      "id": "sa-85-assassins-creed-shadows",
+      "name": "Assassin's Creed Shadows",
+      "category": "steam-account",
+      "appid": 3159330,
+      "matchedTitle": "Assassin’s Creed Shadows",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Assassin's Creed Shadows"
+    },
+    {
+      "id": "sa-86-death-stranding-2-on-the-beach",
+      "name": "DEATH STRANDING 2: ON THE BEACH",
+      "category": "steam-account",
+      "appid": 3280350,
+      "matchedTitle": "DEATH STRANDING 2: ON THE BEACH",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "DEATH STRANDING 2: ON THE BEACH"
+    },
+    {
+      "id": "sa-87-crimson-desert",
+      "name": "Crimson Desert",
+      "category": "steam-account",
+      "appid": 3321460,
+      "matchedTitle": "Crimson Desert",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Crimson Desert"
+    },
+    {
+      "id": "sa-88-monster-hunter-stories-3-twisted-reflection",
+      "name": "Monster Hunter Stories 3: Twisted Reflection",
+      "category": "steam-account",
+      "appid": 2852190,
+      "matchedTitle": "Monster Hunter Stories 3: Twisted Reflection",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Monster Hunter Stories 3: Twisted Reflection"
+    },
+    {
+      "id": "sa-89-forza-horizon-6",
+      "name": "Forza Horizon 6",
+      "category": "steam-account",
+      "appid": 2483190,
+      "matchedTitle": "Forza Horizon 6",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Forza Horizon 6"
+    },
+    {
+      "id": "sa-90-7-days-to-die",
+      "name": "7 Days to Die",
+      "category": "steam-account",
+      "appid": 251570,
+      "matchedTitle": "7 Days to Die",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "7 Days to Die"
+    },
+    {
+      "id": "sk-cmpe5pixq004dvufqgmsaobeb-forza-horizon-6-pcxbox-xbox-app-vpn-us",
+      "name": "Forza Horizon 6",
+      "category": "steam-key",
+      "appid": 2483190,
+      "matchedTitle": "Forza Horizon 6",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Forza Horizon 6"
+    },
+    {
+      "id": "sk-cmo2f43972amdvuw2klumax41-pragmata-deluxe-edition",
+      "name": "PRAGMATA",
+      "category": "steam-key",
+      "appid": 3357650,
+      "matchedTitle": "PRAGMATA",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "PRAGMATA"
+    },
+    {
+      "id": "sk-cmo2etuyo2am4vuw2x3fjxnzy-pragmata",
+      "name": "PRAGMATA",
+      "category": "steam-key",
+      "appid": 3357650,
+      "matchedTitle": "PRAGMATA",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "PRAGMATA"
+    },
+    {
+      "id": "sk-cmo8s7r0n2cp3vuw2u9sdr3qh-eastern-era",
+      "name": "Eastern Era",
+      "category": "steam-key",
+      "appid": 3446240,
+      "matchedTitle": "Eastern Era",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Eastern Era"
+    },
+    {
+      "id": "sk-cmnok2p1c1mddvuw2ny8xjvu9-summers-heartbeat",
+      "name": "Summer's Heartbeat",
+      "category": "steam-key",
+      "appid": 4179020,
+      "matchedTitle": "Summer’s Heartbeat",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Summer's Heartbeat"
+    },
+    {
+      "id": "sk-cmmy765rw1g1ivuw2626gysyk-crimson-desert",
+      "name": "Crimson Desert",
+      "category": "steam-key",
+      "appid": 3321460,
+      "matchedTitle": "Crimson Desert",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Crimson Desert"
+    },
+    {
+      "id": "sk-cmmy7a8zb1g1rvuw2c48jn2s2-crimson-desert-deluxe-edition",
+      "name": "Crimson Desert",
+      "category": "steam-key",
+      "appid": 3321460,
+      "matchedTitle": "Crimson Desert",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Crimson Desert"
+    },
+    {
+      "id": "sk-cmpuvhpou00esvun20yz7je3i-homura-hime",
+      "name": "Homura Hime",
+      "category": "steam-key",
+      "appid": 1820000,
+      "matchedTitle": "Homura Hime",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Homura Hime"
+    },
+    {
+      "id": "sk-cmm0ninfk1289vuw23mdw3t5z-resident-evil-requiem",
+      "name": "Resident Evil Requiem",
+      "category": "steam-key",
+      "appid": 3764200,
+      "matchedTitle": "Resident Evil Requiem",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Resident Evil Requiem"
+    },
+    {
+      "id": "sk-cmpo82sse002svuntq6o6dki2-resident-evil-requiem-deluxe-edition",
+      "name": "Resident Evil Requiem",
+      "category": "steam-key",
+      "appid": 3764200,
+      "matchedTitle": "Resident Evil Requiem",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Resident Evil Requiem"
+    },
+    {
+      "id": "sk-cmlivwk6n0wa9vuw2a9oyvenr-humanitz",
+      "name": "HumanitZ",
+      "category": "steam-key",
+      "appid": 1766060,
+      "matchedTitle": "HumanitZ",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "HumanitZ"
+    },
+    {
+      "id": "sk-cmkuxola80nqxvuw2id02txyj-code-vein-ii-ultimate-edition-preorder-bonus",
+      "name": "CODE VEIN II",
+      "category": "steam-key",
+      "appid": 2362060,
+      "matchedTitle": "CODE VEIN II",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "CODE VEIN II"
+    },
+    {
+      "id": "sk-cmkuxkbbn0nqsvuw2bw6je768-code-vein-ii-deluxe-edition-preorder-bonus",
+      "name": "CODE VEIN II",
+      "category": "steam-key",
+      "appid": 2362060,
+      "matchedTitle": "CODE VEIN II",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "CODE VEIN II"
+    },
+    {
+      "id": "sk-cmkuxcm0u0nqhvuw2abuy0xlx-code-vein-ii-preorder-bonus",
+      "name": "CODE VEIN II",
+      "category": "steam-key",
+      "appid": 2362060,
+      "matchedTitle": "CODE VEIN II",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "CODE VEIN II"
+    },
+    {
+      "id": "sk-cmkv7vhu10nv6vuw26fv2b937-escape-from-ever-after",
+      "name": "Escape from Ever After",
+      "category": "steam-key",
+      "appid": 1996390,
+      "matchedTitle": "Escape from Ever After",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Escape from Ever After"
+    },
+    {
+      "id": "sk-cmkw6xypg0o2qvuw2rj4mzoi8-little-gods-of-the-abyss",
+      "name": "Little Gods of the Abyss",
+      "category": "steam-key",
+      "appid": 1044410,
+      "matchedTitle": "Little Gods of the Abyss",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Little Gods of the Abyss"
+    },
+    {
+      "id": "sk-cmkjsjdqm0iy4vuw2l7qkd2sp-heroines-through-my-lens",
+      "name": "Heroines Through My Lens",
+      "category": "steam-key",
+      "appid": 4057050,
+      "matchedTitle": "Heroines Through My Lens",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Heroines Through My Lens"
+    },
+    {
+      "id": "sk-cmc6fpsrm4h4l1qpe60kootbu-stellar-blade",
+      "name": "Stellar Blade",
+      "category": "steam-key",
+      "appid": 3489700,
+      "matchedTitle": "Stellar Blade™",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Stellar Blade"
+    },
+    {
+      "id": "sk-cmirk4bx2car31qpese0qjoz5-dlc-elden-ring-nightreign-the-forsaken-hollows",
+      "name": "ELDEN RING NIGHTREIGN The Forsaken Hollows",
+      "category": "steam-key",
+      "appid": 3531720,
+      "matchedTitle": "ELDEN RING NIGHTREIGN The Forsaken Hollows",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "ELDEN RING NIGHTREIGN The Forsaken Hollows"
+    },
+    {
+      "id": "sk-cmafiuhwd09og1qn8fa7v47ny-dandy-ace",
+      "name": "Dandy Ace",
+      "category": "steam-key",
+      "appid": 1037130,
+      "matchedTitle": "Dandy Ace",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Dandy Ace"
+    },
+    {
+      "id": "sk-cmjfszh7q007h8o2u3qw60l1a-five-hearts-under-one-roof-season-2",
+      "name": "Five Hearts Under One Roof season2",
+      "category": "steam-key",
+      "appid": 3731020,
+      "matchedTitle": "Five Hearts Under One Roof season2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Five Hearts Under One Roof season2"
+    },
+    {
+      "id": "sk-cmke5gefe0gffvuw2p18hlqwj-tales-of-xillia-remastered",
+      "name": "Tales of Xillia Remastered",
+      "category": "steam-key",
+      "appid": 2246670,
+      "matchedTitle": "Tales of Xillia Remastered",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Tales of Xillia Remastered"
+    },
+    {
+      "id": "sk-cmhj88ike5mdj1qpedy3tjev4-arc-raiders",
+      "name": "ARC Raiders",
+      "category": "steam-key",
+      "appid": 1808500,
+      "matchedTitle": "ARC Raiders",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "ARC Raiders"
+    },
+    {
+      "id": "sk-cmg2bmt3iwzeb1qpehspzpf31-digimon-story-time-stranger",
+      "name": "Digimon Story Time Stranger",
+      "category": "steam-key",
+      "appid": 1984270,
+      "matchedTitle": "Digimon Story Time Stranger",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Digimon Story Time Stranger"
+    },
+    {
+      "id": "sk-cmmj6y3qk17u8vuw2xdvkmrdi-sworn",
+      "name": "SWORN",
+      "category": "steam-key",
+      "appid": 1763250,
+      "matchedTitle": "SWORN",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "SWORN"
+    },
+    {
+      "id": "sk-cmnq8xiub1naivuw2l4ul5jwl-after-long-night",
+      "name": "After Long Night",
+      "category": "steam-key",
+      "appid": 3351650,
+      "matchedTitle": "After Long Night",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "After Long Night"
+    },
+    {
+      "id": "sk-cmisdybrrcm6j1qpenwt4bosw-lost-skies",
+      "name": "Lost Skies",
+      "category": "steam-key",
+      "appid": 1931180,
+      "matchedTitle": "Lost Skies",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Lost Skies"
+    },
+    {
+      "id": "sk-cmotng7w62hqjvuw2v4cmrd0i-nba-2k26",
+      "name": "NBA 2K26",
+      "category": "steam-key",
+      "appid": 3472040,
+      "matchedTitle": "NBA 2K26",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "NBA 2K26"
+    },
+    {
+      "id": "sk-cmnq8lb5p1n8vvuw25qmkywom-daemon-x-machina-titanic-scion",
+      "name": "Daemon X Machina: Titanic Scion",
+      "category": "steam-key",
+      "appid": 1342490,
+      "matchedTitle": "Daemon X Machina: Titanic Scion",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Daemon X Machina: Titanic Scion"
+    },
+    {
+      "id": "sk-cmgz2wf5t33uc1qpeb7xqydcr-demon-slayer-kimetsu-no-yaiba-the-hinokami-chronicles-2",
+      "name": "Demon Slayer -Kimetsu no Yaiba- The Hinokami Chronicles 2",
+      "category": "steam-key",
+      "appid": 2928600,
+      "matchedTitle": "Demon Slayer -Kimetsu no Yaiba- The Hinokami Chronicles 2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Demon Slayer -Kimetsu no Yaiba- The Hinokami Chronicles 2"
+    },
+    {
+      "id": "sk-cmcxaipw08at11qpe195lmz6z-stellar-blade-complete-edition",
+      "name": "Stellar Blade",
+      "category": "steam-key",
+      "appid": 3489700,
+      "matchedTitle": "Stellar Blade™",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Stellar Blade"
+    },
+    {
+      "id": "sk-cmk5kjpb40dd2vuw2mp1bio1y-wizard-of-legend-2",
+      "name": "Wizard of Legend 2",
+      "category": "steam-key",
+      "appid": 2193540,
+      "matchedTitle": "Wizard of Legend 2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Wizard of Legend 2"
+    },
+    {
+      "id": "sk-cmct339ig77gq1qpet7nwz3lj-elden-ring-nightreign",
+      "name": "ELDEN RING NIGHTREIGN",
+      "category": "steam-key",
+      "appid": 2622380,
+      "matchedTitle": "ELDEN RING NIGHTREIGN",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "ELDEN RING NIGHTREIGN"
+    },
+    {
+      "id": "sk-cmk5jl9710darvuw2qu38ph4a-nice-day-for-fishing",
+      "name": "Nice Day for Fishing",
+      "category": "steam-key",
+      "appid": 2393160,
+      "matchedTitle": "Nice Day for Fishing",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Nice Day for Fishing"
+    },
+    {
+      "id": "sk-cmb5c6nij0u6s1qpejr6bohlp-tinkerlands",
+      "name": "Tinkerlands",
+      "category": "steam-key",
+      "appid": 2617700,
+      "matchedTitle": "Tinkerlands",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Tinkerlands"
+    },
+    {
+      "id": "sk-cmpjtfwl9006qvu0qp3f4hi93-cubic-odyssey",
+      "name": "Cubic Odyssey",
+      "category": "steam-key",
+      "appid": 3400000,
+      "matchedTitle": "Cubic Odyssey",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Cubic Odyssey"
+    },
+    {
+      "id": "sk-cmluui8al0z07vuw20q2whgjh-captain-blood-gog",
+      "name": "Captain Blood",
+      "category": "steam-key",
+      "appid": 3040220,
+      "matchedTitle": "Captain Blood",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Captain Blood"
+    },
+    {
+      "id": "sk-cmiru4tt4chh01qpe3px70vol-beholder-conductor",
+      "name": "Beholder: Conductor",
+      "category": "steam-key",
+      "appid": 2825530,
+      "matchedTitle": "Beholder: Conductor",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Beholder: Conductor"
+    },
+    {
+      "id": "sk-cmbl16ykw27q21qpeo329ar5u-havendock",
+      "name": "Havendock",
+      "category": "steam-key",
+      "appid": 2020710,
+      "matchedTitle": "Havendock",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Havendock"
+    },
+    {
+      "id": "sk-cmovlhg0k2j8uvuw2aju9qqdb-nordhold",
+      "name": "Nordhold",
+      "category": "steam-key",
+      "appid": 3028310,
+      "matchedTitle": "Nordhold",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Nordhold"
+    },
+    {
+      "id": "sk-cm9gv60fq00ac1q2sav1n2787-monster-hunter-wilds",
+      "name": "Monster Hunter Wilds",
+      "category": "steam-key",
+      "appid": 2246340,
+      "matchedTitle": "Monster Hunter Wilds",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Monster Hunter Wilds"
+    },
+    {
+      "id": "sk-cmk6zi7y90ehsvuw20s5ms461-tomb-raider-ivvi-remastered",
+      "name": "Tomb Raider IV-VI Remastered",
+      "category": "steam-key",
+      "appid": 2525380,
+      "matchedTitle": "Tomb Raider IV-VI Remastered",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Tomb Raider IV-VI Remastered"
+    },
+    {
+      "id": "sk-cmlawj7yn0sc9vuw276d7r7tx-big-helmet-heroes",
+      "name": "Big Helmet Heroes",
+      "category": "steam-key",
+      "appid": 2397250,
+      "matchedTitle": "Big Helmet Heroes",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Big Helmet Heroes"
+    },
+    {
+      "id": "sk-cmas6qky60f661qzxeg8wyam1-marvels-spiderman-2",
+      "name": "Marvel's Spider-Man 2",
+      "category": "steam-key",
+      "appid": 2651280,
+      "matchedTitle": "Marvel's Spider-Man 2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Marvel's Spider-Man 2"
+    },
+    {
+      "id": "sk-cmovcjn2d2ih0vuw288ogtbbx-heroes-of-hammerwatch-ii",
+      "name": "Heroes of Hammerwatch II",
+      "category": "steam-key",
+      "appid": 619820,
+      "matchedTitle": "Heroes of Hammerwatch II",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Heroes of Hammerwatch II"
+    },
+    {
+      "id": "sk-cmk5l29ph0dhdvuw29m60rezk-metal-slug-tactics",
+      "name": "Metal Slug Tactics",
+      "category": "steam-key",
+      "appid": 1590760,
+      "matchedTitle": "Metal Slug Tactics",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Metal Slug Tactics"
+    },
+    {
+      "id": "sk-cmovddw432ik5vuw2tr6gk2vv-rogue-waters",
+      "name": "Rogue Waters",
+      "category": "steam-key",
+      "appid": 1691190,
+      "matchedTitle": "Rogue Waters",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Rogue Waters"
+    },
+    {
+      "id": "sk-cmf46xdrdopc41qpeedoy7ko2-the-plucky-squire",
+      "name": "The Plucky Squire",
+      "category": "steam-key",
+      "appid": 1627570,
+      "matchedTitle": "The Plucky Squire",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "The Plucky Squire"
+    },
+    {
+      "id": "sk-cmctdb3yv7c1d1qpeqgsloawk-dragon-ball-sparking-zero-ultimate-edition",
+      "name": "DRAGON BALL: Sparking! ZERO",
+      "category": "steam-key",
+      "appid": 1790600,
+      "matchedTitle": "DRAGON BALL: Sparking! ZERO",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "DRAGON BALL: Sparking! ZERO"
+    },
+    {
+      "id": "sk-cmah0s43r0kio1qn8uxsm0b7l-dragon-ball-sparking-zero",
+      "name": "DRAGON BALL: Sparking! ZERO",
+      "category": "steam-key",
+      "appid": 1790600,
+      "matchedTitle": "DRAGON BALL: Sparking! ZERO",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "DRAGON BALL: Sparking! ZERO"
+    },
+    {
+      "id": "sk-cmioi5vhfbbn01qpe95biwjik-silent-hill-2",
+      "name": "SILENT HILL 2",
+      "category": "steam-key",
+      "appid": 2124490,
+      "matchedTitle": "SILENT HILL 2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "SILENT HILL 2"
+    },
+    {
+      "id": "sk-cmkqfyxb80mibvuw2m1nam21t-creatures-of-ava",
+      "name": "Creatures of Ava",
+      "category": "steam-key",
+      "appid": 2304440,
+      "matchedTitle": "Creatures of Ava",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Creatures of Ava"
+    },
+    {
+      "id": "sk-cmdwop5kkeq0r1qpe26c5fbq4-sword-art-online-fractured-daydream",
+      "name": "SWORD ART ONLINE Fractured Daydream",
+      "category": "steam-key",
+      "appid": 1858630,
+      "matchedTitle": "SWORD ART ONLINE Fractured Daydream",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "SWORD ART ONLINE Fractured Daydream"
+    },
+    {
+      "id": "sk-cmjfs93ic00608o2uurry58jx-five-hearts-under-one-roof",
+      "name": "Five Hearts Under One Roof",
+      "category": "steam-key",
+      "appid": 3021100,
+      "matchedTitle": "Five Hearts Under One Roof",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Five Hearts Under One Roof"
+    },
+    {
+      "id": "sk-cmfzm6ho6wd7k1qpetz9k2b7k-aura-of-worlds",
+      "name": "Aura of Worlds",
+      "category": "steam-key",
+      "appid": 841600,
+      "matchedTitle": "Aura of Worlds",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Aura of Worlds"
+    },
+    {
+      "id": "sk-cmiens93d9uag1qpe3dgfbupy-final-fantasy-xvi",
+      "name": "FINAL FANTASY XVI",
+      "category": "steam-key",
+      "appid": 2515020,
+      "matchedTitle": "FINAL FANTASY XVI",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "FINAL FANTASY XVI"
+    },
+    {
+      "id": "sk-cmo5za6ja2bzcvuw2psbcyxeq-harry-potter-quidditch-champions",
+      "name": "Harry Potter: Quidditch Champions",
+      "category": "steam-key",
+      "appid": 2878600,
+      "matchedTitle": "Harry Potter: Quidditch Champions",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Harry Potter: Quidditch Champions"
+    },
+    {
+      "id": "sk-cmd4w2cyda9zo1qperanhkvd0-gundam-breaker-4",
+      "name": "GUNDAM BREAKER 4",
+      "category": "steam-key",
+      "appid": 1672500,
+      "matchedTitle": "GUNDAM BREAKER 4",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "GUNDAM BREAKER 4"
+    },
+    {
+      "id": "sk-cmnq7uflj1n7tvuw2i75ja1wz-the-lord-of-the-rings-return-to-moria",
+      "name": "The Lord of the Rings: Return to Moria",
+      "category": "steam-key",
+      "appid": 2933130,
+      "matchedTitle": "The Lord of the Rings: Return to Moria™",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "The Lord of the Rings: Return to Moria"
+    },
+    {
+      "id": "ex-1-little-nightmares-3",
+      "name": "Little Nightmares III",
+      "category": "offline",
+      "appid": 1392860,
+      "matchedTitle": "Little Nightmares III",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Little Nightmares III"
+    },
+    {
+      "id": "ex-2-into-the-dead-our-darkest-days",
+      "name": "Into the Dead: Our Darkest Days",
+      "category": "offline",
+      "appid": 2239710,
+      "matchedTitle": "Into the Dead: Our Darkest Days",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Into the Dead: Our Darkest Days"
+    },
+    {
+      "id": "ex-3-uncharted-legacy-of-thieves-collection",
+      "name": "UNCHARTED: Legacy of Thieves Collection",
+      "category": "offline",
+      "appid": 1659420,
+      "matchedTitle": "UNCHARTED™: Legacy of Thieves Collection",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "UNCHARTED: Legacy of Thieves Collection"
+    },
+    {
+      "id": "ex-4-hollow-knight-silksong",
+      "name": "Hollow Knight: Silksong",
+      "category": "offline",
+      "appid": 1030300,
+      "matchedTitle": "Hollow Knight: Silksong",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Hollow Knight: Silksong"
+    },
+    {
+      "id": "ex-5-dying-light-the-beast-deluxe-edition",
+      "name": "Dying Light: The Beast",
+      "category": "offline",
+      "appid": 3008130,
+      "matchedTitle": "Dying Light: The Beast",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Dying Light: The Beast"
+    },
+    {
+      "id": "ex-6-dark-souls-iii-deluxe-edition",
+      "name": "DARK SOULS III",
+      "category": "offline",
+      "appid": 374320,
+      "matchedTitle": "DARK SOULS™ III",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "DARK SOULS III"
+    },
+    {
+      "id": "ex-7-ghost-of-tsushima-directors-cut",
+      "name": "Ghost of Tsushima DIRECTOR'S CUT",
+      "category": "offline",
+      "appid": 2215430,
+      "matchedTitle": "Ghost of Tsushima DIRECTOR'S CUT",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Ghost of Tsushima DIRECTOR'S CUT"
+    },
+    {
+      "id": "ex-8-demon-slayer-kimetsu-no-yaiba-the-hinokami-chronicles-2",
+      "name": "Demon Slayer -Kimetsu no Yaiba- The Hinokami Chronicles 2",
+      "category": "offline",
+      "appid": 2928600,
+      "matchedTitle": "Demon Slayer -Kimetsu no Yaiba- The Hinokami Chronicles 2",
+      "matchType": "existing-steam-url",
+      "score": null,
+      "query": "Demon Slayer -Kimetsu no Yaiba- The Hinokami Chronicles 2"
+    }
+  ],
+  "unresolved": [
+    {
+      "id": "offline-65-pacify-x-devour",
+      "name": "Pacify x DEVOUR [OFFLINE]",
+      "category": "offline"
+    },
+    {
+      "id": "offline-75-night-drive",
+      "name": "Night Drive: à¸„à¸·à¸™à¸«à¸¥à¸­à¸™ à¸‹à¹ˆà¸­à¸™à¸—à¸²à¸‡ [OFFLINE]",
+      "category": "offline"
+    },
+    {
+      "id": "offline-87-football-manager-all-year",
+      "name": "Football Manager All Year [OFFLINE]",
+      "category": "offline"
+    },
+    {
+      "id": "offline-89-farming-simulator-1915",
+      "name": "Farming simulator 19-15 [OFFLINE]",
+      "category": "offline"
+    },
+    {
+      "id": "sk-cml7ltkp50rigvuw2opqjjiyo-minecraft-copper-cape",
+      "name": "Minecraft Copper Cape",
+      "category": "steam-key"
+    }
+  ],
+  "reusedAppIds": [],
+  "warnings": [],
+  "remainingAfterRun": 0,
+  "completedAfterRun": 303
+}

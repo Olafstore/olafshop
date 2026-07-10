@@ -204,7 +204,7 @@
       drawer = document.createElement("nav");
       drawer.id = drawerId;
       drawer.className = "olaf-mobile-drawer";
-      drawer.dataset.mobileMenu = "drawer-v16";
+      drawer.dataset.mobileMenu = "drawer-v54";
       drawer.setAttribute("aria-hidden", "true");
       document.body?.appendChild(drawer);
     }
@@ -381,7 +381,11 @@
 
   function dedupeMobileNavigationLayers() {
     const drawers = [...document.querySelectorAll(".olaf-mobile-drawer")];
-    const primaryDrawer = drawers.find((drawer) => drawer.dataset.mobileMenu === "drawer-v16") || drawers[0] || null;
+    const primaryDrawer =
+      drawers.find((drawer) => drawer.dataset.mobileMenu === "drawer-v54") ||
+      drawers.find((drawer) => drawer.dataset.mobileMenu === "drawer-v16") ||
+      drawers[0] ||
+      null;
     drawers.forEach((drawer) => {
       if (drawer === primaryDrawer) return;
       drawer.classList.remove("is-open");
@@ -769,7 +773,7 @@
         return;
       }
 
-      if (!event.target.closest(".topbar-popover-fixed, .language-switcher, .notification-wrap, .user-popover-wrap, .topbar-search-wrap, .site-global-search")) {
+      if (!event.target.closest(".topbar-popover-fixed, .language-switcher, .notification-wrap, .user-popover-wrap, .topbar-search-wrap, .site-global-search, .mobile-nav-toggle")) {
         const hadOpenPopover = hasOpenTopbarPopover();
         closeTopbarPopovers("");
         if (hadOpenPopover && isMobileNavigationViewport()) {
@@ -800,6 +804,9 @@
   }
 
   function setupFallbackTopbarControls(header) {
+    // Unified topbar controls own language/notification/user/search now.
+    // Keep this old page-specific fallback disabled to prevent double-open mobile layers.
+    return;
     if (!document.body?.classList.contains("free-random-page")) return;
     if (header.dataset.olafFallbackTopbarControls === "true") return;
     header.dataset.olafFallbackTopbarControls = "true";
@@ -907,7 +914,8 @@
       toggle.setAttribute("aria-controls", navId);
       header.insertBefore(toggle, nav);
     }
-    toggle.innerHTML = '<i data-lucide="menu"></i><span>menu</span>';
+    toggle.innerHTML = '<i data-lucide="menu"></i><span class="sr-only">เมนู</span>';
+    toggle.setAttribute("aria-label", "เปิดเมนู");
     toggle.setAttribute("aria-controls", nav.id);
     toggle.setAttribute("aria-expanded", "false");
 

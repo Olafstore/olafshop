@@ -300,6 +300,27 @@
     positionTopbarPopover
   };
 
+  function closeMobileNavigationOnly() {
+    document.querySelectorAll(".topbar.is-mobile-nav-open, .topbar.site-topbar-unified.is-mobile-nav-open").forEach((header) => {
+      header.classList.remove("is-mobile-nav-open");
+      header.querySelector(".mobile-nav-toggle")?.setAttribute("aria-expanded", "false");
+      header.querySelectorAll(".main-nav[data-mobile-menu='clean-v14']").forEach((nav) => {
+        nav.style.top = "";
+        nav.style.removeProperty("--olaf-mobile-scroll-y");
+      });
+    });
+    document.querySelectorAll(".olaf-mobile-drawer").forEach((drawer) => {
+      drawer.classList.remove("is-open");
+      drawer.setAttribute("aria-hidden", "true");
+    });
+    document.querySelectorAll("[data-olaf-mobile-backdrop], .olaf-mobile-menu-backdrop").forEach((backdrop) => {
+      backdrop.classList.remove("is-open");
+    });
+    document.documentElement.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
+    document.body?.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
+    setMobilePageScrollLock(false);
+  }
+
   function syncMobileUserPopoverPortal() {
     if (!document.body) return;
     const preferredWrap =
@@ -379,6 +400,10 @@
     document.querySelectorAll(".topbar.site-topbar-unified > .main-nav[data-mobile-menu='clean-v14']").forEach((nav) => {
       nav.querySelectorAll(".mobile-menu-head, .mobile-menu-footer, [data-mobile-menu-close]").forEach((node) => node.remove());
       nav.dataset.mobileMenu = "clean-v14";
+    });
+
+    document.querySelectorAll(".mobile-menu-backdrop, .mobile-nav-backdrop, .mobile-drawer-backdrop").forEach((node) => {
+      if (!node.hasAttribute("data-olaf-mobile-backdrop")) node.remove();
     });
   }
 
@@ -644,6 +669,7 @@
   function openTopbarPopover(key, popover, button) {
     if (!popover || !button) return;
     if (key === "user") syncMobileUserPopoverPortal();
+    closeMobileNavigationOnly();
     closeTopbarSearches();
     closeTopbarPopovers(key);
     clearTopbarPopoverCloseTimer(popover);
@@ -743,7 +769,7 @@
         return;
       }
 
-      if (!event.target.closest(".topbar-popover-fixed, .language-switcher, .notification-wrap, .user-popover-wrap")) {
+      if (!event.target.closest(".topbar-popover-fixed, .language-switcher, .notification-wrap, .user-popover-wrap, .topbar-search-wrap, .site-global-search")) {
         const hadOpenPopover = hasOpenTopbarPopover();
         closeTopbarPopovers("");
         if (hadOpenPopover && isMobileNavigationViewport()) {
@@ -846,6 +872,8 @@
       const shouldOpen = Boolean(isOpen) && isMobileNavigationViewport();
 
       if (shouldOpen) {
+        closeTopbarPopovers("");
+        closeTopbarSearches();
         dedupeMobileNavigationLayers();
         renderMobileDrawer(drawer);
         ["#user-popover", "#notification-popover", "#language-popover", "#filter-popover"].forEach((selector) => {
@@ -1179,6 +1207,7 @@
     const setOpen = (open, focus = false) => {
       if (open) {
         closeTopbarPopovers("");
+        closeMobileNavigationOnly();
         closeTopbarSearches(search);
       }
       search.classList.toggle("is-search-open", open);

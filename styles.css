@@ -27321,3 +27321,597 @@ a.profile-nav-item {
     min-height: 248px;
   }
 }
+
+/* 2026-07-10 FINAL MOBILE NAV FIX
+   Keep exactly one mobile navigation layer: compact topbar controls + body drawer.
+   This intentionally outranks older experimental mobile menu/popover patches above. */
+@media (max-width: 768px) {
+  html.olaf-mobile-nav-open,
+  body.olaf-mobile-nav-open {
+    overflow: hidden !important;
+    overscroll-behavior: none !important;
+  }
+
+  .topbar.site-topbar-unified,
+  body.home-page .topbar.site-topbar-unified,
+  body.product-detail-page .topbar.site-topbar-unified,
+  body.extras-page .topbar.site-topbar-unified,
+  body.free-random-page .topbar.site-topbar-unified,
+  .profile-page .topbar.site-topbar-unified {
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 12000 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 6px !important;
+    min-height: calc(64px + env(safe-area-inset-top)) !important;
+    padding: calc(10px + env(safe-area-inset-top)) 10px 10px !important;
+    border-bottom: 1px solid rgba(96, 165, 250, 0.16) !important;
+    background:
+      linear-gradient(180deg, rgba(3, 7, 18, 0.94), rgba(5, 10, 24, 0.82)) !important;
+    backdrop-filter: blur(18px) saturate(1.18) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(1.18) !important;
+    overflow: visible !important;
+  }
+
+  .topbar.site-topbar-unified::before,
+  .topbar.site-topbar-unified::after {
+    content: none !important;
+    display: none !important;
+  }
+
+  .topbar.site-topbar-unified .brand {
+    order: 0 !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
+    gap: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  .topbar.site-topbar-unified .brand > span:not(.brand-mark),
+  .topbar.site-topbar-unified .brand strong,
+  .topbar.site-topbar-unified .brand small {
+    display: none !important;
+  }
+
+  .topbar.site-topbar-unified .brand-mark {
+    width: 40px !important;
+    min-width: 40px !important;
+    height: 40px !important;
+    border-radius: 14px !important;
+    display: grid !important;
+    place-items: center !important;
+    background: linear-gradient(135deg, #2563eb, #6d5dfc) !important;
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.32) !important;
+  }
+
+  .topbar.site-topbar-unified > .main-nav,
+  .topbar.site-topbar-unified > .main-nav[data-mobile-menu="clean-v14"],
+  .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav[data-mobile-menu="clean-v14"] {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    position: static !important;
+    inset: auto !important;
+    transform: none !important;
+  }
+
+  .topbar.site-topbar-unified .topbar-actions {
+    order: 1 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    flex: 1 1 auto !important;
+    min-width: 0 !important;
+    margin-left: auto !important;
+    gap: 5px !important;
+    overflow: visible !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search,
+  .topbar.site-topbar-unified .topbar-search-wrap,
+  .topbar.site-topbar-unified .language-switcher,
+  .topbar.site-topbar-unified .notification-wrap,
+  .topbar.site-topbar-unified .user-popover-wrap {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    flex: 0 0 36px !important;
+    width: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    margin: 0 !important;
+    position: relative !important;
+    overflow: visible !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search-toggle,
+  .topbar.site-topbar-unified .topbar-search-toggle,
+  .topbar.site-topbar-unified .lang-toggle,
+  .topbar.site-topbar-unified .notification-button,
+  .topbar.site-topbar-unified .account-button,
+  .topbar.site-topbar-unified > .mobile-nav-toggle {
+    display: inline-grid !important;
+    place-items: center !important;
+    flex: 0 0 36px !important;
+    width: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 12px !important;
+    border: 1px solid rgba(148, 163, 184, 0.18) !important;
+    background: rgba(15, 23, 42, 0.55) !important;
+    color: rgba(226, 232, 240, 0.9) !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045) !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    font-size: 0 !important;
+    line-height: 1 !important;
+  }
+
+  .topbar.site-topbar-unified .account-button > span,
+  .topbar.site-topbar-unified .account-button .free-auth-avatar,
+  .topbar.site-topbar-unified .account-button .user-avatar,
+  .topbar.site-topbar-unified .account-button .account-avatar,
+  .topbar.site-topbar-unified > .mobile-nav-toggle span {
+    display: none !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search-toggle svg,
+  .topbar.site-topbar-unified .topbar-search-toggle svg,
+  .topbar.site-topbar-unified .lang-toggle svg,
+  .topbar.site-topbar-unified .notification-button svg,
+  .topbar.site-topbar-unified .account-button svg,
+  .topbar.site-topbar-unified .account-button i,
+  .topbar.site-topbar-unified > .mobile-nav-toggle svg,
+  .topbar.site-topbar-unified > .mobile-nav-toggle i {
+    display: block !important;
+    width: 18px !important;
+    min-width: 18px !important;
+    height: 18px !important;
+    color: currentColor !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search-toggle:hover,
+  .topbar.site-topbar-unified .topbar-search-toggle:hover,
+  .topbar.site-topbar-unified .lang-toggle:hover,
+  .topbar.site-topbar-unified .notification-button:hover,
+  .topbar.site-topbar-unified .account-button:hover,
+  .topbar.site-topbar-unified > .mobile-nav-toggle:hover,
+  .topbar.site-topbar-unified .site-global-search-toggle:focus-visible,
+  .topbar.site-topbar-unified .topbar-search-toggle:focus-visible,
+  .topbar.site-topbar-unified .lang-toggle:focus-visible,
+  .topbar.site-topbar-unified .notification-button:focus-visible,
+  .topbar.site-topbar-unified .account-button:focus-visible,
+  .topbar.site-topbar-unified > .mobile-nav-toggle:focus-visible,
+  .topbar.site-topbar-unified .lang-toggle.is-active,
+  .topbar.site-topbar-unified .notification-button.is-active,
+  .topbar.site-topbar-unified .account-button.is-active,
+  .topbar.site-topbar-unified.is-mobile-nav-open > .mobile-nav-toggle {
+    color: #fff !important;
+    border-color: rgba(96, 165, 250, 0.42) !important;
+    background: rgba(37, 99, 235, 0.18) !important;
+    box-shadow:
+      0 0 0 3px rgba(59, 130, 246, 0.08),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+  }
+
+  .topbar.site-topbar-unified .register-button,
+  .topbar.site-topbar-unified .site-cart-button,
+  .site-cart-button,
+  #site-cart-button,
+  #open-cart {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .topbar.site-topbar-unified > .mobile-nav-toggle {
+    order: 2 !important;
+    flex: 0 0 36px !important;
+    margin-left: 2px !important;
+  }
+
+  .olaf-mobile-menu-backdrop,
+  body > .olaf-mobile-menu-backdrop[data-olaf-mobile-backdrop] {
+    display: block !important;
+    position: fixed !important;
+    inset: 0 !important;
+    width: auto !important;
+    height: auto !important;
+    border: 0 !important;
+    padding: 0 !important;
+    margin: 0 !important;
+    border-radius: 0 !important;
+    background: rgba(2, 6, 23, 0.62) !important;
+    backdrop-filter: blur(8px) !important;
+    -webkit-backdrop-filter: blur(8px) !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: none !important;
+    z-index: 12980 !important;
+    transition: opacity 180ms ease !important;
+  }
+
+  .olaf-mobile-menu-backdrop.is-open,
+  body > .olaf-mobile-menu-backdrop[data-olaf-mobile-backdrop].is-open {
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 8px !important;
+    position: fixed !important;
+    inset: 0 auto 0 0 !important;
+    width: min(82vw, 318px) !important;
+    max-width: calc(100vw - 42px) !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    padding: calc(18px + env(safe-area-inset-top)) 16px calc(18px + env(safe-area-inset-bottom)) !important;
+    border: 0 !important;
+    border-right: 1px solid rgba(96, 165, 250, 0.18) !important;
+    border-radius: 0 26px 26px 0 !important;
+    background:
+      radial-gradient(circle at 16% 0%, rgba(59, 130, 246, 0.16), transparent 36%),
+      linear-gradient(180deg, rgba(5, 10, 24, 0.985), rgba(3, 7, 18, 0.985)) !important;
+    box-shadow: 24px 0 80px rgba(0, 0, 0, 0.48) !important;
+    color: #e5efff !important;
+    overflow-y: auto !important;
+    overscroll-behavior: contain !important;
+    transform: translate3d(-104%, 0, 0) !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: none !important;
+    z-index: 13000 !important;
+    transition:
+      transform 220ms cubic-bezier(0.18, 0.9, 0.28, 1),
+      box-shadow 220ms ease !important;
+    will-change: transform !important;
+  }
+
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"].is-open {
+    transform: translate3d(0, 0, 0) !important;
+    pointer-events: auto !important;
+  }
+
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] .mobile-menu-head {
+    display: flex !important;
+    align-items: center !important;
+    justify-content: space-between !important;
+    gap: 12px !important;
+    padding: 0 0 14px !important;
+    margin: 0 0 8px !important;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.14) !important;
+  }
+
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] .mobile-menu-brand {
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    min-height: 42px !important;
+    padding: 0 !important;
+    color: #fff !important;
+    text-decoration: none !important;
+    background: transparent !important;
+    border: 0 !important;
+    box-shadow: none !important;
+  }
+
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] .mobile-menu-brand-mark {
+    display: grid !important;
+    place-items: center !important;
+    width: 42px !important;
+    height: 42px !important;
+    border-radius: 14px !important;
+    background: linear-gradient(135deg, #2563eb, #6d5dfc) !important;
+    box-shadow: 0 14px 30px rgba(37, 99, 235, 0.28) !important;
+  }
+
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] .mobile-menu-brand-text {
+    display: inline-block !important;
+    font-weight: 800 !important;
+    letter-spacing: 0.01em !important;
+  }
+
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] .mobile-menu-brand-text span {
+    color: #60a5fa !important;
+  }
+
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] .mobile-menu-close {
+    display: grid !important;
+    place-items: center !important;
+    width: 38px !important;
+    height: 38px !important;
+    border-radius: 13px !important;
+    border: 1px solid rgba(148, 163, 184, 0.18) !important;
+    background: rgba(15, 23, 42, 0.62) !important;
+    color: rgba(226, 232, 240, 0.9) !important;
+  }
+
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] > a {
+    display: grid !important;
+    grid-template-columns: 22px minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: 12px !important;
+    min-height: 48px !important;
+    padding: 0 12px !important;
+    border-radius: 16px !important;
+    border: 1px solid transparent !important;
+    background: transparent !important;
+    color: rgba(203, 213, 225, 0.92) !important;
+    text-decoration: none !important;
+    font-size: 0.98rem !important;
+    font-weight: 400 !important;
+    letter-spacing: 0 !important;
+    box-shadow: none !important;
+    transition: background 160ms ease, border-color 160ms ease, color 160ms ease, transform 160ms ease !important;
+  }
+
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] > a:hover,
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] > a.is-active {
+    color: #fff !important;
+    border-color: rgba(96, 165, 250, 0.22) !important;
+    background: rgba(37, 99, 235, 0.12) !important;
+    transform: translateX(2px) !important;
+  }
+
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] > a svg,
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] > a i,
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] .mobile-menu-auth-btn svg,
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] .mobile-menu-auth-btn i {
+    width: 20px !important;
+    height: 20px !important;
+    color: #93c5fd !important;
+  }
+
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] > a span {
+    min-width: 0 !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    white-space: nowrap !important;
+  }
+
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] .mobile-menu-footer {
+    margin-top: auto !important;
+    padding-top: 14px !important;
+    border-top: 1px solid rgba(148, 163, 184, 0.14) !important;
+    display: grid !important;
+    gap: 10px !important;
+  }
+
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] .mobile-menu-auth-btn {
+    display: inline-grid !important;
+    grid-template-columns: 22px minmax(0, 1fr) !important;
+    align-items: center !important;
+    gap: 10px !important;
+    min-height: 46px !important;
+    padding: 0 12px !important;
+    border-radius: 15px !important;
+    border: 1px solid rgba(148, 163, 184, 0.16) !important;
+    background: rgba(15, 23, 42, 0.62) !important;
+    color: rgba(226, 232, 240, 0.92) !important;
+    text-decoration: none !important;
+    font: inherit !important;
+    font-weight: 400 !important;
+  }
+
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] .mobile-menu-register {
+    border-color: rgba(96, 165, 250, 0.52) !important;
+    background: linear-gradient(135deg, #2563eb, #4f46e5) !important;
+    color: #fff !important;
+  }
+
+  body > .olaf-mobile-drawer[data-mobile-menu="drawer-v16"] .mobile-menu-logout {
+    color: #fecaca !important;
+    border-color: rgba(248, 113, 113, 0.2) !important;
+    background: rgba(127, 29, 29, 0.18) !important;
+  }
+
+  html.olaf-mobile-nav-open .language-popover:not([hidden]),
+  html.olaf-mobile-nav-open .notification-popover:not([hidden]),
+  html.olaf-mobile-nav-open #user-popover:not([hidden]),
+  html.olaf-mobile-nav-open .user-popover:not([hidden]),
+  body.olaf-mobile-nav-open .language-popover:not([hidden]),
+  body.olaf-mobile-nav-open .notification-popover:not([hidden]),
+  body.olaf-mobile-nav-open #user-popover:not([hidden]),
+  body.olaf-mobile-nav-open .user-popover:not([hidden]) {
+    display: none !important;
+  }
+
+  .language-popover[hidden],
+  .notification-popover[hidden],
+  #user-popover[hidden],
+  .user-popover[hidden] {
+    display: none !important;
+  }
+
+  .language-popover.topbar-popover-fixed:not([hidden]),
+  .language-popover:not([hidden]),
+  .notification-popover.topbar-popover-fixed:not([hidden]),
+  .notification-popover:not([hidden]),
+  #user-popover.topbar-popover-fixed:not([hidden]),
+  .user-popover.topbar-popover-fixed:not([hidden]),
+  #user-popover:not(.olaf-user-popover-duplicate):not([hidden]),
+  .user-popover:not(.olaf-user-popover-duplicate):not([hidden]) {
+    position: fixed !important;
+    top: var(--olaf-popover-top, calc(74px + env(safe-area-inset-top))) !important;
+    left: var(--olaf-popover-left, max(12px, env(safe-area-inset-left))) !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: var(--olaf-popover-width, calc(100vw - 24px)) !important;
+    max-width: calc(100vw - 24px) !important;
+    max-height: var(--olaf-popover-max-height, calc(100dvh - 92px - env(safe-area-inset-top))) !important;
+    margin: 0 !important;
+    transform: none !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+    z-index: 12970 !important;
+    border-radius: 20px !important;
+    border: 1px solid rgba(96, 165, 250, 0.22) !important;
+    background:
+      radial-gradient(circle at 12% 0%, rgba(59, 130, 246, 0.16), transparent 38%),
+      linear-gradient(180deg, rgba(9, 16, 34, 0.985), rgba(5, 10, 24, 0.985)) !important;
+    box-shadow: 0 24px 64px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.045) !important;
+    backdrop-filter: blur(20px) saturate(1.12) !important;
+    -webkit-backdrop-filter: blur(20px) saturate(1.12) !important;
+    overflow: auto !important;
+    animation: olafMobileTopbarPanelIn 180ms cubic-bezier(0.18, 0.9, 0.28, 1.06) both !important;
+  }
+
+  .language-popover.topbar-popover-fixed:not([hidden]),
+  .language-popover:not([hidden]) {
+    display: grid !important;
+    gap: 6px !important;
+    padding: 8px !important;
+  }
+
+  .notification-popover.topbar-popover-fixed:not([hidden]),
+  .notification-popover:not([hidden]) {
+    display: flex !important;
+    flex-direction: column !important;
+    padding: 0 !important;
+  }
+
+  #user-popover.topbar-popover-fixed:not([hidden]),
+  .user-popover.topbar-popover-fixed:not([hidden]),
+  #user-popover:not(.olaf-user-popover-duplicate):not([hidden]),
+  .user-popover:not(.olaf-user-popover-duplicate):not([hidden]) {
+    display: block !important;
+    padding: 12px !important;
+  }
+
+  .language-popover.is-closing,
+  .notification-popover.is-closing,
+  #user-popover.is-closing,
+  .user-popover.is-closing {
+    pointer-events: none !important;
+    animation: olafMobileTopbarPanelOut 160ms cubic-bezier(0.4, 0, 0.2, 1) both !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search.is-search-open,
+  .topbar.site-topbar-unified .topbar-search-wrap.is-search-open,
+  .topbar.site-topbar-unified .topbar-search-wrap.site-unified-search.is-search-open,
+  .topbar.site-topbar-unified .site-global-search.site-unified-search.is-search-open {
+    position: fixed !important;
+    top: calc(74px + env(safe-area-inset-top)) !important;
+    left: max(12px, env(safe-area-inset-left)) !important;
+    right: max(12px, env(safe-area-inset-right)) !important;
+    width: auto !important;
+    max-width: none !important;
+    height: 48px !important;
+    min-height: 48px !important;
+    padding: 5px 10px !important;
+    z-index: 12975 !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 8px !important;
+    border-radius: 18px !important;
+    border: 1px solid rgba(96, 165, 250, 0.28) !important;
+    background: linear-gradient(180deg, rgba(9, 16, 34, 0.985), rgba(5, 10, 24, 0.985)) !important;
+    box-shadow: 0 20px 52px rgba(0, 0, 0, 0.46) !important;
+    animation: olafMobileTopbarPanelIn 170ms cubic-bezier(0.18, 0.9, 0.28, 1.06) both !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search.is-search-open input,
+  .topbar.site-topbar-unified .topbar-search-wrap.is-search-open .topbar-search-input {
+    display: block !important;
+    flex: 1 1 auto !important;
+    width: auto !important;
+    min-width: 0 !important;
+    height: 36px !important;
+    color: #eaf2ff !important;
+    font-size: 0.9rem !important;
+    opacity: 1 !important;
+    visibility: visible !important;
+    pointer-events: auto !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search.is-search-open .site-global-search-results:not([hidden]),
+  .topbar.site-topbar-unified .topbar-search-wrap.is-search-open .search-suggestions:not([hidden]) {
+    position: fixed !important;
+    top: calc(128px + env(safe-area-inset-top)) !important;
+    left: max(12px, env(safe-area-inset-left)) !important;
+    right: max(12px, env(safe-area-inset-right)) !important;
+    width: auto !important;
+    max-width: none !important;
+    z-index: 12974 !important;
+  }
+}
+
+@media (max-width: 380px) {
+  .topbar.site-topbar-unified,
+  body.home-page .topbar.site-topbar-unified,
+  body.product-detail-page .topbar.site-topbar-unified,
+  body.extras-page .topbar.site-topbar-unified,
+  body.free-random-page .topbar.site-topbar-unified,
+  .profile-page .topbar.site-topbar-unified {
+    gap: 4px !important;
+    padding-left: 8px !important;
+    padding-right: 8px !important;
+  }
+
+  .topbar.site-topbar-unified .brand-mark {
+    width: 38px !important;
+    min-width: 38px !important;
+    height: 38px !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search,
+  .topbar.site-topbar-unified .topbar-search-wrap,
+  .topbar.site-topbar-unified .language-switcher,
+  .topbar.site-topbar-unified .notification-wrap,
+  .topbar.site-topbar-unified .user-popover-wrap,
+  .topbar.site-topbar-unified .site-global-search-toggle,
+  .topbar.site-topbar-unified .topbar-search-toggle,
+  .topbar.site-topbar-unified .lang-toggle,
+  .topbar.site-topbar-unified .notification-button,
+  .topbar.site-topbar-unified .account-button,
+  .topbar.site-topbar-unified > .mobile-nav-toggle {
+    flex-basis: 34px !important;
+    width: 34px !important;
+    min-width: 34px !important;
+    max-width: 34px !important;
+    height: 34px !important;
+    min-height: 34px !important;
+    border-radius: 11px !important;
+  }
+}
+
+@keyframes olafMobileTopbarPanelIn {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0) scale(0.98);
+    filter: blur(5px);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes olafMobileTopbarPanelOut {
+  from {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+  to {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0) scale(0.98);
+    filter: blur(5px);
+  }
+}

@@ -1144,6 +1144,9 @@
   }
 
   function ensureMobileSearchShell() {
+    document.querySelectorAll("#olaf-mobile-search-shell").forEach((node, index) => {
+      if (index > 0) node.remove();
+    });
     let shell = document.querySelector("#olaf-mobile-search-shell");
     if (shell) return shell;
 
@@ -1268,6 +1271,16 @@
     closeTopbarPopovers("");
     closeMobileNavigationOnly();
     closeTopbarSearches();
+    document.querySelectorAll(".topbar").forEach((header) => {
+      header.classList.remove("is-search-active");
+      header.querySelectorAll(".is-search-open").forEach((node) => node.classList.remove("is-search-open"));
+      header.querySelectorAll(".search-suggestions, .site-global-search-results").forEach((panel) => {
+        panel.hidden = true;
+      });
+      header.querySelectorAll(".topbar-search-toggle, .site-global-search-toggle").forEach((button) => {
+        button.setAttribute("aria-expanded", "false");
+      });
+    });
 
     shell.hidden = false;
     shell.classList.remove("is-closing");
@@ -1301,7 +1314,7 @@
       finish();
       return;
     }
-    mobileSearchCloseTimer = window.setTimeout(finish, 180);
+    mobileSearchCloseTimer = window.setTimeout(finish, 320);
   }
 
   function setupMobileSearchController() {

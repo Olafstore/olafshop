@@ -19,10 +19,10 @@ let checkoutPointState = {
 };
 
 const productEndpoints = [
-  window.OLAF_CONFIG?.productsEndpoint,
-  "api/products.json?v=20260710-thai-text-fix-v51",
-  "/api/products.json?v=20260710-thai-text-fix-v51",
-  "./api/products.json?v=20260710-thai-text-fix-v51"
+  "api/products.json?v=20260711-product-full-v75",
+  "./api/products.json?v=20260711-product-full-v75",
+  "/api/products.json?v=20260711-product-full-v75",
+  window.OLAF_CONFIG?.productsEndpoint
 ].filter(Boolean);
 
 const steamAppCacheEndpoints = [
@@ -336,17 +336,12 @@ async function fetchOnlineStoreSettings(quiet = false) {
 }
 
 async function fetchSupabaseProductPayload() {
-  if (!window.OlafProducts?.fetchProductById) {
-    throw new Error("Supabase product client is not ready");
-  }
-
-  const jsonPayloadPromise = fetchStorePayload(true).catch((error) => {
+  const jsonPayload = await fetchStorePayload(true).catch((error) => {
     console.warn("Product JSON settings unavailable while using Supabase product", error);
     return null;
   });
 
   if (!productId) {
-    const jsonPayload = await jsonPayloadPromise;
     return {
       store: jsonPayload?.store ?? {},
       categories: deriveCategories([], jsonPayload?.categories),
@@ -354,14 +349,16 @@ async function fetchSupabaseProductPayload() {
     };
   }
 
-  const [jsonPayload, onlineProduct] = await Promise.all([
-    jsonPayloadPromise,
-    window.OlafProducts.fetchProductById(productId)
-  ]);
   const jsonProduct = Array.isArray(jsonPayload?.products)
     ? jsonPayload.products.find((item) => item?.id === productId) || null
     : null;
   const extraFallback = window.OlafExtraProducts?.getProductById?.(productId) || null;
+  const onlineProduct = window.OlafProducts?.fetchProductById
+    ? await withTimeout(window.OlafProducts.fetchProductById(productId), 1800, null).catch((error) => {
+        console.warn("Supabase product detail unavailable; using JSON product", error);
+        return null;
+      })
+    : null;
   const product = onlineProduct
     ? { ...(jsonProduct || {}), ...(extraFallback || {}), ...onlineProduct }
     : extraFallback
@@ -375,18 +372,20 @@ async function fetchSupabaseProductPayload() {
     };
   }
 
-  const activePackages = window.OlafProducts.fetchActiveProductPackages
-    ? await window.OlafProducts.fetchActiveProductPackages(product.id).catch((error) => {
+  const activePackages = window.OlafProducts?.fetchActiveProductPackages
+    ? await withTimeout(window.OlafProducts.fetchActiveProductPackages(product.id), 1500, []).catch((error) => {
         console.warn("Product packages unavailable; falling back to base product pricing", error);
         return [];
       })
     : [];
   const enrichedProduct = { ...product, packages: activePackages };
 
-  const supabaseProducts = await withTimeout(window.OlafProducts.fetchActiveProducts(), 2500, []).catch((error) => {
-    console.warn("Supabase product list unavailable for search suggestions", error);
-    return [];
-  });
+  const supabaseProducts = window.OlafProducts?.fetchActiveProducts
+    ? await withTimeout(window.OlafProducts.fetchActiveProducts(), 1500, []).catch((error) => {
+        console.warn("Supabase product list unavailable for search suggestions", error);
+        return [];
+      })
+    : [];
   const jsonProducts = Array.isArray(jsonPayload?.products) ? jsonPayload.products : [];
   const extraProducts = Array.isArray(window.OlafExtraProducts?.products)
     ? window.OlafExtraProducts.products

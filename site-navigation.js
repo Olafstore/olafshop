@@ -176,7 +176,12 @@
   }
 
   function removePortalMobileMenuArtifacts() {
-    document.querySelectorAll(".olaf-mobile-drawer, [data-olaf-mobile-backdrop]").forEach((node) => node.remove());
+    document.querySelectorAll(".olaf-mobile-drawer").forEach((node) => {
+      if (node.id !== "olaf-mobile-drawer") node.remove();
+    });
+    document.querySelectorAll("[data-olaf-mobile-backdrop]").forEach((node, index) => {
+      if (index > 0) node.remove();
+    });
   }
 
   function renderMobileDrawer(drawer) {
@@ -197,8 +202,11 @@
     return backdrop;
   }
 
-  function ensureMobileDrawer(index) {
-    const drawerId = `olaf-mobile-drawer-${index + 1}`;
+  function ensureMobileDrawer() {
+    const drawerId = "olaf-mobile-drawer";
+    document.querySelectorAll(".olaf-mobile-drawer").forEach((node) => {
+      if (node.id !== drawerId) node.remove();
+    });
     let drawer = document.getElementById(drawerId);
     if (!drawer) {
       drawer = document.createElement("nav");
@@ -382,6 +390,7 @@
   function dedupeMobileNavigationLayers() {
     const drawers = [...document.querySelectorAll(".olaf-mobile-drawer")];
     const primaryDrawer =
+      drawers.find((drawer) => drawer.id === "olaf-mobile-drawer") ||
       drawers.find((drawer) => drawer.dataset.mobileMenu === "drawer-v54") ||
       drawers.find((drawer) => drawer.dataset.mobileMenu === "drawer-v16") ||
       drawers[0] ||
@@ -627,23 +636,26 @@
     const shouldAnimate =
       !options.immediate &&
       isMobileNavigationViewport() &&
-      !popover.hidden &&
-      popover.classList.contains("topbar-popover-fixed");
+      (!popover.hidden || popover.dataset.olafPopoverState === "open") &&
+      (popover.classList.contains("topbar-popover-fixed") || popover.dataset.olafPopoverState === "open");
 
     clearTopbarPopoverCloseTimer(popover);
+    if (shouldAnimate) popover.hidden = false;
     popover.classList.remove("is-open");
     popover.classList.add("is-closing");
+    popover.dataset.olafPopoverState = "closing";
     button?.classList.remove("is-active");
     button?.setAttribute("aria-expanded", "false");
 
     const finish = () => {
       popover.hidden = true;
       popover.classList.remove("is-open", "is-closing");
+      delete popover.dataset.olafPopoverState;
       clearTopbarPopoverPosition(popover);
     };
 
     if (shouldAnimate) {
-      popoverCloseTimers.set(popover, window.setTimeout(finish, 260));
+      popoverCloseTimers.set(popover, window.setTimeout(finish, 420));
       return;
     }
 
@@ -681,6 +693,7 @@
     popover.hidden = false;
     popover.classList.remove("is-closing", "hidden");
     popover.classList.add("is-open");
+    popover.dataset.olafPopoverState = "open";
     popover.removeAttribute("aria-hidden");
     button.classList.add("is-active");
     button.setAttribute("aria-expanded", "true");
@@ -739,6 +752,50 @@
   function setupTopbarPopoverAnchoring() {
     if (document.body?.dataset.olafTopbarPopoverAnchorBound === "true") return;
     document.body.dataset.olafTopbarPopoverAnchorBound = "true";
+
+    const bindUnifiedControlCapture = () => {
+      [
+        ["#lang-toggle", "language", "#language-popover"],
+        ["#open-notifications", "notifications", "#notification-popover"],
+        ["#open-auth", "user", "#user-popover"]
+      ].forEach(([buttonSelector, key, popoverSelector]) => {
+        document.querySelectorAll(buttonSelector).forEach((button) => {
+          if (button.dataset.olafUnifiedCaptureBound === "true") return;
+          button.dataset.olafUnifiedCaptureBound = "true";
+          button.addEventListener("click", (event) => {
+            if (!isMobileNavigationViewport()) return;
+            event.preventDefault();
+            event.stopImmediatePropagation();
+            closeTopbarSearches();
+            if (key === "user") {
+              syncMobileUserPopoverPortal();
+              ensureAccountButtonIcon(button);
+              if (button.classList.contains("is-auth-loading")) return;
+              const user = currentNavUser();
+              if (!user) {
+                window.location.href = `login.html?return=${mobileReturnUrl()}`;
+                return;
+              }
+              renderFallbackUserPopover(document.querySelector(popoverSelector), user);
+            }
+            toggleTopbarPopover(key, popoverSelector, button);
+          }, true);
+        });
+      });
+
+      document.querySelectorAll(".topbar-search-toggle, .site-global-search-toggle").forEach((button) => {
+        if (button.dataset.olafUnifiedSearchCaptureBound === "true") return;
+        button.dataset.olafUnifiedSearchCaptureBound = "true";
+        button.addEventListener("click", (event) => {
+          if (!isMobileNavigationViewport()) return;
+          event.preventDefault();
+          event.stopImmediatePropagation();
+          openMobileSearch();
+        }, true);
+      });
+    };
+
+    bindUnifiedControlCapture();
 
     document.addEventListener("click", (event) => {
       const languageButton = event.target.closest("#lang-toggle");
@@ -802,6 +859,7 @@
     };
     window.addEventListener("resize", () => window.requestAnimationFrame(updateActive), { passive: true });
     window.addEventListener("scroll", () => window.requestAnimationFrame(updateActive), { passive: true });
+    window.setTimeout(bindUnifiedControlCapture, 300);
   }
 
   function setupFallbackTopbarControls(header) {
@@ -1310,11 +1368,11 @@
       if (!document.querySelector(".olaf-mobile-drawer.is-open")) setMobilePageScrollLock(false);
     };
 
-    if (options.immediate || !isMobileNavigationViewport()) {
+    if (options.immediate) {
       finish();
       return;
     }
-    mobileSearchCloseTimer = window.setTimeout(finish, 320);
+    mobileSearchCloseTimer = window.setTimeout(finish, 520);
   }
 
   function setupMobileSearchController() {

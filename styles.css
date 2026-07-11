@@ -28789,3 +28789,318 @@ a.profile-nav-item {
     z-index: 17050 !important;
   }
 }
+
+/* 2026-07-11 v60 — one mobile menu system across every page + no-flicker menu animations */
+@keyframes olafPopoverOpenV60 {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0) scale(0.982);
+    filter: blur(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes olafPopoverCloseV60 {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, -8px, 0) scale(0.982);
+    filter: blur(6px);
+  }
+}
+
+@keyframes olafMobilePanelOpenV60 {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 12px, 0) scale(0.975);
+    filter: blur(8px);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+}
+
+@keyframes olafMobilePanelCloseV60 {
+  0% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    filter: blur(0);
+  }
+  100% {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.975);
+    filter: blur(8px);
+  }
+}
+
+@media (max-width: 768px) {
+  .topbar.site-topbar-unified,
+  body.home-page .topbar.site-topbar-unified,
+  body.product-detail-page .topbar.site-topbar-unified,
+  body.extras-page .topbar.site-topbar-unified,
+  body.free-random-page .topbar.site-topbar-unified,
+  body.point-topup-page .topbar.site-topbar-unified,
+  .profile-page .topbar.site-topbar-unified {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    min-height: 68px !important;
+    padding: calc(10px + env(safe-area-inset-top, 0px)) 12px 10px !important;
+    border-radius: 0 !important;
+    border: 0 !important;
+    border-bottom: 1px solid rgba(96, 165, 250, 0.14) !important;
+    background:
+      radial-gradient(circle at 12% 0%, rgba(59, 130, 246, 0.16), transparent 38%),
+      rgba(2, 6, 23, 0.86) !important;
+    backdrop-filter: blur(18px) saturate(135%) !important;
+    -webkit-backdrop-filter: blur(18px) saturate(135%) !important;
+    box-shadow: 0 16px 48px rgba(0, 0, 0, 0.24) !important;
+    isolation: isolate !important;
+  }
+
+  .topbar.site-topbar-unified .brand {
+    flex: 0 0 auto !important;
+  }
+
+  .topbar.site-topbar-unified .topbar-actions {
+    margin-left: auto !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: flex-end !important;
+    gap: 8px !important;
+    min-width: 0 !important;
+  }
+
+  .topbar.site-topbar-unified > .main-nav,
+  .topbar.site-topbar-unified > .main-nav[data-mobile-menu="clean-v14"],
+  .topbar.site-topbar-unified.is-mobile-nav-open > .main-nav[data-mobile-menu="clean-v14"] {
+    display: none !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search,
+  .topbar.site-topbar-unified .topbar-search-wrap,
+  .topbar.site-topbar-unified .language-switcher,
+  .topbar.site-topbar-unified .notification-wrap,
+  .topbar.site-topbar-unified .user-popover-wrap,
+  .topbar.site-topbar-unified .site-global-search-toggle,
+  .topbar.site-topbar-unified .topbar-search-toggle,
+  .topbar.site-topbar-unified .lang-toggle,
+  .topbar.site-topbar-unified .notification-button,
+  .topbar.site-topbar-unified .account-button,
+  .topbar.site-topbar-unified > .mobile-nav-toggle {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    flex: 0 0 40px !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search-toggle,
+  .topbar.site-topbar-unified .topbar-search-toggle,
+  .topbar.site-topbar-unified .lang-toggle,
+  .topbar.site-topbar-unified .notification-button,
+  .topbar.site-topbar-unified .account-button,
+  .topbar.site-topbar-unified > .mobile-nav-toggle {
+    display: grid !important;
+    place-items: center !important;
+    padding: 0 !important;
+    border-radius: 999px !important;
+    border: 1px solid rgba(148, 163, 184, 0.18) !important;
+    background: rgba(15, 23, 42, 0.62) !important;
+    color: rgba(226, 232, 240, 0.9) !important;
+    line-height: 0 !important;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+    transition:
+      transform 180ms cubic-bezier(0.16, 1, 0.3, 1),
+      background 180ms ease,
+      border-color 180ms ease,
+      color 180ms ease,
+      box-shadow 180ms ease !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search-toggle:active,
+  .topbar.site-topbar-unified .topbar-search-toggle:active,
+  .topbar.site-topbar-unified .lang-toggle:active,
+  .topbar.site-topbar-unified .notification-button:active,
+  .topbar.site-topbar-unified .account-button:active,
+  .topbar.site-topbar-unified > .mobile-nav-toggle:active {
+    transform: scale(0.94) !important;
+  }
+
+  body > .olaf-mobile-drawer:not(#olaf-mobile-drawer),
+  body > .olaf-mobile-drawer:not([data-mobile-menu="drawer-v54"]) {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    transform: translate3d(-110%, 0, 0) !important;
+  }
+
+  body > #olaf-mobile-drawer[data-mobile-menu="drawer-v54"] {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    z-index: 13000 !important;
+    transition:
+      transform 280ms cubic-bezier(0.16, 1, 0.3, 1),
+      filter 240ms ease,
+      box-shadow 240ms ease !important;
+    backface-visibility: hidden !important;
+    transform: translate3d(-104%, 0, 0) !important;
+    will-change: transform !important;
+  }
+
+  body > #olaf-mobile-drawer[data-mobile-menu="drawer-v54"].is-open {
+    transform: translate3d(0, 0, 0) !important;
+    pointer-events: auto !important;
+  }
+
+  .language-popover[data-olaf-popover-state="open"],
+  .notification-popover[data-olaf-popover-state="open"],
+  #user-popover[data-olaf-popover-state="open"],
+  .user-popover[data-olaf-popover-state="open"],
+  .language-popover.topbar-popover-fixed:not([hidden]),
+  .notification-popover.topbar-popover-fixed:not([hidden]),
+  #user-popover.topbar-popover-fixed:not([hidden]),
+  .user-popover.topbar-popover-fixed:not([hidden]) {
+    display: flex !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    animation: olafPopoverOpenV60 240ms cubic-bezier(0.16, 1, 0.3, 1) both !important;
+    transform-origin: top center !important;
+    backface-visibility: hidden !important;
+    contain: layout paint !important;
+    will-change: opacity, transform, filter !important;
+  }
+
+  .language-popover[data-olaf-popover-state="closing"],
+  .notification-popover[data-olaf-popover-state="closing"],
+  #user-popover[data-olaf-popover-state="closing"],
+  .user-popover[data-olaf-popover-state="closing"],
+  .language-popover.topbar-popover-fixed.is-closing,
+  .notification-popover.topbar-popover-fixed.is-closing,
+  #user-popover.topbar-popover-fixed.is-closing,
+  .user-popover.topbar-popover-fixed.is-closing,
+  .language-popover.topbar-popover-fixed[data-olaf-popover-state="closing"],
+  .notification-popover.topbar-popover-fixed[data-olaf-popover-state="closing"],
+  #user-popover.topbar-popover-fixed[data-olaf-popover-state="closing"],
+  .user-popover.topbar-popover-fixed[data-olaf-popover-state="closing"],
+  .language-popover[hidden][data-olaf-popover-state="closing"],
+  .notification-popover[hidden][data-olaf-popover-state="closing"],
+  #user-popover[hidden][data-olaf-popover-state="closing"],
+  .user-popover[hidden][data-olaf-popover-state="closing"] {
+    display: flex !important;
+    visibility: visible !important;
+    pointer-events: none !important;
+    animation: olafPopoverCloseV60 360ms ease both !important;
+    transform-origin: top center !important;
+    backface-visibility: hidden !important;
+    contain: layout paint !important;
+    will-change: opacity, transform, filter !important;
+  }
+
+  .olaf-mobile-search-shell.is-open .olaf-mobile-search-card {
+    animation: olafMobilePanelOpenV60 280ms cubic-bezier(0.16, 1, 0.3, 1) both !important;
+  }
+
+  .olaf-mobile-search-shell.is-closing,
+  .olaf-mobile-search-shell[hidden].is-closing {
+    display: grid !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    visibility: visible !important;
+  }
+
+  .olaf-mobile-search-shell.is-closing .olaf-mobile-search-card,
+  .olaf-mobile-search-shell[hidden].is-closing .olaf-mobile-search-card {
+    animation: olafMobilePanelCloseV60 440ms ease both !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search.is-search-open,
+  .topbar.site-topbar-unified .topbar-search-wrap.is-search-open,
+  .topbar.site-topbar-unified .topbar-search-wrap.site-unified-search.is-search-open,
+  .topbar.site-topbar-unified .site-global-search.site-unified-search.is-search-open,
+  body.home-page .topbar.site-topbar-unified .site-global-search,
+  body.product-detail-page .topbar.site-topbar-unified .topbar-search-wrap,
+  body.extras-page .topbar.site-topbar-unified .site-global-search,
+  body.free-random-page .topbar.site-topbar-unified .site-global-search,
+  body.point-topup-page .topbar.site-topbar-unified .site-global-search,
+  .profile-page .topbar.site-topbar-unified .topbar-search-wrap {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    flex: 0 0 40px !important;
+    flex-basis: 40px !important;
+    border-radius: 999px !important;
+  }
+
+  .topbar.site-topbar-unified .site-global-search.is-search-open .site-global-search-toggle,
+  .topbar.site-topbar-unified .topbar-search-wrap.is-search-open .topbar-search-toggle,
+  .topbar.site-topbar-unified .topbar-search-wrap.site-unified-search.is-search-open .topbar-search-toggle,
+  .topbar.site-topbar-unified .site-global-search.site-unified-search.is-search-open .site-global-search-toggle,
+  body.product-detail-page .topbar.site-topbar-unified .topbar-search-toggle,
+  .profile-page .topbar.site-topbar-unified .topbar-search-toggle {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    flex: 0 0 40px !important;
+    flex-basis: 40px !important;
+    border-radius: 999px !important;
+  }
+
+  body.home-page .topbar.site-topbar-unified .topbar-actions > .language-switcher > button.icon-button.lang-toggle,
+  body.product-detail-page .topbar.site-topbar-unified .topbar-actions > .language-switcher > button.icon-button.lang-toggle,
+  body.extras-page .topbar.site-topbar-unified .topbar-actions > .language-switcher > button.icon-button.lang-toggle,
+  body.free-random-page .topbar.site-topbar-unified .topbar-actions > .language-switcher > button.icon-button.lang-toggle,
+  body.point-topup-page .topbar.site-topbar-unified .topbar-actions > .language-switcher > button.icon-button.lang-toggle,
+  .profile-page .topbar.site-topbar-unified .topbar-actions > .language-switcher > button.icon-button.lang-toggle,
+  body.home-page .topbar.site-topbar-unified .topbar-actions > .notification-wrap > button.icon-button.notification-button,
+  body.product-detail-page .topbar.site-topbar-unified .topbar-actions > .notification-wrap > button.icon-button.notification-button,
+  body.extras-page .topbar.site-topbar-unified .topbar-actions > .notification-wrap > button.icon-button.notification-button,
+  body.free-random-page .topbar.site-topbar-unified .topbar-actions > .notification-wrap > button.icon-button.notification-button,
+  body.point-topup-page .topbar.site-topbar-unified .topbar-actions > .notification-wrap > button.icon-button.notification-button,
+  .profile-page .topbar.site-topbar-unified .topbar-actions > .notification-wrap > button.icon-button.notification-button,
+  body.home-page .topbar.site-topbar-unified .topbar-actions > .user-popover-wrap > button.account-button,
+  body.product-detail-page .topbar.site-topbar-unified .topbar-actions > .user-popover-wrap > button.account-button,
+  body.extras-page .topbar.site-topbar-unified .topbar-actions > .user-popover-wrap > button.account-button,
+  body.free-random-page .topbar.site-topbar-unified .topbar-actions > .user-popover-wrap > button.account-button,
+  body.point-topup-page .topbar.site-topbar-unified .topbar-actions > .user-popover-wrap > button.account-button,
+  .profile-page .topbar.site-topbar-unified .topbar-actions > .user-popover-wrap > button.account-button,
+  body.home-page .topbar.site-topbar-unified > button.mobile-nav-toggle,
+  body.product-detail-page .topbar.site-topbar-unified > button.mobile-nav-toggle,
+  body.extras-page .topbar.site-topbar-unified > button.mobile-nav-toggle,
+  body.free-random-page .topbar.site-topbar-unified > button.mobile-nav-toggle,
+  body.point-topup-page .topbar.site-topbar-unified > button.mobile-nav-toggle,
+  .profile-page .topbar.site-topbar-unified > button.mobile-nav-toggle {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+    flex: 0 0 40px !important;
+    flex-basis: 40px !important;
+    padding: 0 !important;
+    border-radius: 999px !important;
+  }
+}

@@ -1,5 +1,8 @@
 (function () {
   const ORDER_DESTINATION = "profile.html#inventory";
+  const MOBILE_DRAWER_VERSION = "drawer-v68";
+  const MOBILE_DRAWER_ID = "olaf-mobile-drawer";
+  const MOBILE_BACKDROP_ID = "olaf-mobile-menu-backdrop";
   const NAV_ITEMS = [
     { href: "index.html", label: "หน้าหลัก", icon: "house", match: ["index.html", ""] },
     { href: "index.html#catalog", label: "สินค้า", icon: "shopping-bag", matchHash: "#catalog" },
@@ -167,7 +170,7 @@
   }
 
   function mobileDrawerHtml() {
-    return `${mobileNavHeaderHtml()}${NAV_ITEMS.map(navLinkHtml).join("")}${mobileNavFooterHtml()}`;
+    return `${mobileNavHeaderHtml()}<div class="mobile-menu-list" role="menu">${NAV_ITEMS.map(navLinkHtml).join("")}</div>${mobileNavFooterHtml()}`;
   }
 
   function renderMainNav(nav) {
@@ -177,10 +180,11 @@
 
   function removePortalMobileMenuArtifacts() {
     document.querySelectorAll(".olaf-mobile-drawer").forEach((node) => {
-      if (node.id !== "olaf-mobile-drawer") node.remove();
+      if (node.id !== MOBILE_DRAWER_ID) node.remove();
+      else node.dataset.mobileMenu = MOBILE_DRAWER_VERSION;
     });
     document.querySelectorAll("[data-olaf-mobile-backdrop]").forEach((node, index) => {
-      if (index > 0) node.remove();
+      if (node.id !== MOBILE_BACKDROP_ID && index > 0) node.remove();
     });
   }
 
@@ -190,38 +194,71 @@
   }
 
   function ensureMobileBackdrop() {
-    let backdrop = document.querySelector("[data-olaf-mobile-backdrop]");
+    document.querySelectorAll("[data-olaf-mobile-backdrop], .olaf-mobile-menu-backdrop").forEach((node) => {
+      if (node.id !== MOBILE_BACKDROP_ID) node.remove();
+    });
+    let backdrop = document.getElementById(MOBILE_BACKDROP_ID);
     if (!backdrop) {
       backdrop = document.createElement("button");
       backdrop.type = "button";
       backdrop.className = "olaf-mobile-menu-backdrop";
-      backdrop.dataset.olafMobileBackdrop = "true";
+      backdrop.id = MOBILE_BACKDROP_ID;
       backdrop.setAttribute("aria-label", "ปิดเมนู");
       document.body?.appendChild(backdrop);
     }
+    backdrop.dataset.olafMobileBackdrop = "backdrop-v68";
     return backdrop;
   }
 
   function ensureMobileDrawer() {
-    const drawerId = "olaf-mobile-drawer";
     document.querySelectorAll(".olaf-mobile-drawer").forEach((node) => {
-      if (node.id !== drawerId) node.remove();
+      if (node.id !== MOBILE_DRAWER_ID) node.remove();
     });
-    let drawer = document.getElementById(drawerId);
+    let drawer = document.getElementById(MOBILE_DRAWER_ID);
     if (!drawer) {
       drawer = document.createElement("nav");
-      drawer.id = drawerId;
+      drawer.id = MOBILE_DRAWER_ID;
       drawer.className = "olaf-mobile-drawer";
-      drawer.dataset.mobileMenu = "drawer-v54";
       drawer.setAttribute("aria-hidden", "true");
       document.body?.appendChild(drawer);
     }
+    drawer.dataset.mobileMenu = MOBILE_DRAWER_VERSION;
+    drawer.setAttribute("role", "navigation");
+    drawer.setAttribute("aria-label", "เมนูหลักบนมือถือ");
     renderMobileDrawer(drawer);
     return drawer;
   }
 
   function isMobileNavigationViewport() {
     return window.matchMedia?.("(max-width: 768px)")?.matches ?? window.innerWidth <= 768;
+  }
+
+  function syncMobileSourceNavVisibility() {
+    const shouldHide = isMobileNavigationViewport();
+    document.querySelectorAll(".topbar.site-topbar-unified > .main-nav[data-mobile-menu='clean-v14']").forEach((nav) => {
+      if (shouldHide) {
+        nav.setAttribute("aria-hidden", "true");
+        nav.setAttribute("inert", "");
+        nav.style.display = "none";
+        nav.style.visibility = "hidden";
+        nav.style.pointerEvents = "none";
+        nav.style.transform = "translate3d(-120%, 0, 0)";
+        nav.style.width = "0";
+        nav.style.height = "0";
+        nav.style.overflow = "hidden";
+        return;
+      }
+
+      nav.removeAttribute("aria-hidden");
+      nav.removeAttribute("inert");
+      nav.style.display = "";
+      nav.style.visibility = "";
+      nav.style.pointerEvents = "";
+      nav.style.transform = "";
+      nav.style.width = "";
+      nav.style.height = "";
+      nav.style.overflow = "";
+    });
   }
 
   function setMobilePageScrollLock(shouldLock) {
@@ -394,9 +431,16 @@
   }
 
   function dedupeMobileNavigationLayers() {
+    document.querySelectorAll("[data-mobile-menu], [data-olaf-mobile-backdrop], .olaf-mobile-menu-backdrop, .mobile-menu-backdrop, .mobile-nav-backdrop, .mobile-drawer-backdrop").forEach((node) => {
+      if (node.id === MOBILE_DRAWER_ID || node.id === MOBILE_BACKDROP_ID) return;
+      if (node.matches?.(".topbar.site-topbar-unified > .main-nav[data-mobile-menu='clean-v14']")) return;
+      if (node.matches?.(".olaf-mobile-drawer, .olaf-mobile-menu-backdrop, .mobile-menu-backdrop, .mobile-nav-backdrop, .mobile-drawer-backdrop")) node.remove();
+    });
+
     const drawers = [...document.querySelectorAll(".olaf-mobile-drawer")];
     const primaryDrawer =
-      drawers.find((drawer) => drawer.id === "olaf-mobile-drawer") ||
+      drawers.find((drawer) => drawer.id === MOBILE_DRAWER_ID && drawer.dataset.mobileMenu === MOBILE_DRAWER_VERSION) ||
+      drawers.find((drawer) => drawer.id === MOBILE_DRAWER_ID) ||
       drawers.find((drawer) => drawer.dataset.mobileMenu === "drawer-v54") ||
       drawers.find((drawer) => drawer.dataset.mobileMenu === "drawer-v16") ||
       drawers[0] ||
@@ -407,19 +451,27 @@
       drawer.setAttribute("aria-hidden", "true");
       drawer.remove();
     });
+    if (primaryDrawer) primaryDrawer.dataset.mobileMenu = MOBILE_DRAWER_VERSION;
 
     const backdrops = [...document.querySelectorAll("[data-olaf-mobile-backdrop], .olaf-mobile-menu-backdrop")];
-    const primaryBackdrop = backdrops.find((backdrop) => backdrop.hasAttribute("data-olaf-mobile-backdrop")) || backdrops[0] || null;
+    const primaryBackdrop =
+      backdrops.find((backdrop) => backdrop.id === MOBILE_BACKDROP_ID && backdrop.dataset.olafMobileBackdrop === "backdrop-v68") ||
+      backdrops.find((backdrop) => backdrop.id === MOBILE_BACKDROP_ID) ||
+      backdrops.find((backdrop) => backdrop.hasAttribute("data-olaf-mobile-backdrop")) ||
+      backdrops[0] ||
+      null;
     backdrops.forEach((backdrop) => {
       if (backdrop === primaryBackdrop) return;
       backdrop.classList.remove("is-open");
       backdrop.remove();
     });
+    if (primaryBackdrop) primaryBackdrop.dataset.olafMobileBackdrop = "backdrop-v68";
 
     document.querySelectorAll(".topbar.site-topbar-unified > .main-nav[data-mobile-menu='clean-v14']").forEach((nav) => {
       nav.querySelectorAll(".mobile-menu-head, .mobile-menu-footer, [data-mobile-menu-close]").forEach((node) => node.remove());
       nav.dataset.mobileMenu = "clean-v14";
     });
+    syncMobileSourceNavVisibility();
 
     document.querySelectorAll(".mobile-menu-backdrop, .mobile-nav-backdrop, .mobile-drawer-backdrop").forEach((node) => {
       if (!node.hasAttribute("data-olaf-mobile-backdrop")) node.remove();
@@ -975,6 +1027,7 @@
 
     const setMobileNavOpen = (isOpen) => {
       const shouldOpen = Boolean(isOpen) && isMobileNavigationViewport();
+      syncMobileSourceNavVisibility();
 
       if (shouldOpen) {
         closeMobileSearch();
@@ -1017,6 +1070,14 @@
     toggle.setAttribute("aria-label", "เปิดเมนู");
     toggle.setAttribute("aria-controls", nav.id);
     toggle.setAttribute("aria-expanded", "false");
+
+    if (toggle.dataset.mobileDrawerController !== MOBILE_DRAWER_VERSION) {
+      const cleanToggle = toggle.cloneNode(true);
+      cleanToggle.dataset.mobileDrawerController = MOBILE_DRAWER_VERSION;
+      toggle.replaceWith(cleanToggle);
+      toggle = cleanToggle;
+    }
+    toggle.dataset.mobileDrawerController = MOBILE_DRAWER_VERSION;
 
     toggle.addEventListener("click", (event) => {
       event.preventDefault();
@@ -1567,6 +1628,7 @@
       setupFallbackTopbarControls(header);
       setupAccountButtonIconGuard(header);
     });
+    syncMobileSourceNavVisibility();
     setupTopbarPopoverAnchoring();
     setupStickyState(headers);
     setTimeout(() => {
@@ -1583,6 +1645,7 @@
         cleanupQueued = false;
         syncMobileUserPopoverPortal();
         dedupeMobileNavigationLayers();
+        syncMobileSourceNavVisibility();
         headers.forEach((header) => ensureAccountButtonIcon(header.querySelector("#open-auth")));
       });
     };
@@ -1598,6 +1661,7 @@
       window.requestAnimationFrame(() => {
         resizeQueued = false;
         syncMobileUserPopoverPortal();
+        syncMobileSourceNavVisibility();
         headers.forEach(setupAccountButtonIconGuard);
         if (window.innerWidth > 1180) {
           closeMobileSearch({ immediate: true });

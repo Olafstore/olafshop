@@ -528,6 +528,9 @@
       detailSections: normalizeArray(row.detail_sections),
       steamRelatedLinks: normalizeArray(row.steam_related_links),
       systemRequirements: row.system_requirements || { minimum: [], recommended: [] },
+      steamAppId: row.steam_app_id == null ? null : Number(row.steam_app_id),
+      sourceMetadata: normalizeObject(row.source_metadata),
+      badgeOverrides: normalizeArray(row.badge_overrides),
       isActive: row.is_active !== false,
       sortOrder: Number(row.sort_order || 0),
       createdAt: row.created_at || "",
@@ -654,6 +657,9 @@
       detail_sections: normalizeArray(product.detailSections),
       steam_related_links: normalizeArray(product.steamRelatedLinks),
       system_requirements: product.systemRequirements || { minimum: [], recommended: [] },
+      steam_app_id: product.steamAppId == null || product.steamAppId === "" ? null : String(product.steamAppId),
+      source_metadata: normalizeObject(product.sourceMetadata),
+      badge_overrides: normalizeArray(product.badgeOverrides),
       is_active: product.isActive !== false,
       sort_order: Number(product.sortOrder || 0)
     };

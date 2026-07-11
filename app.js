@@ -482,6 +482,87 @@ function getProductBadgeLabel(categoryId, fallbackLabel = "") {
   return String(fallbackLabel || "STEAM").trim() || "STEAM";
 }
 
+const categoryBadgeDefaults = {
+  "steam-key": [
+    { label: "STEAM", tone: "steam" },
+    { label: "KEY", tone: "purple" }
+  ],
+  "steam-account": [
+    { label: "STEAM", tone: "steam" },
+    { label: "ACCOUNT", tone: "blue" }
+  ],
+  bundle: [
+    { label: "BUNDLE", tone: "purple" },
+    { label: "PACK", tone: "gold" }
+  ],
+  windows: [
+    { label: "WINDOWS", tone: "blue" },
+    { label: "PRE-ORDER", tone: "orange" }
+  ],
+  "minecraft-account": [
+    { label: "MINECRAFT", tone: "green" },
+    { label: "MICROSOFT ID", tone: "blue" }
+  ],
+  "minecraft-key": [
+    { label: "MINECRAFT", tone: "green" },
+    { label: "KEY", tone: "gold" }
+  ],
+  rockstar: [
+    { label: "ROCKSTAR", tone: "gold" },
+    { label: "FIVEM", tone: "blue" }
+  ]
+};
+
+function normalizeBadgeOverrides(product) {
+  return (Array.isArray(product?.badgeOverrides) ? product.badgeOverrides : [])
+    .map((badge) => ({
+      label: cleanDisplayText(badge?.label || ""),
+      tone: String(badge?.tone || "auto").trim() || "auto"
+    }))
+    .filter((badge) => badge.label)
+    .slice(0, 2);
+}
+
+function badgeToneClass(tone, categoryId) {
+  const normalized = String(tone || "auto").toLowerCase();
+  if (normalized && normalized !== "auto") return `badge-tone-${normalized}`;
+  return `badge-tone-${categoryId || "steam"}`;
+}
+
+function getProductBadges(product) {
+  const categoryId = String(product?.category || "").toLowerCase();
+  if (categoryId === "offline") {
+    return [
+      { label: "STEAM", className: "badge-tone-steam" },
+      { label: "OFFLINE", className: "badge-tone-offline" }
+    ];
+  }
+  const overrides = normalizeBadgeOverrides(product);
+  const fallbackLabel = cleanDisplayText(product?.label || "");
+  const primary = getProductBadgeLabel(categoryId, fallbackLabel);
+  const fallback = overrides.length
+    ? overrides
+    : categoryBadgeDefaults[categoryId] || [
+        { label: primary, tone: "auto" },
+        ...(fallbackLabel && fallbackLabel.toUpperCase() !== primary.toUpperCase()
+          ? [{ label: fallbackLabel, tone: /premium|deluxe/i.test(fallbackLabel) ? "purple" : "steam" }]
+          : [])
+      ];
+  return fallback
+    .filter((badge) => badge?.label)
+    .slice(0, 2)
+    .map((badge) => ({
+      label: cleanDisplayText(badge.label),
+      className: badgeToneClass(badge.tone, categoryId)
+    }));
+}
+
+function renderBadgePills(product) {
+  return getProductBadges(product)
+    .map((badge) => `<span class="label-pill ${escapeHtml(badge.className)}">${escapeHtml(badge.label)}</span>`)
+    .join("");
+}
+
 function translateTagToThai(tag) {
   const cleanTag = cleanDisplayText(tag);
   if (!cleanTag) return "";
@@ -1072,6 +1153,7 @@ function applyPayload(payload) {
     delivery: cleanDisplayText(product.delivery),
     warranty: cleanDisplayText(product.warranty),
     tags: Array.isArray(product.tags) ? product.tags.map(cleanDisplayText).filter(Boolean) : [],
+    badgeOverrides: normalizeBadgeOverrides(product),
     price: Number(product.price) || 0,
     compareAt: Number(product.compareAt) || 0,
     stock: Number(product.stock) || 0,
@@ -1876,7 +1958,7 @@ function renderProductCard(product) {
       </div>
       <div class="product-body">
         <div class="product-meta">
-          <span class="label-pill">${escapeHtml(getProductBadgeLabel(product.category, product.label))}</span>
+          <span class="badge-pill-group">${renderBadgePills(product)}</span>
           <span class="stock-pill ${stock.className}">${stock.label}</span>
         </div>
         <div>
@@ -1920,7 +2002,7 @@ function renderProductDetail(product) {
     </div>
     <div class="detail-body">
       <div>
-        <span class="label-pill">${escapeHtml(getProductBadgeLabel(product.category, product.label))}</span>
+        <div class="badge-pill-group">${renderBadgePills(product)}</div>
         <h2>${escapeHtml(product.name)}</h2>
         <p>${escapeHtml(product.publisher)}</p>
       </div>

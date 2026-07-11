@@ -1766,6 +1766,70 @@ main {
   color: #a5b4fc;
 }
 
+.badge-pill-group {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 5px;
+  min-width: 0;
+}
+
+.label-pill.badge-tone-steam,
+.label-pill.badge-tone-blue,
+.pd-badge-blue {
+  background: rgba(37, 99, 235, 0.14);
+  border-color: rgba(96, 165, 250, 0.42);
+  color: #bfdbfe;
+}
+
+.label-pill.badge-tone-purple,
+.pd-badge-purple {
+  background: rgba(124, 58, 237, 0.15);
+  border-color: rgba(167, 139, 250, 0.38);
+  color: #ddd6fe;
+}
+
+.label-pill.badge-tone-gold,
+.pd-badge-gold {
+  background: rgba(245, 158, 11, 0.15);
+  border-color: rgba(251, 191, 36, 0.42);
+  color: #fde68a;
+}
+
+.label-pill.badge-tone-orange,
+.pd-badge-orange {
+  background: rgba(249, 115, 22, 0.14);
+  border-color: rgba(251, 146, 60, 0.42);
+  color: #fed7aa;
+}
+
+.label-pill.badge-tone-green,
+.pd-badge-green {
+  background: rgba(16, 185, 129, 0.13);
+  border-color: rgba(52, 211, 153, 0.38);
+  color: #bbf7d0;
+}
+
+.label-pill.badge-tone-red,
+.pd-badge-red {
+  background: rgba(239, 68, 68, 0.13);
+  border-color: rgba(248, 113, 113, 0.38);
+  color: #fecaca;
+}
+
+.label-pill.badge-tone-gray,
+.pd-badge-gray {
+  background: rgba(148, 163, 184, 0.12);
+  border-color: rgba(148, 163, 184, 0.28);
+  color: #cbd5e1;
+}
+
+.label-pill.badge-tone-offline {
+  background: rgba(99, 102, 241, 0.12);
+  border-color: rgba(167, 139, 250, 0.32);
+  color: #c4b5fd;
+}
+
 .stock-pill.in-stock {
   border-color: rgba(16, 185, 129, 0.35);
   color: var(--success);
@@ -7714,6 +7778,13 @@ dialog::backdrop {
   background: #facc15;
   border: 1px solid #fde047;
   color: #050505;
+}
+
+.pd-badge-steam,
+.pd-badge-key {
+  background: rgba(37, 99, 235, 0.14);
+  border-color: rgba(59, 130, 246, 0.38);
+  color: #bfdbfe;
 }
 
 .pd-brand-hero {

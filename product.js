@@ -684,6 +684,87 @@ function getProductBadgeClass(categoryId) {
   }[categoryId] || "pd-badge-steam";
 }
 
+const categoryBadgeDefaults = {
+  "steam-key": [
+    { label: "STEAM", tone: "steam" },
+    { label: "KEY", tone: "purple" }
+  ],
+  "steam-account": [
+    { label: "STEAM", tone: "steam" },
+    { label: "ACCOUNT", tone: "blue" }
+  ],
+  bundle: [
+    { label: "BUNDLE", tone: "purple" },
+    { label: "PACK", tone: "gold" }
+  ],
+  windows: [
+    { label: "WINDOWS", tone: "blue" },
+    { label: "PRE-ORDER", tone: "orange" }
+  ],
+  "minecraft-account": [
+    { label: "MINECRAFT", tone: "green" },
+    { label: "MICROSOFT ID", tone: "blue" }
+  ],
+  "minecraft-key": [
+    { label: "MINECRAFT", tone: "green" },
+    { label: "KEY", tone: "gold" }
+  ],
+  rockstar: [
+    { label: "ROCKSTAR", tone: "gold" },
+    { label: "FIVEM", tone: "blue" }
+  ]
+};
+
+function normalizeBadgeOverrides(product) {
+  return (Array.isArray(product?.badgeOverrides) ? product.badgeOverrides : [])
+    .map((badge) => ({
+      label: cleanDisplayText(badge?.label || ""),
+      tone: String(badge?.tone || "auto").trim() || "auto"
+    }))
+    .filter((badge) => badge.label)
+    .slice(0, 2);
+}
+
+function badgeToneClass(tone, categoryId) {
+  const normalized = String(tone || "auto").toLowerCase();
+  if (normalized && normalized !== "auto") return `pd-badge-${normalized}`;
+  return getProductBadgeClass(categoryId);
+}
+
+function getProductBadges(product) {
+  const categoryId = String(product?.category || "").toLowerCase();
+  if (categoryId === "offline") {
+    return [
+      { label: "STEAM", className: "pd-badge-steam" },
+      { label: "OFFLINE", className: "pd-badge-offline" }
+    ];
+  }
+  const overrides = normalizeBadgeOverrides(product);
+  const fallbackLabel = cleanDisplayText(product?.label || "");
+  const primary = getProductBadgeLabel(categoryId, fallbackLabel);
+  const fallback = overrides.length
+    ? overrides
+    : categoryBadgeDefaults[categoryId] || [
+        { label: primary, tone: "auto" },
+        ...(fallbackLabel && fallbackLabel.toUpperCase() !== primary.toUpperCase()
+          ? [{ label: fallbackLabel, tone: /premium|deluxe/i.test(fallbackLabel) ? "purple" : "steam" }]
+          : [])
+      ];
+  return fallback
+    .filter((badge) => badge?.label)
+    .slice(0, 2)
+    .map((badge) => ({
+      label: cleanDisplayText(badge.label),
+      className: badgeToneClass(badge.tone, categoryId)
+    }));
+}
+
+function renderProductBadges(product) {
+  return getProductBadges(product)
+    .map((badge) => `<span class="pd-badge ${escapeHtml(badge.className)}">${escapeHtml(badge.label)}</span>`)
+    .join("");
+}
+
 function getDisplayProductName(product) {
   const name = cleanDisplayText(product?.name || "");
   if (!name) return "";
@@ -1555,19 +1636,7 @@ function renderProduct() {
   const canAdd = purchase.stock > 0;
   detailQuantity = canAdd ? 1 : 0;
 
-  const catId = (p.category || "").toLowerCase();
-  const badgeClass = getProductBadgeClass(p.category);
-  const badgeLabel = getProductBadgeLabel(p.category, p.label);
-  const labelText = cleanDisplayText(p.label || "");
-  const hasOfflineBadge = badgeLabel === "OFFLINE" || catId.includes("offline");
-  const hasPremiumBadge = /premium|deluxe/i.test(labelText);
-  const showSecondaryBadge = Boolean(
-    labelText &&
-    !/^steam$/i.test(labelText) &&
-    labelText.toUpperCase() !== badgeLabel.toUpperCase() &&
-    !hasOfflineBadge
-  );
-  const showOfflineSteamBadge = catId === "offline";
+  const productBadgeHtml = renderProductBadges(p);
   const displayProductName = getDisplayProductName(p);
 
   const genreTags = getSidebarDisplayTags(p)
@@ -1874,10 +1943,7 @@ function renderProduct() {
 
             <!-- Platform badges -->
             <div class="pd-badges">
-              ${showOfflineSteamBadge
-                ? `<span class="pd-badge pd-badge-steam">STEAM</span><span class="pd-badge pd-badge-offline">OFFLINE</span>`
-                : `<span class="pd-badge ${badgeClass}">${badgeLabel}</span>`}
-              ${!showOfflineSteamBadge && showSecondaryBadge ? `<span class="pd-badge ${hasPremiumBadge ? "pd-badge-premium" : "pd-badge-steam"}">${escapeHtml(labelText)}</span>` : ""}
+              ${productBadgeHtml}
             </div>
 
             <!-- Title & publisher -->

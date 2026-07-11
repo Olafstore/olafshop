@@ -458,6 +458,33 @@ function serializePipeRows(rows, fields) {
     .join("\n");
 }
 
+function normalizeBadgeOverrides(value) {
+  return (Array.isArray(value) ? value : [])
+    .map((badge) => ({
+      label: String(badge?.label || "").trim(),
+      tone: String(badge?.tone || "auto").trim() || "auto"
+    }))
+    .filter((badge) => badge.label)
+    .slice(0, 2);
+}
+
+function badgeToneOptions(selected = "auto") {
+  const tones = [
+    ["auto", "Auto / ตามหมวด"],
+    ["steam", "Steam Blue"],
+    ["blue", "Blue"],
+    ["purple", "Purple"],
+    ["gold", "Gold"],
+    ["orange", "Orange"],
+    ["green", "Green"],
+    ["red", "Red"],
+    ["gray", "Gray"]
+  ];
+  return tones
+    .map(([value, label]) => `<option value="${escapeHtml(value)}" ${value === selected ? "selected" : ""}>${escapeHtml(label)}</option>`)
+    .join("");
+}
+
 function normalizePayload(payload) {
   const source = payload && typeof payload === "object" ? payload : emptyPayload;
   const store = source.store ?? {};
@@ -504,6 +531,9 @@ function normalizePayload(payload) {
           detailSections: normalizeDetailSections(product),
           steamRelatedLinks: Array.isArray(product.steamRelatedLinks) ? product.steamRelatedLinks : [],
           systemRequirements: normalizeSystemRequirements(product),
+          steamAppId: product.steamAppId ?? null,
+          sourceMetadata: product.sourceMetadata && typeof product.sourceMetadata === "object" ? product.sourceMetadata : {},
+          badgeOverrides: normalizeBadgeOverrides(product.badgeOverrides),
           isActive: product.isActive !== false,
           sortOrder: Number(product.sortOrder || 0)
         }))
@@ -792,6 +822,9 @@ function mapSupabaseProductRow(row) {
         detailSections: Array.isArray(row.detail_sections) ? row.detail_sections : [],
         steamRelatedLinks: Array.isArray(row.steam_related_links) ? row.steam_related_links : [],
         systemRequirements: row.system_requirements || { minimum: [], recommended: [] },
+        steamAppId: row.steam_app_id == null ? null : Number(row.steam_app_id),
+        sourceMetadata: row.source_metadata && typeof row.source_metadata === "object" ? row.source_metadata : {},
+        badgeOverrides: normalizeBadgeOverrides(row.badge_overrides),
         isActive: row.is_active !== false,
         sortOrder: Number(row.sort_order || 0)
       };
@@ -2432,6 +2465,9 @@ function fillProductForm(product) {
     detailSections: [],
     steamRelatedLinks: [],
     systemRequirements: { minimum: [], recommended: [] },
+    steamAppId: null,
+    sourceMetadata: {},
+    badgeOverrides: [],
     isActive: true,
     sortOrder: products().length
   };
@@ -2457,6 +2493,11 @@ function fillProductForm(product) {
   form.elements.featureBlocks.value = serializePipeRows(value.featureBlocks, ["icon", "title", "text"]);
   form.elements.detailSections.value = serializePipeRows(value.detailSections, ["title", "body"]);
   form.elements.steamRelatedLinks.value = (value.steamRelatedLinks ?? []).join("\n");
+  const badges = normalizeBadgeOverrides(value.badgeOverrides);
+  form.elements.badge1Label.value = badges[0]?.label || "";
+  form.elements.badge2Label.value = badges[1]?.label || "";
+  form.elements.badge1Tone.innerHTML = badgeToneOptions(badges[0]?.tone || "auto");
+  form.elements.badge2Tone.innerHTML = badgeToneOptions(badges[1]?.tone || "auto");
   const sysReq = value.systemRequirements;
   const isLegacy = Array.isArray(sysReq);
   form.elements.systemRequirementsMinimum.value = (isLegacy ? sysReq : (sysReq?.minimum ?? [])).join("\n");
@@ -2549,6 +2590,9 @@ function productToSupabaseRow(product, { includeId = false, includeStock = false
     detail_sections: Array.isArray(product.detailSections) ? product.detailSections : [],
     steam_related_links: Array.isArray(product.steamRelatedLinks) ? product.steamRelatedLinks : [],
     system_requirements: product.systemRequirements || { minimum: [], recommended: [] },
+    steam_app_id: product.steamAppId == null || product.steamAppId === "" ? null : String(product.steamAppId),
+    source_metadata: product.sourceMetadata && typeof product.sourceMetadata === "object" ? product.sourceMetadata : {},
+    badge_overrides: normalizeBadgeOverrides(product.badgeOverrides),
     is_active: product.isActive !== false,
     sort_order: Number(product.sortOrder || 0)
   };
@@ -2566,6 +2610,27 @@ function isMissingSteamRelatedLinksColumn(error) {
   );
 }
 
+function isMissingOptionalProductColumns(error) {
+  const code = String(error?.code || "");
+  const message = String(error?.message || "").toLowerCase();
+  return (
+    (code === "PGRST204" || code === "42703" || message.includes("schema cache")) &&
+    (message.includes("steam_app_id") ||
+      message.includes("source_metadata") ||
+      message.includes("badge_overrides") ||
+      message.includes("steam_related_links"))
+  );
+}
+
+function stripOptionalProductColumns(row) {
+  const compatibleRow = { ...row };
+  delete compatibleRow.steam_related_links;
+  delete compatibleRow.steam_app_id;
+  delete compatibleRow.source_metadata;
+  delete compatibleRow.badge_overrides;
+  return compatibleRow;
+}
+
 async function writeAdminProductRow({ client, isNew, productId, row }) {
   const execute = (payload) => {
     if (isNew) {
@@ -2577,10 +2642,8 @@ async function writeAdminProductRow({ client, isNew, productId, row }) {
   let result = await execute(row);
   let skippedSteamRelatedLinks = false;
 
-  if (result.error && isMissingSteamRelatedLinksColumn(result.error)) {
-    const compatibleRow = { ...row };
-    delete compatibleRow.steam_related_links;
-    result = await execute(compatibleRow);
+  if (result.error && isMissingOptionalProductColumns(result.error)) {
+    result = await execute(stripOptionalProductColumns(row));
     skippedSteamRelatedLinks = true;
   }
 
@@ -2724,6 +2787,7 @@ function adminPointAdjustErrorMessage(error) {
 }
 
 function productFromForm(form) {
+  const previousProduct = selectedProduct();
   const name = form.elements.name.value.trim();
   const id = form.elements.id.value.trim() || slugify(name);
   const image = form.elements.image.value.trim();
@@ -2764,6 +2828,21 @@ function productFromForm(form) {
       (section) => section.title || section.body
     ),
     steamRelatedLinks: uniqueList(compactLines(form.elements.steamRelatedLinks.value)),
+    steamAppId: previousProduct?.steamAppId ?? null,
+    sourceMetadata:
+      previousProduct?.sourceMetadata && typeof previousProduct.sourceMetadata === "object"
+        ? previousProduct.sourceMetadata
+        : {},
+    badgeOverrides: normalizeBadgeOverrides([
+      {
+        label: form.elements.badge1Label?.value,
+        tone: form.elements.badge1Tone?.value
+      },
+      {
+        label: form.elements.badge2Label?.value,
+        tone: form.elements.badge2Tone?.value
+      }
+    ]),
     systemRequirements: {
       minimum: compactLines(form.elements.systemRequirementsMinimum.value),
       recommended: compactLines(form.elements.systemRequirementsRecommended.value)

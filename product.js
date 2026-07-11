@@ -1600,6 +1600,117 @@ function categoryGuideAccordion(product) {
   return "";
 }
 
+function mergeRelatedProductSources(...sources) {
+  const productsById = new Map();
+  sources.flat().forEach((item) => {
+    if (!item?.id) return;
+    const prev = productsById.get(item.id) || {};
+    productsById.set(item.id, { ...prev, ...item });
+  });
+  return [...productsById.values()];
+}
+
+function isExtraProductCategory(category) {
+  return Boolean(window.OlafExtraProducts?.isExtraCategory?.(category));
+}
+
+function relatedCandidateProducts(product, sourceProducts = globalPayload?.products || []) {
+  const extraProduct = isExtraProductCategory(product?.category);
+  const extraProducts = Array.isArray(window.OlafExtraProducts?.products)
+    ? window.OlafExtraProducts.products
+    : [];
+  return mergeRelatedProductSources(sourceProducts, extraProducts)
+    .filter((item) => {
+      if (!item?.id || item.id === product?.id) return false;
+      if (!item.name && !item.title) return false;
+      const itemIsExtra = isExtraProductCategory(item.category);
+      return extraProduct ? itemIsExtra : !itemIsExtra;
+    });
+}
+
+function relatedSortValue(product) {
+  const stockBoost = Number(product?.stock || 0) > 0 ? 100000 : 0;
+  const sold = Number(product?.sold || 0);
+  const updated = Date.parse(product?.updatedAt || product?.updated_at || "") || 0;
+  return stockBoost + sold * 100 + updated / 100000000000;
+}
+
+function pickRelatedProducts(product, sourceProducts = globalPayload?.products || [], limit = 8) {
+  const pool = relatedCandidateProducts(product, sourceProducts);
+  const category = String(product?.category || "").toLowerCase();
+  const publisher = cleanDisplayText(product?.publisher || "").toLowerCase();
+  const selected = [];
+  const pushUnique = (items) => {
+    items.forEach((item) => {
+      if (selected.length >= limit) return;
+      if (!selected.some((picked) => picked.id === item.id)) selected.push(item);
+    });
+  };
+  const byScore = (items) => [...items].sort((a, b) => relatedSortValue(b) - relatedSortValue(a));
+
+  pushUnique(byScore(pool.filter((item) => String(item.category || "").toLowerCase() === category)));
+  if (publisher) {
+    pushUnique(byScore(pool.filter((item) =>
+      String(item.category || "").toLowerCase() !== category &&
+      cleanDisplayText(item.publisher || "").toLowerCase() === publisher
+    )));
+  }
+  pushUnique(byScore(pool.filter((item) => !selected.some((picked) => picked.id === item.id))));
+  return selected.slice(0, limit);
+}
+
+function renderRelatedProductCards(products = []) {
+  return products.map((rp) => {
+    const rpStock = getStockState(rp.stock);
+    const rpDiscount = getDiscount(rp);
+    return `
+      <a class="pd-related-card" href="product.html?id=${encodeURIComponent(rp.id)}">
+        <div class="pd-related-img">
+          <img ${fastImg(rp.image || rp.heroImage, getDisplayProductName(rp))} />
+          ${rpDiscount ? `<span class="pd-related-discount">-${rpDiscount}%</span>` : ""}
+        </div>
+        <div class="pd-related-body">
+          <p class="pd-related-name">${escapeHtml(getDisplayProductName(rp))}</p>
+          <p class="pd-related-publisher">${escapeHtml(cleanDisplayText(rp.publisher || getCategoryLabel(rp.category) || ""))}</p>
+          <div class="pd-related-footer">
+            <strong class="pd-related-price">${formatPrice(rp.price)}</strong>
+            <span class="stock-pill ${rpStock.className}" style="font-size:0.65rem;padding:2px 7px;">${rpStock.label}</span>
+          </div>
+        </div>
+      </a>
+    `;
+  }).join("");
+}
+
+function relatedSectionMarkup(relatedProducts = []) {
+  return `
+    <div class="pd-section pd-related-section" data-related-section ${relatedProducts.length ? "" : "hidden"}>
+      <h3 class="pd-section-title">
+        <span class="pd-section-icon-box"><i data-lucide="thumbs-up"></i></span>
+        สินค้าแนะนำในหมวดหมู่เดียวกัน
+      </h3>
+      <div class="pd-related-grid" data-related-grid>
+        ${renderRelatedProductCards(relatedProducts)}
+      </div>
+    </div>
+  `;
+}
+
+async function hydrateRelatedProductsFallback(product) {
+  const section = document.querySelector("[data-related-section]");
+  const grid = document.querySelector("[data-related-grid]");
+  if (!section || !grid || grid.children.length > 0) return;
+
+  const payload = await fetchStorePayload(true).catch(() => null);
+  const products = Array.isArray(payload?.products) ? payload.products : [];
+  const relatedProducts = pickRelatedProducts(product, products, 8);
+  if (!relatedProducts.length) return;
+  grid.innerHTML = renderRelatedProductCards(relatedProducts);
+  section.hidden = false;
+  createIconSet();
+  hydrateImages();
+}
+
 function renderProduct() {
   const container = $("#product-page");
   if (!globalPayload || !globalPayload.products) {
@@ -1743,60 +1854,11 @@ function renderProduct() {
     </div>
   ` : "";
 
-  const extraProduct = Boolean(window.OlafExtraProducts?.isExtraCategory?.(p.category));
-  const relatedPool = (globalPayload.products || []).filter((rp) => {
-    if (rp.id === p.id) return false;
-    if (!extraProduct) return !window.OlafExtraProducts?.isExtraCategory?.(rp.category);
-    return window.OlafExtraProducts?.isExtraCategory?.(rp.category);
-  });
-  const sameCategoryProducts = relatedPool
-    .filter((rp) => rp.category === p.category)
-    .sort((a, b) => Number(b.sold || 0) - Number(a.sold || 0));
-  const samePublisherProducts = relatedPool
-    .filter((rp) => rp.category !== p.category && rp.publisher && rp.publisher === p.publisher)
-    .sort((a, b) => Number(b.sold || 0) - Number(a.sold || 0));
-  const fallbackProducts = relatedPool
-    .filter((rp) => rp.category !== p.category && rp.publisher !== p.publisher)
-    .sort((a, b) => Number(b.sold || 0) - Number(a.sold || 0));
-
-  const relatedProducts = [...sameCategoryProducts, ...samePublisherProducts, ...fallbackProducts]
-    .filter((rp, index, arr) => arr.findIndex((item) => item.id === rp.id) === index)
-    .slice(0, 6);
+  const extraProduct = isExtraProductCategory(p.category);
+  const relatedProducts = pickRelatedProducts(p, globalPayload.products || [], 8);
   const categoryGuideSection = categoryGuideAccordion(p);
   const rockstarGuideSection = rockstarUsageAccordion(p);
-
-  const relatedCards = relatedProducts.map((rp) => {
-    const rpStock = getStockState(rp.stock);
-    const rpDiscount = getDiscount(rp);
-    return `
-      <a class="pd-related-card" href="product.html?id=${encodeURIComponent(rp.id)}">
-        <div class="pd-related-img">
-          <img ${fastImg(rp.image || rp.heroImage, getDisplayProductName(rp))} />
-          ${rpDiscount ? `<span class="pd-related-discount">-${rpDiscount}%</span>` : ""}
-        </div>
-        <div class="pd-related-body">
-          <p class="pd-related-name">${escapeHtml(getDisplayProductName(rp))}</p>
-          <p class="pd-related-publisher">${escapeHtml(cleanDisplayText(rp.publisher || ""))}</p>
-          <div class="pd-related-footer">
-            <strong class="pd-related-price">${formatPrice(rp.price)}</strong>
-            <span class="stock-pill ${rpStock.className}" style="font-size:0.65rem;padding:2px 7px;">${rpStock.label}</span>
-          </div>
-        </div>
-      </a>
-    `;
-  }).join("");
-
-  const relatedSection = relatedProducts.length > 0 ? `
-    <div class="pd-section pd-related-section">
-      <h3 class="pd-section-title">
-        <span class="pd-section-icon-box"><i data-lucide="thumbs-up"></i></span>
-        สินค้าแนะนำในหมวดหมู่เดียวกัน
-      </h3>
-      <div class="pd-related-grid">
-        ${relatedCards}
-      </div>
-    </div>
-  ` : "";
+  const relatedSection = relatedSectionMarkup(relatedProducts);
 
   const packageSection = currentProductPackages.length ? `
     <div class="pd-package-section" aria-label="เลือกแพ็คเกจ">
@@ -2049,6 +2111,7 @@ function renderProduct() {
   hydrateImages();
   setupSmoothDetails(container);
   hydrateSteamRelatedMetadata();
+  hydrateRelatedProductsFallback(p);
 
   let galleryTimeout;
   document.querySelectorAll(".pd-thumb").forEach((thumb) => {

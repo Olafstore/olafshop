@@ -309,6 +309,12 @@
   };
 
   function closeMobileNavigationOnly() {
+    const hadMobileNavigationOpen = Boolean(
+      document.querySelector(".olaf-mobile-drawer.is-open") ||
+      document.documentElement.classList.contains("olaf-mobile-nav-open") ||
+      document.body?.classList.contains("olaf-mobile-nav-open")
+    );
+
     document.querySelectorAll(".topbar.is-mobile-nav-open, .topbar.site-topbar-unified.is-mobile-nav-open").forEach((header) => {
       header.classList.remove("is-mobile-nav-open");
       header.querySelector(".mobile-nav-toggle")?.setAttribute("aria-expanded", "false");
@@ -326,7 +332,7 @@
     });
     document.documentElement.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
     document.body?.classList.remove("olaf-mobile-nav-open", "olaf-topbar-overlay-open");
-    setMobilePageScrollLock(false);
+    if (hadMobileNavigationOpen) setMobilePageScrollLock(false);
   }
 
   function syncMobileUserPopoverPortal() {
@@ -424,6 +430,19 @@
   let activeTopbarAnchor = null;
   let topbarPortalCounter = 0;
   const popoverCloseTimers = new WeakMap();
+
+  function isTopbarPopoverOpen(popover) {
+    return Boolean(popover && !popover.hidden && popover.dataset.olafPopoverState !== "closing");
+  }
+
+  function syncTopbarPopoverOpenClass() {
+    const hasOpen = ["#language-popover", "#notification-popover", "#user-popover"].some((selector) => {
+      const popover = document.querySelector(selector);
+      return isTopbarPopoverOpen(popover);
+    });
+    document.documentElement.classList.toggle("olaf-mobile-popover-open", hasOpen && isMobileNavigationViewport());
+    document.body?.classList.toggle("olaf-mobile-popover-open", hasOpen && isMobileNavigationViewport());
+  }
 
   function ensureAccountButtonIcon(button = document.querySelector("#open-auth")) {
     if (!button) return;
@@ -568,7 +587,7 @@
     }
 
     const viewportWidth = document.documentElement.clientWidth || window.innerWidth || 360;
-    const viewportHeight = window.innerHeight || document.documentElement.clientHeight || 640;
+    const viewportHeight = Math.round(window.visualViewport?.height || window.innerHeight || document.documentElement.clientHeight || 640);
     const shouldFloat = viewportWidth <= Number(options.breakpoint || 1180);
     if (!shouldFloat) {
       clearTopbarPopoverPosition(popover);
@@ -577,14 +596,24 @@
     }
 
     const anchorRect = anchor.getBoundingClientRect();
+    const isMobile = viewportWidth <= 768;
     const sideGap = viewportWidth <= 420 ? 10 : 12;
-    const maxWidth = Number(options.maxWidth || (popover.id === "notification-popover" ? 348 : 336));
+    const defaultMaxWidth =
+      popover.id === "language-popover"
+        ? (isMobile ? 260 : 336)
+        : popover.id === "notification-popover"
+          ? 348
+          : (isMobile ? 348 : 336);
+    const maxWidth = Number(options.maxWidth || defaultMaxWidth);
     const width = Math.round(Math.min(maxWidth, viewportWidth - sideGap * 2));
     const centerLeft = anchorRect.left + anchorRect.width / 2 - width / 2;
     const left = Math.round(clampNumber(centerLeft, sideGap, Math.max(sideGap, viewportWidth - width - sideGap)));
     const fallbackTop = Math.max(58, Number(options.fallbackTop || 64));
     const top = Math.round(clampNumber(anchorRect.bottom + 10, fallbackTop, Math.max(fallbackTop, viewportHeight - 96)));
-    const maxHeight = Math.max(180, viewportHeight - top - Math.max(12, sideGap));
+    const bottomReserve = isMobile
+      ? (popover.id === "notification-popover" ? 96 : popover.id === "user-popover" ? 88 : 74)
+      : Math.max(12, sideGap);
+    const maxHeight = Math.max(180, viewportHeight - top - bottomReserve);
 
     portalTopbarPopover(popover);
     popover.classList.add("topbar-popover-fixed");
@@ -596,6 +625,7 @@
     popover.style.setProperty("--olaf-popover-max-height", `${Math.round(maxHeight)}px`);
     activeTopbarPopover = popover;
     activeTopbarAnchor = anchor;
+    syncTopbarPopoverOpenClass();
   }
 
   function positionKnownTopbarPopover(popover) {
@@ -633,6 +663,13 @@
     const button = resolveNode(buttonTarget);
     if (!popover) return;
 
+    if (popover.hidden && popover.dataset.olafPopoverState !== "open" && popover.dataset.olafPopoverState !== "closing") {
+      button?.classList.remove("is-active");
+      button?.setAttribute("aria-expanded", "false");
+      syncTopbarPopoverOpenClass();
+      return;
+    }
+
     const shouldAnimate =
       !options.immediate &&
       isMobileNavigationViewport() &&
@@ -652,6 +689,7 @@
       popover.classList.remove("is-open", "is-closing");
       delete popover.dataset.olafPopoverState;
       clearTopbarPopoverPosition(popover);
+      syncTopbarPopoverOpenClass();
     };
 
     if (shouldAnimate) {
@@ -665,7 +703,7 @@
   function hasOpenTopbarPopover() {
     return ["#language-popover", "#notification-popover", "#user-popover"].some((selector) => {
       const popover = document.querySelector(selector);
-      return Boolean(popover && !popover.hidden);
+      return isTopbarPopoverOpen(popover);
     });
   }
 
@@ -698,12 +736,13 @@
     button.classList.add("is-active");
     button.setAttribute("aria-expanded", "true");
     positionTopbarPopover(popover, button);
+    syncTopbarPopoverOpenClass();
   }
 
   function toggleTopbarPopover(key, popoverSelector, button) {
     const popover = document.querySelector(popoverSelector);
     if (!popover || !button) return;
-    const shouldOpen = Boolean(popover.hidden);
+    const shouldOpen = Boolean(popover.hidden || popover.dataset.olafPopoverState === "closing");
     if (!shouldOpen) {
       closeTopbarPopovers("");
       return;

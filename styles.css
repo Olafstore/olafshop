@@ -30339,8 +30339,8 @@ dialog.qr-payment-dialog .premium-actions .text-button {
 /* 2026-07-12: keep product detail recommendations visible and responsive */
 body.product-detail-page .pd-related-section {
   display: block !important;
-  width: min(100%, 1280px);
-  margin: clamp(18px, 3vw, 34px) auto 0;
+  width: 100%;
+  margin: clamp(18px, 3vw, 34px) 0 0;
 }
 
 body.product-detail-page .pd-related-section[hidden] {
@@ -30349,13 +30349,13 @@ body.product-detail-page .pd-related-section[hidden] {
 
 body.product-detail-page .pd-related-grid {
   display: grid !important;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
 }
 
 @media (min-width: 1280px) {
   body.product-detail-page .pd-related-grid {
-    grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
   }
 }
 

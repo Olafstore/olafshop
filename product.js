@@ -1989,6 +1989,8 @@ function renderProduct() {
 
         ${langSection}
 
+        ${relatedSection}
+
       </div><!-- end .pd-left -->
 
       <!-- ══ RIGHT SIDEBAR ══ -->
@@ -2103,8 +2105,6 @@ function renderProduct() {
       </div><!-- end .pd-sidebar -->
 
     </div><!-- end .pd-layout -->
-
-    ${relatedSection}
   `;
 
   createIconSet();

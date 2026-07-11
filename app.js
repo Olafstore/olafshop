@@ -76,7 +76,7 @@ const fallbackPayload = {
 };
 
 const appConfig = {
-  productsEndpoint: "api/products.json?v=20260710-thai-text-fix-v51",
+  productsEndpoint: "api/products-index.json?v=20260711-fast-index-v74",
   paymentEndpoint: "",
   serviceFee: 0,
   promptPayId: "0812345678",
@@ -558,9 +558,7 @@ function getProductBadges(product) {
 }
 
 function renderBadgePills(product) {
-  return getProductBadges(product)
-    .map((badge) => `<span class="label-pill ${escapeHtml(badge.className)}">${escapeHtml(badge.label)}</span>`)
-    .join("");
+  return `<span class="label-pill badge-tone-steam">STEAM</span>`;
 }
 
 function translateTagToThai(tag) {
@@ -628,8 +626,9 @@ async function loadProducts() {
       return null;
     });
     const storeSettingsPromise = fetchOnlineStoreSettings(true);
-    const products = await fetchSupabaseProducts();
+    const supabaseProducts = await fetchSupabaseProducts();
     const [jsonPayload, storeSettings] = await Promise.all([jsonPayloadPromise, storeSettingsPromise]);
+    const products = mergeCatalogProducts(jsonPayload?.products, supabaseProducts);
     applyPayload({
       updatedAt: new Date().toISOString(),
       store: mergeStoreSettings(jsonPayload?.store ?? fallbackPayload.store, storeSettings),
@@ -659,6 +658,27 @@ async function loadProducts() {
       setApiStatus("ใช้ข้อมูลสำรองในหน้าเว็บ");
     }
   }
+}
+
+function mergeCatalogProducts(jsonProducts = [], supabaseProducts = []) {
+  const merged = new Map();
+  const add = (product) => {
+    if (!product?.id) return;
+    merged.set(product.id, {
+      ...(merged.get(product.id) || {}),
+      ...product
+    });
+  };
+
+  (Array.isArray(jsonProducts) ? jsonProducts : []).forEach(add);
+  (Array.isArray(supabaseProducts) ? supabaseProducts : []).forEach(add);
+
+  return [...merged.values()].sort((a, b) => {
+    const sortA = Number(a.sortOrder ?? a.sort_order ?? 0);
+    const sortB = Number(b.sortOrder ?? b.sort_order ?? 0);
+    if (sortA !== sortB) return sortA - sortB;
+    return String(a.name || "").localeCompare(String(b.name || ""), "th");
+  });
 }
 
 async function fetchSupabaseProducts() {
@@ -1548,7 +1568,7 @@ function renderHeroDeal() {
     <article class="deal-card">
       <img ${fastImg(deal.image || deal.heroImage, deal.name, { priority: true })} />
       <div class="deal-card-body">
-        <span class="label-pill">${escapeHtml(getProductBadgeLabel(deal.category, deal.label))}</span>
+        <span class="label-pill badge-tone-steam">STEAM</span>
         <h2>${escapeHtml(deal.name)}</h2>
         <div class="product-meta">
           <span class="stock-pill ${stock.className}">${stock.label}</span>

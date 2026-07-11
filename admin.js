@@ -746,6 +746,37 @@ async function fetchAdminProductsFromSupabase() {
   return (Array.isArray(data) ? data : []).map(mapSupabaseProductRow).filter(Boolean);
 }
 
+async function fetchAdminJsonProductsFallback() {
+  try {
+    const response = await fetch("api/products.json?v=20260711-admin-fallback", { cache: "default" });
+    if (!response.ok) return [];
+    const payload = await response.json();
+    return Array.isArray(payload?.products) ? payload.products : Array.isArray(payload) ? payload : [];
+  } catch (error) {
+    console.warn("Admin JSON products fallback unavailable", error);
+    return [];
+  }
+}
+
+function mergeAdminProducts(jsonProducts = [], supabaseProducts = []) {
+  const merged = new Map();
+  const add = (product) => {
+    if (!product?.id) return;
+    merged.set(product.id, {
+      ...(merged.get(product.id) || {}),
+      ...product
+    });
+  };
+  (Array.isArray(jsonProducts) ? jsonProducts : []).forEach(add);
+  (Array.isArray(supabaseProducts) ? supabaseProducts : []).forEach(add);
+  return [...merged.values()].sort((a, b) => {
+    const sortA = Number(a.sortOrder ?? a.sort_order ?? 0);
+    const sortB = Number(b.sortOrder ?? b.sort_order ?? 0);
+    if (sortA !== sortB) return sortA - sortB;
+    return String(a.name || "").localeCompare(String(b.name || ""), "th");
+  });
+}
+
 async function fetchAdminUsersFromSupabase() {
   if (!window.OlafAdminUsers?.fetchAdminUsers) {
     throw new Error("Supabase admin user API is not ready");
@@ -889,7 +920,11 @@ async function saveOnlineStoreSettings(storeSettings) {
 
 async function loadData() {
   setStatus("กำลังโหลดข้อมูล");
-  const adminProducts = await fetchAdminProductsFromSupabase();
+  const [jsonProducts, supabaseProducts] = await Promise.all([
+    fetchAdminJsonProductsFallback(),
+    fetchAdminProductsFromSupabase()
+  ]);
+  const adminProducts = mergeAdminProducts(jsonProducts, supabaseProducts);
   const adminUsers = await fetchAdminUsersFromSupabase().catch((error) => {
     console.warn("Admin users unavailable while loading admin data", {
       code: error?.code,

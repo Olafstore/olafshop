@@ -56,6 +56,291 @@
   --glow-brand: 0 0 15px rgba(59, 130, 246, 0.4);
 }
 
+/* 2026-07-12: Premium Point Topup refresh */
+.point-topup-page {
+  min-height: 100vh;
+  background:
+    radial-gradient(circle at 18% 0%, rgba(59, 130, 246, 0.18), transparent 32rem),
+    radial-gradient(circle at 86% 18%, rgba(124, 58, 237, 0.14), transparent 28rem),
+    linear-gradient(180deg, #020617 0%, #050a18 48%, #020617 100%);
+}
+
+.point-topup-page .point-topup-shell {
+  width: min(1180px, calc(100% - 32px));
+  padding-top: clamp(28px, 5vw, 70px);
+}
+
+.point-topup-page .point-topup-hero {
+  grid-template-columns: minmax(0, 1fr) minmax(280px, 0.42fr);
+  gap: clamp(16px, 2.2vw, 26px);
+}
+
+.point-topup-page .point-topup-copy,
+.point-topup-page .point-topup-rules,
+.point-topup-page .point-topup-card {
+  position: relative;
+  overflow: hidden;
+  border-color: rgba(125, 173, 255, 0.2);
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.82), rgba(7, 12, 28, 0.92)),
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.2), transparent 34%);
+  box-shadow:
+    0 26px 70px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  backdrop-filter: blur(16px) saturate(1.12);
+  -webkit-backdrop-filter: blur(16px) saturate(1.12);
+}
+
+.point-topup-page .point-topup-copy::before,
+.point-topup-page .point-topup-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+  background:
+    linear-gradient(120deg, rgba(255, 255, 255, 0.08), transparent 22%, transparent 72%, rgba(96, 165, 250, 0.08));
+  opacity: 0.58;
+}
+
+.point-topup-page .point-topup-copy > *,
+.point-topup-page .point-topup-card > *,
+.point-topup-page .point-topup-rules > * {
+  position: relative;
+  z-index: 1;
+}
+
+.point-topup-page .point-topup-copy h1 {
+  max-width: 780px;
+  background: linear-gradient(135deg, #ffffff 0%, #bfdbfe 46%, #93c5fd 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  text-wrap: balance;
+}
+
+.point-topup-page .point-topup-copy p {
+  max-width: 760px;
+  font-weight: 300;
+}
+
+.point-topup-page .point-topup-balance-card {
+  display: grid;
+  gap: 6px;
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(250, 204, 21, 0.16), transparent 38%),
+    rgba(2, 6, 23, 0.56);
+}
+
+.point-topup-page .point-topup-balance-card strong {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  color: #f8fafc;
+}
+
+.point-topup-page .point-topup-balance-card b {
+  color: #facc15;
+  text-shadow: 0 0 28px rgba(250, 204, 21, 0.24);
+}
+
+.point-topup-page .point-topup-rules div {
+  border: 1px solid rgba(96, 165, 250, 0.12);
+  background: rgba(2, 6, 23, 0.38);
+  font-weight: 300;
+}
+
+.point-topup-page .point-topup-grid {
+  grid-template-columns: minmax(0, 0.98fr) minmax(320px, 0.72fr);
+}
+
+.point-topup-page .point-topup-form .section-heading h2,
+.point-topup-premium-side h2 {
+  letter-spacing: -0.03em;
+}
+
+.point-topup-page .point-topup-presets {
+  grid-template-columns: repeat(5, minmax(84px, 1fr));
+}
+
+.point-topup-page .point-topup-presets button {
+  min-height: 58px;
+  border-radius: 18px;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.76), rgba(2, 6, 23, 0.72));
+}
+
+.point-topup-page .point-topup-presets button.is-active {
+  color: #fff;
+  border-color: rgba(96, 165, 250, 0.92);
+  background:
+    linear-gradient(135deg, rgba(37, 99, 235, 0.72), rgba(99, 102, 241, 0.56)),
+    rgba(15, 23, 42, 0.8);
+  box-shadow:
+    0 18px 42px rgba(37, 99, 235, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+
+.point-topup-page .point-topup-input input {
+  min-height: 62px;
+  border-radius: 20px;
+  background: rgba(2, 6, 23, 0.72);
+  font-size: 1.35rem;
+}
+
+.point-topup-page .point-topup-methods span {
+  min-height: 96px;
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(15, 23, 42, 0.76), rgba(2, 6, 23, 0.58));
+}
+
+.point-topup-page .point-topup-methods input:checked + span {
+  border-color: rgba(96, 165, 250, 0.9);
+  box-shadow: 0 18px 42px rgba(37, 99, 235, 0.18);
+}
+
+.point-topup-page .point-topup-methods label:has(input[value="wallet"]:checked) span {
+  border-color: rgba(249, 115, 22, 0.9);
+  background:
+    linear-gradient(145deg, rgba(249, 115, 22, 0.24), rgba(15, 23, 42, 0.82));
+  box-shadow: 0 18px 42px rgba(249, 115, 22, 0.16);
+}
+
+.point-topup-page .point-topup-submit {
+  min-height: 58px;
+  border-radius: 18px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+
+.point-topup-premium-side {
+  display: grid;
+  gap: 16px;
+  align-content: start;
+}
+
+.point-topup-premium-side p {
+  margin: 0;
+  color: rgba(203, 213, 225, 0.82);
+  line-height: 1.75;
+  font-weight: 300;
+}
+
+.point-topup-flow {
+  display: grid;
+  gap: 10px;
+  margin: 4px 0;
+}
+
+.point-topup-flow div {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(96, 165, 250, 0.14);
+  border-radius: 18px;
+  background: rgba(2, 6, 23, 0.42);
+}
+
+.point-topup-flow b {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 12px;
+  color: #bfdbfe;
+  background: rgba(37, 99, 235, 0.18);
+  box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.22);
+  font-size: 0.82rem;
+}
+
+.point-topup-flow span {
+  color: rgba(226, 232, 240, 0.9);
+  font-weight: 400;
+}
+
+.point-topup-page .point-topup-status {
+  border: 1px solid rgba(96, 165, 250, 0.16);
+  background: rgba(37, 99, 235, 0.1);
+  font-weight: 300;
+}
+
+.point-topup-page .point-topup-status.is-success {
+  border-color: rgba(16, 185, 129, 0.24);
+}
+
+.point-topup-page .point-topup-status.is-error {
+  border-color: rgba(248, 113, 113, 0.26);
+}
+
+.point-topup-qr-dialog .qr-detail-row:nth-child(3) strong {
+  color: #facc15;
+}
+
+.point-topup-qr-dialog .qr-method-badge i[data-lucide="loader-circle"],
+.point-topup-qr-dialog .qr-status-badge i[data-lucide="loader-circle"],
+.point-topup-page .point-topup-submit i[data-lucide="loader-circle"] {
+  animation: spin 0.85s linear infinite;
+}
+
+.point-topup-qr-dialog .qr-store-note .qr-note-alert {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+html.olaf-topup-dialog-open,
+body.olaf-topup-dialog-open {
+  overflow: hidden;
+}
+
+@media (max-width: 980px) {
+  .point-topup-page .point-topup-hero,
+  .point-topup-page .point-topup-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .point-topup-premium-side {
+    order: -1;
+  }
+}
+
+@media (max-width: 640px) {
+  .point-topup-page .point-topup-shell {
+    width: min(100% - 20px, 480px);
+    padding-bottom: 42px;
+  }
+
+  .point-topup-page .point-topup-copy,
+  .point-topup-page .point-topup-rules,
+  .point-topup-page .point-topup-card {
+    border-radius: 24px;
+  }
+
+  .point-topup-page .point-topup-copy h1 {
+    font-size: clamp(2.1rem, 12vw, 3rem);
+  }
+
+  .point-topup-page .point-topup-presets {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .point-topup-page .point-topup-methods {
+    grid-template-columns: 1fr;
+  }
+
+  .point-topup-flow div {
+    padding: 11px 12px;
+  }
+
+  .point-topup-qr-dialog .premium-actions {
+    padding-left: 16px !important;
+    padding-right: 16px !important;
+  }
+}
+
 /* 2026-06-21: shared animated order activity popup. */
 html.has-order-action-popup {
   overflow: hidden;
@@ -29952,5 +30237,101 @@ dialog.qr-payment-dialog .premium-actions .text-button {
       background 180ms ease,
       border-color 180ms ease,
       box-shadow 180ms ease !important;
+  }
+}
+
+/* 2026-07-12 final overrides: Point Topup uses the shared premium QR payment popup */
+.point-topup-page .point-topup-grid {
+  grid-template-columns: minmax(0, 0.98fr) minmax(320px, 0.72fr) !important;
+}
+
+.point-topup-page .point-topup-copy,
+.point-topup-page .point-topup-rules,
+.point-topup-page .point-topup-card {
+  border-color: rgba(125, 173, 255, 0.2) !important;
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.82), rgba(7, 12, 28, 0.92)),
+    radial-gradient(circle at 0% 0%, rgba(59, 130, 246, 0.2), transparent 34%) !important;
+  box-shadow:
+    0 26px 70px rgba(0, 0, 0, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+.point-topup-page .point-topup-presets button.is-active {
+  border-color: rgba(96, 165, 250, 0.92) !important;
+  background:
+    linear-gradient(135deg, rgba(37, 99, 235, 0.72), rgba(99, 102, 241, 0.56)),
+    rgba(15, 23, 42, 0.8) !important;
+}
+
+.point-topup-page .point-topup-methods label:has(input[value="wallet"]:checked) span {
+  border-color: rgba(249, 115, 22, 0.9) !important;
+  background:
+    linear-gradient(145deg, rgba(249, 115, 22, 0.24), rgba(15, 23, 42, 0.82)) !important;
+}
+
+.point-topup-premium-side {
+  display: grid !important;
+  gap: 16px !important;
+  align-content: start !important;
+}
+
+.point-topup-flow {
+  display: grid !important;
+  gap: 10px !important;
+}
+
+.point-topup-flow div {
+  display: grid !important;
+  grid-template-columns: auto 1fr !important;
+  align-items: center !important;
+  gap: 12px !important;
+  padding: 12px 14px !important;
+  border: 1px solid rgba(96, 165, 250, 0.14) !important;
+  border-radius: 18px !important;
+  background: rgba(2, 6, 23, 0.42) !important;
+}
+
+.point-topup-flow b {
+  display: grid !important;
+  place-items: center !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 12px !important;
+  color: #bfdbfe !important;
+  background: rgba(37, 99, 235, 0.18) !important;
+  box-shadow: inset 0 0 0 1px rgba(96, 165, 250, 0.22) !important;
+  font-size: 0.82rem !important;
+}
+
+.point-topup-qr-dialog .qr-detail-row:nth-child(3) strong {
+  color: #facc15 !important;
+}
+
+.point-topup-qr-dialog .qr-method-badge i[data-lucide="loader-circle"],
+.point-topup-qr-dialog .qr-status-badge i[data-lucide="loader-circle"],
+.point-topup-page .point-topup-submit i[data-lucide="loader-circle"] {
+  animation: spin 0.85s linear infinite !important;
+}
+
+@media (max-width: 980px) {
+  .point-topup-page .point-topup-hero,
+  .point-topup-page .point-topup-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .point-topup-premium-side {
+    order: -1 !important;
+  }
+}
+
+@media (max-width: 640px) {
+  .point-topup-page .point-topup-presets,
+  .point-topup-page .point-topup-methods {
+    grid-template-columns: 1fr 1fr !important;
+  }
+
+  .point-topup-page .point-topup-methods {
+    grid-template-columns: 1fr !important;
   }
 }

@@ -11,17 +11,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260711-dg2u-steam-v73" />
+  <link rel="stylesheet" href="styles.css?v=20260712-point-topup-premium-v76" />
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
   <script src="slip-qr-scanner.js?v=20260621-slip-verify-v2" defer></script>
-  <script src="supabase-client.js?v=20260711-dg2u-steam-v73" defer></script>
+  <script src="order-action-popup.js?v=20260712-point-topup-premium-v76" defer></script>
+  <script src="supabase-client.js?v=20260712-point-topup-premium-v76" defer></script>
   <script src="platform-store.js?v=20260605-admin-users" defer></script>
   <script src="image-performance.js?v=20260607-performance" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-  <script src="site-navigation.js?v=20260711-dg2u-steam-v73" defer></script>
-  <script src="point-topup.js?v=20260711-dg2u-steam-v73" defer></script>
+  <script src="site-navigation.js?v=20260712-point-topup-premium-v76" defer></script>
+  <script src="point-topup.js?v=20260712-point-topup-premium-v76" defer></script>
 </head>
 
 <body class="point-topup-page">
@@ -142,46 +143,82 @@
           </p>
         </form>
 
-        <section class="point-topup-card point-topup-payment" id="point-topup-payment" hidden aria-live="polite">
-          <div class="point-topup-payment-head">
-            <div>
-              <span class="eyebrow">PAYMENT</span>
-              <h2>ชำระเงินรายการเติม Point</h2>
-            </div>
-            <span class="point-topup-order-pill" data-topup-order-number>รอสร้างรายการ</span>
+        <aside class="point-topup-card point-topup-premium-side">
+          <span class="eyebrow">SECURE TOPUP</span>
+          <h2>ชำระผ่าน Popup เดียวกับหน้าสินค้า</h2>
+          <p>หลังสร้างรายการ ระบบจะเปิดหน้าต่าง QR แบบ Premium ทันที แนบสลิปได้จาก popup และตรวจความถูกต้องก่อนเพิ่ม Point ทุกครั้ง</p>
+          <div class="point-topup-flow">
+            <div><b>01</b><span>เลือกยอด Point</span></div>
+            <div><b>02</b><span>สแกน QR / Wallet</span></div>
+            <div><b>03</b><span>แนบสลิปให้ระบบตรวจ</span></div>
+            <div><b>04</b><span>Point เข้าบัญชีอัตโนมัติ</span></div>
           </div>
-
-          <div class="point-topup-qr-wrap" data-topup-qr-wrap>
-            <div class="point-topup-qr-loader"><i data-lucide="loader-circle"></i><span>กำลังเตรียม QR...</span></div>
-          </div>
-
-          <div class="point-topup-summary">
-            <div><span>ยอดที่ต้องชำระ</span><strong data-topup-pay-total>฿0</strong></div>
-            <div><span>Point ที่จะได้รับ</span><strong data-topup-point-credit>0 P</strong></div>
-            <div><span>ช่องทาง</span><strong data-topup-method-label>PromptPay QR</strong></div>
-          </div>
-
-          <div class="point-topup-account" data-topup-account></div>
-
-          <form class="point-topup-slip-form" id="point-topup-slip-form">
-            <label>
-              <i data-lucide="image-up"></i>
-              <span data-topup-slip-label>เลือกไฟล์สลิป</span>
-              <input id="point-topup-slip" type="file" accept="image/png,image/jpeg,image/webp" />
-            </label>
-            <button class="primary-button" type="submit">
-              <i data-lucide="scan-line"></i>
-              <span>ส่งสลิปให้ระบบตรวจ</span>
-            </button>
-          </form>
-
           <div class="point-topup-status" id="point-topup-status">
             <i data-lucide="info"></i>
-            <span>หลังแนบสลิป ระบบจะตรวจ QR สลิปจริง ผู้รับเงิน จำนวนเงิน และสลิปซ้ำก่อนเพิ่ม Point</span>
+            <span>สลิปปลอม สลิปซ้ำ หรือรูปที่ไม่มี QR จะถูกปฏิเสธเพื่อความปลอดภัยของบัญชี</span>
           </div>
-        </section>
+        </aside>
       </section>
     </main>
+
+    <dialog class="premium-dialog qr-payment-dialog point-topup-qr-dialog" id="point-topup-qr-dialog">
+      <div class="premium-dialog-inner">
+        <button class="dialog-close" type="button" aria-label="ปิด" data-topup-qr-close>
+          <i data-lucide="x"></i>
+        </button>
+        <div class="premium-dialog-header">
+          <div class="premium-icon-box qr-icon"><i data-lucide="scan-line"></i></div>
+          <h2>สแกน QR เพื่อเติม Point</h2>
+          <p>ชำระเงินตามยอดที่แสดง แล้วแนบสลิปเพื่อให้ระบบตรวจสอบและเติม Point</p>
+        </div>
+
+        <div class="qr-payment-content">
+          <div class="qr-method-badge" data-topup-qr-method>
+            <i data-lucide="qr-code"></i> QR พร้อมเพย์
+          </div>
+
+          <div class="qr-image-frame">
+            <div class="qr-loading" data-topup-qr-loading>กำลังโหลด QR สำหรับชำระเงิน...</div>
+            <img alt="คิวอาร์สำหรับเติม Point" class="qr-image" loading="eager" decoding="async" fetchpriority="high" data-topup-qr-image hidden />
+            <div class="qr-unavailable" data-topup-qr-unavailable hidden>ยังไม่พบ QR สำหรับช่องทางนี้</div>
+          </div>
+
+          <div class="qr-order-details">
+            <div class="qr-detail-row">
+              <span>หมายเลขรายการ</span>
+              <strong data-topup-qr-order>#TOPUP</strong>
+            </div>
+            <div class="qr-detail-row">
+              <span>ยอดชำระ</span>
+              <strong class="qr-total-highlight" data-topup-qr-total>฿0</strong>
+            </div>
+            <div class="qr-detail-row">
+              <span>Point ที่จะได้รับ</span>
+              <strong data-topup-qr-credit>0 P</strong>
+            </div>
+          </div>
+
+          <div class="qr-store-note" data-topup-qr-note style="width: 100%;"></div>
+
+          <div class="qr-status-badge" data-topup-qr-status>
+            <i data-lucide="clock"></i> รอการชำระเงิน
+          </div>
+        </div>
+
+        <div class="premium-actions" style="padding: 0 24px 24px;">
+          <button class="primary-button submit-order-btn" type="button" data-topup-qr-upload>
+            <i data-lucide="upload-cloud"></i>
+            <span>แนบสลิปการชำระเงิน</span>
+          </button>
+          <button class="secondary-button cancel-order-btn" type="button" data-topup-qr-profile>
+            ดูประวัติ / เช็ค Point
+          </button>
+          <button class="text-button text-danger" type="button" data-topup-qr-cancel style="margin-top: 8px;">
+            ปิดหน้าต่าง
+          </button>
+        </div>
+      </div>
+    </dialog>
   </div>
 </body>
 

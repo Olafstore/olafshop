@@ -1,18 +1,29 @@
 (function () {
   const state = {
     user: null,
-    settings: null,
+    settings: {},
     order: null,
     amount: 100,
     balance: 0,
-    busy: false
+    busy: false,
+    slipInput: null
   };
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
   const clean = (value) => window.OlafText?.clean?.(value) ?? String(value || "").trim();
-  const money = (value) => `฿${Number(value || 0).toLocaleString("th-TH", { maximumFractionDigits: 2 })}`;
-  const point = (value) => Number(value || 0).toLocaleString("th-TH", { maximumFractionDigits: 0 });
+
+  const formatPrice = (value) =>
+    new Intl.NumberFormat("th-TH", {
+      style: "currency",
+      currency: "THB",
+      maximumFractionDigits: 0
+    }).format(Number(value) || 0);
+
+  const formatPoint = (value) =>
+    new Intl.NumberFormat("th-TH", {
+      maximumFractionDigits: 0
+    }).format(Math.floor(Number(value) || 0));
 
   function escapeHtml(value = "") {
     return String(value)
@@ -23,43 +34,48 @@
       .replace(/'/g, "&#039;");
   }
 
+  function createIcons() {
+    window.lucide?.createIcons?.();
+  }
+
+  function showToast(message, type = "success", duration = 4200) {
+    if (window.showToast) return window.showToast(message, type, duration);
+    const toast = document.createElement("div");
+    toast.className = `toast${type === "error" ? " toast-error" : ""}`;
+    toast.innerHTML = `<i data-lucide="${type === "error" ? "alert-circle" : "check-circle"}"></i><span>${escapeHtml(message)}</span>`;
+    document.body.appendChild(toast);
+    createIcons();
+    window.setTimeout(() => {
+      toast.classList.add("is-leaving");
+      window.setTimeout(() => toast.remove(), 300);
+    }, duration);
+  }
+
   function setStatus(message, type = "info", icon = "info") {
     const box = $("#point-topup-status");
     if (!box) return;
     box.className = `point-topup-status is-${type}`;
     box.innerHTML = `<i data-lucide="${icon}"></i><span>${escapeHtml(message)}</span>`;
-    window.lucide?.createIcons?.();
+    createIcons();
+  }
+
+  function setButtonBusy(button, active, label = "กำลังดำเนินการ...") {
+    if (!button) return;
+    button.disabled = active;
+    if (active) {
+      button.dataset.originalHtml ||= button.innerHTML;
+      button.innerHTML = `<i data-lucide="loader-circle"></i><span>${escapeHtml(label)}</span>`;
+    } else if (button.dataset.originalHtml) {
+      button.innerHTML = button.dataset.originalHtml;
+      delete button.dataset.originalHtml;
+    }
+    createIcons();
   }
 
   function setBusy(active, label = "กำลังดำเนินการ...") {
     state.busy = active;
-    const createButton = $(".point-topup-submit");
-    const slipButton = $("#point-topup-slip-form button[type='submit']");
-    [createButton, slipButton].forEach((button) => {
-      if (!button) return;
-      button.disabled = active;
-      if (active) {
-        button.dataset.originalHtml ||= button.innerHTML;
-        button.innerHTML = `<i data-lucide="loader-circle"></i><span>${escapeHtml(label)}</span>`;
-      } else if (button.dataset.originalHtml) {
-        button.innerHTML = button.dataset.originalHtml;
-        delete button.dataset.originalHtml;
-      }
-    });
-    window.lucide?.createIcons?.();
-  }
-
-  function showToast(message, type = "success") {
-    if (window.showToast) return window.showToast(message, type);
-    const toast = document.createElement("div");
-    toast.className = `toast${type === "error" ? " toast-error" : ""}`;
-    toast.innerHTML = `<i data-lucide="${type === "error" ? "alert-circle" : "check-circle"}"></i><span>${escapeHtml(message)}</span>`;
-    document.body.appendChild(toast);
-    window.lucide?.createIcons?.();
-    window.setTimeout(() => {
-      toast.classList.add("is-leaving");
-      window.setTimeout(() => toast.remove(), 260);
-    }, 3400);
+    setButtonBusy($(".point-topup-submit"), active, label);
+    renderAuthState();
   }
 
   function currentPaymentMethod() {
@@ -68,12 +84,47 @@
       : "promptpay";
   }
 
+  function normalizePaymentMethod(value) {
+    return String(value || "").toLowerCase() === "wallet" ? "wallet" : "promptpay";
+  }
+
   function paymentLabel(method = currentPaymentMethod()) {
-    return method === "wallet" ? "TrueMoney Wallet" : "PromptPay QR";
+    return method === "wallet" ? "TrueMoney Wallet" : "QR พร้อมเพย์";
+  }
+
+  function paymentIcon(method = currentPaymentMethod()) {
+    return method === "wallet" ? "wallet" : "qr-code";
   }
 
   function storePayment() {
     return state.settings?.payment || {};
+  }
+
+  function paymentChannels() {
+    return Array.isArray(state.settings?.paymentChannels)
+      ? state.settings.paymentChannels
+      : Array.isArray(state.settings?.payment_channels)
+        ? state.settings.payment_channels
+        : [];
+  }
+
+  function paymentChannelForMethod(method) {
+    const wanted = method === "wallet" ? ["wallet", "truemoney", "true_money", "true-money"] : ["promptpay", "qr", "bank"];
+    return paymentChannels().find((channel) => {
+      const keys = [
+        channel?.method,
+        channel?.paymentMethod,
+        channel?.payment_method,
+        channel?.type,
+        channel?.channel,
+        channel?.id
+      ].map((value) => String(value || "").toLowerCase());
+      return keys.some((key) => wanted.includes(key));
+    }) || null;
+  }
+
+  function uniqueUrls(values = []) {
+    return [...new Set(values.map((value) => clean(value)).filter(Boolean))];
   }
 
   function createPromptPayUrl(amount) {
@@ -88,21 +139,49 @@
     return `https://promptpay.io/${encodeURIComponent(promptPayId)}/${Number(amount || 0).toFixed(2)}.png`;
   }
 
-  function paymentQrUrl(order = state.order) {
+  function qrCandidatesForOrder(order = state.order) {
+    const method = normalizePaymentMethod(order?.paymentMethod || order?.payment_method || currentPaymentMethod());
     const payment = storePayment();
-    const amount = Number(order?.total || state.amount || 0);
-    const method = currentPaymentMethod();
+    const channel = paymentChannelForMethod(method);
+    const total = Number(order?.total || state.amount || 0);
     if (method === "wallet") {
-      return clean(payment.trueMoneyQrUrl || payment.walletQrUrl || payment.manualQrUrl || "");
+      return uniqueUrls([
+        channel?.qrUrl,
+        channel?.qr_url,
+        payment.trueMoneyQrUrl,
+        payment.walletQrUrl,
+        payment.manualQrUrl
+      ]);
     }
-    return createPromptPayUrl(amount) || clean(payment.manualQrUrl || payment.qrUrl || "");
+    return uniqueUrls([
+      channel?.qrUrl,
+      channel?.qr_url,
+      payment.manualQrUrl,
+      payment.qrUrl,
+      createPromptPayUrl(total)
+    ]);
+  }
+
+  function selectedAmount() {
+    const input = $("#point-topup-amount");
+    const value = Math.round(Number(input?.value || state.amount || 0));
+    return Math.max(1, Math.min(value, 50000));
+  }
+
+  function syncPreset(value) {
+    state.amount = Number(value || selectedAmount());
+    const input = $("#point-topup-amount");
+    if (input) input.value = String(state.amount);
+    $$("[data-topup-preset]").forEach((button) => {
+      button.classList.toggle("is-active", Number(button.dataset.topupPreset) === state.amount);
+    });
   }
 
   function renderBalance() {
     $$("[data-point-topup-balance], [data-topbar-point-balance]").forEach((item) => {
       item.textContent = item.hasAttribute("data-topbar-point-balance")
-        ? `${point(state.balance)} Points`
-        : point(state.balance);
+        ? `${formatPoint(state.balance)} Points`
+        : formatPoint(state.balance);
     });
   }
 
@@ -124,62 +203,161 @@
     if (submit) submit.disabled = !state.user || state.busy;
   }
 
-  function accountInfoHtml() {
+  function setDialogOpen(dialog, open = true) {
+    if (!dialog) return;
+    if (open && !dialog.open) dialog.showModal();
+    if (!open && dialog.open) dialog.close();
+    document.documentElement.classList.toggle("olaf-topup-dialog-open", Boolean(open));
+    document.body.classList.toggle("olaf-topup-dialog-open", Boolean(open));
+  }
+
+  function setQrLoading(visible) {
+    const loading = $("[data-topup-qr-loading]");
+    if (!loading) return;
+    loading.hidden = !visible;
+    loading.style.display = visible ? "grid" : "none";
+  }
+
+  function setQrImage(visible) {
+    const image = $("[data-topup-qr-image]");
+    const frame = image?.closest(".qr-image-frame");
+    if (!image) return;
+    image.hidden = !visible;
+    image.style.display = visible ? "block" : "none";
+    frame?.classList.toggle("has-qr-image", Boolean(visible));
+    if (visible) setQrLoading(false);
+  }
+
+  function setQrText(selector, text) {
+    const node = $(selector);
+    if (node) node.textContent = text;
+  }
+
+  function accountNoteHtml(method = currentPaymentMethod()) {
     const payment = storePayment();
-    const method = currentPaymentMethod();
     const rows = [];
     if (method === "wallet") {
-      if (payment.walletName) rows.push(["ชื่อ Wallet", payment.walletName]);
+      if (payment.walletName) rows.push(["ทรูมันนี่วอลเล็ท", payment.walletName]);
+      if (payment.trueMoneyNumber) rows.push(["เบอร์วอลเล็ท", payment.trueMoneyNumber]);
     } else {
       if (payment.bankName) rows.push(["ธนาคาร", payment.bankName]);
       if (payment.bankAccountNumber) rows.push(["เลขบัญชี", payment.bankAccountNumber]);
       if (payment.bankAccountName) rows.push(["ชื่อบัญชี", payment.bankAccountName]);
     }
-    if (payment.paymentNote) rows.push(["หมายเหตุ", payment.paymentNote]);
-    if (!rows.length) return "";
-    return rows.map(([label, value]) => `
-      <div>
-        <span>${escapeHtml(label)}</span>
-        <strong>${escapeHtml(clean(value))}</strong>
-      </div>
-    `).join("");
+
+    let html = "";
+    if (payment.paymentNote) {
+      html += `<div class="qr-note-alert"><i data-lucide="info"></i> ${escapeHtml(clean(payment.paymentNote))}</div>`;
+    }
+    if (rows.length) {
+      html += `
+        <details class="qr-manual-transfer">
+          <summary>สแกน QR ไม่ได้ใช่หรือไม่? กดเพื่อดูข้อมูลโอนเงิน</summary>
+          <div class="qr-manual-transfer-body">
+            <div class="qr-accounts-container">
+              ${rows.map(([label, value]) => `
+                <div class="qr-account-box">
+                  <span class="bank-name">${escapeHtml(label)}</span>
+                  <span class="acc-number">${escapeHtml(clean(value))}</span>
+                </div>
+              `).join("")}
+            </div>
+          </div>
+        </details>
+      `;
+    }
+    return html;
   }
 
-  function renderPaymentPanel() {
-    if (!state.order) return;
-    const panel = $("#point-topup-payment");
-    const qrWrap = $("[data-topup-qr-wrap]");
-    if (!panel || !qrWrap) return;
-    const qrUrl = paymentQrUrl(state.order);
-    const total = Number(state.order.total || state.amount || 0);
-    panel.hidden = false;
-    panel.classList.add("is-visible");
-    $("[data-topup-order-number]").textContent = state.order.orderNumber || state.order.id || "TOPUP";
-    $("[data-topup-pay-total]").textContent = money(total);
-    $("[data-topup-point-credit]").textContent = `${point(total)} P`;
-    $("[data-topup-method-label]").textContent = paymentLabel();
-    $("[data-topup-account]").innerHTML = accountInfoHtml();
-
-    qrWrap.innerHTML = qrUrl
-      ? `<img src="${escapeHtml(qrUrl)}" alt="QR สำหรับเติม Point" loading="eager" decoding="async" />`
-      : `<div class="point-topup-no-qr"><i data-lucide="landmark"></i><span>ไม่พบ QR อัตโนมัติ กรุณาโอนตามข้อมูลบัญชีร้าน</span></div>`;
-    window.lucide?.createIcons?.();
-    panel.scrollIntoView({ behavior: "smooth", block: "start" });
+  function openQrLoadingDialog(amount, method) {
+    const dialog = $("#point-topup-qr-dialog");
+    if (!dialog) return;
+    state.order = null;
+    dialog.dataset.paymentStage = "creating";
+    $("[data-topup-qr-method]").innerHTML = `<i data-lucide="loader-circle"></i> กำลังเตรียม QR`;
+    setQrText("[data-topup-qr-order]", "กำลังสร้างรายการ");
+    setQrText("[data-topup-qr-total]", formatPrice(amount));
+    setQrText("[data-topup-qr-credit]", `${formatPoint(amount)} P`);
+    $("[data-topup-qr-status]").innerHTML = `<i data-lucide="loader-circle"></i> กำลังสร้างรายการเติม Point`;
+    const note = $("[data-topup-qr-note]");
+    if (note) {
+      note.hidden = true;
+      note.innerHTML = "";
+    }
+    const unavailable = $("[data-topup-qr-unavailable]");
+    if (unavailable) unavailable.hidden = true;
+    const image = $("[data-topup-qr-image]");
+    if (image) {
+      setQrImage(false);
+      image.removeAttribute("src");
+      image.onload = null;
+      image.onerror = null;
+    }
+    const loading = $("[data-topup-qr-loading]");
+    if (loading) loading.textContent = `กำลังสร้างรายการเติม ${formatPoint(amount)} Point ผ่าน ${paymentLabel(method)}...`;
+    setQrLoading(true);
+    setDialogOpen(dialog, true);
+    createIcons();
   }
 
-  function selectedAmount() {
-    const input = $("#point-topup-amount");
-    const value = Math.round(Number(input?.value || state.amount || 0));
-    return Math.max(1, Math.min(value, 50000));
-  }
+  function showPaymentDialog(order) {
+    const dialog = $("#point-topup-qr-dialog");
+    if (!dialog || !order) return;
+    state.order = order;
+    const method = normalizePaymentMethod(order.paymentMethod || order.payment_method || currentPaymentMethod());
+    const total = Number(order.total || state.amount || 0);
+    const qrUrls = qrCandidatesForOrder(order);
+    const qrUrl = qrUrls[0] || "";
 
-  function syncPreset(value) {
-    state.amount = Number(value || selectedAmount());
-    const input = $("#point-topup-amount");
-    if (input) input.value = String(state.amount);
-    $$("[data-topup-preset]").forEach((button) => {
-      button.classList.toggle("is-active", Number(button.dataset.topupPreset) === state.amount);
-    });
+    dialog.dataset.paymentStage = "qr";
+    $("[data-topup-qr-method]").innerHTML = `<i data-lucide="${paymentIcon(method)}"></i> ${escapeHtml(paymentLabel(method))}`;
+    setQrText("[data-topup-qr-order]", order.orderNumber || order.id || "#TOPUP");
+    setQrText("[data-topup-qr-total]", formatPrice(total));
+    setQrText("[data-topup-qr-credit]", `${formatPoint(total)} P`);
+    $("[data-topup-qr-status]").innerHTML = `<i data-lucide="clock"></i> รอการชำระเงิน`;
+
+    const note = $("[data-topup-qr-note]");
+    if (note) {
+      note.innerHTML = accountNoteHtml(method);
+      note.hidden = note.innerHTML.trim() === "";
+    }
+
+    const unavailable = $("[data-topup-qr-unavailable]");
+    if (unavailable) unavailable.hidden = true;
+    const image = $("[data-topup-qr-image]");
+    setQrLoading(Boolean(qrUrl));
+    if (image) {
+      setQrImage(false);
+      image.removeAttribute("src");
+      image.onload = null;
+      image.onerror = null;
+      if (qrUrl) {
+        let index = 1;
+        image.onload = () => setQrImage(true);
+        image.onerror = () => {
+          const next = qrUrls[index];
+          index += 1;
+          if (next) {
+            image.src = next;
+            return;
+          }
+          setQrLoading(false);
+          setQrImage(false);
+          if (unavailable) unavailable.hidden = false;
+        };
+        image.loading = "eager";
+        image.decoding = "async";
+        image.fetchPriority = "high";
+        image.src = qrUrl;
+        if (image.complete && image.naturalWidth > 0) setQrImage(true);
+      } else {
+        setQrLoading(false);
+        if (unavailable) unavailable.hidden = false;
+      }
+    }
+
+    setDialogOpen(dialog, true);
+    createIcons();
   }
 
   function topupErrorMessage(error) {
@@ -193,6 +371,7 @@
     if (message.includes("PAYMENT_METHOD_MISMATCH")) return "สลิปไม่ตรงกับช่องทางชำระเงินที่เลือก";
     if (message.includes("RECEIVER_MISMATCH")) return "ข้อมูลผู้รับเงินในสลิปไม่ตรงกับบัญชีของร้าน";
     if (message.includes("PAYMENT_TIME_MISMATCH")) return "เวลาชำระเงินในสลิปไม่ตรงกับช่วงเวลาของรายการเติม Point";
+    if (message.includes("PAYMENT_AMOUNT_INSUFFICIENT")) return "ยอดชำระไม่ตรงกับรายการเติม Point กรุณาตรวจสอบยอดและลองใหม่";
     if (message.includes("RDCW_QUOTA_EXCEEDED")) return "โควต้าตรวจสลิปหมดหรือแพ็กเกจหมดอายุ กรุณาติดต่อแอดมิน";
     if (message.includes("RDCW_TEMPORARY_ERROR") || message.includes("PAYMENT_VERIFY_API_UNREACHABLE")) {
       return "ระบบตรวจสลิปขัดข้องชั่วคราว สลิปถูกเก็บไว้ให้แอดมินตรวจสอบ";
@@ -212,90 +391,144 @@
       return;
     }
 
+    const amount = selectedAmount();
+    const method = currentPaymentMethod();
     try {
       setBusy(true, "กำลังสร้างรายการ...");
-      state.amount = selectedAmount();
+      state.amount = amount;
+      openQrLoadingDialog(amount, method);
       const order = await window.OlafOrders.createPointTopupOrder({
-        amount: state.amount,
-        paymentMethod: currentPaymentMethod(),
+        amount,
+        paymentMethod: method,
         customerName: state.user.displayName || state.user.username || ""
       });
       state.order = order;
-      renderPaymentPanel();
-      setStatus("สร้างรายการเติม Point แล้ว กรุณาชำระเงินและแนบสลิป", "info", "qr-code");
+      showPaymentDialog(order);
+      setStatus("สร้างรายการเติม Point แล้ว กรุณาชำระเงินและแนบสลิปจากหน้าต่าง QR", "info", "qr-code");
       showToast("สร้างรายการเติม Point สำเร็จ", "success");
     } catch (error) {
       console.error("Create point top-up order failed", error);
-      setStatus(topupErrorMessage(error), "error", "alert-circle");
-      showToast(topupErrorMessage(error), "error");
+      setDialogOpen($("#point-topup-qr-dialog"), false);
+      const message = topupErrorMessage(error);
+      setStatus(message, "error", "alert-circle");
+      showToast(message, "error");
     } finally {
       setBusy(false);
-      renderAuthState();
     }
   }
 
-  async function handleSlipUpload(event) {
-    event.preventDefault();
-    const file = $("#point-topup-slip")?.files?.[0];
+  function ensureSlipInput() {
+    if (state.slipInput) return state.slipInput;
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = "image/png,image/jpeg,image/webp";
+    input.hidden = true;
+    input.dataset.pointTopupSlipInput = "true";
+    input.addEventListener("change", async (event) => {
+      const file = event.currentTarget.files?.[0];
+      event.currentTarget.value = "";
+      if (file) await uploadTopupSlip(file);
+    });
+    document.body.append(input);
+    state.slipInput = input;
+    return input;
+  }
+
+  async function uploadTopupSlip(file) {
     if (!state.order?.id) {
       showToast("กรุณาสร้างรายการเติม Point ก่อนแนบสลิป", "error");
       return;
     }
-    if (!file) {
-      showToast("กรุณาเลือกไฟล์สลิปก่อนส่ง", "error");
-      return;
-    }
-
+    const uploadButton = $("[data-topup-qr-upload]");
+    const status = $("[data-topup-qr-status]");
     try {
-      setBusy(true, "กำลังตรวจสลิป...");
-      setStatus("กำลังตรวจ QR และยืนยันสลิป กรุณารอสักครู่", "info", "loader-circle");
+      setButtonBusy(uploadButton, true, "กำลังตรวจสลิป...");
+      if (status) status.innerHTML = `<i data-lucide="loader-circle"></i> กำลังตรวจสลิป`;
+      createIcons();
+      window.OlafOrderActivity?.showSlipCheck?.();
+      if (!window.OlafOrders?.uploadPaymentSlip) throw new Error("SLIP_UPLOAD_CLIENT_NOT_READY");
       const verifiedOrder = await window.OlafOrders.uploadPaymentSlip({
         orderId: state.order.id,
         file
       });
       state.order = verifiedOrder;
       await loadBalance();
-      const credited = Number(verifiedOrder?.pointCreditAmount || verifiedOrder?.verification?.pointCreditAmount || state.amount || 0);
-      setStatus(`เติม Point สำเร็จ ได้รับ ${point(credited)} Point เข้าบัญชีแล้ว`, "success", "badge-check");
-      showToast(`เติม Point สำเร็จ +${point(credited)} Point`, "success");
-      $("#point-topup-slip-form")?.reset?.();
-      const label = $("[data-topup-slip-label]");
-      if (label) label.textContent = "เลือกไฟล์สลิป";
+      const credited = Number(
+        verifiedOrder?.pointCreditAmount ||
+        verifiedOrder?.verification?.pointCreditAmount ||
+        state.amount ||
+        0
+      );
+      window.OlafOrderActivity?.success?.(
+        "เติม Point สำเร็จ",
+        `ได้รับ ${formatPoint(credited)} Point เข้าบัญชีแล้ว`,
+        800
+      );
+      setStatus(`เติม Point สำเร็จ ได้รับ ${formatPoint(credited)} Point เข้าบัญชีแล้ว`, "success", "badge-check");
+      showToast(`เติม Point สำเร็จ +${formatPoint(credited)} Point`, "success", 5200);
+      if (status) status.innerHTML = `<i data-lucide="badge-check"></i> เติม Point สำเร็จ`;
+      createIcons();
+      window.setTimeout(() => {
+        setDialogOpen($("#point-topup-qr-dialog"), false);
+      }, 900);
     } catch (error) {
       console.error("Point top-up slip upload failed", error);
       const message = topupErrorMessage(error);
+      window.OlafOrderActivity?.error?.("ตรวจสลิปไม่สำเร็จ", message);
       setStatus(message, "error", "alert-circle");
-      showToast(message, "error");
+      showToast(message, "error", 5200);
+      if (status) status.innerHTML = `<i data-lucide="alert-circle"></i> ตรวจสลิปไม่สำเร็จ`;
+      createIcons();
     } finally {
-      setBusy(false);
+      setButtonBusy(uploadButton, false);
       renderAuthState();
     }
   }
 
-  async function init() {
-    window.lucide?.createIcons?.();
-    await window.OlafStore?.ready?.catch?.(() => null);
-    state.user = window.OlafStore?.currentUser?.() || (await window.OlafSupabaseAuth?.getCurrentUser?.().catch(() => null));
-    state.settings = await window.OlafStoreSettings?.fetchStoreSettings?.().catch(() => ({}));
-    renderAuthState();
-    await loadBalance();
-    syncPreset(100);
-
+  function bindEvents() {
     $("#point-topup-form")?.addEventListener("submit", handleCreateOrder);
-    $("#point-topup-slip-form")?.addEventListener("submit", handleSlipUpload);
-    $("#point-topup-slip")?.addEventListener("change", (event) => {
-      const label = $("[data-topup-slip-label]");
-      if (label) label.textContent = event.target.files?.[0]?.name || "เลือกไฟล์สลิป";
-    });
     $$("[data-topup-preset]").forEach((button) => {
       button.addEventListener("click", () => syncPreset(button.dataset.topupPreset));
     });
     $("#point-topup-amount")?.addEventListener("input", () => syncPreset(selectedAmount()));
     $$("input[name='paymentMethod']").forEach((input) => {
       input.addEventListener("change", () => {
-        if (state.order) renderPaymentPanel();
+        if (state.order) showPaymentDialog(state.order);
       });
     });
+
+    $("[data-topup-qr-close]")?.addEventListener("click", () => setDialogOpen($("#point-topup-qr-dialog"), false));
+    $("[data-topup-qr-cancel]")?.addEventListener("click", () => setDialogOpen($("#point-topup-qr-dialog"), false));
+    $("[data-topup-qr-profile]")?.addEventListener("click", () => {
+      window.location.href = state.order?.id
+        ? `profile.html?order=${encodeURIComponent(state.order.id)}#orders`
+        : "profile.html#info";
+    });
+    $("[data-topup-qr-upload]")?.addEventListener("click", () => {
+      if (!state.order?.id) {
+        showToast("กรุณารอให้ระบบสร้างรายการก่อนแนบสลิป", "warning");
+        return;
+      }
+      ensureSlipInput().click();
+    });
+
+    $("#point-topup-qr-dialog")?.addEventListener("close", () => {
+      document.documentElement.classList.remove("olaf-topup-dialog-open");
+      document.body.classList.remove("olaf-topup-dialog-open");
+    });
+  }
+
+  async function init() {
+    createIcons();
+    await window.OlafStore?.ready?.catch?.(() => null);
+    state.user = window.OlafStore?.currentUser?.() || (await window.OlafSupabaseAuth?.getCurrentUser?.().catch(() => null));
+    state.settings = await window.OlafStoreSettings?.fetchStoreSettings?.().catch(() => ({})) || {};
+    syncPreset(100);
+    renderAuthState();
+    await loadBalance();
+    bindEvents();
+    setStatus("เลือกยอดที่ต้องการเติม แล้วระบบจะเปิด Popup ชำระเงินแบบเดียวกับหน้าสินค้า", "info", "sparkles");
+    createIcons();
   }
 
   document.addEventListener("DOMContentLoaded", init);

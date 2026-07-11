@@ -380,12 +380,7 @@ async function fetchSupabaseProductPayload() {
     : [];
   const enrichedProduct = { ...product, packages: activePackages };
 
-  const supabaseProducts = window.OlafProducts?.fetchActiveProducts
-    ? await withTimeout(window.OlafProducts.fetchActiveProducts(), 1500, []).catch((error) => {
-        console.warn("Supabase product list unavailable for search suggestions", error);
-        return [];
-      })
-    : [];
+  const supabaseProducts = [];
   const jsonProducts = Array.isArray(jsonPayload?.products) ? jsonPayload.products : [];
   const extraProducts = Array.isArray(window.OlafExtraProducts?.products)
     ? window.OlafExtraProducts.products
@@ -1625,6 +1620,11 @@ function renderProduct() {
   document.body.classList.toggle("product-theme-windows", isWindowsProduct(p));
   document.body.classList.toggle("product-theme-minecraft", isMinecraftProduct(p));
   document.body.classList.toggle("product-theme-rockstar", isRockstarProduct(p));
+  const hasOfflineBadge = String(p.category || "").toLowerCase() === "offline" ||
+    String(p.label || "").toLowerCase().includes("offline") ||
+    (Array.isArray(p.badgeOverrides) && p.badgeOverrides.some((badge) =>
+      String(badge?.label || "").toLowerCase().includes("offline")
+    ));
   currentProductPackages = activePackagesForProduct(p);
   if (currentProductPackages.length && !currentProductPackages.some((pkg) => pkg.id === selectedPackageId)) {
     selectedPackageId = currentProductPackages[0].id;

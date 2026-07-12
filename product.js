@@ -20,6 +20,7 @@ let checkoutPointState = {
 
 const productEndpoints = [
   "api/products.json?v=20260711-product-full-v75",
+  "api/products-index?v=20260712-related-products-v80",
   "./api/products.json?v=20260711-product-full-v75",
   "/api/products.json?v=20260711-product-full-v75",
   window.OLAF_CONFIG?.productsEndpoint
@@ -380,7 +381,16 @@ async function fetchSupabaseProductPayload() {
     : [];
   const enrichedProduct = { ...product, packages: activePackages };
 
-  const supabaseProducts = [];
+  const supabaseProducts = window.OlafProducts?.fetchRelatedProducts
+    ? await withTimeout(
+        window.OlafProducts.fetchRelatedProducts(product.id, product.category, 8),
+        3500,
+        []
+      ).catch((error) => {
+        console.warn("Related products unavailable during initial product load", error);
+        return [];
+      })
+    : [];
   const jsonProducts = Array.isArray(jsonPayload?.products) ? jsonPayload.products : [];
   const extraProducts = Array.isArray(window.OlafExtraProducts?.products)
     ? window.OlafExtraProducts.products
@@ -1701,12 +1711,27 @@ async function hydrateRelatedProductsFallback(product) {
   const grid = document.querySelector("[data-related-grid]");
   if (!section || !grid || grid.children.length > 0) return;
 
-  const payload = await fetchStorePayload(true).catch(() => null);
-  const products = Array.isArray(payload?.products) ? payload.products : [];
+  const onlineProducts = window.OlafProducts?.fetchRelatedProducts
+    ? await withTimeout(
+        window.OlafProducts.fetchRelatedProducts(product.id, product.category, 8),
+        3500,
+        []
+      ).catch(() => [])
+    : [];
+  const payload = onlineProducts.length
+    ? null
+    : await fetchStorePayload(true).catch(() => null);
+  const products = mergeRelatedProductSources(
+    onlineProducts,
+    Array.isArray(payload?.products) ? payload.products : []
+  );
   const relatedProducts = pickRelatedProducts(product, products, 8);
   if (!relatedProducts.length) return;
   grid.innerHTML = renderRelatedProductCards(relatedProducts);
   section.hidden = false;
+  if (globalPayload?.products) {
+    globalPayload.products = mergeRelatedProductSources(globalPayload.products, relatedProducts);
+  }
   createIconSet();
   hydrateImages();
 }

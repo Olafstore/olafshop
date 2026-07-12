@@ -686,6 +686,61 @@
     return mapProductRow(data);
   }
 
+  async function fetchRelatedProducts(productId, category, limit = 8) {
+    const normalizedProductId = String(productId || "").trim();
+    const normalizedCategory = String(category || "").trim();
+    const safeLimit = Math.min(Math.max(Number.parseInt(limit, 10) || 8, 1), 12);
+    const columns = [
+      "id",
+      "name",
+      "publisher",
+      "category",
+      "label",
+      "price",
+      "compare_at",
+      "stock",
+      "sold",
+      "image_url",
+      "hero_image_url",
+      "is_active",
+      "sort_order",
+      "updated_at"
+    ].join(",");
+
+    const buildQuery = (categoryOnly = false) => {
+      let query = requireClient()
+        .from("products")
+        .select(columns)
+        .eq("is_active", true);
+      if (normalizedProductId) query = query.neq("id", normalizedProductId);
+      if (categoryOnly && normalizedCategory) query = query.eq("category", normalizedCategory);
+      return query
+        .order("sold", { ascending: false })
+        .order("sort_order", { ascending: true })
+        .limit(categoryOnly ? safeLimit : safeLimit * 2);
+    };
+
+    const [sameCategoryResult, fallbackResult] = await Promise.all([
+      normalizedCategory ? buildQuery(true) : Promise.resolve({ data: [], error: null }),
+      buildQuery(false)
+    ]);
+
+    if (sameCategoryResult.error && fallbackResult.error) {
+      throw sameCategoryResult.error;
+    }
+
+    const productsById = new Map();
+    [sameCategoryResult.data, fallbackResult.data].forEach((rows) => {
+      normalizeArray(rows).forEach((row) => {
+        const product = mapProductRow(row);
+        if (!product?.id || product.id === normalizedProductId || productsById.has(product.id)) return;
+        productsById.set(product.id, product);
+      });
+    });
+
+    return [...productsById.values()].slice(0, safeLimit);
+  }
+
   async function fetchAdminProducts() {
     const { data, error } = await requireClient()
       .from("products")
@@ -1748,6 +1803,7 @@
     mapInventorySummaryRow,
     fetchActiveProducts,
     fetchProductById,
+    fetchRelatedProducts,
     fetchAdminProducts,
     upsertAdminProduct,
     deactivateAdminProduct,

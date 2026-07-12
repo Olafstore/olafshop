@@ -1227,6 +1227,15 @@
     if (searchableProductsPromise) return searchableProductsPromise;
 
     searchableProductsPromise = (async () => {
+      try {
+        if (window.OlafProducts?.fetchActiveProducts) {
+          const products = await window.OlafProducts.fetchActiveProducts();
+          if (Array.isArray(products) && products.length) return products;
+        }
+      } catch (error) {
+        console.warn("Topbar search is using the local product catalog.", error);
+      }
+
       const endpoints = [
         "api/products-index?v=20260712-search-v85",
         "assets/products-index.json?v=20260712-search-v85",
@@ -1242,15 +1251,6 @@
         } catch (error) {
           // Continue to the next compact catalog source.
         }
-      }
-
-      try {
-        if (window.OlafProducts?.fetchActiveProducts) {
-          const products = await window.OlafProducts.fetchActiveProducts();
-          if (Array.isArray(products) && products.length) return products;
-        }
-      } catch (error) {
-        console.warn("Topbar search is using the local product catalog.", error);
       }
 
       return [];

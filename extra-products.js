@@ -355,12 +355,10 @@
   }
 
   function mergeProducts(onlineProducts = []) {
-    const byId = new Map(products.map((product) => [product.id, { ...product }]));
-    (Array.isArray(onlineProducts) ? onlineProducts : []).forEach((product) => {
-      if (!product?.id || !isExtraCategory(product.category)) return;
-      byId.set(product.id, { ...(byId.get(product.id) || {}), ...product });
-    });
-    return [...byId.values()].filter((product) => product.isActive !== false);
+    const onlineExtraProducts = (Array.isArray(onlineProducts) ? onlineProducts : [])
+      .filter((product) => product?.id && isExtraCategory(product.category));
+    const source = onlineExtraProducts.length ? onlineExtraProducts : products;
+    return source.filter((product) => product.isActive !== false);
   }
 
   window.OlafExtraProducts = {

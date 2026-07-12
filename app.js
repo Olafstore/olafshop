@@ -676,19 +676,13 @@ async function loadProducts() {
 }
 
 function mergeCatalogProducts(jsonProducts = [], supabaseProducts = []) {
-  const merged = new Map();
-  const add = (product) => {
-    if (!product?.id) return;
-    merged.set(product.id, {
-      ...(merged.get(product.id) || {}),
-      ...product
-    });
-  };
+  const onlineProducts = Array.isArray(supabaseProducts) ? supabaseProducts.filter(Boolean) : [];
+  const fallbackProducts = Array.isArray(jsonProducts) ? jsonProducts.filter(Boolean) : [];
+  const products = onlineProducts.length ? onlineProducts : fallbackProducts;
 
-  (Array.isArray(jsonProducts) ? jsonProducts : []).forEach(add);
-  (Array.isArray(supabaseProducts) ? supabaseProducts : []).forEach(add);
-
-  return [...merged.values()].sort((a, b) => {
+  return products
+    .filter((product) => product?.id && product.isActive !== false)
+    .sort((a, b) => {
     const sortA = Number(a.sortOrder ?? a.sort_order ?? 0);
     const sortB = Number(b.sortOrder ?? b.sort_order ?? 0);
     if (sortA !== sortB) return sortA - sortB;

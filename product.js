@@ -366,11 +366,15 @@ async function fetchSupabaseProductPayload() {
     return null;
   });
   const onlineProductPromise = window.OlafProducts?.fetchProductById
-    ? withTimeout(window.OlafProducts.fetchProductById(productId), 2200, null).catch((error) => {
+    ? withTimeout(
+        window.OlafProducts.fetchProductById(productId).then((product) => ({ available: true, product })),
+        2200,
+        { available: false, product: null }
+      ).catch((error) => {
         console.warn("Supabase product detail unavailable; using catalog product", error);
-        return null;
+        return { available: false, product: null };
       })
-    : Promise.resolve(null);
+    : Promise.resolve({ available: false, product: null });
   const activePackagesPromise = window.OlafProducts?.fetchActiveProductPackages
     ? withTimeout(window.OlafProducts.fetchActiveProductPackages(productId), 1800, []).catch((error) => {
         console.warn("Product packages unavailable; falling back to base product pricing", error);
@@ -378,30 +382,20 @@ async function fetchSupabaseProductPayload() {
       })
     : Promise.resolve([]);
 
-  const [jsonPayload, onlineProduct, activePackages] = await Promise.all([
+  const [jsonPayload, onlineProductResult, activePackages] = await Promise.all([
     jsonPayloadPromise,
     onlineProductPromise,
     activePackagesPromise
   ]);
+  const onlineProduct = onlineProductResult.product;
   const jsonProduct = Array.isArray(jsonPayload?.products)
     ? jsonPayload.products.find((item) => item?.id === productId) || null
     : null;
   const extraFallback = window.OlafExtraProducts?.getProductById?.(productId) || null;
-  const product = onlineProduct
-    ? {
-        ...(jsonProduct || {}),
-        ...(extraFallback || {}),
-        ...onlineProduct,
-        ...(String(onlineProduct.category || jsonProduct?.category || "").toLowerCase() === "steam-key" && jsonProduct
-          ? {
-              image: jsonProduct.image || onlineProduct.image,
-              heroImage: jsonProduct.heroImage || onlineProduct.heroImage || jsonProduct.image
-            }
-          : {})
-      }
-    : extraFallback
-      ? { ...(jsonProduct || {}), ...extraFallback }
-      : jsonProduct;
+  const fallbackProduct = extraFallback
+    ? { ...(jsonProduct || {}), ...extraFallback }
+    : jsonProduct;
+  const product = onlineProductResult.available ? onlineProduct : fallbackProduct;
   if (!product) {
     return {
       store: jsonPayload?.store ?? {},
@@ -412,22 +406,39 @@ async function fetchSupabaseProductPayload() {
 
   const enrichedProduct = { ...product, packages: activePackages };
 
-  const jsonProducts = Array.isArray(jsonPayload?.products) ? jsonPayload.products : [];
-  const extraProducts = Array.isArray(window.OlafExtraProducts?.products)
-    ? window.OlafExtraProducts.products
-    : [];
-  const productsById = new Map();
-  jsonProducts.forEach((item) => {
-    if (item?.id) productsById.set(item.id, item);
-  });
-  extraProducts.forEach((item) => {
-    if (item?.id) productsById.set(item.id, { ...(productsById.get(item.id) || {}), ...item });
-  });
-  let products = [...productsById.values()];
-  if (!products.some((item) => item.id === product.id)) {
-    products = [enrichedProduct, ...products];
+  let products = [];
+  if (onlineProductResult.available) {
+    const relatedProducts = window.OlafProducts?.fetchRelatedProducts
+      ? await withTimeout(
+          window.OlafProducts.fetchRelatedProducts(product.id, product.category, 8),
+          2400,
+          []
+        ).catch((error) => {
+          console.warn("Supabase recommendations unavailable", error);
+          return [];
+        })
+      : [];
+    products = [enrichedProduct, ...relatedProducts.filter((item) => item?.id !== product.id)];
   } else {
-    products = products.map((item) => item.id === product.id ? { ...item, ...enrichedProduct } : item);
+    const jsonProducts = Array.isArray(jsonPayload?.products) ? jsonPayload.products : [];
+    const extraProducts = Array.isArray(window.OlafExtraProducts?.products)
+      ? window.OlafExtraProducts.products
+      : [];
+    const productsById = new Map();
+    jsonProducts.forEach((item) => {
+      if (item?.id && item.isActive !== false) productsById.set(item.id, item);
+    });
+    extraProducts.forEach((item) => {
+      if (item?.id && item.isActive !== false) {
+        productsById.set(item.id, { ...(productsById.get(item.id) || {}), ...item });
+      }
+    });
+    products = [...productsById.values()];
+    if (!products.some((item) => item.id === product.id)) {
+      products = [enrichedProduct, ...products];
+    } else {
+      products = products.map((item) => item.id === product.id ? { ...item, ...enrichedProduct } : item);
+    }
   }
 
   return {
@@ -1693,14 +1704,20 @@ async function hydrateRelatedProductsFallback(product) {
   const grid = document.querySelector("[data-related-grid]");
   if (!section || !grid || grid.children.length > 0) return;
 
-  const onlineProducts = window.OlafProducts?.fetchRelatedProducts
-    ? await withTimeout(
-        window.OlafProducts.fetchRelatedProducts(product.id, product.category, 8),
-        3500,
-        []
-      ).catch(() => [])
-    : [];
-  const payload = onlineProducts.length
+  let onlineProducts = [];
+  let onlineSourceSucceeded = false;
+  if (window.OlafProducts?.fetchRelatedProducts) {
+    const result = await withTimeout(
+      window.OlafProducts.fetchRelatedProducts(product.id, product.category, 8),
+      3500,
+      null
+    ).catch(() => null);
+    if (Array.isArray(result)) {
+      onlineProducts = result;
+      onlineSourceSucceeded = true;
+    }
+  }
+  const payload = onlineSourceSucceeded
     ? null
     : await fetchStorePayload(true).catch(() => null);
   const products = mergeRelatedProductSources(

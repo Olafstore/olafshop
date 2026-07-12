@@ -77,8 +77,8 @@ const fallbackPayload = {
 
 const appConfig = {
   productsEndpoint: ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname)
-    ? "api/products-index.json?v=20260712-fast-index-v84"
-    : "api/products-index?v=20260712-fast-index-v84",
+    ? "assets/products-index.json?v=20260712-fast-index-v85"
+    : "api/products-index?v=20260712-fast-index-v85",
   paymentEndpoint: "",
   serviceFee: 0,
   promptPayId: "0812345678",

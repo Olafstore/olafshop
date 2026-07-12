@@ -1228,9 +1228,9 @@
 
     searchableProductsPromise = (async () => {
       const endpoints = [
-        "api/products-index?v=20260712-search-v81",
-        "api/products-index.json?v=20260712-search-v81",
-        "api/products.json?v=20260712-search-v81"
+        "api/products-index?v=20260712-search-v85",
+        "assets/products-index.json?v=20260712-search-v85",
+        "api/products.json?v=20260712-search-v85"
       ];
       for (const endpoint of endpoints) {
         try {

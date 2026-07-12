@@ -23,13 +23,13 @@ const productEndpoints = [
   window.OLAF_CONFIG?.productsEndpoint,
   ...(isLocalProductHost
     ? [
-        "api/products-index.json?v=20260712-product-fast-v81",
-        "api/products.json?v=20260712-product-fast-v81"
+        "assets/products-index.json?v=20260712-product-fast-v85",
+        "api/products.json?v=20260712-product-fast-v85"
       ]
     : [
-        "api/products-index?v=20260712-product-fast-v81",
-        "api/products-index.json?v=20260712-product-fast-v81",
-        "api/products.json?v=20260712-product-fast-v81"
+        "api/products-index?v=20260712-product-fast-v85",
+        "assets/products-index.json?v=20260712-product-fast-v85",
+        "api/products.json?v=20260712-product-fast-v85"
       ])
 ].filter(Boolean);
 

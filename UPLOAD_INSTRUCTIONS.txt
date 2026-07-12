@@ -1,0 +1,21 @@
+OLAF SHOP - Vercel build fix v85
+
+IMPORTANT - DELETE THIS OLD FILE FROM GITHUB FIRST:
+api/products-index.json
+
+It conflicts with api/products-index.js because Vercel treats both files as the
+same serverless route. The replacement catalog data is now located at:
+assets/products-index.json
+
+After deleting the old file:
+1. Upload every file and folder in this package to the repository root.
+2. Keep api/products-index.js inside api/.
+3. Keep assets/products-index.json inside assets/.
+4. Commit the upload to main and wait for Vercel to redeploy.
+
+Verified locally with the linked Production project:
+vercel build --prod
+Result: Build completed successfully.
+
+No SQL migration is required.
+No credentials are included in this package.

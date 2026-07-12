@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260712-point-topup-premium-v76" />
+  <link rel="stylesheet" href="styles.css?v=20260712-ui-v84" />
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
@@ -19,10 +19,10 @@
   <script src="order-action-popup.js?v=20260712-point-topup-premium-v76" defer></script>
   <script src="supabase-client.js?v=20260712-point-topup-premium-v76" defer></script>
   <script src="platform-store.js?v=20260605-admin-users" defer></script>
-  <script src="image-performance.js?v=20260607-performance" defer></script>
+  <script src="image-performance.js?v=20260712-ui-v84" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-  <script src="site-navigation.js?v=20260712-point-topup-premium-v76" defer></script>
-  <script src="point-topup.js?v=20260712-point-topup-premium-v76" defer></script>
+  <script src="site-navigation.js?v=20260712-ui-v84" defer></script>
+  <script src="point-topup.js?v=20260712-ui-v84" defer></script>
 </head>
 
 <body class="point-topup-page">
@@ -84,12 +84,12 @@
     <main class="point-topup-shell" aria-labelledby="point-topup-title">
       <section class="point-topup-hero">
         <div class="point-topup-copy">
-          <span class="eyebrow"><i data-lucide="coins"></i> OLAF POINT WALLET</span>
-          <h1 id="point-topup-title">เติม Point เข้า Wallet</h1>
-          <p>เลือกยอดที่ต้องการเติม ชำระเงินด้วยช่องทางเดิม แล้วแนบสลิปให้ระบบตรวจอัตโนมัติ เมื่อสลิปผ่าน Point จะเข้าบัญชีทันที</p>
+          <span class="eyebrow"><i data-lucide="wallet-cards"></i> OLAF POINT WALLET</span>
+          <h1 id="point-topup-title">เติมเงินเข้าสู่ OLAF Point Wallet</h1>
+          <p>เลือกแพ็ก Point ที่ต้องการ ชำระผ่านพร้อมเพย์หรือ TrueMoney Wallet และรับ Point เข้าบัญชีทันทีหลังระบบตรวจสลิปสำเร็จ</p>
           <div class="point-topup-balance-card">
-            <span>Point คงเหลือ</span>
-            <strong><b data-point-topup-balance>0</b> P</strong>
+            <span class="point-topup-balance-icon"><i data-lucide="coins"></i></span>
+            <span><small>ยอดคงเหลือใน Wallet</small><strong><b data-point-topup-balance>0</b> Point</strong></span>
           </div>
         </div>
 
@@ -103,17 +103,17 @@
       <section class="point-topup-grid">
         <form class="point-topup-card point-topup-form" id="point-topup-form">
           <div class="section-heading">
-            <span class="eyebrow">TOP UP</span>
-            <h2>เลือกยอดเติม Point</h2>
-            <p>เลือกยอดสำเร็จรูปหรือกรอกยอดเอง ขั้นต่ำ 1 Point</p>
+            <span class="eyebrow">SELECT POINT PACKAGE</span>
+            <h2>เลือกจำนวน Point ที่ต้องการเติม</h2>
+            <p>1 บาท = 1 Point เลือกแพ็กด้านล่างหรือระบุจำนวนที่ต้องการเอง</p>
           </div>
 
           <div class="point-topup-presets" role="group" aria-label="ยอดเติม Point">
-            <button type="button" data-topup-preset="50">50 P</button>
-            <button type="button" data-topup-preset="100" class="is-active">100 P</button>
-            <button type="button" data-topup-preset="200">200 P</button>
-            <button type="button" data-topup-preset="500">500 P</button>
-            <button type="button" data-topup-preset="1000">1,000 P</button>
+            <button type="button" data-topup-preset="50"><span><small>เติมเข้า Wallet</small><strong>50 Point</strong></span><b>เติม ฿50</b></button>
+            <button type="button" data-topup-preset="100" class="is-active"><span><small>เติมเข้า Wallet</small><strong>100 Point</strong></span><b>เติม ฿100</b></button>
+            <button type="button" data-topup-preset="200"><span><small>เติมเข้า Wallet</small><strong>200 Point</strong></span><b>เติม ฿200</b></button>
+            <button type="button" data-topup-preset="500"><span><small>เติมเข้า Wallet</small><strong>500 Point</strong></span><b>เติม ฿500</b></button>
+            <button type="button" data-topup-preset="1000"><span><small>เติมเข้า Wallet</small><strong>1,000 Point</strong></span><b>เติม ฿1,000</b></button>
           </div>
 
           <label class="point-topup-input">
@@ -144,9 +144,9 @@
         </form>
 
         <aside class="point-topup-card point-topup-premium-side">
-          <span class="eyebrow">SECURE TOPUP</span>
-          <h2>ชำระผ่าน Popup เดียวกับหน้าสินค้า</h2>
-          <p>หลังสร้างรายการ ระบบจะเปิดหน้าต่าง QR แบบ Premium ทันที แนบสลิปได้จาก popup และตรวจความถูกต้องก่อนเพิ่ม Point ทุกครั้ง</p>
+          <span class="eyebrow">WALLET SECURITY</span>
+          <h2>เติมง่าย ปลอดภัย ตรวจสอบได้</h2>
+          <p>ทุกรายการใช้ระบบชำระเงินเดิมของร้าน พร้อมตรวจ QR ผู้รับ ยอดเงิน เวลา และสลิปซ้ำก่อนเพิ่ม Point</p>
           <div class="point-topup-flow">
             <div><b>01</b><span>เลือกยอด Point</span></div>
             <div><b>02</b><span>สแกน QR / Wallet</span></div>

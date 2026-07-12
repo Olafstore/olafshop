@@ -18,12 +18,19 @@ let checkoutPointState = {
   totalBeforePoints: 0
 };
 
+const isLocalProductHost = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
 const productEndpoints = [
-  "api/products.json?v=20260711-product-full-v75",
-  "api/products-index?v=20260712-related-products-v80",
-  "./api/products.json?v=20260711-product-full-v75",
-  "/api/products.json?v=20260711-product-full-v75",
-  window.OLAF_CONFIG?.productsEndpoint
+  window.OLAF_CONFIG?.productsEndpoint,
+  ...(isLocalProductHost
+    ? [
+        "api/products-index.json?v=20260712-product-fast-v81",
+        "api/products.json?v=20260712-product-fast-v81"
+      ]
+    : [
+        "api/products-index?v=20260712-product-fast-v81",
+        "api/products-index.json?v=20260712-product-fast-v81",
+        "api/products.json?v=20260712-product-fast-v81"
+      ])
 ].filter(Boolean);
 
 const steamAppCacheEndpoints = [
@@ -36,7 +43,6 @@ const steamAppCacheEndpoints = [
 const STEAM_RELATED_PLACEHOLDER =
   "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 616 353'%3E%3Cdefs%3E%3ClinearGradient id='g' x1='0' y1='0' x2='1' y2='1'%3E%3Cstop stop-color='%23071122'/%3E%3Cstop offset='1' stop-color='%2315284d'/%3E%3C/linearGradient%3E%3C/defs%3E%3Crect width='616' height='353' fill='url(%23g)'/%3E%3Ccircle cx='485' cy='78' r='39' fill='%233b82f6' opacity='.28'/%3E%3Cpath d='M86 262l108-108 74 74 51-51 143 143H86z' fill='%233b82f6' opacity='.55'/%3E%3C/svg%3E";
 
-const suggestionLimit = 40;
 let steamAppCachePromise = null;
 
 const formatPrice = (v) =>
@@ -161,12 +167,21 @@ function fastImg(src, alt = "", options = {}) {
   const loading = options.priority ? "eager" : "lazy";
   const fetchPriority = options.priority ? "high" : "low";
   const className = options.className ? ` class="${escapeHtml(options.className)}"` : "";
-  return `${className} src="${escapeHtml(src || "")}" alt="${escapeHtml(alt)}" loading="${loading}" decoding="async" fetchpriority="${fetchPriority}"`;
+  const fallbacks = Array.isArray(options.fallbacks) ? options.fallbacks.filter(Boolean) : [];
+  const fallbackAttr = fallbacks.length
+    ? ` data-image-fallbacks="${escapeHtml(JSON.stringify(fallbacks))}"`
+    : "";
+  return `${className} src="${escapeHtml(src || "")}" alt="${escapeHtml(alt)}" loading="${loading}" decoding="async" fetchpriority="${fetchPriority}"${fallbackAttr}`;
 }
 
-function fastBg(src) {
+function fastBg(src, options = {}) {
+  const source = String(src || "").trim();
+  if (!source) return "";
+  if (options.eager) {
+    return `style="background-image:url('${escapeHtml(source)}')" data-bg-loaded="true"`;
+  }
   if (window.OlafImages?.bgAttrs) return window.OlafImages.bgAttrs(src);
-  return src ? `style="background-image: url('${escapeHtml(src)}');"` : "";
+  return `style="background-image: url('${escapeHtml(source)}');"`;
 }
 
 function hydrateImages() {
@@ -337,12 +352,8 @@ async function fetchOnlineStoreSettings(quiet = false) {
 }
 
 async function fetchSupabaseProductPayload() {
-  const jsonPayload = await fetchStorePayload(true).catch((error) => {
-    console.warn("Product JSON settings unavailable while using Supabase product", error);
-    return null;
-  });
-
   if (!productId) {
+    const jsonPayload = await fetchStorePayload(true).catch(() => null);
     return {
       store: jsonPayload?.store ?? {},
       categories: deriveCategories([], jsonPayload?.categories),
@@ -350,18 +361,44 @@ async function fetchSupabaseProductPayload() {
     };
   }
 
+  const jsonPayloadPromise = fetchStorePayload(true).catch((error) => {
+    console.warn("Compact product catalog unavailable while loading product detail", error);
+    return null;
+  });
+  const onlineProductPromise = window.OlafProducts?.fetchProductById
+    ? withTimeout(window.OlafProducts.fetchProductById(productId), 2200, null).catch((error) => {
+        console.warn("Supabase product detail unavailable; using catalog product", error);
+        return null;
+      })
+    : Promise.resolve(null);
+  const activePackagesPromise = window.OlafProducts?.fetchActiveProductPackages
+    ? withTimeout(window.OlafProducts.fetchActiveProductPackages(productId), 1800, []).catch((error) => {
+        console.warn("Product packages unavailable; falling back to base product pricing", error);
+        return [];
+      })
+    : Promise.resolve([]);
+
+  const [jsonPayload, onlineProduct, activePackages] = await Promise.all([
+    jsonPayloadPromise,
+    onlineProductPromise,
+    activePackagesPromise
+  ]);
   const jsonProduct = Array.isArray(jsonPayload?.products)
     ? jsonPayload.products.find((item) => item?.id === productId) || null
     : null;
   const extraFallback = window.OlafExtraProducts?.getProductById?.(productId) || null;
-  const onlineProduct = window.OlafProducts?.fetchProductById
-    ? await withTimeout(window.OlafProducts.fetchProductById(productId), 1800, null).catch((error) => {
-        console.warn("Supabase product detail unavailable; using JSON product", error);
-        return null;
-      })
-    : null;
   const product = onlineProduct
-    ? { ...(jsonProduct || {}), ...(extraFallback || {}), ...onlineProduct }
+    ? {
+        ...(jsonProduct || {}),
+        ...(extraFallback || {}),
+        ...onlineProduct,
+        ...(String(onlineProduct.category || jsonProduct?.category || "").toLowerCase() === "steam-key" && jsonProduct
+          ? {
+              image: jsonProduct.image || onlineProduct.image,
+              heroImage: jsonProduct.heroImage || onlineProduct.heroImage || jsonProduct.image
+            }
+          : {})
+      }
     : extraFallback
       ? { ...(jsonProduct || {}), ...extraFallback }
       : jsonProduct;
@@ -373,24 +410,8 @@ async function fetchSupabaseProductPayload() {
     };
   }
 
-  const activePackages = window.OlafProducts?.fetchActiveProductPackages
-    ? await withTimeout(window.OlafProducts.fetchActiveProductPackages(product.id), 1500, []).catch((error) => {
-        console.warn("Product packages unavailable; falling back to base product pricing", error);
-        return [];
-      })
-    : [];
   const enrichedProduct = { ...product, packages: activePackages };
 
-  const supabaseProducts = window.OlafProducts?.fetchRelatedProducts
-    ? await withTimeout(
-        window.OlafProducts.fetchRelatedProducts(product.id, product.category, 8),
-        3500,
-        []
-      ).catch((error) => {
-        console.warn("Related products unavailable during initial product load", error);
-        return [];
-      })
-    : [];
   const jsonProducts = Array.isArray(jsonPayload?.products) ? jsonPayload.products : [];
   const extraProducts = Array.isArray(window.OlafExtraProducts?.products)
     ? window.OlafExtraProducts.products
@@ -400,9 +421,6 @@ async function fetchSupabaseProductPayload() {
     if (item?.id) productsById.set(item.id, item);
   });
   extraProducts.forEach((item) => {
-    if (item?.id) productsById.set(item.id, { ...(productsById.get(item.id) || {}), ...item });
-  });
-  supabaseProducts.forEach((item) => {
     if (item?.id) productsById.set(item.id, { ...(productsById.get(item.id) || {}), ...item });
   });
   let products = [...productsById.values()];
@@ -990,6 +1008,7 @@ function getLocalizedRating(rating) {
 }
 
 function getLocalizedPlatformLabel(link = {}) {
+  if (link.lockLabel) return cleanDisplayText(link.label || "เปิดลิงก์");
   const icon = String(link.icon || "").toLowerCase();
   const url = String(link.url || "").toLowerCase();
   if (currentLang === "th") {
@@ -997,6 +1016,46 @@ function getLocalizedPlatformLabel(link = {}) {
     if (icon.includes("store") || url.includes("facebook")) return "ติดต่อร้าน";
   }
   return cleanDisplayText(link.label || "เปิดลิงก์");
+}
+
+function productPlatformLinks(product = {}) {
+  if (String(product.category || "").toLowerCase() === "steam-key") {
+    return [
+      {
+        label: "Contace",
+        url: "https://www.facebook.com/byOlafshop",
+        icon: "store",
+        lockLabel: true
+      },
+      {
+        label: "เปิดใช้งานคีย์",
+        url: "https://olaf-shop.gitbook.io/manual-olaf-shop/undefined/key-steam",
+        icon: "key-round",
+        lockLabel: true
+      }
+    ];
+  }
+  return Array.isArray(product.platformLinks) ? product.platformLinks : [];
+}
+
+function productFeatureBlocks(product = {}) {
+  if (String(product.category || "").toLowerCase() === "steam-key") {
+    return [
+      {
+        icon: "shield-check",
+        title: "สิทธิ/การเข้าถึงคีย์แท้จาก Steam",
+        text: "คีย์ประเทศไทย",
+        tone: "secure"
+      },
+      {
+        icon: "send",
+        title: "จัดส่ง",
+        text: "5-30 นาที",
+        tone: "delivery"
+      }
+    ];
+  }
+  return Array.isArray(product.featureBlocks) ? product.featureBlocks : [];
 }
 
 function localizeSectionBody(body, product = null, title = "") {
@@ -1065,135 +1124,6 @@ function getAdminProductDescription(product) {
   const lines = cleaned.split(/\n+/).map((line) => line.trim()).filter(Boolean);
   if (lines.length <= 8) return cleaned;
   return `${lines.slice(0, 8).join("\n")}\n…`;
-}
-
-function normalizeSearchText(value) {
-  return String(value || "").trim().toLowerCase();
-}
-
-function searchProducts(query) {
-  const keyword = normalizeSearchText(query);
-  if (!keyword || !Array.isArray(globalPayload?.products)) return [];
-
-  return globalPayload.products
-    .map((product) => {
-      const categoryLabel = getCategoryLabel(product.category);
-      const searchable = [
-        product.name,
-        product.publisher,
-        product.id,
-        product.category,
-        categoryLabel,
-        product.label,
-        product.rating,
-        ...(product.tags || []),
-        ...getDisplayTags(product, 5)
-      ]
-        .map(normalizeSearchText)
-        .join(" ");
-      const name = normalizeSearchText(product.name);
-      const startsWithName = name.startsWith(keyword);
-      const exactName = name === keyword;
-      const includes = searchable.includes(keyword);
-
-      if (!includes) return null;
-
-      return {
-        product,
-        categoryLabel,
-        score: (exactName ? 100 : 0) + (startsWithName ? 40 : 0) + Number(product.sold || 0) / 10000
-      };
-    })
-    .filter(Boolean)
-    .sort((a, b) => b.score - a.score)
-    .slice(0, suggestionLimit);
-}
-
-function highlightMatch(text, query) {
-  const source = String(text || "");
-  const keyword = String(query || "").trim();
-  if (!keyword) return escapeHtml(source);
-
-  const index = source.toLowerCase().indexOf(keyword.toLowerCase());
-  if (index < 0) return escapeHtml(source);
-
-  return `${escapeHtml(source.slice(0, index))}<mark>${escapeHtml(source.slice(index, index + keyword.length))}</mark>${escapeHtml(source.slice(index + keyword.length))}`;
-}
-
-function groupedSuggestions(results) {
-  return results.reduce((groups, result) => {
-    const key = result.product.category || "other";
-    if (!groups.has(key)) {
-      groups.set(key, {
-        label: result.categoryLabel,
-        items: []
-      });
-    }
-    groups.get(key).items.push(result.product);
-    return groups;
-  }, new Map());
-}
-
-function hideSearchSuggestions() {
-  const panel = $("#search-suggestions-list");
-  if (!panel) return;
-  panel.hidden = true;
-  panel.innerHTML = "";
-}
-
-function renderSearchSuggestions(query) {
-  const panel = $("#search-suggestions-list");
-  if (!panel) return;
-
-  const keyword = query.trim();
-  if (!keyword) {
-    hideSearchSuggestions();
-    return;
-  }
-
-  const results = searchProducts(keyword);
-  if (!results.length) {
-    panel.innerHTML = `<div class="search-suggestions-empty">ไม่พบสินค้าที่ตรงกับ "${escapeHtml(keyword)}"</div>`;
-    panel.hidden = false;
-    return;
-  }
-
-  const groups = groupedSuggestions(results);
-  panel.innerHTML = [...groups.values()]
-    .map(
-      (group) => `
-        <div class="search-suggestion-header">${escapeHtml(group.label)}</div>
-        ${group.items
-          .map(
-            (product) => `
-              <a class="search-suggestion-item" href="product.html?id=${encodeURIComponent(product.id)}" role="option">
-                <img ${fastImg(product.image || product.heroImage, getDisplayProductName(product), { className: "suggestion-img" })} />
-                <span class="suggestion-info">
-                  <span class="suggestion-name">${highlightMatch(getDisplayProductName(product), keyword)}</span>
-                  <span class="suggestion-meta">${escapeHtml(cleanDisplayText(product.publisher || getCategoryLabel(product.category)))}</span>
-                </span>
-                <strong class="suggestion-price">${formatPrice(product.price)}</strong>
-              </a>
-            `
-          )
-          .join("")}
-      `
-    )
-    .join("");
-  panel.hidden = false;
-}
-
-function submitTopbarSearch() {
-  const input = $("#topbar-search-input");
-  const query = input?.value.trim() || "";
-  if (!query) return;
-
-  const firstResult = searchProducts(query)[0]?.product;
-  if (firstResult) {
-    window.location.href = `product.html?id=${encodeURIComponent(firstResult.id)}`;
-  } else {
-    window.location.href = `index.html?search=${encodeURIComponent(query)}`;
-  }
 }
 
 function steamAppIdFromUrl(value) {
@@ -1491,6 +1421,29 @@ function brandedProductHero(product) {
   return "";
 }
 
+function steamAppIdForProduct(product = {}) {
+  const direct = String(
+    product.steamAppId ||
+    product.steam_app_id ||
+    product.sourceMetadata?.steamAppId ||
+    product.source_metadata?.steam_app_id ||
+    ""
+  ).match(/\d{3,}/)?.[0];
+  if (direct) return direct;
+  return String(product.id || "").match(/(?:steam-key|offline|sa)-(\d{3,})/i)?.[1] || "";
+}
+
+function productImageFallbacks(product = {}, primary = "") {
+  const appId = steamAppIdForProduct(product);
+  return [...new Set([
+    product.image,
+    appId ? `https://cdn.cloudflare.steamstatic.com/steam/apps/${appId}/header.jpg` : "",
+    appId ? `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appId}/header.jpg` : "",
+    product.heroImage,
+    window.OlafImages?.fallbackImage
+  ].filter((source) => source && source !== primary))];
+}
+
 const STEAM_OFFLINE_GUIDE_URL = "https://olaf-shop.gitbook.io/manual-olaf-shop";
 const STEAM_OFFLINE_CONDITIONS_URL = "https://olaf-shop.gitbook.io/manual-olaf-shop/undefined/undefined";
 const STEAM_KEY_GUIDE_URL = "https://olaf-shop.gitbook.io/manual-olaf-shop/undefined/key-steam";
@@ -1673,10 +1626,11 @@ function renderRelatedProductCards(products = []) {
   return products.map((rp) => {
     const rpStock = getStockState(rp.stock);
     const rpDiscount = getDiscount(rp);
+    const imageSource = rp.image || rp.heroImage || window.OlafImages?.fallbackImage || "";
     return `
-      <a class="pd-related-card" href="product.html?id=${encodeURIComponent(rp.id)}">
+      <a class="pd-related-card" href="product.html?id=${encodeURIComponent(rp.id)}" role="listitem">
         <div class="pd-related-img">
-          <img ${fastImg(rp.image || rp.heroImage, getDisplayProductName(rp))} />
+          <img ${fastImg(imageSource, getDisplayProductName(rp), { fallbacks: productImageFallbacks(rp, imageSource) })} />
           ${rpDiscount ? `<span class="pd-related-discount">-${rpDiscount}%</span>` : ""}
         </div>
         <div class="pd-related-body">
@@ -1692,18 +1646,46 @@ function renderRelatedProductCards(products = []) {
   }).join("");
 }
 
-function relatedSectionMarkup(relatedProducts = []) {
+function relatedSectionMarkup(product, relatedProducts = []) {
+  const categoryLabel = getCategoryLabel(product?.category);
+  const crossCategory = relatedProducts.some((item) => item.category !== product?.category);
   return `
     <div class="pd-section pd-related-section" data-related-section ${relatedProducts.length ? "" : "hidden"}>
-      <h3 class="pd-section-title">
-        <span class="pd-section-icon-box"><i data-lucide="thumbs-up"></i></span>
-        สินค้าแนะนำในหมวดหมู่เดียวกัน
-      </h3>
-      <div class="pd-related-grid" data-related-grid>
+      <div class="pd-related-heading">
+        <div>
+          <h3 class="pd-section-title">
+            <span class="pd-section-icon-box"><i data-lucide="sparkles"></i></span>
+            เกมแนะนำหมวด ${escapeHtml(categoryLabel)}
+          </h3>
+          <p>${crossCategory ? "สินค้าในหมวดนี้มีจำนวนจำกัด จึงเพิ่มเกมยอดนิยมที่น่าสนใจให้ด้วย" : `คัดเกมจากหมวด ${escapeHtml(categoryLabel)} ที่คุณกำลังดู`}</p>
+        </div>
+        <div class="pd-related-controls" aria-label="เลื่อนรายการเกมแนะนำ">
+          <button type="button" data-related-prev aria-label="เลื่อนไปทางซ้าย"><i data-lucide="chevron-left"></i></button>
+          <button type="button" data-related-next aria-label="เลื่อนไปทางขวา"><i data-lucide="chevron-right"></i></button>
+        </div>
+      </div>
+      <div class="pd-related-grid" data-related-grid role="list" tabindex="0" aria-label="เกมแนะนำหมวด ${escapeHtml(categoryLabel)}">
         ${renderRelatedProductCards(relatedProducts)}
       </div>
     </div>
   `;
+}
+
+function setupRelatedScroller(root = document) {
+  const section = root.querySelector?.("[data-related-section]") || document.querySelector("[data-related-section]");
+  const scroller = section?.querySelector("[data-related-grid]");
+  const previous = section?.querySelector("[data-related-prev]");
+  const next = section?.querySelector("[data-related-next]");
+  if (!section || !scroller || scroller.dataset.relatedScrollerReady === "true") return;
+  scroller.dataset.relatedScrollerReady = "true";
+
+  const scroll = (direction) => {
+    const card = scroller.querySelector(".pd-related-card");
+    const distance = Math.max(card?.getBoundingClientRect().width || 220, 180) + 14;
+    scroller.scrollBy({ left: direction * distance * 2, behavior: "smooth" });
+  };
+  previous?.addEventListener("click", () => scroll(-1));
+  next?.addEventListener("click", () => scroll(1));
 }
 
 async function hydrateRelatedProductsFallback(product) {
@@ -1734,6 +1716,7 @@ async function hydrateRelatedProductsFallback(product) {
   }
   createIconSet();
   hydrateImages();
+  setupRelatedScroller(document);
 }
 
 function renderProduct() {
@@ -1756,6 +1739,7 @@ function renderProduct() {
   document.body.classList.toggle("product-theme-windows", isWindowsProduct(p));
   document.body.classList.toggle("product-theme-minecraft", isMinecraftProduct(p));
   document.body.classList.toggle("product-theme-rockstar", isRockstarProduct(p));
+  document.body.classList.toggle("product-theme-steam-key", String(p.category || "").toLowerCase() === "steam-key");
   const hasOfflineBadge = String(p.category || "").toLowerCase() === "offline" ||
     String(p.label || "").toLowerCase().includes("offline") ||
     (Array.isArray(p.badgeOverrides) && p.badgeOverrides.some((badge) =>
@@ -1790,8 +1774,8 @@ function renderProduct() {
 
   // Main displayed image on left = first gallery image
   const leftMainImg = screenshotSrcs[0] || "";
-  // Sidebar cover = heroImage or image fallback if gallery is empty
-  const sidebarCoverImg = p.heroImage || p.image || leftMainImg || "";
+  // Product cover must prefer the Steam header. Hero images are wide page backgrounds and may not exist.
+  const sidebarCoverImg = p.image || p.heroImage || leftMainImg || window.OlafImages?.fallbackImage || "";
 
   const screenshotThumbs = screenshotSrcs
     .map((src, i) => `
@@ -1883,7 +1867,9 @@ function renderProduct() {
   const relatedProducts = pickRelatedProducts(p, globalPayload.products || [], 8);
   const categoryGuideSection = categoryGuideAccordion(p);
   const rockstarGuideSection = rockstarUsageAccordion(p);
-  const relatedSection = relatedSectionMarkup(relatedProducts);
+  const relatedSection = relatedSectionMarkup(p, relatedProducts);
+  const displayFeatureBlocks = productFeatureBlocks(p);
+  const displayPlatformLinks = productPlatformLinks(p);
 
   const packageSection = currentProductPackages.length ? `
     <div class="pd-package-section" aria-label="เลือกแพ็คเกจ">
@@ -1935,7 +1921,7 @@ function renderProduct() {
   const buyButtonText = purchaseButtonCopy(p, canAdd);
 
   container.innerHTML = `
-    <div class="pd-bg-backdrop fade-in" ${fastBg(p.heroImage || p.image || leftMainImg)}></div>
+    <div class="pd-bg-backdrop fade-in" ${fastBg(p.heroImage || p.image || leftMainImg, { eager: true })}></div>
     <a class="pd-breadcrumb" href="${returnHref}" style="position:relative;z-index:10;">
       <i data-lucide="arrow-left"></i>
       ${returnLabel}
@@ -1960,7 +1946,7 @@ function renderProduct() {
         </div>
 
         <!-- Dynamic Detail Sections from Admin -->
-        ${Array.isArray(p.detailSections) && p.detailSections.length > 0 ? p.detailSections
+        ${p.category !== "steam-key" && Array.isArray(p.detailSections) && p.detailSections.length > 0 ? p.detailSections
           .filter((section) => !isSteamInfoDetailSection(section))
           .map(s => `
         <div class="pd-section">
@@ -2014,8 +2000,6 @@ function renderProduct() {
 
         ${langSection}
 
-        ${relatedSection}
-
       </div><!-- end .pd-left -->
 
       <!-- ══ RIGHT SIDEBAR ══ -->
@@ -2024,7 +2008,7 @@ function renderProduct() {
 
           <!-- Cover art -->
           <div class="pd-sidebar-cover">
-            <img ${fastImg(sidebarCoverImg, displayProductName, { priority: true })} />
+            <img ${fastImg(sidebarCoverImg, displayProductName, { priority: true, fallbacks: productImageFallbacks(p, sidebarCoverImg) })} />
           </div>
 
           <div class="pd-sidebar-body">
@@ -2062,9 +2046,9 @@ function renderProduct() {
             </button>
             <!-- Feature info row -->
             <div class="pd-features-row">
-              ${Array.isArray(p.featureBlocks) && p.featureBlocks.length > 0 ? p.featureBlocks.map(f => `
-              <div class="pd-feature-item">
-                <div class="pd-feature-icon">
+              ${displayFeatureBlocks.length > 0 ? displayFeatureBlocks.map(f => `
+              <div class="pd-feature-item pd-feature-${escapeHtml(f.tone || "default")}">
+                <div class="pd-feature-icon pd-feature-icon-${escapeHtml(f.tone || "default")}">
                   <i data-lucide="${escapeHtml(f.icon)}"></i>
                 </div>
                 <div class="pd-feature-text">
@@ -2114,9 +2098,9 @@ function renderProduct() {
             </div>
 
             <!-- Platform links -->
-            ${Array.isArray(p.platformLinks) && p.platformLinks.length > 0 ? `
+            ${displayPlatformLinks.length > 0 ? `
             <div class="pd-platform-links">
-              ${p.platformLinks.map(l => `
+              ${displayPlatformLinks.map(l => `
               <a href="${escapeHtml(l.url)}" target="_blank" rel="noreferrer" class="pd-platform-link">
                 <i data-lucide="${escapeHtml(l.icon)}"></i>
                 <span>${escapeHtml(getLocalizedPlatformLabel(l))}</span>
@@ -2130,11 +2114,14 @@ function renderProduct() {
       </div><!-- end .pd-sidebar -->
 
     </div><!-- end .pd-layout -->
+
+    ${relatedSection}
   `;
 
   createIconSet();
   hydrateImages();
   setupSmoothDetails(container);
+  setupRelatedScroller(container);
   hydrateSteamRelatedMetadata();
   hydrateRelatedProductsFallback(p);
 
@@ -3185,44 +3172,10 @@ document.addEventListener("DOMContentLoaded", async () => {
     button.classList.toggle("is-active", button.dataset.langOption === currentLang);
   });
 
-  $("#lang-toggle")?.addEventListener("click", (event) => {
-    event.stopPropagation();
-    toggleLanguageMenu();
-  });
-
   $("#language-popover")?.addEventListener("click", (event) => {
     event.stopPropagation();
     const button = event.target.closest("[data-lang-option]");
     if (button) selectLanguage(button.dataset.langOption);
-  });
-
-  $("#open-notifications")?.addEventListener("click", (event) => {
-    event.stopPropagation();
-    toggleNotificationMenu();
-  });
-
-  $("#topbar-search-input")?.addEventListener("input", (event) => {
-    renderSearchSuggestions(event.currentTarget.value);
-  });
-
-  $("#topbar-search-input")?.addEventListener("focus", (event) => {
-    renderSearchSuggestions(event.currentTarget.value);
-  });
-
-  $("#topbar-search-form")?.addEventListener("submit", (event) => {
-    event.preventDefault();
-    submitTopbarSearch();
-  });
-
-  $("#topbar-search-toggle")?.addEventListener("click", () => {
-    const input = $("#topbar-search-input");
-    if (!input) return;
-    if (document.activeElement !== input) {
-      input.focus();
-      renderSearchSuggestions(input.value);
-      return;
-    }
-    submitTopbarSearch();
   });
 
   $("#close-order")?.addEventListener("click", () => $("#order-dialog")?.close());
@@ -3241,53 +3194,6 @@ document.addEventListener("DOMContentLoaded", async () => {
   $("#close-contact")?.addEventListener("click", () => $("#contact-dialog").close());
   $("#open-contact")?.addEventListener("click", (e) => { e.preventDefault(); $("#contact-dialog").showModal(); createIconSet(); });
   
-  $("#open-auth")?.addEventListener("click", (e) => {
-    e.stopPropagation();
-    closeLanguageMenu();
-    closeNotificationMenu();
-    if (e.currentTarget?.classList?.contains("is-auth-loading")) {
-      showToast("กำลังตรวจสอบบัญชี กรุณารอสักครู่", "info");
-      return;
-    }
-    if (window.OlafStore.currentUser()) {
-      const popover = document.querySelector("#user-popover");
-      if (popover) {
-        popover.hidden = !popover.hidden;
-        document.querySelector("#open-auth").classList.toggle("is-active", !popover.hidden);
-        if (!popover.hidden) refreshTopbarPointBalance().catch(() => null);
-        syncProductOverlayState();
-      }
-    } else {
-      window.location.href = "login.html?return=" + encodeURIComponent(window.location.href);
-    }
-  });
-
-  document.addEventListener("click", (event) => {
-    if (!event.target.closest("#topbar-search-wrap")) {
-      hideSearchSuggestions();
-    }
-
-    if (!event.target.closest(".language-switcher")) {
-      closeLanguageMenu();
-    }
-
-    if (!event.target.closest(".notification-wrap")) {
-      closeNotificationMenu();
-    }
-
-    if (!event.target.closest(".user-popover-wrap")) {
-      closeUserPopover();
-    }
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      closeLanguageMenu();
-      closeNotificationMenu();
-      closeUserPopover();
-    }
-  });
-
   await authReady;
   updateAccountChrome();
 });

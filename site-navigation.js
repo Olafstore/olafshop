@@ -341,6 +341,7 @@
       setMobilePageScrollLock(false);
     },
     unlockMobileNavScroll: () => setMobilePageScrollLock(false),
+    refreshAccount: () => document.querySelectorAll(".topbar").forEach(syncHeaderAccountState),
     closeTopbarPopovers,
     positionTopbarPopover
   };
@@ -517,6 +518,33 @@
       }
     }
     if (needsIconRefresh) window.lucide?.createIcons?.();
+  }
+
+  function syncHeaderAccountState(header) {
+    if (!header) return;
+    const user = currentNavUser();
+    const button = header.querySelector("#open-auth");
+    const label = header.querySelector("#account-label");
+    const register = header.querySelector(".register-button");
+    if (!button) return;
+
+    button.classList.remove("is-auth-loading");
+    button.removeAttribute("aria-busy");
+    if (label) {
+      label.textContent = user
+        ? cleanDisplayText(user.displayName || user.username || user.email || "Member")
+        : "เข้าสู่ระบบ";
+    }
+    const currentIcon = button.querySelector("i, svg");
+    if (currentIcon) {
+      const icon = document.createElement("i");
+      icon.setAttribute("data-lucide", user ? "circle-user-round" : "log-in");
+      currentIcon.replaceWith(icon);
+    }
+    if (register) register.style.display = user ? "none" : "";
+    if (user) renderFallbackUserPopover(header.querySelector("#user-popover"), user);
+    ensureAccountButtonIcon(button);
+    window.lucide?.createIcons?.();
   }
 
   function setupAccountButtonIconGuard(header) {
@@ -724,7 +752,6 @@
 
     const shouldAnimate =
       !options.immediate &&
-      isMobileNavigationViewport() &&
       (!popover.hidden || popover.dataset.olafPopoverState === "open") &&
       (popover.classList.contains("topbar-popover-fixed") || popover.dataset.olafPopoverState === "open");
 
@@ -745,7 +772,7 @@
     };
 
     if (shouldAnimate) {
-      popoverCloseTimers.set(popover, window.setTimeout(finish, 420));
+      popoverCloseTimers.set(popover, window.setTimeout(finish, 260));
       return;
     }
 
@@ -1116,6 +1143,7 @@
       renderMainNav(nav);
       renderMobileDrawer(drawer);
       setupAccountButtonIconGuard(header);
+      syncHeaderAccountState(header);
     };
     const storeReady = window.OlafStore?.ready;
     if (storeReady && typeof storeReady.finally === "function") storeReady.finally(refreshNavForAuth);
@@ -1154,7 +1182,15 @@
   }
 
   function normalizedSearchValue(value = "") {
-    return cleanDisplayText(value).trim().toLowerCase();
+    return cleanDisplayText(value)
+      .normalize("NFKD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/[™®©]/g, "")
+      .replace(/&/g, " and ")
+      .replace(/[^a-z0-9\u0E00-\u0E7F]+/gi, " ")
+      .replace(/\s+/g, " ")
+      .trim()
+      .toLowerCase();
   }
 
   function productSearchHaystack(product = {}) {
@@ -1164,6 +1200,8 @@
       product.id,
       product.category,
       product.label,
+      product.steamAppId,
+      product.steam_app_id,
       ...(Array.isArray(product.tags) ? product.tags : [])
     ]
       .map(normalizedSearchValue)
@@ -1189,6 +1227,23 @@
     if (searchableProductsPromise) return searchableProductsPromise;
 
     searchableProductsPromise = (async () => {
+      const endpoints = [
+        "api/products-index?v=20260712-search-v81",
+        "api/products-index.json?v=20260712-search-v81",
+        "api/products.json?v=20260712-search-v81"
+      ];
+      for (const endpoint of endpoints) {
+        try {
+          const response = await fetch(endpoint, { cache: "default" });
+          if (!response.ok) continue;
+          const payload = await response.json();
+          const products = Array.isArray(payload) ? payload : Array.isArray(payload?.products) ? payload.products : [];
+          if (products.length) return products;
+        } catch (error) {
+          // Continue to the next compact catalog source.
+        }
+      }
+
       try {
         if (window.OlafProducts?.fetchActiveProducts) {
           const products = await window.OlafProducts.fetchActiveProducts();
@@ -1198,15 +1253,7 @@
         console.warn("Topbar search is using the local product catalog.", error);
       }
 
-      try {
-        const response = await fetch("api/products.json?v=20260710-thai-text-fix-v51", { cache: "no-store" });
-        if (!response.ok) return [];
-        const payload = await response.json();
-        return Array.isArray(payload) ? payload : Array.isArray(payload?.products) ? payload.products : [];
-      } catch (error) {
-        console.warn("Unable to load products for topbar search.", error);
-        return [];
-      }
+      return [];
     })();
 
     return searchableProductsPromise;
@@ -1215,12 +1262,13 @@
   function findSearchMatches(products, query, limit = 6) {
     const keyword = normalizedSearchValue(query);
     if (!keyword) return [];
+    const terms = keyword.split(" ").filter(Boolean);
 
     return products
       .map((product) => {
         const name = normalizedSearchValue(product?.name);
         const haystack = productSearchHaystack(product);
-        if (!haystack.includes(keyword)) return null;
+        if (!terms.every((term) => haystack.includes(term))) return null;
         return {
           product,
           score:
@@ -1614,7 +1662,31 @@
     update();
   }
 
+  function setupDialogMotion() {
+    if (window.__olafDialogMotionV81 || typeof HTMLDialogElement === "undefined") return;
+    window.__olafDialogMotionV81 = true;
+    const nativeClose = HTMLDialogElement.prototype.close;
+    HTMLDialogElement.prototype.close = function animatedDialogClose(returnValue) {
+      if (!this.open || this.classList.contains("is-closing") || window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches) {
+        nativeClose.call(this, returnValue);
+        return;
+      }
+      this.classList.add("is-closing");
+      window.setTimeout(() => {
+        this.classList.remove("is-closing");
+        if (this.open) nativeClose.call(this, returnValue);
+      }, 220);
+    };
+    document.addEventListener("cancel", (event) => {
+      const dialog = event.target;
+      if (!(dialog instanceof HTMLDialogElement) || !dialog.open) return;
+      event.preventDefault();
+      dialog.close();
+    }, true);
+  }
+
   function setupSiteNavigation() {
+    setupDialogMotion();
     replaceLegacyOrderLinks();
     syncMobileUserPopoverPortal();
     dedupeMobileNavigationLayers();
@@ -1627,6 +1699,7 @@
       setupMobileSearchController();
       setupFallbackTopbarControls(header);
       setupAccountButtonIconGuard(header);
+      syncHeaderAccountState(header);
     });
     syncMobileSourceNavVisibility();
     setupTopbarPopoverAnchoring();
@@ -1634,8 +1707,12 @@
     setTimeout(() => {
       syncMobileUserPopoverPortal();
       dedupeMobileNavigationLayers();
-      headers.forEach(setupAccountButtonIconGuard);
+      headers.forEach((header) => {
+        setupAccountButtonIconGuard(header);
+        syncHeaderAccountState(header);
+      });
     }, 600);
+    window.setTimeout(() => headers.forEach(syncHeaderAccountState), 1800);
 
     let cleanupQueued = false;
     const queueSingleUiCleanup = () => {
@@ -1646,7 +1723,12 @@
         syncMobileUserPopoverPortal();
         dedupeMobileNavigationLayers();
         syncMobileSourceNavVisibility();
-        headers.forEach((header) => ensureAccountButtonIcon(header.querySelector("#open-auth")));
+        headers.forEach((header) => {
+          ensureAccountButtonIcon(header.querySelector("#open-auth"));
+          if (header.querySelector("#open-auth")?.classList.contains("is-auth-loading")) {
+            syncHeaderAccountState(header);
+          }
+        });
       });
     };
     new MutationObserver(queueSingleUiCleanup).observe(document.body, {

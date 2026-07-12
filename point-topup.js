@@ -38,6 +38,17 @@
     window.lucide?.createIcons?.();
   }
 
+  function withTimeout(promise, timeoutMs, fallback = null) {
+    if (!promise || typeof promise.then !== "function") return Promise.resolve(fallback);
+    let timer;
+    return Promise.race([
+      promise,
+      new Promise((resolve) => {
+        timer = window.setTimeout(() => resolve(fallback), timeoutMs);
+      })
+    ]).finally(() => window.clearTimeout(timer));
+  }
+
   function showToast(message, type = "success", duration = 4200) {
     if (window.showToast) return window.showToast(message, type, duration);
     const toast = document.createElement("div");
@@ -520,13 +531,26 @@
 
   async function init() {
     createIcons();
-    await window.OlafStore?.ready?.catch?.(() => null);
-    state.user = window.OlafStore?.currentUser?.() || (await window.OlafSupabaseAuth?.getCurrentUser?.().catch(() => null));
-    state.settings = await window.OlafStoreSettings?.fetchStoreSettings?.().catch(() => ({})) || {};
     syncPreset(100);
-    renderAuthState();
-    await loadBalance();
     bindEvents();
+    renderAuthState();
+    setStatus("กำลังตรวจสอบบัญชีและเตรียมช่องทางชำระเงิน", "info", "loader-circle");
+
+    await withTimeout(window.OlafStore?.ready?.catch?.(() => null), 1800, null);
+    state.user = window.OlafStore?.currentUser?.() || await withTimeout(
+      window.OlafSupabaseAuth?.getCurrentUser?.().catch(() => null),
+      1800,
+      null
+    );
+    window.OlafNavigation?.refreshAccount?.();
+    renderAuthState();
+
+    state.settings = await withTimeout(
+      window.OlafStoreSettings?.fetchStoreSettings?.().catch(() => ({})),
+      2200,
+      {}
+    ) || {};
+    await loadBalance();
     setStatus("เลือกยอดที่ต้องการเติม แล้วระบบจะเปิด Popup ชำระเงินแบบเดียวกับหน้าสินค้า", "info", "sparkles");
     createIcons();
   }

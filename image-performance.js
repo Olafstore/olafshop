@@ -73,10 +73,16 @@
     const srcset = options.srcset ? ` srcset="${escapeAttr(options.srcset)}"` : "";
     const width = options.width ? ` width="${escapeAttr(options.width)}"` : "";
     const height = options.height ? ` height="${escapeAttr(options.height)}"` : "";
+    const fallbacks = Array.isArray(options.fallbacks)
+      ? [...new Set(options.fallbacks.map((value) => String(value || "").trim()).filter(Boolean))]
+      : [];
+    const fallbackAttr = fallbacks.length
+      ? ` data-image-fallbacks="${escapeAttr(JSON.stringify(fallbacks))}"`
+      : "";
     const source = url || FALLBACK_IMAGE;
     if (priority) preload(source, { priority: true });
     else preconnect(source);
-    return `${className} src="${escapeAttr(source)}" alt="${escapeAttr(alt)}" loading="${loading}" decoding="async" fetchpriority="${fetchPriority}"${width}${height}${sizes}${srcset} data-fast-img`;
+    return `${className} src="${escapeAttr(source)}" alt="${escapeAttr(alt)}" loading="${loading}" decoding="async" fetchpriority="${fetchPriority}"${width}${height}${sizes}${srcset}${fallbackAttr} data-fast-img`;
   }
 
   function bgAttrs(src) {

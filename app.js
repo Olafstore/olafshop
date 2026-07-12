@@ -76,7 +76,9 @@ const fallbackPayload = {
 };
 
 const appConfig = {
-  productsEndpoint: "api/products-index.json?v=20260711-fast-index-v74",
+  productsEndpoint: ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname)
+    ? "api/products-index.json?v=20260712-fast-index-v84"
+    : "api/products-index?v=20260712-fast-index-v84",
   paymentEndpoint: "",
   serviceFee: 0,
   promptPayId: "0812345678",
@@ -578,8 +580,21 @@ function getDisplayTags(product, limit = 5) {
   return [...new Set([...translated, ...fallback])].slice(0, limit);
 }
 
+function normalizeCatalogSearch(value = "") {
+  return cleanDisplayText(value)
+    .normalize("NFKD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/[™®©]/g, "")
+    .replace(/&/g, " and ")
+    .replace(/[^a-z0-9\u0E00-\u0E7F]+/gi, " ")
+    .replace(/\s+/g, " ")
+    .trim()
+    .toLowerCase();
+}
+
 function filteredProducts() {
-  const query = state.query.trim().toLowerCase();
+  const query = normalizeCatalogSearch(state.query);
+  const queryTerms = query.split(" ").filter(Boolean);
   let result = state.products.filter((product) => {
     const matchesCategory =
       state.selectedCategory === "all" || product.category === state.selectedCategory;
@@ -590,18 +605,18 @@ function filteredProducts() {
     else if (state.priceFilter === "50to100") matchesPrice = product.price >= 50 && product.price <= 100;
     else if (state.priceFilter === "over100") matchesPrice = product.price > 100;
 
-    const searchable = [
+    const searchable = normalizeCatalogSearch([
       product.name,
       product.publisher,
+      product.id,
       product.category,
       product.label,
       product.rating,
       ...(product.tags ?? []),
       ...getDisplayTags(product, 5)
-    ]
-      .join(" ")
-      .toLowerCase();
-    return matchesCategory && matchesStock && matchesPrice && searchable.includes(query);
+    ].join(" "));
+    const matchesQuery = !queryTerms.length || queryTerms.every((term) => searchable.includes(term));
+    return matchesCategory && matchesStock && matchesPrice && matchesQuery;
   });
 
   if (state.sortBy === "priceAsc") {

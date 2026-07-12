@@ -516,10 +516,7 @@ function purchaseButtonCopy(product, canBuy) {
 }
 
 function purchaseButtonIcon(product = currentProduct) {
-  if (isWindowsProduct(product)) return "credit-card";
-  if (isMinecraftProduct(product)) return "clock-3";
-  if (isRockstarProduct(product)) return "package-check";
-  return "receipt-text";
+  return "shopping-cart";
 }
 
 function getDiscount(p) {
@@ -1448,8 +1445,10 @@ function productImageFallbacks(product = {}, primary = "") {
   const appId = steamAppIdForProduct(product);
   return [...new Set([
     product.image,
-    appId ? `https://cdn.cloudflare.steamstatic.com/steam/apps/${appId}/header.jpg` : "",
+    appId ? `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appId}/capsule_616x353.jpg` : "",
     appId ? `https://shared.akamai.steamstatic.com/store_item_assets/steam/apps/${appId}/header.jpg` : "",
+    appId ? `https://cdn.cloudflare.steamstatic.com/steam/apps/${appId}/header.jpg` : "",
+    ...(Array.isArray(product.gallery) ? product.gallery : []),
     product.heroImage,
     window.OlafImages?.fallbackImage
   ].filter((source) => source && source !== primary))];

@@ -151,6 +151,7 @@ let steamSpotlightIndex = 0;
 let steamDiscoveryMode = "top";
 let steamDiscoveryPreviewId = "";
 let steamStorefrontTimer = null;
+const steamSpotlightSessionSeed = Math.floor(Math.random() * 0x7fffffff);
 
 const selectors = {
   apiStatus: "#api-status",
@@ -1654,14 +1655,18 @@ function steamStorefrontProducts() {
 function steamSpotlightProducts() {
   return steamStorefrontProducts()
     .filter((product) => product.stock > 0)
-    .sort((a, b) => {
-      const featuredDelta = Number(b.featured === true) - Number(a.featured === true);
-      if (featuredDelta) return featuredDelta;
-      const discountDelta = getDiscount(b) - getDiscount(a);
-      if (discountDelta) return discountDelta;
-      return Number(b.sold || 0) - Number(a.sold || 0);
-    })
+    .sort((a, b) => steamSpotlightRandomScore(a) - steamSpotlightRandomScore(b))
     .slice(0, 7);
+}
+
+function steamSpotlightRandomScore(product) {
+  const value = `${steamSpotlightSessionSeed}:${product.id}:${product.name}`;
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
 }
 
 function steamDealsProducts() {

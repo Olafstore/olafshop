@@ -13,7 +13,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260713-qr-editorial-v97" />
+  <link rel="stylesheet" href="styles.css?v=20260713-checkout-v98" />
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
@@ -25,7 +25,7 @@
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
   <script src="site-navigation.js?v=20260713-media-brand-v89" defer></script>
   <script src="extra-products.js?v=20260712-admin-authority-v86" defer></script>
-  <script src="product.js?v=20260713-activity-payment-v93" defer></script>
+  <script src="product.js?v=20260713-checkout-v98" defer></script>
 </head>
 
 <body class="product-detail-page">
@@ -159,18 +159,18 @@
     </footer>
   </div>
 
-  <!-- Confirm Order Modal (Premium) -->
-  <dialog class="premium-dialog checkout-order-dialog" id="order-dialog">
-    <div class="premium-dialog-inner">
+  <!-- Unified checkout surface; existing order/payment selectors remain intact. -->
+  <dialog class="premium-dialog checkout-order-dialog olaf-checkout-v98" id="order-dialog">
+    <div class="premium-dialog-inner olaf-checkout-shell">
       <button class="dialog-close" id="close-order" type="button" aria-label="ปิดคำสั่งซื้อ">
         <i data-lucide="x"></i>
       </button>
-      <div class="premium-dialog-header">
-        <div class="premium-icon-box"><i data-lucide="shield-check"></i></div>
+      <div class="premium-dialog-header olaf-checkout-hero">
+        <div class="premium-icon-box"><i data-lucide="circle-check-big"></i></div>
         <h2>ยืนยันคำสั่งซื้อ</h2>
-        <p>ตรวจสอบรายละเอียดและเลือกช่องทางชำระเงิน</p>
+        <p class="olaf-checkout-intro">ตรวจสอบรายละเอียดก่อนเลือกช่องทางชำระเงิน</p>
         <div class="order-ref-number" data-checkout-order-container hidden>
-          หมายเลขคำสั่งซื้อ: <span data-checkout-order-number>#ORDER_NUMBER</span>
+          หมายเลขคำสั่งซื้อ: <strong data-checkout-order-number>#ORDER_NUMBER</strong>
         </div>
       </div>
 
@@ -179,28 +179,41 @@
         <input type="hidden" name="customerName" value="" data-checkout-customer-name />
         <input type="hidden" name="contact" value="" data-checkout-contact />
 
-        <!-- Product Summary Card -->
-        <div class="premium-product-card">
-          <div class="premium-product-thumb">
+        <section class="premium-product-card olaf-checkout-product">
+          <div class="premium-product-thumb" aria-hidden="true">
             <img alt="สินค้า" loading="lazy" decoding="async" data-checkout-product-image />
           </div>
           <div class="premium-product-info">
+            <span class="olaf-checkout-eyebrow">รายละเอียดสินค้า</span>
             <h3 data-checkout-product-name>ชื่อสินค้า</h3>
-            <span class="premium-product-label" data-checkout-product-label>ประเภท: </span>
-            <span class="premium-product-qty" data-checkout-product-qty>จำนวน: 1</span>
+            <div class="olaf-checkout-product-meta">
+              <span class="premium-product-label" data-checkout-product-label>ประเภท: </span>
+              <span class="premium-product-qty" data-checkout-product-qty>จำนวน: 1</span>
+            </div>
           </div>
-          <div class="premium-product-price" hidden>
+          <div class="premium-product-price">
             <strong data-checkout-product-price>฿0</strong>
           </div>
-        </div>
+        </section>
+
+        <section class="olaf-checkout-meta-grid">
+          <article class="olaf-checkout-meta-card">
+            <span>สถานะการชำระเงิน</span>
+            <strong class="olaf-checkout-pending"><i data-lucide="clock-3"></i> กำลังรอชำระเงิน</strong>
+          </article>
+          <article class="olaf-checkout-meta-card">
+            <span>วันที่สั่งซื้อ</span>
+            <strong data-checkout-created-at>-</strong>
+          </article>
+        </section>
 
         <!-- Order Summary -->
-        <div class="premium-summary-card">
-          <div class="premium-summary-row" hidden>
+        <div class="premium-summary-card olaf-checkout-logic-summary" hidden>
+          <div class="premium-summary-row">
             <span>ราคาสินค้า</span>
             <strong data-checkout-price-subtotal>฿0</strong>
           </div>
-          <div class="premium-summary-row" hidden>
+          <div class="premium-summary-row">
             <span>ค่าธรรมเนียม (VAT)</span>
             <strong data-checkout-fee>฿0</strong>
           </div>
@@ -210,13 +223,17 @@
           </div>
         </div>
 
-        <div class="premium-points-card" data-checkout-points-card hidden>
+        <div class="premium-points-card olaf-checkout-points" data-checkout-points-card>
+          <div class="olaf-checkout-points-heading">
+            <span><i data-lucide="coins"></i> ยอด Points ของคุณ</span>
+            <strong><b data-checkout-points-balance>0</b> P</strong>
+          </div>
           <label class="premium-points-toggle">
             <input type="checkbox" data-checkout-use-points />
             <span class="premium-points-icon"><i data-lucide="coins"></i></span>
             <span class="premium-points-copy">
               <strong>ใช้ Point ในเว็บลดราคา</strong>
-              <small>Point คงเหลือ <b data-checkout-points-balance>0</b> Point</small>
+              <small data-checkout-points-note>1 Point = 1 บาท</small>
             </span>
             <span class="premium-points-switch" aria-hidden="true"></span>
           </label>
@@ -228,104 +245,111 @@
             <span>ยอดหลังใช้ Point</span>
             <b data-checkout-points-final>฿0</b>
           </div>
-          <p data-checkout-points-note>1 Point = 1 บาท ใช้ลดราคาได้สูงสุดตามยอดคำสั่งซื้อ</p>
         </div>
 
-        <!-- Payment Method Selection -->
         <div class="premium-payment-section" data-checkout-payment-section>
           <div class="premium-payment-header">
-            <span>เลือกช่องทางการชำระเงิน</span>
-            <span class="payment-line"></span>
+            <span>หรือชำระผ่านช่องทางของร้าน</span>
           </div>
-
+          <h3 class="olaf-checkout-payment-title">เลือกช่องทางการชำระเงิน</h3>
           <div class="premium-payment-grid">
             <label class="premium-payment-card">
               <input type="radio" name="paymentMethod" value="promptpay" checked />
               <div class="payment-card-content">
                 <i data-lucide="qr-code"></i>
-                <strong>สแกนจ่ายพร้อมเพย์</strong>
-                <span>แอปธนาคาร</span>
+                <strong>สแกนจ่าย</strong>
+                <span>พร้อมเพย์</span>
               </div>
               <div class="payment-check"><i data-lucide="check-circle-2"></i></div>
             </label>
             <label class="premium-payment-card">
               <input type="radio" name="paymentMethod" value="wallet" />
               <div class="payment-card-content">
-                <i data-lucide="wallet"></i>
-                <strong>ทรูมันนี่วอลเล็ท</strong>
-                <span>TrueMoney</span>
+                <i data-lucide="wallet-cards"></i>
+                <strong>TrueMoney</strong>
+                <span>Wallet</span>
               </div>
               <div class="payment-check"><i data-lucide="check-circle-2"></i></div>
             </label>
           </div>
         </div>
 
-        <!-- Action Buttons -->
         <div class="premium-actions">
           <button class="primary-button submit-order-btn" id="submit-order" type="submit">
-            <i data-lucide="receipt-text"></i>
-            <span>สร้างคำสั่งซื้อ</span>
+            <i data-lucide="credit-card"></i>
+            <span>ดำเนินการชำระเงิน</span>
           </button>
           <button class="secondary-button cancel-order-btn" type="button" data-close-dialog>
-            กลับไปดูสินค้า
+            ย้อนกลับ
           </button>
         </div>
       </form>
     </div>
   </dialog>
 
-  <!-- QR Payment Modal (Premium) -->
-  <dialog class="premium-dialog qr-payment-dialog" id="qr-dialog">
-    <div class="premium-dialog-inner">
+  <!-- QR uses the same checkout surface and keeps Admin QR/payment logic unchanged. -->
+  <dialog class="premium-dialog qr-payment-dialog olaf-checkout-v98" id="qr-dialog">
+    <div class="premium-dialog-inner olaf-checkout-shell">
       <button class="dialog-close" type="button" aria-label="ปิด" data-qr-close-btn>
         <i data-lucide="x"></i>
       </button>
-      <div class="premium-dialog-header">
-        <div class="premium-icon-box qr-icon"><i data-lucide="scan-line"></i></div>
-        <h2>สแกน QR เพื่อชำระเงิน</h2>
-        <p>ชำระเงินตามยอดที่แสดง แล้วแนบสลิปเพื่อรอตรวจสอบ</p>
-      </div>
-
       <div class="qr-payment-content">
-        <div class="qr-method-badge" data-qr-method-badge>
-          <i data-lucide="qr-code"></i> QR พร้อมเพย์
+        <div class="premium-dialog-header olaf-checkout-hero">
+          <div class="premium-icon-box qr-icon"><i data-lucide="circle-check-big"></i></div>
+          <h2>ยืนยันคำสั่งซื้อ</h2>
+          <p>หมายเลขคำสั่งซื้อ: <strong data-qr-order-id>#ORDER_ID</strong></p>
         </div>
 
-        <div class="qr-image-frame">
-          <div class="qr-loading" data-qr-loading>กำลังโหลด QR สำหรับชำระเงิน...</div>
-          <img alt="คิวอาร์สำหรับชำระเงิน" class="qr-image" loading="eager" decoding="async" fetchpriority="high" data-qr-image hidden />
-          <div class="qr-unavailable" data-qr-unavailable hidden>ยังไม่พบ QR สำหรับช่องทางนี้</div>
-        </div>
-
-        <div class="qr-order-details">
-          <div class="qr-detail-row">
-            <span>หมายเลขคำสั่งซื้อ</span>
-            <strong data-qr-order-id>#ORDER_ID</strong>
+        <section class="premium-product-card olaf-checkout-product olaf-checkout-qr-product">
+          <div class="premium-product-info">
+            <span class="olaf-checkout-eyebrow">รายละเอียดสินค้า</span>
+            <h3 data-qr-product-name>ชื่อสินค้า</h3>
+            <span class="premium-product-label" data-qr-product-label>ประเภท: -</span>
           </div>
-          <div class="qr-detail-row">
-            <span>ยอดชำระ</span>
+          <div class="premium-product-price"><strong data-qr-product-price>฿0</strong></div>
+        </section>
+
+        <section class="olaf-checkout-meta-grid">
+          <article class="olaf-checkout-meta-card">
+            <span>สถานะการชำระเงิน</span>
+            <strong class="qr-status-badge"><i data-lucide="clock-3"></i> รอการชำระเงิน</strong>
+          </article>
+          <article class="olaf-checkout-meta-card">
+            <span>วันที่สั่งซื้อ</span>
+            <strong data-qr-created-at>-</strong>
+          </article>
+        </section>
+
+        <section class="olaf-checkout-qr-card">
+          <header>
+            <h3>สแกน QR Code เพื่อชำระเงิน</h3>
+            <p>กรุณาสแกนผ่านแอปธนาคารของคุณ</p>
+          </header>
+          <div class="qr-method-badge" data-qr-method-badge>
+            <i data-lucide="qr-code"></i> QR พร้อมเพย์
+          </div>
+          <div class="qr-image-frame">
+            <div class="qr-loading" data-qr-loading>
+              <i data-lucide="loader-circle"></i>
+              <span>กำลังสร้าง QR Code...</span>
+            </div>
+            <img alt="คิวอาร์สำหรับชำระเงิน" class="qr-image" loading="eager" decoding="async" fetchpriority="high" data-qr-image hidden />
+            <div class="qr-unavailable" data-qr-unavailable hidden>ยังไม่พบ QR สำหรับช่องทางนี้</div>
+          </div>
+          <div class="olaf-checkout-qr-total">
+            <span>ยอดชำระทั้งหมด</span>
             <strong class="qr-total-highlight" data-qr-total>฿0</strong>
           </div>
-        </div>
-
-        <div class="qr-store-note" data-qr-note style="width: 100%;"></div>
-
-        <div class="qr-status-badge">
-          <i data-lucide="clock"></i> รอการชำระเงิน
-        </div>
-      </div>
-
-      <div class="premium-actions" style="padding: 0 24px 24px;">
-        <button class="primary-button submit-order-btn" type="button" data-qr-upload-slip-btn>
-          <i data-lucide="upload-cloud"></i>
-          <span>แนบสลิปการชำระเงิน</span>
-        </button>
-        <button class="secondary-button cancel-order-btn" type="button" data-qr-view-order-btn>
-          ดูคำสั่งซื้อ
-        </button>
-        <button class="text-button text-danger" type="button" data-qr-cancel-btn style="margin-top: 8px;">
-          ยกเลิกรายการ
-        </button>
+          <div class="qr-store-note" data-qr-note></div>
+          <div class="premium-actions">
+            <button class="primary-button submit-order-btn" type="button" data-qr-upload-slip-btn>
+              <i data-lucide="upload-cloud"></i>
+              <span>แนบสลิปการชำระเงิน</span>
+            </button>
+            <button class="secondary-button cancel-order-btn" type="button" data-qr-view-order-btn>ดูคำสั่งซื้อ</button>
+            <button class="text-button text-danger" type="button" data-qr-cancel-btn>ยกเลิกรายการ</button>
+          </div>
+        </section>
       </div>
     </div>
   </dialog>

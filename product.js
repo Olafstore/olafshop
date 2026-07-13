@@ -226,6 +226,37 @@ function formatOrderReference(order) {
   return reference.startsWith("#") ? reference : `#${reference}`;
 }
 
+function formatCheckoutDateTime(value = null) {
+  const date = new Date(value || Date.now());
+  const safeDate = Number.isNaN(date.getTime()) ? new Date() : date;
+  return new Intl.DateTimeFormat("th-TH", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+    hourCycle: "h23"
+  }).format(safeDate);
+}
+
+function checkoutProductLabel(product, purchase) {
+  const label = purchase?.hasPackage
+    ? `แพ็คเกจ: ${purchase.packageTitle}`
+    : product?.label || getCategoryLabel(product?.category);
+  return label ? `ประเภท: ${cleanDisplayText(label)}` : "ประเภท: -";
+}
+
+function syncQrCheckoutSummary(order = null, totalFallback = 0) {
+  const product = currentProduct;
+  const purchase = product ? getPurchaseOption(product) : null;
+  const amount = Number(order?.total ?? totalFallback ?? 0);
+  setTextContent("[data-qr-product-name]", product ? getDisplayProductName(product) : "กำลังเตรียมสินค้า");
+  setTextContent("[data-qr-product-label]", checkoutProductLabel(product, purchase));
+  setTextContent("[data-qr-product-price]", formatPrice(Math.max(amount, 0)));
+  setTextContent("[data-qr-created-at]", formatCheckoutDateTime(order?.createdAt || order?.created_at));
+}
+
 function productImageForCheckout(product) {
   if (!product) return "";
   if (product.image) return product.image;
@@ -2225,15 +2256,22 @@ function renderCheckoutPoints() {
   checkoutPointState.pointsToUse = discount;
 
   if (card) {
-    card.hidden = !hasPoints;
+    card.hidden = false;
     card.classList.toggle("is-active", Boolean(checkoutPointState.enabled && discount > 0));
+    card.classList.toggle("is-unavailable", !hasPoints);
   }
-  if (checkbox) checkbox.checked = checkoutPointState.enabled && hasPoints;
+  if (!hasPoints) checkoutPointState.enabled = false;
+  if (checkbox) {
+    checkbox.checked = checkoutPointState.enabled && hasPoints;
+    checkbox.disabled = !hasPoints;
+  }
   if (balanceEl) balanceEl.textContent = formatPointAmount(balance);
   if (discountEl) discountEl.textContent = `-${formatPrice(discount)}`;
   if (finalEl) finalEl.textContent = formatPrice(finalTotal);
   if (noteEl) {
-    noteEl.textContent = finalTotal <= 0 && discount > 0
+    noteEl.textContent = !hasPoints
+      ? `Points ไม่เพียงพอ (ต้องการ ${formatPointAmount(totalBeforePoints)} Point)`
+      : finalTotal <= 0 && discount > 0
       ? "Point ครอบคลุมยอดทั้งหมด ระบบจะยืนยันออเดอร์ทันทีโดยไม่ต้องแนบสลิป"
       : discount > 0
         ? `ใช้ ${formatPointAmount(discount)} Point ลดราคา เหลือยอดชำระ ${formatPrice(finalTotal)}`
@@ -2262,6 +2300,41 @@ async function hydrateCheckoutPoints() {
     checkoutPointState.balance = 0;
   }
   renderCheckoutPoints();
+}
+
+const checkoutOrderDialogCloseTimers = new WeakMap();
+
+function setCheckoutOrderDialogOpen(dialog, open = true, { immediate = false } = {}) {
+  if (!dialog) return;
+  const pendingTimer = checkoutOrderDialogCloseTimers.get(dialog);
+  if (pendingTimer) {
+    window.clearTimeout(pendingTimer);
+    checkoutOrderDialogCloseTimers.delete(dialog);
+  }
+
+  if (open) {
+    dialog.classList.remove("is-closing");
+    if (!dialog.open) dialog.showModal();
+    syncProductOverlayState();
+    return;
+  }
+
+  if (!dialog.open) return;
+  if (immediate) {
+    dialog.classList.remove("is-closing");
+    dialog.close();
+    syncProductOverlayState();
+    return;
+  }
+
+  dialog.classList.add("is-closing");
+  const timer = window.setTimeout(() => {
+    if (dialog.open) dialog.close();
+    dialog.classList.remove("is-closing");
+    checkoutOrderDialogCloseTimers.delete(dialog);
+    syncProductOverlayState();
+  }, 210);
+  checkoutOrderDialogCloseTimers.set(dialog, timer);
 }
 
 
@@ -2304,6 +2377,7 @@ function openOrderForm() {
   setTextContent("[data-checkout-price-subtotal]", formatPrice(subtotal));
   setTextContent("[data-checkout-fee]", formatPrice(fee));
   setTextContent("[data-checkout-total]", formatPrice(total));
+  setTextContent("[data-checkout-created-at]", formatCheckoutDateTime());
   checkoutPointState = {
     balance: 0,
     enabled: false,
@@ -2338,7 +2412,7 @@ function openOrderForm() {
     form.dataset.checkoutBound = "true";
   }
 
-  if (!dialog.open) dialog.showModal();
+  setCheckoutOrderDialogOpen(dialog, true);
   createIconSet();
 }
 
@@ -2418,13 +2492,12 @@ async function submitOrder(formData) {
   const purchase = getPurchaseOption(p);
   const submitButton = $("#submit-order");
   const originalHtml = submitButton?.innerHTML || "";
-  const mobilePaymentFlow = isMobilePaymentView();
   if (submitButton) {
     submitButton.disabled = true;
     submitButton.innerHTML = '<i data-lucide="loader-circle"></i> กำลังสร้างออเดอร์...';
     createIconSet();
   }
-  if (mobilePaymentFlow) showDirectOrderProcessingPopup();
+  showDirectOrderProcessingPopup();
 
   try {
     if (!window.OlafOrders?.createOrder) throw new Error("Supabase order client is not ready");
@@ -2441,9 +2514,9 @@ async function submitOrder(formData) {
     setTextContent("[data-checkout-order-number]", formatOrderReference(savedOrder));
     const orderNumberWrap = $("[data-checkout-order-container]");
     if (orderNumberWrap) orderNumberWrap.hidden = false;
-    $("#order-dialog")?.close();
+    setCheckoutOrderDialogOpen($("#order-dialog"), false, { immediate: true });
     if (Number(savedOrder?.total || 0) <= 0 || savedOrder?.paymentStatus === "verified") {
-      if (mobilePaymentFlow && $("#qr-dialog")?.open) setProductQrDialogOpen($("#qr-dialog"), false);
+      if ($("#qr-dialog")?.open) setProductQrDialogOpen($("#qr-dialog"), false);
       showToast(
         savedOrder?.status === "delivered"
           ? "ใช้ Point สั่งซื้อสำเร็จ และจัดส่งสินค้า Offline แล้ว"
@@ -2461,7 +2534,7 @@ async function submitOrder(formData) {
     showToast("สร้างคำสั่งซื้อแล้ว กรุณาชำระเงินและแนบสลิป", "payment", 5000);
     return;
   } catch (error) {
-    if (mobilePaymentFlow && $("#qr-dialog")?.open && !currentQrOrder) setProductQrDialogOpen($("#qr-dialog"), false);
+    if ($("#qr-dialog")?.open && !currentQrOrder) setProductQrDialogOpen($("#qr-dialog"), false);
     showToast(orderErrorMessage(error), "error", 5000);
   } finally {
     if (submitButton) {
@@ -2606,7 +2679,7 @@ function setMobilePaymentStage(dialog, stage) {
   dialog.dataset.paymentStage = stage;
   syncProductOverlayState();
   const panel = dialog.querySelector(".qr-payment-content");
-  if (!isMobilePaymentView() || !panel) return;
+  if (!panel) return;
   panel.classList.remove("is-stage-transitioning");
   window.requestAnimationFrame(() => panel.classList.add("is-stage-transitioning"));
   clearTimeout(dialog._mobilePaymentPopTimer);
@@ -2616,14 +2689,15 @@ function setMobilePaymentStage(dialog, stage) {
 }
 
 function showDirectOrderProcessingPopup() {
-  if (!isMobilePaymentView()) return;
   const orderDialog = $("#order-dialog");
   const dialog = $("#qr-dialog");
   if (!dialog) return;
-  if (orderDialog?.open) orderDialog.close();
+  if (orderDialog?.open) setCheckoutOrderDialogOpen(orderDialog, false, { immediate: true });
   currentQrOrder = null;
   setTextContent("[data-qr-order-id]", "กำลังสร้างคำสั่งซื้อ");
-  setTextContent("[data-qr-total]", formatPrice(Math.max(checkoutPointState.totalBeforePoints - checkoutPointState.pointsToUse, 0)));
+  const checkoutTotal = Math.max(checkoutPointState.totalBeforePoints - checkoutPointState.pointsToUse, 0);
+  setTextContent("[data-qr-total]", formatPrice(checkoutTotal));
+  syncQrCheckoutSummary(null, checkoutTotal);
   const methodBadge = $("[data-qr-method-badge]");
   if (methodBadge) methodBadge.innerHTML = `<i data-lucide="loader-circle"></i> กำลังเตรียม QR`;
   const loading = $("[data-qr-loading]");
@@ -2675,6 +2749,7 @@ function showPaymentResult(order) {
 
   setTextContent("[data-qr-order-id]", formatOrderReference(order));
   setTextContent("[data-qr-total]", formatPrice(order.total));
+  syncQrCheckoutSummary(order, order.total);
   const status = $(".qr-status-badge");
   if (status) status.innerHTML = `<i data-lucide="clock"></i> รอการชำระเงิน`;
 
@@ -3231,9 +3306,20 @@ document.addEventListener("DOMContentLoaded", async () => {
     if (button) selectLanguage(button.dataset.langOption);
   });
 
-  $("#close-order")?.addEventListener("click", () => $("#order-dialog")?.close());
+  $("#close-order")?.addEventListener("click", () => setCheckoutOrderDialogOpen($("#order-dialog"), false));
   document.querySelectorAll("[data-close-dialog]").forEach((button) => {
-    button.addEventListener("click", () => button.closest("dialog")?.close());
+    button.addEventListener("click", () => {
+      const dialog = button.closest("dialog");
+      if (dialog?.id === "order-dialog") {
+        setCheckoutOrderDialogOpen(dialog, false);
+        return;
+      }
+      dialog?.close();
+    });
+  });
+  $("#order-dialog")?.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    setCheckoutOrderDialogOpen(event.currentTarget, false);
   });
   $("[data-qr-close-btn]")?.addEventListener("click", () => setProductQrDialogOpen($("#qr-dialog"), false));
   $("#qr-dialog")?.addEventListener("cancel", (event) => {

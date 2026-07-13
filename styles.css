@@ -34999,3 +34999,1019 @@ dialog.qr-payment-dialog [hidden] {
     transition-duration: 1ms !important;
   }
 }
+
+/* v98 — unified product checkout. This namespace is authoritative and prevents
+   legacy cart/payment surfaces from changing the product purchase dialog. */
+dialog.olaf-checkout-v98,
+dialog.olaf-checkout-v98 *,
+dialog.olaf-checkout-v98 *::before,
+dialog.olaf-checkout-v98 *::after {
+  box-sizing: border-box;
+}
+
+dialog.olaf-checkout-v98[open],
+dialog.olaf-checkout-v98.qr-payment-dialog[open],
+dialog.olaf-checkout-v98.qr-payment-dialog[open].is-mobile-payment-pop {
+  position: fixed !important;
+  inset: 0 !important;
+  width: min(620px, calc(100vw - 32px)) !important;
+  max-width: calc(100vw - 32px) !important;
+  height: fit-content !important;
+  max-height: calc(100dvh - 28px) !important;
+  margin: auto !important;
+  padding: 0 !important;
+  overflow: visible !important;
+  border: 0 !important;
+  border-radius: 22px !important;
+  background: transparent !important;
+  transform: none !important;
+  animation: none !important;
+  color: #f8fbff !important;
+}
+
+dialog.olaf-checkout-v98::backdrop {
+  background: rgba(0, 4, 16, 0.88) !important;
+  backdrop-filter: blur(18px) saturate(1.05) !important;
+  -webkit-backdrop-filter: blur(18px) saturate(1.05) !important;
+  animation: olafCheckoutBackdropV98 260ms ease both;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-shell,
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-shell,
+dialog.olaf-checkout-v98.qr-payment-dialog[open].is-mobile-payment-pop .olaf-checkout-shell {
+  position: relative !important;
+  width: 100% !important;
+  max-width: none !important;
+  height: auto !important;
+  max-height: calc(100dvh - 28px) !important;
+  display: flex !important;
+  flex-direction: column !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(75, 112, 169, 0.34) !important;
+  border-radius: 22px !important;
+  color: #f8fbff !important;
+  background:
+    radial-gradient(circle at 50% -12%, rgba(37, 99, 235, 0.14), transparent 28%),
+    linear-gradient(165deg, #071126 0%, #03091a 74%, #050b1c 100%) !important;
+  box-shadow: 0 32px 100px rgba(0, 0, 0, 0.68), inset 0 1px 0 rgba(255, 255, 255, 0.035) !important;
+}
+
+dialog.checkout-order-dialog.olaf-checkout-v98[open] .olaf-checkout-shell {
+  animation: olafCheckoutEnterV98 430ms cubic-bezier(0.16, 1, 0.3, 1) both !important;
+}
+
+dialog.checkout-order-dialog.olaf-checkout-v98[open].is-closing .olaf-checkout-shell {
+  opacity: 0 !important;
+  transform: translate3d(0, 9px, 0) scale(0.988) !important;
+  animation: none !important;
+  transition: opacity 190ms ease, transform 210ms ease !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-shell {
+  opacity: 0 !important;
+  transform: translate3d(0, 14px, 0) scale(0.982) !important;
+  animation: none !important;
+  transition: opacity 230ms ease, transform 390ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog[open].is-visible .olaf-checkout-shell {
+  opacity: 1 !important;
+  transform: translate3d(0, 0, 0) scale(1) !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog[open].is-closing .olaf-checkout-shell {
+  opacity: 0 !important;
+  transform: translate3d(0, 9px, 0) scale(0.988) !important;
+  transition-duration: 190ms !important;
+}
+
+dialog.olaf-checkout-v98 .dialog-close {
+  position: absolute !important;
+  z-index: 20 !important;
+  top: 15px !important;
+  right: 15px !important;
+  width: 36px !important;
+  height: 36px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 1px solid rgba(148, 163, 184, 0.22) !important;
+  border-radius: 11px !important;
+  color: #aebbd0 !important;
+  background: rgba(15, 25, 48, 0.8) !important;
+  box-shadow: none !important;
+  transition: color 180ms ease, border-color 180ms ease, background 180ms ease, transform 180ms ease !important;
+}
+
+dialog.olaf-checkout-v98 .dialog-close:hover {
+  color: #fff !important;
+  border-color: rgba(96, 165, 250, 0.48) !important;
+  background: rgba(37, 99, 235, 0.2) !important;
+  transform: rotate(3deg) scale(1.04) !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-hero,
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-hero {
+  position: relative !important;
+  width: 100% !important;
+  flex: 0 0 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 5px !important;
+  margin: 0 !important;
+  padding: 20px 58px 16px !important;
+  border: 0 !important;
+  background: transparent !important;
+  text-align: center !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-hero .premium-icon-box,
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-hero .premium-icon-box.qr-icon {
+  width: 48px !important;
+  height: 48px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 0 0 4px !important;
+  border: 1px solid rgba(16, 185, 129, 0.19) !important;
+  border-radius: 50% !important;
+  color: #00e77f !important;
+  background: rgba(0, 214, 118, 0.09) !important;
+  box-shadow: 0 0 30px rgba(0, 231, 127, 0.08) !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-hero .premium-icon-box svg {
+  width: 25px !important;
+  height: 25px !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-hero h2,
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-hero h2 {
+  margin: 0 !important;
+  color: #fff !important;
+  font-size: clamp(1.28rem, 3vw, 1.62rem) !important;
+  font-weight: 600 !important;
+  line-height: 1.25 !important;
+  letter-spacing: -0.015em !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-hero p,
+dialog.olaf-checkout-v98 .order-ref-number,
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-hero p {
+  display: block !important;
+  grid-column: auto !important;
+  grid-row: auto !important;
+  margin: 0 !important;
+  color: #84a4d2 !important;
+  font-size: 0.72rem !important;
+  font-weight: 300 !important;
+  line-height: 1.45 !important;
+}
+
+dialog.olaf-checkout-v98 .order-ref-number strong,
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-hero strong {
+  color: #e9f2ff !important;
+  font-weight: 500 !important;
+  overflow-wrap: anywhere;
+}
+
+dialog.olaf-checkout-v98 .premium-checkout-form,
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-payment-content {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+  flex: 1 1 auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+  margin: 0 !important;
+  padding: 0 24px 22px !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  color: #f7faff !important;
+  background: transparent !important;
+  text-align: left !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-payment-content {
+  padding: 0 22px 22px !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-payment-content > .olaf-checkout-hero {
+  margin-inline: -22px !important;
+  width: calc(100% + 44px) !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-product,
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-product {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 112px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 18px !important;
+  margin: 0 !important;
+  padding: 17px 19px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(92, 124, 177, 0.3) !important;
+  border-radius: 14px !important;
+  background: rgba(3, 10, 27, 0.72) !important;
+  box-shadow: none !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-product .premium-product-thumb {
+  display: none !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-product .premium-product-info {
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 3px !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-eyebrow {
+  margin-bottom: 8px !important;
+  color: #fff !important;
+  font-size: 0.82rem !important;
+  font-weight: 500 !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-product .premium-product-info h3 {
+  width: 100% !important;
+  margin: 0 !important;
+  overflow-wrap: anywhere !important;
+  color: #fff !important;
+  font-size: clamp(0.9rem, 2.4vw, 1.02rem) !important;
+  font-weight: 500 !important;
+  line-height: 1.38 !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-product-meta {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 4px 10px !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-product .premium-product-label,
+dialog.olaf-checkout-v98 .olaf-checkout-product .premium-product-qty {
+  color: #79a3df !important;
+  font-size: 0.68rem !important;
+  font-weight: 300 !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-product .premium-product-price {
+  position: static !important;
+  display: block !important;
+  margin: 0 !important;
+  color: #4da0ff !important;
+  background: transparent !important;
+  font-size: 1.14rem !important;
+  font-weight: 600 !important;
+  white-space: nowrap !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-product .premium-product-price strong {
+  color: inherit !important;
+  font: inherit !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-meta-grid {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-meta-card {
+  min-width: 0 !important;
+  min-height: 82px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  padding: 14px 18px !important;
+  border: 1px solid rgba(92, 124, 177, 0.28) !important;
+  border-radius: 13px !important;
+  background: rgba(3, 10, 27, 0.62) !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-meta-card > span {
+  color: #7ea4d7 !important;
+  font-size: 0.68rem !important;
+  font-weight: 300 !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-meta-card > strong {
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+  color: #fff !important;
+  font-size: 0.75rem !important;
+  font-weight: 500 !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-pending,
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-status-badge {
+  width: auto !important;
+  min-height: 24px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 5px !important;
+  margin: 0 !important;
+  padding: 4px 9px !important;
+  border: 1px solid rgba(245, 158, 11, 0.18) !important;
+  border-radius: 999px !important;
+  color: #ffc400 !important;
+  background: rgba(245, 158, 11, 0.09) !important;
+  font-size: 0.67rem !important;
+  line-height: 1 !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-pending svg,
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-status-badge svg {
+  width: 12px !important;
+  height: 12px !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-logic-summary,
+dialog.olaf-checkout-v98 .olaf-checkout-logic-summary[hidden] {
+  display: none !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-points {
+  width: 100% !important;
+  display: block !important;
+  margin: 6px 0 0 !important;
+  padding: 12px 13px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(139, 92, 246, 0.55) !important;
+  border-radius: 13px !important;
+  background: linear-gradient(120deg, rgba(69, 20, 116, 0.26), rgba(18, 36, 94, 0.52)) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025) !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-points-heading {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  margin-bottom: 10px !important;
+  color: #f2d8ff !important;
+  font-size: 0.72rem !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-points-heading span,
+dialog.olaf-checkout-v98 .olaf-checkout-points-heading strong {
+  display: inline-flex !important;
+  align-items: center !important;
+  gap: 6px !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-points-heading strong {
+  color: #d655ff !important;
+  font-size: 1rem !important;
+  font-weight: 600 !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-points .premium-points-toggle {
+  min-height: 38px !important;
+  display: grid !important;
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+  align-items: center !important;
+  gap: 9px !important;
+  margin: 0 !important;
+  padding: 7px 12px !important;
+  border: 0 !important;
+  border-radius: 10px !important;
+  background: linear-gradient(100deg, rgba(111, 20, 178, 0.9), rgba(24, 78, 178, 0.9)) !important;
+  cursor: pointer !important;
+  transition: filter 180ms ease, transform 180ms ease !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-points.is-unavailable .premium-points-toggle {
+  filter: saturate(0.62) brightness(0.82) !important;
+  cursor: not-allowed !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-points .premium-points-toggle:hover {
+  filter: brightness(1.08) !important;
+  transform: translateY(-1px) !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-points .premium-points-toggle input {
+  position: absolute !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-points .premium-points-icon {
+  width: 22px !important;
+  height: 22px !important;
+  display: grid !important;
+  place-items: center !important;
+  color: #f3d5ff !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-points .premium-points-copy {
+  min-width: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: flex-start !important;
+  gap: 1px !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-points .premium-points-copy strong,
+dialog.olaf-checkout-v98 .olaf-checkout-points .premium-points-copy small {
+  max-width: 100% !important;
+  overflow: hidden !important;
+  color: rgba(255, 255, 255, 0.92) !important;
+  font-size: 0.66rem !important;
+  font-weight: 300 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-points .premium-points-copy strong {
+  font-weight: 500 !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-points .premium-points-switch {
+  width: 34px !important;
+  height: 19px !important;
+  border: 1px solid rgba(255, 255, 255, 0.22) !important;
+  border-radius: 999px !important;
+  background: rgba(2, 8, 23, 0.36) !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-points .premium-points-switch::after {
+  width: 13px !important;
+  height: 13px !important;
+  top: 2px !important;
+  left: 2px !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-points input:checked ~ .premium-points-switch::after {
+  transform: translateX(15px) !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-points .premium-points-summary,
+dialog.olaf-checkout-v98 .olaf-checkout-points .premium-points-final {
+  display: none !important;
+}
+
+dialog.olaf-checkout-v98 .premium-payment-section {
+  width: 100% !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+dialog.olaf-checkout-v98 .premium-payment-header {
+  position: relative !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 10px !important;
+  margin: 2px 0 15px !important;
+  color: #89a2c7 !important;
+  font-size: 0.62rem !important;
+  font-weight: 300 !important;
+  text-align: center !important;
+}
+
+dialog.olaf-checkout-v98 .premium-payment-header::before,
+dialog.olaf-checkout-v98 .premium-payment-header::after {
+  content: "" !important;
+  height: 1px !important;
+  flex: 1 1 auto !important;
+  background: rgba(101, 132, 180, 0.25) !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-payment-title {
+  margin: 0 0 9px !important;
+  color: #fff !important;
+  font-size: 0.72rem !important;
+  font-weight: 500 !important;
+}
+
+dialog.olaf-checkout-v98 .premium-payment-grid {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+dialog.olaf-checkout-v98 .premium-payment-card {
+  position: relative !important;
+  min-width: 0 !important;
+  min-height: 82px !important;
+  display: block !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(91, 120, 165, 0.3) !important;
+  border-radius: 12px !important;
+  color: #8ea2c0 !important;
+  background: rgba(5, 13, 31, 0.74) !important;
+  cursor: pointer !important;
+  box-shadow: none !important;
+  transition: border-color 190ms ease, background 190ms ease, transform 190ms ease, box-shadow 190ms ease !important;
+}
+
+dialog.olaf-checkout-v98 .premium-payment-card:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(96, 165, 250, 0.52) !important;
+}
+
+dialog.olaf-checkout-v98 .premium-payment-card:has(input:checked) {
+  border-color: #1474ff !important;
+  color: #52a0ff !important;
+  background: rgba(9, 45, 105, 0.44) !important;
+  box-shadow: 0 0 0 1px rgba(20, 116, 255, 0.08), 0 14px 28px rgba(0, 65, 190, 0.13) !important;
+}
+
+dialog.olaf-checkout-v98 .premium-payment-card:has(input[value="wallet"]:checked) {
+  border-color: #ff8614 !important;
+  color: #ff9a38 !important;
+  background: rgba(112, 48, 4, 0.32) !important;
+  box-shadow: 0 0 0 1px rgba(255, 134, 20, 0.08), 0 14px 28px rgba(154, 64, 0, 0.12) !important;
+}
+
+dialog.olaf-checkout-v98 .premium-payment-card input {
+  position: absolute !important;
+  opacity: 0 !important;
+}
+
+dialog.olaf-checkout-v98 .premium-payment-card .payment-card-content {
+  min-height: 82px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 2px !important;
+  padding: 12px 8px !important;
+}
+
+dialog.olaf-checkout-v98 .premium-payment-card .payment-card-content svg {
+  width: 20px !important;
+  height: 20px !important;
+  margin-bottom: 4px !important;
+}
+
+dialog.olaf-checkout-v98 .premium-payment-card .payment-card-content strong {
+  color: currentColor !important;
+  font-size: 0.72rem !important;
+  font-weight: 500 !important;
+}
+
+dialog.olaf-checkout-v98 .premium-payment-card .payment-card-content span {
+  color: #7587a3 !important;
+  font-size: 0.61rem !important;
+  font-weight: 300 !important;
+}
+
+dialog.olaf-checkout-v98 .premium-payment-card .payment-check {
+  position: absolute !important;
+  top: 7px !important;
+  right: 7px !important;
+  display: none !important;
+}
+
+dialog.olaf-checkout-v98 .premium-payment-card:has(input:checked) .payment-check {
+  display: block !important;
+}
+
+dialog.olaf-checkout-v98 .premium-actions,
+dialog.olaf-checkout-v98.qr-payment-dialog .premium-actions {
+  position: static !important;
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto auto !important;
+  align-items: center !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+dialog.checkout-order-dialog.olaf-checkout-v98 .premium-actions {
+  grid-template-columns: minmax(0, 1fr) !important;
+  margin-top: 1px !important;
+}
+
+dialog.olaf-checkout-v98 .premium-actions button,
+dialog.olaf-checkout-v98.qr-payment-dialog .premium-actions button {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 44px !important;
+  margin: 0 !important;
+  padding: 8px 13px !important;
+  border-radius: 11px !important;
+  font-size: 0.72rem !important;
+  font-weight: 500 !important;
+  transition: filter 180ms ease, transform 180ms ease, border-color 180ms ease !important;
+}
+
+dialog.olaf-checkout-v98 .premium-actions button:hover {
+  filter: brightness(1.08) !important;
+  transform: translateY(-1px) !important;
+}
+
+dialog.olaf-checkout-v98 .premium-actions .submit-order-btn {
+  color: #fff !important;
+  border: 1px solid rgba(89, 139, 255, 0.3) !important;
+  background: linear-gradient(100deg, #2469eb, #493ee6) !important;
+  box-shadow: 0 12px 28px rgba(37, 82, 219, 0.2) !important;
+}
+
+dialog.olaf-checkout-v98 .premium-actions .cancel-order-btn,
+dialog.olaf-checkout-v98 .premium-actions .text-button {
+  color: #8190aa !important;
+  border: 1px solid rgba(110, 134, 173, 0.18) !important;
+  background: rgba(8, 17, 37, 0.64) !important;
+  box-shadow: none !important;
+}
+
+dialog.checkout-order-dialog.olaf-checkout-v98 .premium-actions .cancel-order-btn {
+  min-height: 34px !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-card {
+  width: 100% !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 10px !important;
+  margin: 3px 0 0 !important;
+  padding: 18px 20px 16px !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(255, 255, 255, 0.72) !important;
+  border-radius: 14px !important;
+  color: #0d172c !important;
+  background: #fff !important;
+  box-shadow: 0 18px 50px rgba(0, 0, 0, 0.22) !important;
+  text-align: center !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-card > header {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 3px !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-card h3 {
+  margin: 0 !important;
+  color: #071126 !important;
+  font-size: 0.98rem !important;
+  font-weight: 600 !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-card header p {
+  margin: 0 !important;
+  color: #8490a5 !important;
+  font-size: 0.66rem !important;
+  font-weight: 300 !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-method-badge {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  margin: -1px !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  clip: rect(0 0 0 0) !important;
+  white-space: nowrap !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-image-frame {
+  position: relative !important;
+  width: min(220px, 62vw) !important;
+  height: auto !important;
+  min-height: 0 !important;
+  aspect-ratio: 1 / 1 !important;
+  display: grid !important;
+  place-items: center !important;
+  margin: 7px auto 0 !important;
+  overflow: hidden !important;
+  border: 1px solid #e4e9f1 !important;
+  border-radius: 9px !important;
+  background: #fff !important;
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.12) !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-image,
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-image-frame img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  display: block !important;
+  object-fit: contain !important;
+  background: #fff !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-loading,
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-unavailable {
+  width: 100% !important;
+  height: 100% !important;
+  display: grid !important;
+  place-content: center !important;
+  justify-items: center !important;
+  gap: 9px !important;
+  padding: 20px !important;
+  color: #8b9bb5 !important;
+  background: #fff !important;
+  font-size: 0.67rem !important;
+  text-align: center !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-loading svg {
+  width: 28px !important;
+  height: 28px !important;
+  color: #7990b5 !important;
+  animation: olafCheckoutSpinV98 900ms linear infinite !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-total {
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 1px !important;
+  color: #75839a !important;
+  font-size: 0.66rem !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-total .qr-total-highlight {
+  color: #2855ff !important;
+  font-size: 1.55rem !important;
+  font-weight: 600 !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-store-note {
+  width: 100% !important;
+  min-width: 0 !important;
+  display: block !important;
+  margin: 0 !important;
+  color: #475569 !important;
+  font-size: 0.65rem !important;
+  text-align: left !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-note-alert,
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-manual-transfer {
+  width: 100% !important;
+  margin: 0 !important;
+  border: 1px solid #e2e8f0 !important;
+  border-radius: 9px !important;
+  color: #475569 !important;
+  background: #f8fafc !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-note-alert {
+  padding: 8px 10px !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-manual-transfer summary {
+  padding: 8px 10px !important;
+  color: #35527b !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-card .premium-actions {
+  grid-template-columns: minmax(0, 1fr) minmax(108px, auto) auto !important;
+  margin-top: 2px !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-payment-content.is-stage-transitioning {
+  animation: olafCheckoutStageV98 300ms cubic-bezier(0.16, 1, 0.3, 1) both !important;
+}
+
+dialog.olaf-checkout-v98 [hidden],
+dialog.olaf-checkout-v98 .qr-image[hidden],
+dialog.olaf-checkout-v98 .qr-loading[hidden],
+dialog.olaf-checkout-v98 .qr-unavailable[hidden] {
+  display: none !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+@media (max-width: 740px) {
+  dialog.olaf-checkout-v98[open],
+  dialog.olaf-checkout-v98.qr-payment-dialog[open],
+  dialog.olaf-checkout-v98.qr-payment-dialog[open].is-mobile-payment-pop {
+    width: min(610px, calc(100vw - 18px)) !important;
+    max-width: calc(100vw - 18px) !important;
+    max-height: calc(100dvh - 18px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    border-radius: 18px !important;
+  }
+
+  dialog.olaf-checkout-v98 .olaf-checkout-shell,
+  dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-shell {
+    max-height: calc(100dvh - 18px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    border-radius: 18px !important;
+  }
+
+  dialog.olaf-checkout-v98 .premium-checkout-form,
+  dialog.olaf-checkout-v98.qr-payment-dialog .qr-payment-content {
+    gap: 12px !important;
+    padding: 0 16px 17px !important;
+  }
+
+  dialog.olaf-checkout-v98.qr-payment-dialog .qr-payment-content > .olaf-checkout-hero {
+    width: calc(100% + 32px) !important;
+    margin-inline: -16px !important;
+  }
+
+  dialog.olaf-checkout-v98 .olaf-checkout-hero,
+  dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-hero {
+    padding: 17px 50px 13px !important;
+  }
+
+  dialog.olaf-checkout-v98 .olaf-checkout-product,
+  dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-product {
+    min-height: 104px !important;
+    padding: 14px 15px !important;
+  }
+
+  dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-card {
+    padding: 16px 14px 14px !important;
+  }
+}
+
+@media (max-width: 430px) {
+  dialog.olaf-checkout-v98[open],
+  dialog.olaf-checkout-v98.qr-payment-dialog[open] {
+    width: calc(100vw - 12px) !important;
+    max-width: calc(100vw - 12px) !important;
+    max-height: calc(100dvh - 12px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  dialog.olaf-checkout-v98 .olaf-checkout-shell,
+  dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-shell {
+    max-height: calc(100dvh - 12px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  dialog.olaf-checkout-v98 .dialog-close {
+    top: 10px !important;
+    right: 10px !important;
+    width: 33px !important;
+    height: 33px !important;
+  }
+
+  dialog.olaf-checkout-v98 .olaf-checkout-hero .premium-icon-box,
+  dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-hero .premium-icon-box.qr-icon {
+    width: 42px !important;
+    height: 42px !important;
+  }
+
+  dialog.olaf-checkout-v98 .olaf-checkout-hero h2,
+  dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-hero h2 {
+    font-size: 1.18rem !important;
+  }
+
+  dialog.olaf-checkout-v98 .premium-checkout-form,
+  dialog.olaf-checkout-v98.qr-payment-dialog .qr-payment-content {
+    gap: 10px !important;
+    padding: 0 11px 12px !important;
+  }
+
+  dialog.olaf-checkout-v98.qr-payment-dialog .qr-payment-content > .olaf-checkout-hero {
+    width: calc(100% + 22px) !important;
+    margin-inline: -11px !important;
+  }
+
+  dialog.olaf-checkout-v98 .olaf-checkout-product,
+  dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-product {
+    min-height: 96px !important;
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+
+  dialog.olaf-checkout-v98 .olaf-checkout-eyebrow {
+    margin-bottom: 5px !important;
+    font-size: 0.74rem !important;
+  }
+
+  dialog.olaf-checkout-v98 .olaf-checkout-product .premium-product-info h3 {
+    font-size: 0.82rem !important;
+  }
+
+  dialog.olaf-checkout-v98 .olaf-checkout-product .premium-product-price {
+    font-size: 0.96rem !important;
+  }
+
+  dialog.olaf-checkout-v98 .olaf-checkout-meta-grid {
+    gap: 8px !important;
+  }
+
+  dialog.olaf-checkout-v98 .olaf-checkout-meta-card {
+    min-height: 72px !important;
+    padding: 10px 11px !important;
+  }
+
+  dialog.olaf-checkout-v98 .olaf-checkout-meta-card > span {
+    font-size: 0.61rem !important;
+  }
+
+  dialog.olaf-checkout-v98 .olaf-checkout-meta-card > strong {
+    font-size: 0.65rem !important;
+  }
+
+  dialog.olaf-checkout-v98 .olaf-checkout-points {
+    padding: 10px !important;
+  }
+
+  dialog.olaf-checkout-v98 .olaf-checkout-points .premium-points-copy small {
+    max-width: 190px !important;
+  }
+
+  dialog.olaf-checkout-v98 .premium-payment-card,
+  dialog.olaf-checkout-v98 .premium-payment-card .payment-card-content {
+    min-height: 72px !important;
+  }
+
+  dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-card {
+    padding: 14px 10px 12px !important;
+  }
+
+  dialog.olaf-checkout-v98.qr-payment-dialog .qr-image-frame {
+    width: min(196px, 56vw) !important;
+  }
+
+  dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-card .premium-actions {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) !important;
+  }
+
+  dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-card .submit-order-btn {
+    grid-column: 1 / -1 !important;
+  }
+
+  dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-card .cancel-order-btn,
+  dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-card .text-button {
+    grid-column: auto !important;
+  }
+}
+
+@media (max-height: 700px) {
+  dialog.olaf-checkout-v98 .olaf-checkout-hero,
+  dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-hero {
+    padding-block: 11px !important;
+  }
+
+  dialog.olaf-checkout-v98 .olaf-checkout-hero .premium-icon-box,
+  dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-hero .premium-icon-box.qr-icon {
+    width: 38px !important;
+    height: 38px !important;
+    margin-bottom: 0 !important;
+  }
+
+  dialog.olaf-checkout-v98.qr-payment-dialog .qr-image-frame {
+    width: min(176px, 48vw) !important;
+  }
+}
+
+@keyframes olafCheckoutEnterV98 {
+  from { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.978); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes olafCheckoutBackdropV98 {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes olafCheckoutStageV98 {
+  from { opacity: 0.58; transform: translate3d(0, 7px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes olafCheckoutSpinV98 {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog.olaf-checkout-v98 *,
+  dialog.olaf-checkout-v98 *::before,
+  dialog.olaf-checkout-v98 *::after {
+    scroll-behavior: auto !important;
+    animation-duration: 1ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 1ms !important;
+  }
+}

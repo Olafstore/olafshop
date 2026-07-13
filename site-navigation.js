@@ -3,6 +3,7 @@
   const MOBILE_DRAWER_VERSION = "drawer-v68";
   const MOBILE_DRAWER_ID = "olaf-mobile-drawer";
   const MOBILE_BACKDROP_ID = "olaf-mobile-menu-backdrop";
+  let activeAdminBrandLogo = "";
   const NAV_ITEMS = [
     { href: "index.html", label: "หน้าหลัก", icon: "house", match: ["index.html", ""] },
     { href: "index.html#catalog", label: "สินค้า", icon: "shopping-bag", matchHash: "#catalog" },
@@ -72,6 +73,46 @@
     ...(window.OlafText || {}),
     clean: cleanDisplayText
   };
+
+  function applyAdminBrandLogo(iconUrl) {
+    const url = String(iconUrl || "").trim();
+    if (!url) return;
+    activeAdminBrandLogo = url;
+
+    document.querySelectorAll(".brand-mark, .mobile-menu-brand-mark").forEach((mark) => {
+      const current = mark.querySelector("img[data-admin-brand-logo]");
+      if (current?.getAttribute("src") === url) return;
+      const image = document.createElement("img");
+      image.src = url;
+      image.alt = "";
+      image.width = 48;
+      image.height = 48;
+      image.loading = "eager";
+      image.decoding = "async";
+      image.fetchPriority = "high";
+      image.dataset.adminBrandLogo = "true";
+      mark.replaceChildren(image);
+      mark.classList.add("has-admin-logo");
+    });
+
+    let favicon = document.querySelector("#dynamic-favicon");
+    if (!favicon) {
+      favicon = document.createElement("link");
+      favicon.id = "dynamic-favicon";
+      favicon.rel = "icon";
+      document.head.appendChild(favicon);
+    }
+    favicon.href = url;
+  }
+
+  async function loadAdminBrandLogo() {
+    try {
+      const settings = await window.OlafStoreSettings?.fetchStoreSettings?.();
+      applyAdminBrandLogo(settings?.siteIconUrl);
+    } catch (error) {
+      // Keep the local OLAF fallback mark when settings are temporarily unavailable.
+    }
+  }
 
   function currentFile() {
     return window.location.pathname.split("/").pop() || "index.html";
@@ -190,6 +231,7 @@
 
   function renderMobileDrawer(drawer) {
     drawer.innerHTML = mobileDrawerHtml();
+    applyAdminBrandLogo(activeAdminBrandLogo);
     window.lucide?.createIcons?.();
   }
 
@@ -1704,6 +1746,7 @@
     syncMobileSourceNavVisibility();
     setupTopbarPopoverAnchoring();
     setupStickyState(headers);
+    loadAdminBrandLogo();
     setTimeout(() => {
       syncMobileUserPopoverPortal();
       dedupeMobileNavigationLayers();

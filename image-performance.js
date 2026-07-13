@@ -6,6 +6,7 @@
   const preloaded = new Set();
   let hydrateQueued = false;
   let fallbackIconQueued = false;
+  let nearViewportObserver = null;
 
   function escapeAttr(value = "") {
     return String(value).replace(/[&<>"']/g, (char) => {
@@ -103,6 +104,23 @@
       img.fetchPriority = img.loading === "eager" ? "high" : "low";
     }
     preconnect(img.currentSrc || img.src);
+    if (img.loading === "lazy" && "IntersectionObserver" in window) {
+      if (!nearViewportObserver) {
+        nearViewportObserver = new IntersectionObserver(
+          (entries) => {
+            entries.forEach((entry) => {
+              if (!entry.isIntersecting) return;
+              const target = entry.target;
+              nearViewportObserver.unobserve(target);
+              target.fetchPriority = "high";
+              target.loading = "eager";
+            });
+          },
+          { rootMargin: "720px 0px", threshold: 0.01 }
+        );
+      }
+      nearViewportObserver.observe(img);
+    }
     if (img.complete && img.naturalWidth > 0) {
       img.classList.add("is-loaded");
     }

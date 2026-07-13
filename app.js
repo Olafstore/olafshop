@@ -327,10 +327,27 @@ function cleanDisplayText(value = "") {
 
 function fastImg(src, alt = "", options = {}) {
   if (window.OlafImages?.attrs) return window.OlafImages.attrs(src, alt, options);
-  const loading = options.priority ? "eager" : "lazy";
-  const fetchPriority = options.priority ? "high" : "low";
+  const loading = options.priority || options.loading === "eager" ? "eager" : "lazy";
+  const fetchPriority = options.priority ? "high" : options.fetchPriority || "auto";
   const className = options.className ? ` class="${escapeHtml(options.className)}"` : "";
-  return `${className} src="${escapeHtml(src || "")}" alt="${escapeHtml(alt)}" loading="${loading}" decoding="async" fetchpriority="${fetchPriority}"`;
+  const width = options.width ? ` width="${escapeHtml(options.width)}"` : "";
+  const height = options.height ? ` height="${escapeHtml(options.height)}"` : "";
+  const sizes = options.sizes ? ` sizes="${escapeHtml(options.sizes)}"` : "";
+  return `${className} src="${escapeHtml(src || "")}" alt="${escapeHtml(alt)}" loading="${loading}" decoding="async" fetchpriority="${fetchPriority}"${width}${height}${sizes}`;
+}
+
+function catalogImageOptions(index = 0, featured = false) {
+  const fastLane = window.innerWidth <= 640 ? 2 : window.innerWidth <= 1180 ? 4 : 8;
+  const eager = featured ? index === 0 : index < fastLane;
+  return {
+    loading: eager ? "eager" : "lazy",
+    fetchPriority: eager ? "high" : "auto",
+    width: 640,
+    height: 360,
+    sizes: featured
+      ? "(max-width: 640px) calc(100vw - 32px), (max-width: 1180px) 50vw, 34vw"
+      : "(max-width: 420px) calc(100vw - 36px), (max-width: 720px) 50vw, (max-width: 1180px) 33vw, 25vw"
+  };
 }
 
 function hydrateImages() {
@@ -1690,8 +1707,12 @@ function renderProducts() {
   const startIndex = (state.currentPage - 1) * itemsPerPage;
   const paginatedProducts = products.slice(startIndex, startIndex + itemsPerPage);
 
-  $(selectors.featuredGrid).innerHTML = state.currentPage === 1 ? featured.map(renderFeatureCard).join("") : "";
-  $(selectors.productGrid).innerHTML = paginatedProducts.map(renderProductCard).join("");
+  $(selectors.featuredGrid).innerHTML = state.currentPage === 1
+    ? featured.map((product, index) => renderFeatureCard(product, index)).join("")
+    : "";
+  $(selectors.productGrid).innerHTML = paginatedProducts
+    .map((product, index) => renderProductCard(product, index))
+    .join("");
   const emptyState = $(selectors.emptyState);
   if (emptyState) emptyState.hidden = true;
 
@@ -1961,11 +1982,11 @@ function closeUserPopover() {
   if (popover) popover.hidden = true;
 }
 
-function renderFeatureCard(product) {
+function renderFeatureCard(product, index = 0) {
   const stock = getStockState(product.stock);
   return `
     <article class="feature-card">
-      <img ${fastImg(product.image || product.heroImage, product.name, { priority: true })} />
+      <img ${fastImg(product.image || product.heroImage, product.name, catalogImageOptions(index, true))} />
       <div class="feature-body">
         <span class="stock-pill ${stock.className}">${stock.label}</span>
         <h3>${escapeHtml(product.name)}</h3>
@@ -1978,7 +1999,7 @@ function renderFeatureCard(product) {
   `;
 }
 
-function renderProductCard(product) {
+function renderProductCard(product, index = 0) {
   const stock = getStockState(product.stock);
   const discount = getDiscount(product);
   const publisher = String(product.publisher || "").trim();
@@ -1989,7 +2010,7 @@ function renderProductCard(product) {
   return `
     <article class="product-card ${product.stock <= 0 ? "is-out-of-stock" : ""}">
       <div class="product-image">
-        <img ${fastImg(product.image || product.heroImage, product.name)} />
+        <img ${fastImg(product.image || product.heroImage, product.name, catalogImageOptions(index))} />
         ${discount ? `<span class="discount-pill">-${discount}%</span>` : ""}
       </div>
       <div class="product-body">

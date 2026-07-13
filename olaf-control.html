@@ -7,14 +7,14 @@
     <title>หลังบ้าน | OLAF SHOP</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="preconnect" href="https://wtvfgwacodfrzxapwoxj.supabase.co" />
-    <link rel="stylesheet" href="admin.css?v=20260713-activity-payment-v93" />
+    <link rel="stylesheet" href="admin.css?v=20260713-admin-pro-v95" />
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="supabase-client.js?v=20260713-activity-payment-v93" defer></script>
     <script src="platform-store.js?v=20260605-admin-users" defer></script>
     <script src="image-performance.js?v=20260607-performance" defer></script>
 <script src="delivery-payload.js?v=20260620-phase1-12-final" defer></script>
-    <script src="admin.js?v=20260713-spin-reset-v94" defer></script>
+    <script src="admin.js?v=20260713-admin-pro-v95" defer></script>
   </head>
   <body>
     <section class="admin-login-screen" id="admin-login-screen">
@@ -30,11 +30,16 @@
     </section>
 
     <div class="admin-shell" id="admin-shell" hidden>
-      <aside class="admin-sidebar">
-        <a class="admin-brand" href="index.html">
-          <span>O</span>
-          <strong>OLAF SHOP</strong>
-        </a>
+      <aside class="admin-sidebar" id="admin-sidebar" aria-label="เมนูจัดการร้าน">
+        <div class="admin-sidebar-head">
+          <a class="admin-brand" href="index.html">
+            <span>O</span>
+            <strong>OLAF SHOP</strong>
+          </a>
+          <button class="admin-sidebar-close" id="admin-sidebar-close" type="button" aria-label="ปิดเมนู">
+            <i data-lucide="x"></i>
+          </button>
+        </div>
         <nav class="admin-nav" aria-label="เมนูหลังบ้าน">
           <div class="nav-section">
             <p class="nav-section-label">Overview</p>
@@ -107,9 +112,15 @@
 
       <main class="admin-main">
         <header class="admin-header">
-          <div>
-            <p class="eyebrow">Admin Console</p>
-            <h1>ระบบหลังบ้านร้านเกม Steam</h1>
+          <div class="admin-header-main">
+            <button class="admin-mobile-menu" id="admin-mobile-menu" type="button" aria-controls="admin-sidebar" aria-expanded="false">
+              <i data-lucide="menu"></i>
+              <span>เมนู</span>
+            </button>
+            <div>
+              <p class="eyebrow" id="admin-panel-eyebrow">Admin Console</p>
+              <h1 id="admin-panel-title">ภาพรวมธุรกิจ</h1>
+            </div>
           </div>
           <div class="admin-actions">
             <span class="save-state" id="save-state">กำลังโหลดข้อมูล</span>
@@ -129,6 +140,23 @@
         </header>
 
         <section class="admin-panel is-visible" data-panel="dashboard">
+          <section class="admin-dashboard-hero" aria-labelledby="dashboard-hero-title">
+            <div class="admin-dashboard-hero-copy">
+              <span class="admin-live-pill"><i data-lucide="activity"></i> ระบบพร้อมใช้งาน</span>
+              <p class="eyebrow">OLAF SHOP BUSINESS OVERVIEW</p>
+              <h2 id="dashboard-hero-title">ศูนย์ควบคุมร้านค้า</h2>
+              <p>ติดตามยอดขาย สต็อก ออเดอร์ และงานสำคัญจากหน้าจอเดียว</p>
+            </div>
+            <div class="admin-dashboard-hero-side">
+              <time id="dashboard-current-date">-</time>
+              <div class="admin-quick-actions" aria-label="เมนูด่วน">
+                <button type="button" data-dashboard-panel="products"><i data-lucide="package-plus"></i> เพิ่มสินค้า</button>
+                <button type="button" data-dashboard-panel="orders"><i data-lucide="receipt-text"></i> ดูออเดอร์</button>
+                <button type="button" data-dashboard-panel="finance"><i data-lucide="chart-column-big"></i> การเงิน</button>
+              </div>
+            </div>
+          </section>
+
           <div class="metric-grid">
             <article class="metric-card accent-blue">
               <div class="metric-card-top">
@@ -202,6 +230,29 @@
               <strong id="metric-orders">0</strong>
               <small>ประวัติคำสั่งซื้อในระบบ</small>
             </article>
+          </div>
+
+          <div class="admin-executive-grid">
+            <section class="admin-card admin-recent-orders-card">
+              <div class="card-heading">
+                <div>
+                  <h2>คำสั่งซื้อล่าสุด</h2>
+                  <span>รายการขายที่เพิ่งเข้ามาและสถานะปัจจุบัน</span>
+                </div>
+                <button class="text-button" type="button" data-dashboard-panel="orders">ดูทั้งหมด</button>
+              </div>
+              <div class="dashboard-recent-orders" id="dashboard-recent-orders"></div>
+            </section>
+            <section class="admin-card admin-business-health-card">
+              <div class="card-heading">
+                <div>
+                  <h2>สุขภาพธุรกิจ</h2>
+                  <span>ภาพรวมสินค้าและขั้นตอนออเดอร์</span>
+                </div>
+              </div>
+              <div class="dashboard-pipeline" id="dashboard-order-pipeline"></div>
+              <div class="dashboard-category-performance" id="dashboard-category-performance"></div>
+            </section>
           </div>
 
           <div class="admin-pro-overview">
@@ -301,10 +352,15 @@
               </div>
             </section>
 
-            <section class="admin-card sticky-card">
+            <section class="admin-card sticky-card admin-product-editor" id="admin-product-editor" role="dialog" aria-modal="false" aria-labelledby="product-form-title">
               <div class="card-heading">
-                <h2 id="product-form-title">แก้ไขสินค้า</h2>
-                <span id="editing-product-id">ยังไม่ได้เลือก</span>
+                <div>
+                  <h2 id="product-form-title">แก้ไขสินค้า</h2>
+                  <span id="editing-product-id">ยังไม่ได้เลือก</span>
+                </div>
+                <button class="admin-product-editor-close" id="close-product-editor" type="button" aria-label="ปิดหน้าต่างแก้ไขสินค้า">
+                  <i data-lucide="x"></i>
+                </button>
               </div>
               <form class="admin-form" id="product-form">
                 <div class="form-row">
@@ -1387,6 +1443,9 @@
         </section>
       </main>
     </div>
+
+    <button class="admin-shell-backdrop" id="admin-shell-backdrop" type="button" aria-label="ปิดเมนู" hidden></button>
+    <button class="admin-product-editor-backdrop" id="admin-product-editor-backdrop" type="button" aria-label="ปิดหน้าต่างแก้ไขสินค้า" hidden></button>
 
     <!-- Admin Dialogs -->
     <dialog class="admin-dialog" id="admin-alert-dialog">

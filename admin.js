@@ -2012,6 +2012,7 @@ function renderMetrics() {
   animateAdminNumber("#metric-point-balance", finance.pointBalance, (value) => formatPointAmount(value));
   animateAdminNumber("#metric-orders", finance.orderCount);
   renderDashboardCommandCenter(finance, { lowStock, totalStock, deliveredStock });
+  renderExecutiveDashboard();
 
   const alerts = products()
     .filter((product) => product.stock <= 5)
@@ -2037,6 +2038,130 @@ function renderMetrics() {
         )
         .join("")
     : `<div class="compact-item"><div><h3>ยังไม่มีประวัติ</h3><p>การเพิ่มหรือลดสต็อกจะแสดงที่นี่</p></div></div>`;
+}
+
+function renderExecutiveDashboard() {
+  const date = $("#dashboard-current-date");
+  if (date) {
+    const now = new Date();
+    date.dateTime = now.toISOString();
+    date.textContent = now.toLocaleDateString("th-TH", {
+      weekday: "long",
+      day: "numeric",
+      month: "long",
+      year: "numeric"
+    });
+  }
+
+  const recentOrders = [...(Array.isArray(state.orders) ? state.orders : [])]
+    .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0))
+    .slice(0, 6);
+  const recentOrdersContainer = $("#dashboard-recent-orders");
+  if (recentOrdersContainer) {
+    recentOrdersContainer.innerHTML = recentOrders.length
+      ? recentOrders
+          .map((order) => {
+            const firstItem = order.items?.[0]?.productName || order.items?.[0]?.name || "สินค้า";
+            const extraItems = Math.max(0, Number(order.items?.length || 0) - 1);
+            const customer = order.customerName || order.customerEmail || "ลูกค้า";
+            return `
+              <button class="dashboard-order-row" type="button" data-edit-order="${escapeHtml(order.id)}">
+                <span class="dashboard-order-icon"><i data-lucide="shopping-bag"></i></span>
+                <span class="dashboard-order-main">
+                  <strong>${escapeHtml(order.orderNumber || order.id)}</strong>
+                  <small>${escapeHtml(firstItem)}${extraItems ? ` +${extraItems}` : ""}</small>
+                </span>
+                <span class="dashboard-order-customer">${escapeHtml(customer)}</span>
+                <span class="dashboard-order-value">
+                  <strong>${formatPrice(order.total || 0)}</strong>
+                  <small>${formatAdminDateTime(order.createdAt)}</small>
+                </span>
+                <span class="status-pill ${orderStatusClass(order.status)}">${escapeHtml(order.status || "pending")}</span>
+              </button>
+            `;
+          })
+          .join("")
+      : `<div class="admin-dashboard-empty"><i data-lucide="receipt"></i><span>ยังไม่มีคำสั่งซื้อในระบบ</span></div>`;
+  }
+
+  const pipeline = [
+    {
+      label: "รอชำระ/ตรวจสลิป",
+      icon: "clock-3",
+      tone: "warn",
+      value: state.orders.filter((order) => ["awaiting_payment", "waiting_admin"].includes(order.status)).length
+    },
+    {
+      label: "รอจัดส่ง",
+      icon: "package-check",
+      tone: "info",
+      value: state.orders.filter((order) => order.status === "confirmed").length
+    },
+    {
+      label: "ส่งมอบแล้ว",
+      icon: "badge-check",
+      tone: "ok",
+      value: state.orders.filter((order) => order.status === "delivered").length
+    },
+    {
+      label: "ยกเลิก",
+      icon: "circle-x",
+      tone: "danger",
+      value: state.orders.filter((order) => ["cancelled", "expired"].includes(order.status)).length
+    }
+  ];
+  const pipelineContainer = $("#dashboard-order-pipeline");
+  if (pipelineContainer) {
+    pipelineContainer.innerHTML = pipeline
+      .map(
+        (item) => `
+          <div class="dashboard-pipeline-item ${item.tone}">
+            <i data-lucide="${item.icon}"></i>
+            <span>${item.label}</span>
+            <strong>${Number(item.value || 0).toLocaleString("th-TH")}</strong>
+          </div>
+        `
+      )
+      .join("");
+  }
+
+  const categoryMap = new Map();
+  products().forEach((product) => {
+    const categoryId = product.category || "other";
+    const row = categoryMap.get(categoryId) || {
+      id: categoryId,
+      label: categoryLabel(categoryId),
+      products: 0,
+      stock: 0,
+      sold: 0
+    };
+    row.products += 1;
+    row.stock += Number(inventorySummaryFor(product).availableCount || 0);
+    row.sold += Number(product.sold || 0);
+    categoryMap.set(categoryId, row);
+  });
+  const categories = [...categoryMap.values()].sort((a, b) => b.sold - a.sold || b.stock - a.stock).slice(0, 5);
+  const maxCategoryValue = Math.max(1, ...categories.map((item) => item.sold + item.stock));
+  const categoryContainer = $("#dashboard-category-performance");
+  if (categoryContainer) {
+    categoryContainer.innerHTML = categories.length
+      ? `
+          <div class="dashboard-section-label"><span>สินค้าแยกตามหมวด</span><small>สต็อก + ยอดขาย</small></div>
+          ${categories
+            .map((item) => {
+              const percent = Math.max(8, Math.round(((item.sold + item.stock) / maxCategoryValue) * 100));
+              return `
+                <div class="dashboard-category-row">
+                  <div><strong>${escapeHtml(item.label)}</strong><small>${item.products.toLocaleString("th-TH")} สินค้า</small></div>
+                  <div class="dashboard-category-track"><span style="width:${percent}%"></span></div>
+                  <div><strong>${item.stock.toLocaleString("th-TH")}</strong><small>พร้อมขาย</small></div>
+                </div>
+              `;
+            })
+            .join("")}
+        `
+      : `<div class="admin-dashboard-empty"><i data-lucide="boxes"></i><span>ยังไม่มีข้อมูลสินค้า</span></div>`;
+  }
 }
 
 function renderDashboardCommandCenter(finance, stockInfo = {}) {
@@ -2432,8 +2557,8 @@ function renderProductsTable() {
       const isOffline = isOfflineProductCategory(product.category);
       return `
         <tr>
-          <td><span style="color: var(--muted); font-weight: 500;">${index + 1}</span></td>
-          <td>
+          <td class="product-table-index"><span style="color: var(--muted); font-weight: 500;">${index + 1}</span></td>
+          <td data-label="สินค้า">
             <div class="product-cell">
               <img ${fastImg(product.image || product.heroImage, product.name)} />
               <div>
@@ -2442,12 +2567,12 @@ function renderProductsTable() {
               </div>
             </div>
           </td>
-          <td>${escapeHtml(categoryLabel(product.category))}</td>
-          <td>${formatPrice(product.price)}</td>
-          <td><span class="status-pill ${status.className}">${status.label}</span></td>
-          <td>${Number(summary.soldCount || product.sold || 0).toLocaleString("th-TH")}</td>
-          <td><span class="status-pill ${product.isActive !== false ? "ok" : "danger"}">${product.isActive !== false ? "Active" : "Inactive"}</span></td>
-          <td>
+          <td data-label="หมวด">${escapeHtml(categoryLabel(product.category))}</td>
+          <td data-label="ราคา">${formatPrice(product.price)}</td>
+          <td data-label="พร้อมขาย"><span class="status-pill ${status.className}">${status.label}</span></td>
+          <td data-label="ขายแล้ว">${Number(summary.soldCount || product.sold || 0).toLocaleString("th-TH")}</td>
+          <td data-label="สถานะ"><span class="status-pill ${product.isActive !== false ? "ok" : "danger"}">${product.isActive !== false ? "Active" : "Inactive"}</span></td>
+          <td data-label="จัดการ">
             <div class="row-actions">
               ${
                 isOffline
@@ -2497,6 +2622,7 @@ function openOfflineStockManager(productId) {
   switchPanel("products");
   renderProductForm();
   createIconSet();
+  openProductEditorForCurrentViewport({ focusOfflineStock: true });
   requestAnimationFrame(() => {
     const editor = $("#offline-stock-editor");
     if (editor && !editor.hidden) editor.scrollIntoView({ behavior: "smooth", block: "center" });
@@ -3031,6 +3157,7 @@ async function saveProductFromForm(event) {
     } else {
       showAdminToast("บันทึกข้อมูลสินค้าเรียบร้อยแล้ว", "success");
     }
+    if (isAdminMobileViewport()) closeMobileProductEditor();
   } catch (error) {
     console.error("Supabase product save failed", {
       code: error?.code,
@@ -4884,6 +5011,72 @@ async function resetData() {
   setStatus("โหลดข้อมูลจาก Supabase ใหม่แล้ว");
 }
 
+const ADMIN_PANEL_META = {
+  dashboard: ["ภาพรวมธุรกิจ", "Admin Console"],
+  products: ["จัดการสินค้า", "Commerce / Products"],
+  stock: ["คลังและสต็อกสินค้า", "Commerce / Inventory"],
+  orders: ["คำสั่งซื้อ", "Commerce / Orders"],
+  finance: ["การเงินลูกค้า", "Finance Center"],
+  "free-random": ["OLAF Premium Spin", "Campaign / Rewards"],
+  users: ["สมาชิกและลูกค้า", "Customer Management"],
+  reviews: ["รีวิวจากลูกค้า", "Customer Experience"],
+  widgets: ["ส่วนประกอบหน้าร้าน", "Storefront / Widgets"],
+  payment: ["ตั้งค่าการชำระเงิน", "System / Payment"],
+  activity: ["กิจกรรมหน้าเว็บ", "System / Campaign"],
+  data: ["ข้อมูลระบบ", "System / Data"],
+};
+
+function isAdminMobileViewport() {
+  return window.matchMedia("(max-width: 900px)").matches;
+}
+
+function setAdminSidebarOpen(open) {
+  const sidebar = $("#admin-sidebar");
+  const backdrop = $("#admin-shell-backdrop");
+  const trigger = $("#admin-mobile-menu");
+  if (!sidebar || !backdrop) return;
+  const shouldOpen = Boolean(open) && isAdminMobileViewport();
+  sidebar.classList.toggle("is-open", shouldOpen);
+  document.body.classList.toggle("admin-sidebar-open", shouldOpen);
+  backdrop.hidden = !shouldOpen;
+  trigger?.setAttribute("aria-expanded", String(shouldOpen));
+}
+
+function openMobileProductEditor() {
+  const editor = $("#admin-product-editor");
+  const backdrop = $("#admin-product-editor-backdrop");
+  if (!editor || !backdrop || !isAdminMobileViewport()) return;
+  editor.classList.add("is-open");
+  editor.setAttribute("aria-modal", "true");
+  backdrop.hidden = false;
+  document.body.classList.add("admin-product-editor-open");
+  requestAnimationFrame(() => editor.querySelector("input, select, textarea, button")?.focus({ preventScroll: true }));
+}
+
+function closeMobileProductEditor() {
+  const editor = $("#admin-product-editor");
+  const backdrop = $("#admin-product-editor-backdrop");
+  if (!editor || !backdrop) return;
+  editor.classList.remove("is-open");
+  editor.setAttribute("aria-modal", "false");
+  backdrop.hidden = true;
+  document.body.classList.remove("admin-product-editor-open");
+}
+
+function openProductEditorForCurrentViewport({ focusOfflineStock = false } = {}) {
+  const editor = $("#admin-product-editor");
+  if (!editor) return;
+  if (isAdminMobileViewport()) {
+    openMobileProductEditor();
+    requestAnimationFrame(() => {
+      const target = focusOfflineStock ? $("#offline-stock-editor") : editor.querySelector("#product-form");
+      target?.scrollIntoView({ block: "start" });
+    });
+  } else {
+    editor.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
+}
+
 function switchPanel(panelName) {
   document.body.dataset.adminPanel = panelName;
   $$(".admin-nav button").forEach((button) => {
@@ -4892,13 +5085,28 @@ function switchPanel(panelName) {
   $$(".admin-panel").forEach((panel) => {
     panel.classList.toggle("is-visible", panel.dataset.panel === panelName);
   });
+  const [title, eyebrow] = ADMIN_PANEL_META[panelName] || ["ระบบหลังบ้าน", "Admin Console"];
+  setTextSafe("#admin-panel-title", title);
+  setTextSafe("#admin-panel-eyebrow", eyebrow);
+  setAdminSidebarOpen(false);
+  if (panelName !== "products") closeMobileProductEditor();
   if (panelName === "dashboard") {
-    requestAnimationFrame(renderAnalyticsCharts);
+    requestAnimationFrame(() => {
+      renderAnalyticsCharts();
+      renderExecutiveDashboard();
+      createIconSet();
+    });
   }
 }
 
 function bindEvents() {
   $("#admin-login-form").addEventListener("submit", handleAdminLogin);
+
+  $("#admin-mobile-menu")?.addEventListener("click", () => setAdminSidebarOpen(true));
+  $("#admin-sidebar-close")?.addEventListener("click", () => setAdminSidebarOpen(false));
+  $("#admin-shell-backdrop")?.addEventListener("click", () => setAdminSidebarOpen(false));
+  $("#close-product-editor")?.addEventListener("click", closeMobileProductEditor);
+  $("#admin-product-editor-backdrop")?.addEventListener("click", closeMobileProductEditor);
 
   $(".admin-nav").addEventListener("click", (event) => {
     const button = event.target.closest("[data-panel-target]");
@@ -5000,7 +5208,7 @@ function bindEvents() {
       switchPanel("products");
       renderProductForm();
       createIconSet();
-      $("#product-form")?.closest(".admin-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      openProductEditorForCurrentViewport();
       return;
     }
 
@@ -5181,7 +5389,7 @@ function bindEvents() {
     delete state.productPackages.__new__;
     delete state.offlineStockItems.__new__;
     fillProductForm(null);
-    $("#product-form")?.closest(".admin-card")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    openProductEditorForCurrentViewport();
   });
 
   $("#new-user").addEventListener("click", () => {
@@ -5304,10 +5512,23 @@ function bindEvents() {
 
   let chartResizeTimer = null;
   window.addEventListener("resize", () => {
+    if (!isAdminMobileViewport()) {
+      setAdminSidebarOpen(false);
+      closeMobileProductEditor();
+    }
     clearTimeout(chartResizeTimer);
     chartResizeTimer = setTimeout(() => {
       if (document.body.dataset.adminPanel === "dashboard") renderAnalyticsCharts();
     }, 140);
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    if (document.body.classList.contains("admin-product-editor-open")) {
+      closeMobileProductEditor();
+      return;
+    }
+    if (document.body.classList.contains("admin-sidebar-open")) setAdminSidebarOpen(false);
   });
 }
 

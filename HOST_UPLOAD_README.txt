@@ -1,15 +1,21 @@
-OLAF SHOP - Product recommendations / Steam Key / Point top-up v84
+OLAF SHOP — QR Payment + Activity Labels V97
 
-Upload every file and the api folder in this package to the website root.
-Keep the folder structure exactly as supplied (api/* must remain inside api/).
-Overwrite files with the same names, then redeploy once so Vercel picks up the
-new serverless route api/products-index.js and the v84 cache versions.
+ไฟล์สำหรับอัปโหลดขึ้นโฮส:
+1. index.html
+2. app.js
+3. styles.css
+4. product.html
+5. point-topup.html
 
-No SQL migration is required for this package.
-No environment variable or credential is included in this package.
+วิธีอัปโหลด:
+1. สำรองไฟล์เดิมบนโฮสก่อน
+2. อัปโหลดไฟล์ทั้ง 5 ไฟล์ไปยังโฟลเดอร์รากของเว็บไซต์
+3. เลือกเขียนทับไฟล์ชื่อเดิม
+4. ล้าง CDN/Host cache ถ้ามี แล้วเปิดเว็บแบบ Hard Refresh
 
-After deployment, verify:
-1. product.html?id=<product-id> shows its background, cover and recommendations.
-2. Steam Key products do not show the extra-details section.
-3. point-topup.html shows five wallet amounts and does not keep loading the user.
-4. Search can find a product by multiple name words.
+การเปลี่ยนแปลง:
+- หน้า QR ชำระเงินของสินค้าและหน้าเติม Point ใช้ UI เดียวกัน
+- มือถือจัดวาง QR และข้อมูลคำสั่งซื้อแบบคอลัมน์เดียวโดยไม่ซ้อนกัน
+- ป้าย “ข้อเสนอสุดสัปดาห์” เป็นสีชมพู และ “ข้อเสนอในวันนี้” เป็นสีเขียวอมฟ้า
+
+ไม่ต้องรัน SQL สำหรับชุดนี้ และไม่มีการแก้ logic สร้างออเดอร์/ตรวจสลิป

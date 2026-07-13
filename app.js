@@ -2280,6 +2280,7 @@ function steamActivityCardMarkup(product, index) {
   const dealLabel = discount > 0
     ? (index < 2 ? "ข้อเสนอสุดสัปดาห์" : "ข้อเสนอในวันนี้")
     : "พร้อมส่งจากร้าน";
+  const labelTone = discount <= 0 ? "is-today" : (index < 2 ? "is-weekend" : "is-today");
   return `
     <a class="olaf-steam-activity-card is-slot-${index + 1}" href="${productLink(product)}">
       <span class="olaf-steam-activity-media">
@@ -2289,7 +2290,7 @@ function steamActivityCardMarkup(product, index) {
           sizes: index < 2 ? "(max-width: 720px) 44vw, 30vw" : "(max-width: 720px) 44vw, 28vw"
         })} />
       </span>
-      <span class="olaf-steam-activity-label">${escapeHtml(dealLabel)}</span>
+      <span class="olaf-steam-activity-label ${labelTone}">${escapeHtml(dealLabel)}</span>
       <span class="olaf-steam-activity-info">
         <strong>${escapeHtml(cleanDisplayText(product.name))}</strong>
         <small>${escapeHtml(getCategoryLabel(product.category))}</small>

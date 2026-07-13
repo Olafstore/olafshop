@@ -33995,3 +33995,483 @@ dialog.qr-payment-dialog [hidden] {
   visibility: hidden !important;
   pointer-events: none !important;
 }
+
+/* v96 — randomized in-stock editorial shelves and OLAF activity mosaic. */
+body.home-page .olaf-steam-activity-row {
+  position: relative;
+  min-width: 0;
+  padding: 22px;
+  overflow: hidden;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  border-radius: 24px;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(37, 99, 235, 0.18), transparent 34%),
+    radial-gradient(circle at 92% 100%, rgba(14, 165, 233, 0.11), transparent 32%),
+    linear-gradient(145deg, rgba(13, 27, 48, 0.96), rgba(5, 12, 27, 0.98));
+  box-shadow: 0 24px 65px rgba(0, 0, 0, 0.28);
+}
+
+body.home-page .olaf-steam-activity-head {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 20px;
+  margin-bottom: 16px;
+}
+
+body.home-page .olaf-steam-activity-head > div > span {
+  display: block;
+  margin-bottom: 3px;
+  color: #60a5fa;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+
+body.home-page .olaf-steam-activity-head h3 {
+  margin: 0;
+  color: #f8fbff;
+  font-size: clamp(1.12rem, 1.5vw, 1.48rem);
+  font-weight: 600;
+  line-height: 1.25;
+}
+
+body.home-page .olaf-steam-activity-head p {
+  margin: 4px 0 0;
+  color: #8fa6b9;
+  font-size: 0.76rem;
+  font-weight: 300;
+}
+
+body.home-page .olaf-steam-activity-head > a {
+  flex: 0 0 auto;
+  min-height: 34px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  padding: 7px 12px;
+  border: 1px solid rgba(147, 197, 253, 0.3);
+  border-radius: 10px;
+  color: #dbeafe;
+  font-size: 0.72rem;
+  text-decoration: none;
+  background: rgba(15, 35, 61, 0.72);
+  transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
+}
+
+body.home-page .olaf-steam-activity-head > a:hover {
+  border-color: rgba(125, 211, 252, 0.75);
+  background: rgba(30, 64, 175, 0.3);
+  transform: translateY(-2px);
+}
+
+body.home-page .olaf-steam-activity-head > a svg {
+  width: 15px;
+  height: 15px;
+}
+
+body.home-page .olaf-steam-activity-carousel {
+  position: relative;
+  min-width: 0;
+}
+
+body.home-page .olaf-steam-activity-viewport {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(125, 170, 214, 0.14);
+  border-radius: 18px;
+  background: rgba(4, 11, 24, 0.78);
+}
+
+body.home-page .olaf-steam-activity-track {
+  width: 100%;
+  display: flex;
+  transform: translate3d(calc(var(--activity-index, 0) * -100%), 0, 0);
+  transition: transform 620ms cubic-bezier(0.22, 0.72, 0.18, 1);
+  will-change: transform;
+}
+
+body.home-page .olaf-steam-activity-slide {
+  flex: 0 0 100%;
+  min-width: 0;
+  height: clamp(390px, 35vw, 505px);
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+  padding: 16px;
+  opacity: 0.62;
+  transition: opacity 420ms ease;
+}
+
+body.home-page .olaf-steam-activity-slide.is-active {
+  opacity: 1;
+}
+
+body.home-page .olaf-steam-activity-card {
+  position: relative;
+  min-width: 0;
+  min-height: 0;
+  display: block;
+  overflow: hidden;
+  border: 1px solid rgba(147, 197, 253, 0.18);
+  border-radius: 14px;
+  color: #fff;
+  text-decoration: none;
+  background: #081321;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.28);
+  transition: border-color 220ms ease, box-shadow 220ms ease, transform 260ms cubic-bezier(0.2, 0.72, 0.24, 1);
+}
+
+body.home-page .olaf-steam-activity-card.is-slot-1 {
+  grid-column: 1 / span 4;
+  grid-row: 1 / 3;
+}
+
+body.home-page .olaf-steam-activity-card.is-slot-2 {
+  grid-column: 5 / span 4;
+  grid-row: 1 / 3;
+}
+
+body.home-page .olaf-steam-activity-card.is-slot-3 {
+  grid-column: 9 / span 4;
+  grid-row: 1;
+}
+
+body.home-page .olaf-steam-activity-card.is-slot-4 {
+  grid-column: 9 / span 4;
+  grid-row: 2;
+}
+
+body.home-page .olaf-steam-activity-card:hover {
+  z-index: 2;
+  border-color: rgba(96, 165, 250, 0.64);
+  box-shadow: 0 20px 48px rgba(2, 10, 24, 0.48), 0 0 0 1px rgba(59, 130, 246, 0.12);
+  transform: translateY(-3px);
+}
+
+body.home-page .olaf-steam-activity-media,
+body.home-page .olaf-steam-activity-media img {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+body.home-page .olaf-steam-activity-media img {
+  object-fit: cover;
+  object-position: center;
+  transition: filter 240ms ease, transform 620ms cubic-bezier(0.2, 0.72, 0.24, 1);
+}
+
+body.home-page .olaf-steam-activity-card:hover .olaf-steam-activity-media img {
+  filter: brightness(1.08) saturate(1.06);
+  transform: scale(1.035);
+}
+
+body.home-page .olaf-steam-activity-card::after {
+  content: "";
+  position: absolute;
+  inset: 34% 0 0;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(2, 7, 16, 0.96));
+}
+
+body.home-page .olaf-steam-activity-label {
+  position: absolute;
+  z-index: 3;
+  top: 10px;
+  left: 10px;
+  padding: 5px 9px;
+  border: 1px solid rgba(191, 219, 254, 0.18);
+  border-radius: 7px;
+  color: #eff6ff;
+  font-size: 0.65rem;
+  font-weight: 500;
+  background: linear-gradient(135deg, rgba(30, 64, 175, 0.94), rgba(14, 116, 144, 0.94));
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.22);
+}
+
+body.home-page .olaf-steam-activity-info {
+  position: absolute;
+  z-index: 3;
+  right: 12px;
+  bottom: 42px;
+  left: 12px;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+body.home-page .olaf-steam-activity-info strong {
+  overflow: hidden;
+  color: #fff;
+  font-size: 0.86rem;
+  font-weight: 500;
+  line-height: 1.3;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.home-page .olaf-steam-activity-info small {
+  overflow: hidden;
+  color: #a8bfd3;
+  font-size: 0.64rem;
+  font-weight: 300;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.home-page .olaf-steam-activity-price {
+  position: absolute;
+  z-index: 4;
+  right: 0;
+  bottom: 0;
+  min-height: 34px;
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 6px 11px;
+  color: #dbeafe;
+  font-size: 0.72rem;
+  background: rgba(5, 15, 28, 0.94);
+  backdrop-filter: blur(12px);
+}
+
+body.home-page .olaf-steam-activity-price b {
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  margin: -6px 1px -6px -11px;
+  padding: 0 9px;
+  color: #d9f99d;
+  font-weight: 500;
+  background: linear-gradient(135deg, #4d7c0f, #3f6212);
+}
+
+body.home-page .olaf-steam-activity-price del {
+  color: #718497;
+  font-size: 0.62rem;
+}
+
+body.home-page .olaf-steam-activity-price strong {
+  color: #fff;
+  font-size: 0.86rem;
+  font-weight: 500;
+}
+
+body.home-page .olaf-steam-activity-arrow {
+  position: absolute;
+  z-index: 8;
+  top: 50%;
+  width: 40px;
+  height: 58px;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  border: 1px solid rgba(147, 197, 253, 0.26);
+  border-radius: 12px;
+  color: #e8f4ff;
+  background: rgba(4, 13, 28, 0.8);
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.28);
+  backdrop-filter: blur(14px);
+  cursor: pointer;
+  transform: translateY(-50%);
+  transition: border-color 180ms ease, background-color 180ms ease, transform 180ms ease;
+}
+
+body.home-page .olaf-steam-activity-arrow:hover {
+  border-color: rgba(125, 211, 252, 0.72);
+  background: rgba(30, 64, 175, 0.72);
+  transform: translateY(-50%) scale(1.04);
+}
+
+body.home-page .olaf-steam-activity-arrow.is-prev {
+  left: 9px;
+}
+
+body.home-page .olaf-steam-activity-arrow.is-next {
+  right: 9px;
+}
+
+body.home-page .olaf-steam-activity-arrow svg {
+  width: 22px;
+  height: 22px;
+}
+
+body.home-page .olaf-steam-activity-dots {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+body.home-page .olaf-steam-activity-dots button {
+  width: 8px;
+  height: 8px;
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: #3a4d61;
+  cursor: pointer;
+  transition: width 220ms ease, background-color 220ms ease, box-shadow 220ms ease;
+}
+
+body.home-page .olaf-steam-activity-dots button.is-active {
+  width: 24px;
+  background: #60a5fa;
+  box-shadow: 0 0 14px rgba(96, 165, 250, 0.45);
+}
+
+@media (max-width: 980px) {
+  body.home-page .olaf-steam-activity-slide {
+    height: auto;
+    aspect-ratio: 16 / 11;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-rows: repeat(2, minmax(0, 1fr));
+    gap: 11px;
+    padding: 13px;
+  }
+
+  body.home-page .olaf-steam-activity-card.is-slot-1,
+  body.home-page .olaf-steam-activity-card.is-slot-2,
+  body.home-page .olaf-steam-activity-card.is-slot-3,
+  body.home-page .olaf-steam-activity-card.is-slot-4 {
+    grid-column: auto;
+    grid-row: auto;
+  }
+}
+
+@media (max-width: 640px) {
+  body.home-page .olaf-steam-activity-row {
+    margin-inline: 0;
+    padding: 15px;
+    border-radius: 20px;
+  }
+
+  body.home-page .olaf-steam-activity-head {
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  body.home-page .olaf-steam-activity-head > div > span {
+    font-size: 0.56rem;
+  }
+
+  body.home-page .olaf-steam-activity-head h3 {
+    font-size: 1.02rem;
+  }
+
+  body.home-page .olaf-steam-activity-head p {
+    max-width: 250px;
+    font-size: 0.66rem;
+    line-height: 1.4;
+  }
+
+  body.home-page .olaf-steam-activity-head > a {
+    min-height: 32px;
+    padding: 6px 9px;
+    font-size: 0;
+  }
+
+  body.home-page .olaf-steam-activity-head > a svg {
+    width: 16px;
+    height: 16px;
+  }
+
+  body.home-page .olaf-steam-activity-viewport {
+    border-radius: 14px;
+  }
+
+  body.home-page .olaf-steam-activity-slide {
+    aspect-ratio: 1 / 1.08;
+    gap: 8px;
+    padding: 9px;
+  }
+
+  body.home-page .olaf-steam-activity-card {
+    border-radius: 11px;
+  }
+
+  body.home-page .olaf-steam-activity-label {
+    top: 6px;
+    left: 6px;
+    max-width: calc(100% - 12px);
+    padding: 3px 6px;
+    overflow: hidden;
+    font-size: 0.52rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  body.home-page .olaf-steam-activity-info {
+    right: 7px;
+    bottom: 31px;
+    left: 7px;
+  }
+
+  body.home-page .olaf-steam-activity-info strong {
+    font-size: 0.65rem;
+  }
+
+  body.home-page .olaf-steam-activity-info small,
+  body.home-page .olaf-steam-activity-price del {
+    display: none;
+  }
+
+  body.home-page .olaf-steam-activity-price {
+    min-height: 28px;
+    gap: 4px;
+    padding: 4px 7px;
+    font-size: 0.56rem;
+  }
+
+  body.home-page .olaf-steam-activity-price b {
+    margin: -4px 0 -4px -7px;
+    padding-inline: 6px;
+  }
+
+  body.home-page .olaf-steam-activity-price strong {
+    font-size: 0.68rem;
+  }
+
+  body.home-page .olaf-steam-activity-arrow {
+    width: 31px;
+    height: 44px;
+    border-radius: 9px;
+  }
+
+  body.home-page .olaf-steam-activity-arrow.is-prev {
+    left: 4px;
+  }
+
+  body.home-page .olaf-steam-activity-arrow.is-next {
+    right: 4px;
+  }
+
+  body.home-page .olaf-steam-activity-arrow svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  body.home-page .olaf-steam-activity-dots {
+    margin-top: 9px;
+  }
+}
+
+@media (max-width: 390px) {
+  body.home-page .olaf-steam-activity-slide {
+    aspect-ratio: 1 / 1.18;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  body.home-page .olaf-steam-activity-track,
+  body.home-page .olaf-steam-activity-slide,
+  body.home-page .olaf-steam-activity-card,
+  body.home-page .olaf-steam-activity-media img {
+    transition-duration: 1ms !important;
+  }
+}

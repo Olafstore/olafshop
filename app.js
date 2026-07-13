@@ -150,6 +150,7 @@ let promoVideoUnlocked = false;
 const promoVideoFailures = new Set();
 const activityPopupDismissedKeys = new Set();
 let steamSpotlightIndex = 0;
+let steamActivitySlideIndex = 0;
 let steamDiscoveryMode = "top";
 let steamDiscoveryPreviewId = "";
 let steamStorefrontTimer = null;
@@ -2105,7 +2106,7 @@ function steamEditorialSearchText(product) {
   ].filter(Boolean).join(" "));
 }
 
-function steamEditorialCollections(products) {
+function steamEditorialCollectionsLegacy(products) {
   const available = products.filter((product) => product.stock > 0);
   const used = new Set();
   const pick = (pattern, count) => {
@@ -2128,6 +2129,65 @@ function steamEditorialCollections(products) {
       title: fastGames.some((product) => /race|racing|speed|drive|formula|assetto|forza|f1|แข่ง|รถ/.test(steamEditorialSearchText(product)))
         ? "เกมแข่งขันความเร็ว"
         : "เกมยอดนิยมประจำสัปดาห์",
+      subtitle: "เลือกจากสินค้ายอดนิยมและสต็อกพร้อมส่งภายในร้าน",
+      layout: "feature",
+      products: fastGames
+    },
+    {
+      title: "เกมแอ็กชันและคอนโทรลเลอร์",
+      subtitle: "คัดสรรเกมที่เหมาะกับการเล่นต่อเนื่องและการควบคุมที่สนุก",
+      layout: "tiles",
+      products: actionGames
+    }
+  ].filter((collection) => collection.products.length);
+}
+
+function steamEditorialRandomScore(product, salt = "editorial") {
+  const value = `${steamSpotlightSessionSeed}:${salt}:${product.id}:${product.name}`;
+  let hash = 2166136261;
+  for (let index = 0; index < value.length; index += 1) {
+    hash ^= value.charCodeAt(index);
+    hash = Math.imul(hash, 16777619);
+  }
+  return hash >>> 0;
+}
+
+function steamEditorialShuffle(products, salt) {
+  return [...products].sort((a, b) => (
+    steamEditorialRandomScore(a, salt) - steamEditorialRandomScore(b, salt)
+  ));
+}
+
+function steamEditorialPopularRandom(products, count, salt) {
+  const popularPool = [...products]
+    .sort((a, b) => Number(b.sold || 0) - Number(a.sold || 0))
+    .slice(0, Math.max(count * 5, count));
+  return steamEditorialShuffle(popularPool, salt).slice(0, count);
+}
+
+function steamEditorialCollections(products) {
+  const available = products.filter((product) => Number(product.stock || 0) > 0);
+  const used = new Set();
+  const pickPopularRandom = (pattern, count, salt, allowFallback = true) => {
+    const matched = available.filter((product) => pattern.test(steamEditorialSearchText(product)));
+    const source = matched.length ? matched : (allowFallback ? available : []);
+    const selected = steamEditorialPopularRandom(
+      source.filter((product) => !used.has(product.id)),
+      count,
+      salt
+    );
+    selected.forEach((product) => used.add(product.id));
+    return selected;
+  };
+
+  const racingPattern = /\b(race|racing|racer|speed|drive|driver|driving|car|cars|vehicle|formula|motorsport|motorcycle|motogp|moto gp|rally|offroad|wrc|nascar|kart|f1|f 1|f2|f 2|forza|assetto|dirt|grid|nfs|need for speed|the crew)\b|แข่ง|รถ|ขับ|ความเร็ว|มอเตอร์สปอร์ต|ฟอร์มูล่า/;
+  const actionPattern = /\b(action|adventure|shooter|fps|fight|fighting|sport|football|controller|souls|rpg)\b|แอ็กชัน|แอ็คชัน|ยิง|ต่อสู้|ผจญภัย|กีฬา/;
+  const fastGames = pickPopularRandom(racingPattern, 2, "racing", false);
+  const actionGames = pickPopularRandom(actionPattern, 4, "action", true);
+
+  return [
+    {
+      title: "เกมแข่งขันความเร็ว",
       subtitle: "เลือกจากสินค้ายอดนิยมและสต็อกพร้อมส่งภายในร้าน",
       layout: "feature",
       products: fastGames
@@ -2188,6 +2248,113 @@ function steamEditorialCollectionsMarkup(products) {
   `;
 }
 
+function steamActivitySlides(products) {
+  const available = products.filter((product) => Number(product.stock || 0) > 0);
+  if (!available.length) return [];
+
+  const discounted = available
+    .filter((product) => getDiscount(product) > 0)
+    .sort((a, b) => getDiscount(b) - getDiscount(a) || Number(b.sold || 0) - Number(a.sold || 0));
+  const regular = available
+    .filter((product) => !discounted.some((deal) => deal.id === product.id))
+    .sort((a, b) => Number(b.sold || 0) - Number(a.sold || 0));
+  const pool = [
+    ...steamEditorialShuffle(discounted.slice(0, 24), "activity-deals"),
+    ...steamEditorialShuffle(regular.slice(0, 24), "activity-regular")
+  ];
+  const slides = [];
+  for (let slideIndex = 0; slideIndex < 4; slideIndex += 1) {
+    const selected = [];
+    for (let offset = 0; offset < pool.length && selected.length < 4; offset += 1) {
+      const product = pool[(slideIndex * 4 + offset) % pool.length];
+      if (product && !selected.some((item) => item.id === product.id)) selected.push(product);
+    }
+    if (selected.length) slides.push(selected);
+  }
+  return slides;
+}
+
+function steamActivityCardMarkup(product, index) {
+  const image = product.heroImage || product.image || "";
+  const discount = getDiscount(product);
+  const dealLabel = discount > 0
+    ? (index < 2 ? "ข้อเสนอสุดสัปดาห์" : "ข้อเสนอในวันนี้")
+    : "พร้อมส่งจากร้าน";
+  return `
+    <a class="olaf-steam-activity-card is-slot-${index + 1}" href="${productLink(product)}">
+      <span class="olaf-steam-activity-media">
+        <img ${fastImg(image, cleanDisplayText(product.name), {
+          width: index < 2 ? 780 : 580,
+          height: index < 2 ? 980 : 326,
+          sizes: index < 2 ? "(max-width: 720px) 44vw, 30vw" : "(max-width: 720px) 44vw, 28vw"
+        })} />
+      </span>
+      <span class="olaf-steam-activity-label">${escapeHtml(dealLabel)}</span>
+      <span class="olaf-steam-activity-info">
+        <strong>${escapeHtml(cleanDisplayText(product.name))}</strong>
+        <small>${escapeHtml(getCategoryLabel(product.category))}</small>
+      </span>
+      <span class="olaf-steam-activity-price">
+        ${discount > 0 ? `<b>-${discount}%</b><del>${formatPrice(product.compareAt)}</del>` : ""}
+        <strong>${formatPrice(product.price)}</strong>
+      </span>
+    </a>
+  `;
+}
+
+function steamActivityCarouselMarkup(products) {
+  const slides = steamActivitySlides(products);
+  if (!slides.length) return "";
+  steamActivitySlideIndex = ((steamActivitySlideIndex % slides.length) + slides.length) % slides.length;
+  return `
+    <article class="olaf-steam-activity-row" aria-label="ส่วนลดและกิจกรรม">
+      <header class="olaf-steam-activity-head">
+        <div>
+          <span>OLAF EVENT PICKS</span>
+          <h3>ส่วนลดและกิจกรรม</h3>
+          <p>สินค้าในร้านที่พร้อมส่ง คัดใหม่และสุ่มให้ทุกครั้งที่เข้าชม</p>
+        </div>
+        <a href="#catalog">ดูเพิ่มเติม <i data-lucide="arrow-up-right"></i></a>
+      </header>
+      <div class="olaf-steam-activity-carousel" data-steam-activity-carousel>
+        <button class="olaf-steam-activity-arrow is-prev" type="button" data-steam-activity-step="-1" aria-label="ดูชุดสินค้าก่อนหน้า"><i data-lucide="chevron-left"></i></button>
+        <div class="olaf-steam-activity-viewport">
+          <div class="olaf-steam-activity-track" data-steam-activity-track style="--activity-index:${steamActivitySlideIndex}">
+            ${slides.map((slide, slideIndex) => `
+              <div class="olaf-steam-activity-slide${slideIndex === steamActivitySlideIndex ? " is-active" : ""}" data-steam-activity-slide aria-hidden="${slideIndex === steamActivitySlideIndex ? "false" : "true"}">
+                ${slide.map(steamActivityCardMarkup).join("")}
+              </div>
+            `).join("")}
+          </div>
+        </div>
+        <button class="olaf-steam-activity-arrow is-next" type="button" data-steam-activity-step="1" aria-label="ดูชุดสินค้าถัดไป"><i data-lucide="chevron-right"></i></button>
+      </div>
+      <div class="olaf-steam-activity-dots" aria-label="เลือกชุดสินค้า">
+        ${slides.map((_, index) => `<button type="button" class="${index === steamActivitySlideIndex ? "is-active" : ""}" data-steam-activity-dot="${index}" aria-label="ชุดสินค้า ${index + 1}" aria-current="${index === steamActivitySlideIndex ? "true" : "false"}"></button>`).join("")}
+      </div>
+    </article>
+  `;
+}
+
+function syncSteamActivityCarousel() {
+  const track = document.querySelector("[data-steam-activity-track]");
+  if (!track) return;
+  const slides = [...track.querySelectorAll("[data-steam-activity-slide]")];
+  if (!slides.length) return;
+  steamActivitySlideIndex = ((steamActivitySlideIndex % slides.length) + slides.length) % slides.length;
+  track.style.setProperty("--activity-index", steamActivitySlideIndex);
+  slides.forEach((slide, index) => {
+    const active = index === steamActivitySlideIndex;
+    slide.classList.toggle("is-active", active);
+    slide.setAttribute("aria-hidden", String(!active));
+  });
+  document.querySelectorAll("[data-steam-activity-dot]").forEach((dot, index) => {
+    const active = index === steamActivitySlideIndex;
+    dot.classList.toggle("is-active", active);
+    dot.setAttribute("aria-current", String(active));
+  });
+}
+
 function steamEditorialImages(product, products) {
   const ownImages = [
     product.heroImage,
@@ -2245,7 +2412,7 @@ function steamEditorialFeatureMarkup(product, products) {
   `;
 }
 
-function steamEditorialFeaturesMarkup(products) {
+function steamEditorialFeaturesMarkupLegacy(products) {
   const featured = products
     .filter((product) => product.stock > 0)
     .sort((a, b) => Number(b.sold || 0) - Number(a.sold || 0))
@@ -2254,6 +2421,23 @@ function steamEditorialFeaturesMarkup(products) {
   return `
     <section class="olaf-steam-taste-stack" aria-label="รายการที่คุณอาจสนใจ">
       ${featured.map((product) => steamEditorialFeatureMarkup(product, products)).join("")}
+    </section>
+  `;
+}
+
+function steamEditorialFeaturesMarkup(products) {
+  const featurePool = products
+    .filter((product) => Number(product.stock || 0) > 0)
+    .filter((product) => !/\bhelldivers?\s*2\b/.test(steamEditorialSearchText(product)))
+    .sort((a, b) => Number(b.sold || 0) - Number(a.sold || 0))
+    .slice(0, 30);
+  const randomFeature = steamEditorialShuffle(featurePool, "last-feature")[0];
+  const activity = steamActivityCarouselMarkup(products);
+  if (!activity && !randomFeature) return "";
+  return `
+    <section class="olaf-steam-taste-stack" aria-label="รายการที่คุณอาจสนใจ">
+      ${activity}
+      ${randomFeature ? steamEditorialFeatureMarkup(randomFeature, products) : ""}
     </section>
   `;
 }
@@ -2293,6 +2477,7 @@ function renderSteamStorefront() {
   `;
 
   renderSteamSpotlightStage();
+  syncSteamActivityCarousel();
   scheduleSteamStorefrontRotation();
   createIconSet();
   hydrateImages();
@@ -3052,6 +3237,8 @@ function bindEvents() {
     const steamSpotlightDot = event.target.closest("[data-steam-spotlight-dot]");
     const steamDiscoveryButton = event.target.closest("[data-steam-discovery-mode]");
     const steamDealsScroll = event.target.closest("[data-steam-deals-scroll]");
+    const steamActivityStep = event.target.closest("[data-steam-activity-step]");
+    const steamActivityDot = event.target.closest("[data-steam-activity-dot]");
 
     if (steamCategoryButton) {
       selectCatalogCategory(steamCategoryButton.dataset.steamCategory, { scrollToCatalog: true });
@@ -3088,6 +3275,18 @@ function bindEvents() {
       const track = document.querySelector("[data-steam-deals-track]");
       const direction = Number(steamDealsScroll.dataset.steamDealsScroll || 0);
       track?.scrollBy({ left: direction * Math.max(track.clientWidth * 0.8, 260), behavior: "smooth" });
+      return;
+    }
+
+    if (steamActivityStep) {
+      steamActivitySlideIndex += Number(steamActivityStep.dataset.steamActivityStep || 0);
+      syncSteamActivityCarousel();
+      return;
+    }
+
+    if (steamActivityDot) {
+      steamActivitySlideIndex = Number(steamActivityDot.dataset.steamActivityDot || 0);
+      syncSteamActivityCarousel();
       return;
     }
 

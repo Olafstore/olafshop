@@ -147,6 +147,10 @@ let promoVideoViewportBound = false;
 let promoVideoUserPaused = false;
 let promoVideoUnlocked = false;
 const promoVideoFailures = new Set();
+let steamSpotlightIndex = 0;
+let steamDiscoveryMode = "top";
+let steamDiscoveryPreviewId = "";
+let steamStorefrontTimer = null;
 
 const selectors = {
   apiStatus: "#api-status",
@@ -1245,6 +1249,7 @@ function renderAll() {
   renderAccount();
   renderHeroDeal();
   renderStats();
+  renderSteamStorefront();
   renderRecentPurchases();
   renderPromoVideos();
   renderCategories();
@@ -1636,6 +1641,321 @@ function renderStats() {
   const stockPercent = Math.min(100, Math.round((totalStock / capacity) * 100));
   $(selectors.stockMeterFill).style.width = `${stockPercent}%`;
   $(selectors.stockMeterText).textContent = `${totalStock.toLocaleString("th-TH")} ชิ้นพร้อมส่งจาก ${state.products.length} รายการ`;
+}
+
+function steamStorefrontProducts() {
+  return [...state.products].sort((a, b) => {
+    const stockDelta = Number(b.stock > 0) - Number(a.stock > 0);
+    if (stockDelta) return stockDelta;
+    return Number(b.sold || 0) - Number(a.sold || 0);
+  });
+}
+
+function steamSpotlightProducts() {
+  return steamStorefrontProducts()
+    .filter((product) => product.stock > 0)
+    .sort((a, b) => {
+      const featuredDelta = Number(b.featured === true) - Number(a.featured === true);
+      if (featuredDelta) return featuredDelta;
+      const discountDelta = getDiscount(b) - getDiscount(a);
+      if (discountDelta) return discountDelta;
+      return Number(b.sold || 0) - Number(a.sold || 0);
+    })
+    .slice(0, 7);
+}
+
+function steamDealsProducts() {
+  const products = steamStorefrontProducts();
+  const discounted = products
+    .filter((product) => product.stock > 0 && getDiscount(product) > 0)
+    .sort((a, b) => getDiscount(b) - getDiscount(a) || Number(b.sold || 0) - Number(a.sold || 0));
+  const fallback = products.filter((product) => product.stock > 0 && !discounted.includes(product));
+  return [...discounted, ...fallback].slice(0, 12);
+}
+
+function steamDiscoveryProducts(mode = steamDiscoveryMode) {
+  const products = steamStorefrontProducts();
+  const sorters = {
+    top: (a, b) => Number(b.sold || 0) - Number(a.sold || 0),
+    new: (a, b) => String(b.createdAt || b.updatedAt || b.id).localeCompare(String(a.createdAt || a.updatedAt || a.id)),
+    deals: (a, b) => getDiscount(b) - getDiscount(a) || Number(b.sold || 0) - Number(a.sold || 0),
+    stock: (a, b) => Number(b.stock || 0) - Number(a.stock || 0) || Number(b.sold || 0) - Number(a.sold || 0)
+  };
+  let filtered = products;
+  if (mode === "deals") filtered = products.filter((product) => getDiscount(product) > 0);
+  if (mode === "stock") filtered = products.filter((product) => product.stock > 0);
+  return [...filtered].sort(sorters[mode] || sorters.top).slice(0, 10);
+}
+
+function steamStoreDescription(product, maxLength = 150) {
+  const text = cleanDisplayText(
+    product.description || product.delivery || product.warranty || "สินค้าเกมพร้อมบริการจาก OLAF SHOP"
+  );
+  if (text.length <= maxLength) return text;
+  return `${text.slice(0, maxLength).trim()}…`;
+}
+
+function steamPriceMarkup(product, className = "") {
+  const discount = getDiscount(product);
+  return `
+    <div class="olaf-steam-price ${className}">
+      ${discount > 0 ? `<span class="olaf-steam-discount">-${discount}%</span>` : ""}
+      <span class="olaf-steam-price-stack">
+        ${discount > 0 ? `<del>${formatPrice(product.compareAt)}</del>` : ""}
+        <strong>${formatPrice(product.price)}</strong>
+      </span>
+    </div>
+  `;
+}
+
+function steamSpotlightMarkup(product, products) {
+  const productName = cleanDisplayText(product.name);
+  const images = [...new Set([
+    product.heroImage,
+    ...(product.gallery || []),
+    product.image
+  ].filter(Boolean))];
+  const cover = images[0] || product.image || product.heroImage || "";
+  const thumbs = images.length > 1 ? images.slice(1, 5) : images.slice(0, 1);
+  const tags = getDisplayTags(product, 5);
+  const stock = getStockState(product.stock);
+  const index = products.findIndex((item) => item.id === product.id);
+
+  return `
+    <article class="olaf-steam-spotlight">
+      <a class="olaf-steam-spotlight-cover" href="${productLink(product)}" aria-label="ดูรายละเอียด ${escapeHtml(productName)}">
+        <img ${fastImg(cover, productName, {
+          loading: "eager",
+          fetchPriority: "high",
+          width: 920,
+          height: 518,
+          sizes: "(max-width: 980px) calc(100vw - 28px), 62vw"
+        })} />
+        <span class="olaf-steam-cover-glow" aria-hidden="true"></span>
+      </a>
+      <div class="olaf-steam-spotlight-info">
+        <p class="olaf-steam-kicker">FEATURED &amp; RECOMMENDED</p>
+        <h3><a href="${productLink(product)}">${escapeHtml(productName)}</a></h3>
+        <p class="olaf-steam-description">${escapeHtml(steamStoreDescription(product))}</p>
+        <div class="olaf-steam-shot-grid" aria-label="ภาพตัวอย่างสินค้า">
+          ${thumbs.map((image, thumbIndex) => `
+            <a href="${productLink(product)}" aria-label="ภาพตัวอย่าง ${thumbIndex + 1} ของ ${escapeHtml(productName)}">
+              <img ${fastImg(image, `${productName} ภาพตัวอย่าง ${thumbIndex + 1}`, {
+                width: 320,
+                height: 180,
+                sizes: "(max-width: 640px) 23vw, 160px"
+              })} />
+            </a>
+          `).join("")}
+        </div>
+        <div class="olaf-steam-tags">
+          ${tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}
+        </div>
+        <div class="olaf-steam-spotlight-foot">
+          <span class="olaf-steam-stock ${stock.className}">${escapeHtml(stock.label)}</span>
+          ${steamPriceMarkup(product)}
+        </div>
+      </div>
+      ${products.length > 1 ? `
+        <button class="olaf-steam-arrow is-prev" type="button" data-steam-spotlight-step="-1" aria-label="สินค้าเด่นก่อนหน้า">
+          <i data-lucide="chevron-left"></i>
+        </button>
+        <button class="olaf-steam-arrow is-next" type="button" data-steam-spotlight-step="1" aria-label="สินค้าเด่นถัดไป">
+          <i data-lucide="chevron-right"></i>
+        </button>
+        <div class="olaf-steam-dots" role="tablist" aria-label="เลือกสินค้าเด่น">
+          ${products.map((item, dotIndex) => `
+            <button type="button" role="tab" aria-selected="${dotIndex === index}" class="${dotIndex === index ? "is-active" : ""}" data-steam-spotlight-dot="${dotIndex}" aria-label="${escapeHtml(cleanDisplayText(item.name))}"></button>
+          `).join("")}
+        </div>
+      ` : ""}
+    </article>
+  `;
+}
+
+function renderSteamSpotlightStage() {
+  const stage = document.querySelector("[data-steam-spotlight-stage]");
+  if (!stage) return;
+  const products = steamSpotlightProducts();
+  if (!products.length) {
+    stage.innerHTML = `<div class="olaf-steam-empty">ยังไม่มีสินค้าแนะนำในขณะนี้</div>`;
+    return;
+  }
+  steamSpotlightIndex = ((steamSpotlightIndex % products.length) + products.length) % products.length;
+  stage.innerHTML = steamSpotlightMarkup(products[steamSpotlightIndex], products);
+  createIconSet();
+  hydrateImages();
+}
+
+function steamDealCardMarkup(product) {
+  const image = product.image || product.heroImage || "";
+  const stock = getStockState(product.stock);
+  return `
+    <a class="olaf-steam-deal-card" href="${productLink(product)}">
+      <span class="olaf-steam-deal-media">
+        <img ${fastImg(image, cleanDisplayText(product.name), {
+          width: 640,
+          height: 360,
+          sizes: "(max-width: 640px) 76vw, 280px"
+        })} />
+        <span class="olaf-steam-deal-sheen" aria-hidden="true"></span>
+      </span>
+      <span class="olaf-steam-deal-body">
+        <span class="olaf-steam-deal-name">${escapeHtml(cleanDisplayText(product.name))}</span>
+        <span class="olaf-steam-deal-meta">
+          <small class="${stock.className}">${escapeHtml(stock.label)}</small>
+          ${steamPriceMarkup(product, "is-compact")}
+        </span>
+      </span>
+    </a>
+  `;
+}
+
+function steamDiscoveryPreviewMarkup(product) {
+  if (!product) return `<div class="olaf-steam-empty">เลือกสินค้าเพื่อดูตัวอย่าง</div>`;
+  const images = [...new Set([
+    product.heroImage,
+    ...(product.gallery || []),
+    product.image
+  ].filter(Boolean))].slice(0, 4);
+  const tags = getDisplayTags(product, 4);
+  return `
+    <div class="olaf-steam-preview-card">
+      <p>กำลังดู</p>
+      <h3>${escapeHtml(cleanDisplayText(product.name))}</h3>
+      <span class="olaf-steam-preview-rating">ได้รับความนิยมใน OLAF SHOP</span>
+      <div class="olaf-steam-preview-images">
+        ${images.map((image, index) => `<img ${fastImg(image, `${cleanDisplayText(product.name)} ${index + 1}`, {
+          width: 460,
+          height: 258,
+          sizes: "320px"
+        })} />`).join("")}
+      </div>
+      <div class="olaf-steam-tags">${tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("")}</div>
+    </div>
+  `;
+}
+
+function renderSteamDiscoveryContent() {
+  const content = document.querySelector("[data-steam-discovery-content]");
+  if (!content) return;
+  const products = steamDiscoveryProducts();
+  if (!products.length) {
+    content.innerHTML = `<div class="olaf-steam-empty">ยังไม่มีสินค้าในรายการนี้</div>`;
+    return;
+  }
+
+  if (!products.some((product) => product.id === steamDiscoveryPreviewId)) {
+    steamDiscoveryPreviewId = products[0].id;
+  }
+  const previewProduct = products.find((product) => product.id === steamDiscoveryPreviewId) || products[0];
+  content.innerHTML = `
+    <div class="olaf-steam-discovery-list">
+      ${products.map((product) => {
+        const stock = getStockState(product.stock);
+        const tags = getDisplayTags(product, 3);
+        const image = product.image || product.heroImage || "";
+        return `
+          <a class="olaf-steam-discovery-row ${product.id === previewProduct.id ? "is-active" : ""}" href="${productLink(product)}" data-steam-discovery-product="${escapeHtml(product.id)}">
+            <img ${fastImg(image, cleanDisplayText(product.name), {
+              width: 368,
+              height: 138,
+              sizes: "(max-width: 640px) 112px, 184px"
+            })} />
+            <span class="olaf-steam-discovery-copy">
+              <strong>${escapeHtml(cleanDisplayText(product.name))}</strong>
+              <small>${escapeHtml(tags.join(", ") || getCategoryLabel(product.category))}</small>
+              <em class="${stock.className}">${escapeHtml(stock.label)}</em>
+            </span>
+            ${steamPriceMarkup(product, "is-row")}
+          </a>
+        `;
+      }).join("")}
+    </div>
+    <aside class="olaf-steam-discovery-preview" data-steam-discovery-preview aria-live="polite">
+      ${steamDiscoveryPreviewMarkup(previewProduct)}
+    </aside>
+  `;
+  createIconSet();
+  hydrateImages();
+}
+
+function scheduleSteamStorefrontRotation() {
+  window.clearInterval(steamStorefrontTimer);
+  if (window.matchMedia?.("(prefers-reduced-motion: reduce)").matches) return;
+  if (steamSpotlightProducts().length < 2) return;
+  steamStorefrontTimer = window.setInterval(() => {
+    const section = document.querySelector("#olaf-steam-storefront");
+    if (!section || document.hidden || section.matches(":hover") || section.contains(document.activeElement)) return;
+    steamSpotlightIndex += 1;
+    renderSteamSpotlightStage();
+  }, 6500);
+}
+
+function renderSteamStorefront() {
+  const section = document.querySelector("#olaf-steam-storefront");
+  if (!section) return;
+  const products = steamStorefrontProducts();
+  if (!products.length) {
+    section.innerHTML = `<div class="olaf-steam-store-loading"><span class="olaf-steam-loading-orbit" aria-hidden="true"></span><span>กำลังโหลดสินค้าจากร้าน...</span></div>`;
+    return;
+  }
+
+  const navCategories = state.categories.filter((category) => category.id !== "all").slice(0, 6);
+  const deals = steamDealsProducts();
+  section.innerHTML = `
+    <nav class="olaf-steam-subnav" aria-label="เมนูค้นพบสินค้า">
+      <div class="olaf-steam-subnav-links">
+        <button type="button" data-steam-category="all">ร้านค้า</button>
+        ${navCategories.map((category) => `<button type="button" data-steam-category="${escapeHtml(category.id)}">${escapeHtml(cleanDisplayText(category.label))}</button>`).join("")}
+      </div>
+      <form class="olaf-steam-search" data-steam-store-search role="search">
+        <label class="sr-only" for="olaf-steam-search-input">ค้นหาสินค้า</label>
+        <input id="olaf-steam-search-input" type="search" name="search" value="${escapeHtml(state.query)}" placeholder="ค้นหาในร้าน..." autocomplete="off" />
+        <button type="submit" aria-label="ค้นหา"><i data-lucide="search"></i></button>
+      </form>
+    </nav>
+
+    <header class="olaf-steam-section-head">
+      <div><p>OLAF STORE DISCOVERY</p><h2>สินค้าเด่นและแนะนำ</h2></div>
+      <a href="#catalog">เลือกดูสินค้าทั้งหมด <i data-lucide="arrow-right"></i></a>
+    </header>
+    <div class="olaf-steam-spotlight-stage" data-steam-spotlight-stage></div>
+
+    ${deals.length ? `
+      <div class="olaf-steam-section-head is-deals">
+        <div><p>SPECIAL OFFERS</p><h2>ดีลและสินค้าน่าสนใจ</h2></div>
+        <div class="olaf-steam-track-controls">
+          <button type="button" data-steam-deals-scroll="-1" aria-label="เลื่อนดีลไปทางซ้าย"><i data-lucide="chevron-left"></i></button>
+          <button type="button" data-steam-deals-scroll="1" aria-label="เลื่อนดีลไปทางขวา"><i data-lucide="chevron-right"></i></button>
+        </div>
+      </div>
+      <div class="olaf-steam-deals-track" data-steam-deals-track>
+        ${deals.map(steamDealCardMarkup).join("")}
+      </div>
+    ` : ""}
+
+    <section class="olaf-steam-discovery" aria-labelledby="olaf-steam-discovery-title">
+      <div class="olaf-steam-section-head is-discovery">
+        <div><p>DISCOVER MORE</p><h2 id="olaf-steam-discovery-title">เลือกดูสินค้าเพิ่มเติม</h2></div>
+      </div>
+      <div class="olaf-steam-tabs" role="tablist" aria-label="รูปแบบรายการสินค้า">
+        ${[
+          ["top", "สินค้าขายดี"],
+          ["new", "มาใหม่"],
+          ["deals", "ลดราคา"],
+          ["stock", "พร้อมส่ง"]
+        ].map(([mode, label]) => `<button type="button" role="tab" aria-selected="${steamDiscoveryMode === mode}" class="${steamDiscoveryMode === mode ? "is-active" : ""}" data-steam-discovery-mode="${mode}">${label}</button>`).join("")}
+      </div>
+      <div class="olaf-steam-discovery-content" data-steam-discovery-content></div>
+    </section>
+  `;
+
+  renderSteamSpotlightStage();
+  renderSteamDiscoveryContent();
+  scheduleSteamStorefrontRotation();
+  createIconSet();
+  hydrateImages();
 }
 
 function renderCategories() {
@@ -2387,6 +2707,49 @@ function bindEvents() {
     const pageButton = event.target.closest("[data-page]");
     const showcaseCategoryButton = event.target.closest("[data-showcase-category]");
     const promoVideoButton = event.target.closest("[data-promo-video]");
+    const steamCategoryButton = event.target.closest("[data-steam-category]");
+    const steamSpotlightStep = event.target.closest("[data-steam-spotlight-step]");
+    const steamSpotlightDot = event.target.closest("[data-steam-spotlight-dot]");
+    const steamDiscoveryButton = event.target.closest("[data-steam-discovery-mode]");
+    const steamDealsScroll = event.target.closest("[data-steam-deals-scroll]");
+
+    if (steamCategoryButton) {
+      selectCatalogCategory(steamCategoryButton.dataset.steamCategory, { scrollToCatalog: true });
+      return;
+    }
+
+    if (steamSpotlightStep) {
+      steamSpotlightIndex += Number(steamSpotlightStep.dataset.steamSpotlightStep || 0);
+      renderSteamSpotlightStage();
+      scheduleSteamStorefrontRotation();
+      return;
+    }
+
+    if (steamSpotlightDot) {
+      steamSpotlightIndex = Number(steamSpotlightDot.dataset.steamSpotlightDot || 0);
+      renderSteamSpotlightStage();
+      scheduleSteamStorefrontRotation();
+      return;
+    }
+
+    if (steamDiscoveryButton) {
+      steamDiscoveryMode = steamDiscoveryButton.dataset.steamDiscoveryMode || "top";
+      steamDiscoveryPreviewId = "";
+      document.querySelectorAll("[data-steam-discovery-mode]").forEach((button) => {
+        const active = button.dataset.steamDiscoveryMode === steamDiscoveryMode;
+        button.classList.toggle("is-active", active);
+        button.setAttribute("aria-selected", String(active));
+      });
+      renderSteamDiscoveryContent();
+      return;
+    }
+
+    if (steamDealsScroll) {
+      const track = document.querySelector("[data-steam-deals-track]");
+      const direction = Number(steamDealsScroll.dataset.steamDealsScroll || 0);
+      track?.scrollBy({ left: direction * Math.max(track.clientWidth * 0.8, 260), behavior: "smooth" });
+      return;
+    }
 
     if (promoVideoButton) {
       setPromoVideo(Number(promoVideoButton.dataset.promoVideo || 0));
@@ -2470,7 +2833,33 @@ function bindEvents() {
     }
   });
 
+  document.body.addEventListener("pointerover", (event) => {
+    const row = event.target.closest?.("[data-steam-discovery-product]");
+    if (!row || row.dataset.steamDiscoveryProduct === steamDiscoveryPreviewId) return;
+    const product = productById(row.dataset.steamDiscoveryProduct);
+    const preview = document.querySelector("[data-steam-discovery-preview]");
+    if (!product || !preview) return;
+    steamDiscoveryPreviewId = product.id;
+    document.querySelectorAll("[data-steam-discovery-product]").forEach((item) => {
+      item.classList.toggle("is-active", item.dataset.steamDiscoveryProduct === product.id);
+    });
+    preview.innerHTML = steamDiscoveryPreviewMarkup(product);
+    hydrateImages();
+  });
+
   document.body.addEventListener("submit", async (event) => {
+    if (event.target.matches("[data-steam-store-search]")) {
+      event.preventDefault();
+      const formData = new FormData(event.target);
+      state.query = String(formData.get("search") || "").trim();
+      state.currentPage = 1;
+      const mainSearch = $(selectors.searchInput);
+      if (mainSearch) mainSearch.value = state.query;
+      renderProducts();
+      document.querySelector("#catalog")?.scrollIntoView({ behavior: "smooth", block: "start" });
+      return;
+    }
+
     if (event.target.matches("#profile-form")) {
       event.preventDefault();
       const formData = new FormData(event.target);

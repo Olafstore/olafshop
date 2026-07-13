@@ -8,6 +8,7 @@
     busy: false,
     slipInput: null
   };
+  const dialogCloseTimers = new WeakMap();
 
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => Array.from(root.querySelectorAll(selector));
@@ -216,10 +217,33 @@
 
   function setDialogOpen(dialog, open = true) {
     if (!dialog) return;
-    if (open && !dialog.open) dialog.showModal();
-    if (!open && dialog.open) dialog.close();
-    document.documentElement.classList.toggle("olaf-topup-dialog-open", Boolean(open));
-    document.body.classList.toggle("olaf-topup-dialog-open", Boolean(open));
+    const pendingTimer = dialogCloseTimers.get(dialog);
+    if (pendingTimer) {
+      window.clearTimeout(pendingTimer);
+      dialogCloseTimers.delete(dialog);
+    }
+
+    if (open) {
+      dialog.classList.remove("is-closing");
+      if (!dialog.open) dialog.showModal();
+      window.requestAnimationFrame(() => dialog.classList.add("is-visible"));
+      document.documentElement.classList.add("olaf-topup-dialog-open");
+      document.body.classList.add("olaf-topup-dialog-open");
+      return;
+    }
+
+    if (!dialog.open) return;
+    dialog.classList.remove("is-visible");
+    dialog.classList.add("is-closing");
+    const timer = window.setTimeout(() => {
+      if (dialog.open) dialog.close();
+      dialog.classList.remove("is-closing");
+      dialogCloseTimers.delete(dialog);
+      const hasOpenTopupDialog = Boolean(document.querySelector("dialog.point-topup-qr-dialog[open]"));
+      document.documentElement.classList.toggle("olaf-topup-dialog-open", hasOpenTopupDialog);
+      document.body.classList.toggle("olaf-topup-dialog-open", hasOpenTopupDialog);
+    }, 220);
+    dialogCloseTimers.set(dialog, timer);
   }
 
   function setQrLoading(visible) {

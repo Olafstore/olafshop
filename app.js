@@ -124,7 +124,7 @@ const state = {
   products: [],
   selectedCategory: "all",
   query: "",
-  stockOnly: true,
+  stockOnly: false,
   priceFilter: "all",
   sortBy: "default",
   currentPage: 1,
@@ -619,15 +619,22 @@ function filteredProducts() {
     return matchesCategory && matchesStock && matchesPrice && matchesQuery;
   });
 
-  if (state.sortBy === "priceAsc") {
-    result.sort((a, b) => a.price - b.price);
-  } else if (state.sortBy === "priceDesc") {
-    result.sort((a, b) => b.price - a.price);
-  } else if (state.sortBy === "nameAsc") {
-    result.sort((a, b) => a.name.localeCompare(b.name, 'th'));
-  } else if (state.sortBy === "nameDesc") {
-    result.sort((a, b) => b.name.localeCompare(a.name, 'th'));
-  }
+  const originalPosition = new Map(state.products.map((product, index) => [product.id, index]));
+  const selectedComparator = (a, b) => {
+    if (state.sortBy === "priceAsc") return a.price - b.price;
+    if (state.sortBy === "priceDesc") return b.price - a.price;
+    if (state.sortBy === "nameAsc") return a.name.localeCompare(b.name, "th");
+    if (state.sortBy === "nameDesc") return b.name.localeCompare(a.name, "th");
+    return (originalPosition.get(a.id) ?? 0) - (originalPosition.get(b.id) ?? 0);
+  };
+
+  result.sort((a, b) => {
+    const stockGroup = Number(Number(a.stock || 0) <= 0) - Number(Number(b.stock || 0) <= 0);
+    if (stockGroup !== 0) return stockGroup;
+    const selectedOrder = selectedComparator(a, b);
+    if (selectedOrder !== 0) return selectedOrder;
+    return (originalPosition.get(a.id) ?? 0) - (originalPosition.get(b.id) ?? 0);
+  });
 
   return result;
 }
@@ -1980,7 +1987,7 @@ function renderProductCard(product) {
     .join("");
 
   return `
-    <article class="product-card">
+    <article class="product-card ${product.stock <= 0 ? "is-out-of-stock" : ""}">
       <div class="product-image">
         <img ${fastImg(product.image || product.heroImage, product.name)} />
         ${discount ? `<span class="discount-pill">-${discount}%</span>` : ""}

@@ -22,6 +22,16 @@
       maximumFractionDigits: 0
     }).format(Number(value) || 0);
 
+  function sortProductsStockLast(products = []) {
+    return [...products].sort((a, b) => {
+      const stockGroup = Number(Number(a?.stock || 0) <= 0) - Number(Number(b?.stock || 0) <= 0);
+      if (stockGroup !== 0) return stockGroup;
+      const sortOrder = Number(a?.sortOrder || 0) - Number(b?.sortOrder || 0);
+      if (sortOrder !== 0) return sortOrder;
+      return String(a?.name || "").localeCompare(String(b?.name || ""), "th");
+    });
+  }
+
   function stockLabel(product) {
     const stock = Number(product?.stock || 0);
     if (String(product?.category || "") === "windows") {
@@ -45,7 +55,7 @@
     const description = String(product.description || "").split("\n")[0];
     const tags = (Array.isArray(product.tags) ? product.tags : []).slice(0, 4);
     return `
-      <article class="extras-product-card ${isMinecraft ? "is-minecraft" : ""} ${isRockstar ? "is-rockstar" : ""}">
+      <article class="extras-product-card ${isMinecraft ? "is-minecraft" : ""} ${isRockstar ? "is-rockstar" : ""} ${disabled ? "is-out-of-stock" : ""}">
         <a class="extras-product-cover" href="product.html?id=${encodeURIComponent(product.id)}">
           <img src="${escapeHtml(product.image || product.heroImage || "")}" alt="${escapeHtml(product.name)}" loading="lazy" decoding="async" />
           <span class="extras-product-label">${escapeHtml(product.label || (isMinecraft ? "PRE-ORDER" : "STOCK"))}</span>
@@ -83,7 +93,7 @@
       ? `พร้อมขาย ${stock.toLocaleString("th-TH")} ชิ้น`
       : "รอแอดมินอัปเดตสต็อก";
     return `
-      <article class="olaf-license-card ${isHighlighted ? "is-highlight" : ""}">
+      <article class="olaf-license-card ${isHighlighted ? "is-highlight" : ""} ${stock <= 0 ? "is-out-of-stock" : ""}">
         <div class="license-card-top">
           <div class="license-type-badges">
             <span class="license-type-badge">${escapeHtml(product.label || "Key")}</span>
@@ -122,11 +132,11 @@
         })
       : [];
     const products = window.OlafExtraProducts?.mergeProducts?.(onlineProducts) || [];
-    const windowsProducts = products.filter((product) => product.category === "windows");
-    const minecraftProducts = products.filter((product) =>
+    const windowsProducts = sortProductsStockLast(products.filter((product) => product.category === "windows"));
+    const minecraftProducts = sortProductsStockLast(products.filter((product) =>
       String(product.category || "").startsWith("minecraft-")
-    );
-    const rockstarProducts = products.filter((product) => product.category === "rockstar");
+    ));
+    const rockstarProducts = sortProductsStockLast(products.filter((product) => product.category === "rockstar"));
 
     const windowsGrid = $("#windows-product-grid");
     const minecraftGrid = $("#minecraft-product-grid");

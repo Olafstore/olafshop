@@ -187,6 +187,21 @@
     $$("[data-topup-preset]").forEach((button) => {
       button.classList.toggle("is-active", Number(button.dataset.topupPreset) === state.amount);
     });
+    renderAmountPreview();
+  }
+
+  function renderAmountPreview() {
+    const preview = $("[data-topup-live-preview]");
+    const points = $("[data-topup-preview-points]");
+    const total = $("[data-topup-preview-total]");
+    const amount = Math.max(1, Math.min(Math.round(Number(state.amount || selectedAmount())), 50000));
+    if (points) points.textContent = `${formatPoint(amount)} Point`;
+    if (total) total.textContent = formatPrice(amount);
+    if (!preview) return;
+    preview.classList.remove("is-updating");
+    window.requestAnimationFrame(() => preview.classList.add("is-updating"));
+    window.clearTimeout(preview._topupPreviewTimer);
+    preview._topupPreviewTimer = window.setTimeout(() => preview.classList.remove("is-updating"), 260);
   }
 
   function renderBalance() {

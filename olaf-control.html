@@ -7,14 +7,14 @@
     <title>หลังบ้าน | OLAF SHOP</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="preconnect" href="https://wtvfgwacodfrzxapwoxj.supabase.co" />
-    <link rel="stylesheet" href="admin.css?v=20260711-dg2u-steam-v73" />
+    <link rel="stylesheet" href="admin.css?v=20260713-activity-payment-v93" />
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="supabase-client.js?v=20260711-dg2u-steam-v73" defer></script>
+    <script src="supabase-client.js?v=20260713-activity-payment-v93" defer></script>
     <script src="platform-store.js?v=20260605-admin-users" defer></script>
     <script src="image-performance.js?v=20260607-performance" defer></script>
 <script src="delivery-payload.js?v=20260620-phase1-12-final" defer></script>
-    <script src="admin.js?v=20260712-admin-authority-v86" defer></script>
+    <script src="admin.js?v=20260713-activity-payment-v93" defer></script>
   </head>
   <body>
     <section class="admin-login-screen" id="admin-login-screen">
@@ -88,6 +88,10 @@
             <button type="button" data-panel-target="payment">
               <i data-lucide="qr-code"></i>
               ชำระเงิน
+            </button>
+            <button type="button" data-panel-target="activity">
+              <i data-lucide="megaphone"></i>
+              กิจกรรมหน้าเว็บ
             </button>
             <button type="button" data-panel-target="data">
               <i data-lucide="database"></i>
@@ -1245,6 +1249,104 @@
               <div class="qr-preview site-icon-preview" id="site-icon-preview">
                 <i data-lucide="badge"></i>
                 <p>อัปโหลดหรือใส่ URL เพื่อเปลี่ยนไอคอนหน้าเว็บ</p>
+              </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="admin-panel" data-panel="activity">
+          <div class="admin-grid activity-admin-grid">
+            <section class="admin-card activity-admin-form-card">
+              <div class="card-heading">
+                <div>
+                  <h2>Popup กิจกรรมหน้า Index</h2>
+                  <span>ตั้งค่ารูปกิจกรรม ลิงก์ และการแสดงผล โดยไม่ต้องแก้โค้ดหน้าเว็บ</span>
+                </div>
+              </div>
+              <form class="admin-form" id="activity-popup-form">
+                <div class="form-row">
+                  <label class="admin-toggle-field">
+                    สถานะกิจกรรม
+                    <select name="enabled">
+                      <option value="true">เปิดแสดงหน้าเว็บ</option>
+                      <option value="false">ปิดชั่วคราว</option>
+                    </select>
+                  </label>
+                  <label>
+                    รหัสกิจกรรม
+                    <input name="campaignId" type="text" maxlength="80" placeholder="เช่น july-sale-2026" />
+                    <small>เปลี่ยนรหัสเมื่อต้องการให้กิจกรรมใหม่แสดงอีกครั้ง แม้ลูกค้าเคยกดซ่อน 24 ชั่วโมง</small>
+                  </label>
+                </div>
+                <label>
+                  หัวข้อ
+                  <input name="title" type="text" maxlength="120" placeholder="กิจกรรมพิเศษจาก OLAF SHOP" />
+                </label>
+                <label>
+                  รายละเอียดสั้น
+                  <textarea name="message" rows="3" maxlength="360" placeholder="รายละเอียดโปรโมชันหรือเงื่อนไขสำคัญ"></textarea>
+                </label>
+                <div class="form-row">
+                  <label>
+                    URL รูป Desktop (แนะนำ 1080 × 1920)
+                    <input name="desktopImageUrl" type="url" placeholder="https://..." />
+                  </label>
+                  <label>
+                    URL รูป Mobile (แนะนำ 1:1)
+                    <input name="mobileImageUrl" type="url" placeholder="https://..." />
+                  </label>
+                </div>
+                <div class="form-row">
+                  <label>
+                    อัปโหลดรูป Desktop
+                    <input id="activity-desktop-upload" type="file" accept="image/png,image/jpeg,image/webp" />
+                    <small>PNG, JPG หรือ WebP ไม่เกิน 5 MB</small>
+                  </label>
+                  <label>
+                    อัปโหลดรูป Mobile
+                    <input id="activity-mobile-upload" type="file" accept="image/png,image/jpeg,image/webp" />
+                    <small>ถ้าไม่ใส่ ระบบจะใช้รูป Desktop แทน</small>
+                  </label>
+                </div>
+                <div class="form-row">
+                  <label>
+                    ลิงก์เมื่อกดดูรายละเอียด
+                    <input name="linkUrl" type="url" placeholder="https://..." />
+                  </label>
+                  <label>
+                    ข้อความบนปุ่ม
+                    <input name="linkLabel" type="text" maxlength="60" placeholder="ดูรายละเอียดกิจกรรม" />
+                  </label>
+                </div>
+                <div class="form-actions">
+                  <button class="primary-button" type="submit">
+                    <i data-lucide="save"></i>
+                    บันทึกกิจกรรม
+                  </button>
+                  <button class="ghost-button" id="clear-activity-images" type="button">
+                    <i data-lucide="image-off"></i>
+                    ล้างรูปกิจกรรม
+                  </button>
+                </div>
+              </form>
+            </section>
+
+            <section class="admin-card activity-admin-preview-card">
+              <div class="card-heading">
+                <div>
+                  <h2>ตัวอย่างการแสดงผล</h2>
+                  <span>Desktop ใช้ภาพแนวตั้ง และ Mobile ใช้ภาพสี่เหลี่ยมจัตุรัส</span>
+                </div>
+              </div>
+              <div class="activity-admin-preview-grid">
+                <figure class="activity-admin-preview is-desktop" id="activity-desktop-preview">
+                  <div class="activity-admin-placeholder"><i data-lucide="monitor-up"></i><span>รูป Desktop 1080 × 1920</span></div>
+                  <figcaption>Desktop</figcaption>
+                </figure>
+                <figure class="activity-admin-preview is-mobile" id="activity-mobile-preview">
+                  <div class="activity-admin-placeholder"><i data-lucide="smartphone"></i><span>รูป Mobile 1:1</span></div>
+                  <figcaption>Mobile</figcaption>
+                </figure>
               </div>
             </section>
           </div>

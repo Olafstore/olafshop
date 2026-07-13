@@ -11,18 +11,18 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260713-media-brand-v89" />
+  <link rel="stylesheet" href="styles.css?v=20260713-activity-payment-v93" />
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
   <script src="slip-qr-scanner.js?v=20260621-slip-verify-v2" defer></script>
   <script src="order-action-popup.js?v=20260712-point-topup-premium-v76" defer></script>
-  <script src="supabase-client.js?v=20260712-point-topup-premium-v76" defer></script>
+  <script src="supabase-client.js?v=20260713-activity-payment-v93" defer></script>
   <script src="platform-store.js?v=20260605-admin-users" defer></script>
   <script src="image-performance.js?v=20260713-media-brand-v89" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
   <script src="site-navigation.js?v=20260713-media-brand-v89" defer></script>
-  <script src="point-topup.js?v=20260713-stock-point-v88" defer></script>
+  <script src="point-topup.js?v=20260713-activity-payment-v93" defer></script>
 </head>
 
 <body class="point-topup-page">
@@ -116,6 +116,18 @@
             <button type="button" data-topup-preset="1000"><span><small>เติมเข้า Wallet</small><strong>1,000 Point</strong></span><b>เติม ฿1,000</b></button>
           </div>
 
+          <div class="point-topup-live-preview" data-topup-live-preview aria-live="polite">
+            <span class="point-topup-live-icon"><i data-lucide="sparkles"></i></span>
+            <span class="point-topup-live-copy">
+              <small>Point ที่จะได้รับ</small>
+              <strong data-topup-preview-points>100 Point</strong>
+            </span>
+            <span class="point-topup-live-total">
+              <small>ยอดชำระ</small>
+              <strong data-topup-preview-total>฿100</strong>
+            </span>
+          </div>
+
           <label class="point-topup-input">
             <span>จำนวน Point ที่ต้องการเติม</span>
             <input id="point-topup-amount" name="amount" type="number" min="1" max="50000" step="1" value="100" inputmode="numeric" />
@@ -152,6 +164,11 @@
             <div><b>02</b><span>สแกน QR / Wallet</span></div>
             <div><b>03</b><span>แนบสลิปให้ระบบตรวจ</span></div>
             <div><b>04</b><span>Point เข้าบัญชีอัตโนมัติ</span></div>
+          </div>
+          <div class="point-topup-benefits" aria-label="ข้อมูล Point">
+            <article><i data-lucide="badge-check"></i><span><b>พร้อมใช้ทันที</b><small>หลังสลิปผ่านการตรวจสอบ</small></span></article>
+            <article><i data-lucide="scale"></i><span><b>1 บาท = 1 Point</b><small>ยอดชัดเจน ไม่มีการคำนวณซับซ้อน</small></span></article>
+            <article><i data-lucide="history"></i><span><b>ตรวจสอบย้อนหลังได้</b><small>ดูรายการเติมและยอดคงเหลือในโปรไฟล์</small></span></article>
           </div>
           <div class="point-topup-status" id="point-topup-status">
             <i data-lucide="info"></i>

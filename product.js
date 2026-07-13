@@ -2443,7 +2443,7 @@ async function submitOrder(formData) {
     if (orderNumberWrap) orderNumberWrap.hidden = false;
     $("#order-dialog")?.close();
     if (Number(savedOrder?.total || 0) <= 0 || savedOrder?.paymentStatus === "verified") {
-      if (mobilePaymentFlow && $("#qr-dialog")?.open) $("#qr-dialog")?.close();
+      if (mobilePaymentFlow && $("#qr-dialog")?.open) setProductQrDialogOpen($("#qr-dialog"), false);
       showToast(
         savedOrder?.status === "delivered"
           ? "ใช้ Point สั่งซื้อสำเร็จ และจัดส่งสินค้า Offline แล้ว"
@@ -2461,7 +2461,7 @@ async function submitOrder(formData) {
     showToast("สร้างคำสั่งซื้อแล้ว กรุณาชำระเงินและแนบสลิป", "payment", 5000);
     return;
   } catch (error) {
-    if (mobilePaymentFlow && $("#qr-dialog")?.open && !currentQrOrder) $("#qr-dialog")?.close();
+    if (mobilePaymentFlow && $("#qr-dialog")?.open && !currentQrOrder) setProductQrDialogOpen($("#qr-dialog"), false);
     showToast(orderErrorMessage(error), "error", 5000);
   } finally {
     if (submitButton) {
@@ -2564,18 +2564,55 @@ function setQrImageVisible(visible) {
   if (visible) setQrLoadingVisible(false);
 }
 
+const productQrDialogCloseTimers = new WeakMap();
+
+function setProductQrDialogOpen(dialog, open = true, { immediate = false } = {}) {
+  if (!dialog) return;
+  const pendingTimer = productQrDialogCloseTimers.get(dialog);
+  if (pendingTimer) {
+    window.clearTimeout(pendingTimer);
+    productQrDialogCloseTimers.delete(dialog);
+  }
+
+  if (open) {
+    dialog.classList.remove("is-closing");
+    if (!dialog.open) dialog.showModal();
+    window.requestAnimationFrame(() => dialog.classList.add("is-visible"));
+    syncProductOverlayState();
+    return;
+  }
+
+  if (!dialog.open) return;
+  dialog.classList.remove("is-visible");
+  if (immediate) {
+    dialog.classList.remove("is-closing");
+    dialog.close();
+    syncProductOverlayState();
+    return;
+  }
+
+  dialog.classList.add("is-closing");
+  const timer = window.setTimeout(() => {
+    if (dialog.open) dialog.close();
+    dialog.classList.remove("is-closing");
+    productQrDialogCloseTimers.delete(dialog);
+    syncProductOverlayState();
+  }, 220);
+  productQrDialogCloseTimers.set(dialog, timer);
+}
+
 function setMobilePaymentStage(dialog, stage) {
   if (!dialog) return;
   dialog.dataset.paymentStage = stage;
   syncProductOverlayState();
-  if (!isMobilePaymentView()) return;
-  dialog.classList.remove("is-mobile-payment-pop");
-  void dialog.offsetWidth;
-  dialog.classList.add("is-mobile-payment-pop");
+  const panel = dialog.querySelector(".qr-payment-content");
+  if (!isMobilePaymentView() || !panel) return;
+  panel.classList.remove("is-stage-transitioning");
+  window.requestAnimationFrame(() => panel.classList.add("is-stage-transitioning"));
   clearTimeout(dialog._mobilePaymentPopTimer);
   dialog._mobilePaymentPopTimer = window.setTimeout(() => {
-    dialog.classList.remove("is-mobile-payment-pop");
-  }, 320);
+    panel.classList.remove("is-stage-transitioning");
+  }, 280);
 }
 
 function showDirectOrderProcessingPopup() {
@@ -2610,7 +2647,7 @@ function showDirectOrderProcessingPopup() {
   }
   const status = $(".qr-status-badge");
   if (status) status.innerHTML = `<i data-lucide="loader-circle"></i> กำลังสร้างคำสั่งซื้อ`;
-  if (!dialog.open) dialog.showModal();
+  setProductQrDialogOpen(dialog, true);
   setMobilePaymentStage(dialog, "creating");
   createIconSet();
 }
@@ -2723,7 +2760,7 @@ function showPaymentResult(order) {
     setQrLoadingVisible(false);
   }
 
-  if (!dialog.open) dialog.showModal();
+  setProductQrDialogOpen(dialog, true);
   setMobilePaymentStage(dialog, "qr");
   createIconSet();
   hydrateImages();
@@ -2876,7 +2913,7 @@ async function uploadCurrentQrSlip(file) {
   }
 
   const qrDialog = $("#qr-dialog");
-  if (qrDialog?.open) qrDialog.close();
+  if (qrDialog?.open) setProductQrDialogOpen(qrDialog, false, { immediate: true });
   window.OlafOrderActivity?.showSlipCheck();
 
   const button = $("[data-qr-upload-slip-btn]");
@@ -2916,7 +2953,7 @@ async function uploadCurrentQrSlip(file) {
     showPaymentSlipError(error);
     if (error?.orderCancelled) {
       currentQrOrder = null;
-      $("#qr-dialog")?.close();
+      setProductQrDialogOpen($("#qr-dialog"), false);
       await refreshCurrentProduct().catch(() => null);
     }
   } finally {
@@ -2993,7 +3030,7 @@ async function cancelCurrentQrOrder() {
     window.OlafOrderActivity?.showCancel();
     await window.OlafOrders.cancelMyOrder(order.id);
     currentQrOrder = null;
-    $("#qr-dialog")?.close();
+    setProductQrDialogOpen($("#qr-dialog"), false);
     const freshProduct = await refreshCurrentProduct();
     if (freshProduct) {
       renderProduct();
@@ -3198,7 +3235,11 @@ document.addEventListener("DOMContentLoaded", async () => {
   document.querySelectorAll("[data-close-dialog]").forEach((button) => {
     button.addEventListener("click", () => button.closest("dialog")?.close());
   });
-  $("[data-qr-close-btn]")?.addEventListener("click", () => $("#qr-dialog")?.close());
+  $("[data-qr-close-btn]")?.addEventListener("click", () => setProductQrDialogOpen($("#qr-dialog"), false));
+  $("#qr-dialog")?.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    setProductQrDialogOpen(event.currentTarget, false);
+  });
   document.querySelectorAll("dialog").forEach((dialog) => {
     dialog.addEventListener("close", syncProductOverlayState);
     dialog.addEventListener("cancel", syncProductOverlayState);

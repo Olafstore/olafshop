@@ -17,6 +17,12 @@ const state = {
   tmQrCleared: false,
   pendingSiteIconDataUrl: null,
   siteIconCleared: false,
+  pendingActivityDesktopFile: null,
+  pendingActivityDesktopPreviewUrl: null,
+  pendingActivityMobileFile: null,
+  pendingActivityMobilePreviewUrl: null,
+  activityDesktopCleared: false,
+  activityMobileCleared: false,
   users: [],
   reviews: [],
   orders: [],
@@ -98,6 +104,19 @@ const emptyPayload = {
       manualQrPath: "",
       trueMoneyQrUrl: "",
       trueMoneyQrPath: ""
+    },
+    activityPopup: {
+      enabled: false,
+      campaignId: "",
+      title: "กิจกรรมพิเศษจาก OLAF SHOP",
+      message: "ติดตามกิจกรรมและโปรโมชันล่าสุดของร้าน",
+      desktopImageUrl: "",
+      desktopImagePath: "",
+      mobileImageUrl: "",
+      mobileImagePath: "",
+      linkUrl: "",
+      linkLabel: "ดูรายละเอียดกิจกรรม",
+      updatedAt: ""
     }
   },
   categories: [
@@ -323,6 +342,18 @@ function setPendingQrPreview(kind, file) {
   state.pendingQrDataUrl = state.pendingQrPreviewUrl || null;
   state.qrCleared = false;
   return state.pendingQrPreviewUrl;
+}
+
+function setPendingActivityPreview(kind, file) {
+  const isMobile = kind === "mobile";
+  const previewKey = isMobile ? "pendingActivityMobilePreviewUrl" : "pendingActivityDesktopPreviewUrl";
+  const fileKey = isMobile ? "pendingActivityMobileFile" : "pendingActivityDesktopFile";
+  revokePreviewUrl(state[previewKey]);
+  state[fileKey] = file || null;
+  state[previewKey] = file ? URL.createObjectURL(file) : null;
+  if (isMobile) state.activityMobileCleared = false;
+  else state.activityDesktopCleared = false;
+  return state[previewKey];
 }
 
 function applySiteIcon(iconUrl) {
@@ -1943,6 +1974,7 @@ function renderAll() {
   renderAdminSection("widget form", renderWidgetForm, errors);
   renderAdminSection("stock board", renderStockBoard, errors);
   renderAdminSection("payment form", renderPaymentForm, errors);
+  renderAdminSection("activity popup form", renderActivityPopupForm, errors);
   renderAdminSection("data preview", renderDataPreview, errors);
   renderAdminSection("admin category tabs", () => renderCategoryTabs("admin-category-tabs"), errors);
   renderAdminSection("stock category tabs", () => renderCategoryTabs("stock-category-tabs"), errors);
@@ -4437,6 +4469,150 @@ async function changeStock(productId, nextStock, action) {
   }
 }
 
+function renderActivityPopupForm() {
+  const form = $("#activity-popup-form");
+  if (!form) return;
+  const activity = state.payload.store.activityPopup ?? {};
+  const desktopUrl = state.pendingActivityDesktopPreviewUrl ?? activity.desktopImageUrl ?? "";
+  const mobileUrl = state.pendingActivityMobilePreviewUrl ?? activity.mobileImageUrl ?? desktopUrl;
+
+  form.elements.enabled.value = activity.enabled === true ? "true" : "false";
+  form.elements.campaignId.value = activity.campaignId || "";
+  form.elements.title.value = activity.title || "";
+  form.elements.message.value = activity.message || "";
+  form.elements.desktopImageUrl.value = isInlinePreviewUrl(desktopUrl) ? "" : (activity.desktopImagePath ? "" : desktopUrl);
+  form.elements.mobileImageUrl.value = isInlinePreviewUrl(mobileUrl) ? "" : (activity.mobileImagePath ? "" : (activity.mobileImageUrl || ""));
+  form.elements.linkUrl.value = activity.linkUrl || "";
+  form.elements.linkLabel.value = activity.linkLabel || "ดูรายละเอียดกิจกรรม";
+
+  renderActivityAdminPreview("#activity-desktop-preview", desktopUrl, "monitor-up", "รูป Desktop 1080 × 1920");
+  renderActivityAdminPreview("#activity-mobile-preview", mobileUrl, "smartphone", "รูป Mobile 1:1");
+}
+
+function renderActivityAdminPreview(selector, imageUrl, icon, placeholder) {
+  const preview = $(selector);
+  if (!preview) return;
+  const caption = selector.includes("mobile") ? "Mobile" : "Desktop";
+  preview.innerHTML = imageUrl
+    ? `<img src="${escapeHtml(imageUrl)}" alt="ตัวอย่าง ${caption}" loading="eager" decoding="async" /><figcaption>${caption}</figcaption>`
+    : `<div class="activity-admin-placeholder"><i data-lucide="${icon}"></i><span>${placeholder}</span></div><figcaption>${caption}</figcaption>`;
+  createIconSet();
+}
+
+async function saveActivityPopupSettings(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const button = form.querySelector('button[type="submit"]');
+  const originalHtml = button?.innerHTML || "";
+  const existing = state.payload.store.activityPopup ?? {};
+  const typedDesktopUrl = form.elements.desktopImageUrl.value.trim();
+  const typedMobileUrl = form.elements.mobileImageUrl.value.trim();
+
+  let desktopImagePath = state.activityDesktopCleared ? "" : (existing.desktopImagePath || "");
+  let desktopImageUrl = state.activityDesktopCleared ? "" : (desktopImagePath ? "" : (typedDesktopUrl || existing.desktopImageUrl || ""));
+  let mobileImagePath = state.activityMobileCleared ? "" : (existing.mobileImagePath || "");
+  let mobileImageUrl = state.activityMobileCleared ? "" : (mobileImagePath ? "" : (typedMobileUrl || existing.mobileImageUrl || ""));
+
+  if (typedDesktopUrl) {
+    desktopImagePath = "";
+    desktopImageUrl = typedDesktopUrl;
+  }
+  if (typedMobileUrl) {
+    mobileImagePath = "";
+    mobileImageUrl = typedMobileUrl;
+  }
+
+  if (button) {
+    button.disabled = true;
+    button.innerHTML = '<i data-lucide="loader-circle"></i> กำลังบันทึกกิจกรรม';
+    createIconSet();
+  }
+
+  try {
+    if (state.pendingActivityDesktopFile) {
+      if (!window.OlafStoreSettings?.uploadStoreAsset) throw new Error("STORE_ASSET_UPLOAD_NOT_READY");
+      const uploaded = await window.OlafStoreSettings.uploadStoreAsset({
+        assetType: "activity-desktop",
+        file: state.pendingActivityDesktopFile
+      });
+      desktopImagePath = uploaded.path;
+      desktopImageUrl = "";
+    }
+    if (state.pendingActivityMobileFile) {
+      if (!window.OlafStoreSettings?.uploadStoreAsset) throw new Error("STORE_ASSET_UPLOAD_NOT_READY");
+      const uploaded = await window.OlafStoreSettings.uploadStoreAsset({
+        assetType: "activity-mobile",
+        file: state.pendingActivityMobileFile
+      });
+      mobileImagePath = uploaded.path;
+      mobileImageUrl = "";
+    }
+
+    state.payload.store.activityPopup = {
+      enabled: form.elements.enabled.value === "true",
+      campaignId: form.elements.campaignId.value.trim() || existing.campaignId || "main-activity",
+      title: form.elements.title.value.trim() || "กิจกรรมพิเศษจาก OLAF SHOP",
+      message: form.elements.message.value.trim(),
+      desktopImageUrl,
+      desktopImagePath,
+      mobileImageUrl,
+      mobileImagePath,
+      linkUrl: form.elements.linkUrl.value.trim(),
+      linkLabel: form.elements.linkLabel.value.trim() || "ดูรายละเอียดกิจกรรม",
+      updatedAt: new Date().toISOString()
+    };
+
+    await saveOnlineStoreSettings(state.payload.store);
+    const refreshedSettings = await fetchOnlineStoreSettings(true);
+    state.payload.store = mergeStoreSettings(state.payload.store, refreshedSettings);
+
+    revokePreviewUrl(state.pendingActivityDesktopPreviewUrl);
+    revokePreviewUrl(state.pendingActivityMobilePreviewUrl);
+    state.pendingActivityDesktopFile = null;
+    state.pendingActivityDesktopPreviewUrl = null;
+    state.pendingActivityMobileFile = null;
+    state.pendingActivityMobilePreviewUrl = null;
+    state.activityDesktopCleared = false;
+    state.activityMobileCleared = false;
+    savePayload("บันทึกกิจกรรมหน้าเว็บแล้ว");
+    renderActivityPopupForm();
+    renderDataPreview();
+    showAdminToast("บันทึก Popup กิจกรรมเรียบร้อยแล้ว", "success");
+  } catch (error) {
+    console.error("Activity popup settings save failed", error);
+    const message = String(error?.message || "บันทึกกิจกรรมไม่สำเร็จ");
+    showAdminToast(
+      message.includes("STORE_ASSET") ? "อัปโหลดรูปกิจกรรมไม่สำเร็จ กรุณาตรวจขนาดไฟล์และ Storage" : message,
+      "error",
+      8000
+    );
+  } finally {
+    if (button) {
+      button.disabled = false;
+      button.innerHTML = originalHtml;
+      createIconSet();
+    }
+  }
+}
+
+function handleActivityImageUpload(kind, event) {
+  const file = event.target.files?.[0];
+  if (!file) return;
+  if (!String(file.type || "").startsWith("image/")) {
+    showAdminToast("กรุณาเลือกไฟล์รูปภาพ", "error");
+    event.target.value = "";
+    return;
+  }
+  if (Number(file.size || 0) > 5 * 1024 * 1024) {
+    showAdminToast("รูปกิจกรรมต้องมีขนาดไม่เกิน 5 MB", "error");
+    event.target.value = "";
+    return;
+  }
+  setPendingActivityPreview(kind, file);
+  renderActivityPopupForm();
+  setStatus(`เลือกรูปกิจกรรม ${kind === "mobile" ? "Mobile" : "Desktop"} แล้ว กดบันทึกเพื่อใช้งาน`);
+}
+
 function renderPaymentForm() {
   const form = $("#payment-form");
   const payment = state.payload.store.payment ?? {};
@@ -5055,6 +5231,27 @@ function bindEvents() {
     showAdminLogin("ออกจากระบบแล้ว");
   });
   $("#payment-form").addEventListener("submit", savePaymentSettings);
+  $("#activity-popup-form")?.addEventListener("submit", saveActivityPopupSettings);
+  $("#activity-desktop-upload")?.addEventListener("change", (event) => handleActivityImageUpload("desktop", event));
+  $("#activity-mobile-upload")?.addEventListener("change", (event) => handleActivityImageUpload("mobile", event));
+  $("#clear-activity-images")?.addEventListener("click", () => {
+    revokePreviewUrl(state.pendingActivityDesktopPreviewUrl);
+    revokePreviewUrl(state.pendingActivityMobilePreviewUrl);
+    state.pendingActivityDesktopFile = null;
+    state.pendingActivityDesktopPreviewUrl = null;
+    state.pendingActivityMobileFile = null;
+    state.pendingActivityMobilePreviewUrl = null;
+    state.activityDesktopCleared = true;
+    state.activityMobileCleared = true;
+    if (state.payload.store.activityPopup) {
+      state.payload.store.activityPopup.desktopImageUrl = "";
+      state.payload.store.activityPopup.desktopImagePath = "";
+      state.payload.store.activityPopup.mobileImageUrl = "";
+      state.payload.store.activityPopup.mobileImagePath = "";
+    }
+    renderActivityPopupForm();
+    setStatus("ล้างรูปกิจกรรมแล้ว กดบันทึกกิจกรรมเพื่อยืนยัน");
+  });
   $("#qr-upload").addEventListener("change", handleQrUpload);
   $("#truemoney-qr-upload").addEventListener("change", handleTrueMoneyQrUpload);
   $("#site-icon-upload").addEventListener("change", handleSiteIconUpload);

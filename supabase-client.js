@@ -492,7 +492,7 @@
       console.warn("Payment channels unavailable", channelError);
       return [];
     });
-    return mergePaymentChannelsIntoSettings(settings, channels);
+    return resolveStoreAssetUrls(mergePaymentChannelsIntoSettings(settings, channels));
   }
 
   async function saveStoreSettings(settings) {
@@ -1067,6 +1067,25 @@
     return data?.signedUrl || "";
   }
 
+  async function resolveStoreAssetUrls(settings) {
+    const next = normalizeObject(settings);
+    const activityPopup = {
+      ...normalizeObject(next.activityPopup)
+    };
+
+    if (activityPopup.desktopImagePath) {
+      activityPopup.desktopImageUrl = await createPaymentQrSignedUrl(activityPopup.desktopImagePath);
+    }
+    if (activityPopup.mobileImagePath) {
+      activityPopup.mobileImageUrl = await createPaymentQrSignedUrl(activityPopup.mobileImagePath);
+    }
+
+    return {
+      ...next,
+      activityPopup
+    };
+  }
+
   async function withPaymentQrUrl(channel) {
     if (!channel) return null;
     if (!channel.qrPath || channel.qrUrl) return channel;
@@ -1129,6 +1148,32 @@
     if (Number(file.size || 0) > MAX_PAYMENT_QR_SIZE) throw new Error("QR_FILE_TOO_LARGE");
 
     const path = `${normalizedChannel}/${Date.now()}-${safeStorageFileName(file, "payment-qr.jpg")}`;
+    const { error } = await requireClient()
+      .storage
+      .from(PAYMENT_QR_BUCKET)
+      .upload(path, file, {
+        cacheControl: "3600",
+        contentType: file.type || "image/jpeg",
+        upsert: false
+      });
+    if (error) throw error;
+
+    return {
+      path,
+      signedUrl: await createPaymentQrSignedUrl(path)
+    };
+  }
+
+  async function uploadStoreAsset({ assetType, file }) {
+    const normalizedType = String(assetType || "").trim().toLowerCase();
+    if (!["activity-desktop", "activity-mobile"].includes(normalizedType)) {
+      throw new Error("STORE_ASSET_TYPE_REQUIRED");
+    }
+    if (!file) throw new Error("STORE_ASSET_FILE_REQUIRED");
+    if (!String(file.type || "").startsWith("image/")) throw new Error("STORE_ASSET_MUST_BE_IMAGE");
+    if (Number(file.size || 0) > MAX_PAYMENT_QR_SIZE) throw new Error("STORE_ASSET_TOO_LARGE");
+
+    const path = `store-assets/${normalizedType}/${Date.now()}-${safeStorageFileName(file, "activity-image.jpg")}`;
     const { error } = await requireClient()
       .storage
       .from(PAYMENT_QR_BUCKET)
@@ -1849,6 +1894,7 @@
     fetchPaymentChannels,
     savePaymentChannels,
     uploadPaymentQr,
+    uploadStoreAsset,
     createPaymentQrSignedUrl
   };
   window.OlafOrders = {

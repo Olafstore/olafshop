@@ -92,7 +92,8 @@ const appConfig = {
 };
 
 const storageKeys = {
-  lang: "olafshop_lang"
+  lang: "olafshop_lang",
+  activityPopup: "olafshop_activity_popup_hidden"
 };
 
 const i18n = {
@@ -147,6 +148,7 @@ let promoVideoViewportBound = false;
 let promoVideoUserPaused = false;
 let promoVideoUnlocked = false;
 const promoVideoFailures = new Set();
+const activityPopupDismissedKeys = new Set();
 let steamSpotlightIndex = 0;
 let steamDiscoveryMode = "top";
 let steamDiscoveryPreviewId = "";
@@ -1258,6 +1260,137 @@ function renderAll() {
   renderProducts();
   renderCart();
   renderWidgets();
+  renderActivityPopup();
+}
+
+function activityPopupKey(activity = {}) {
+  return String(activity.campaignId || activity.updatedAt || "main-activity").trim() || "main-activity";
+}
+
+function activityPopupHiddenUntil(key) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(storageKeys.activityPopup) || "{}");
+    return Number(saved?.[key] || 0);
+  } catch {
+    return 0;
+  }
+}
+
+function saveActivityPopupHiddenUntil(key, timestamp) {
+  try {
+    const saved = JSON.parse(localStorage.getItem(storageKeys.activityPopup) || "{}");
+    saved[key] = timestamp;
+    const now = Date.now();
+    Object.keys(saved).forEach((itemKey) => {
+      if (Number(saved[itemKey] || 0) < now - 7 * 24 * 60 * 60 * 1000) delete saved[itemKey];
+    });
+    localStorage.setItem(storageKeys.activityPopup, JSON.stringify(saved));
+  } catch {
+    // Storage may be unavailable in private browsing; the in-memory dismissal still applies.
+  }
+}
+
+function safeActivityPopupLink(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  try {
+    const url = new URL(raw, window.location.href);
+    return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+  } catch {
+    return "";
+  }
+}
+
+function safeActivityPopupImage(value) {
+  const raw = String(value || "").trim();
+  if (!raw) return "";
+  if (/^data:image\/(?:png|jpe?g|webp);base64,/i.test(raw)) return raw;
+  try {
+    const url = new URL(raw, window.location.href);
+    return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+  } catch {
+    return "";
+  }
+}
+
+function closeActivityPopup({ hideFor24Hours = false } = {}) {
+  const popup = document.querySelector("[data-activity-popup]");
+  if (!popup) return;
+  const key = popup.dataset.activityKey || "main-activity";
+  activityPopupDismissedKeys.add(key);
+  if (hideFor24Hours) saveActivityPopupHiddenUntil(key, Date.now() + 24 * 60 * 60 * 1000);
+  popup.classList.add("is-closing");
+  popup.classList.remove("is-visible");
+  document.documentElement.classList.remove("has-activity-popup");
+  document.body?.classList.remove("has-activity-popup");
+  window.setTimeout(() => popup.remove(), 260);
+}
+
+function renderActivityPopup() {
+  const activity = state.store?.activityPopup ?? {};
+  const key = activityPopupKey(activity);
+  const existing = document.querySelector("[data-activity-popup]");
+  const desktopImage = safeActivityPopupImage(activity.desktopImageUrl || activity.mobileImageUrl);
+  const mobileImage = safeActivityPopupImage(activity.mobileImageUrl || desktopImage);
+  const shouldShow = activity.enabled === true && Boolean(desktopImage || mobileImage);
+
+  if (!shouldShow || activityPopupDismissedKeys.has(key) || activityPopupHiddenUntil(key) > Date.now()) {
+    if (existing && existing.dataset.activityKey !== key) existing.remove();
+    return;
+  }
+  if (existing?.dataset.activityKey === key) return;
+  existing?.remove();
+
+  const title = cleanDisplayText(activity.title || "กิจกรรมพิเศษจาก OLAF SHOP");
+  const message = cleanDisplayText(activity.message || "");
+  const linkUrl = safeActivityPopupLink(activity.linkUrl);
+  const linkLabel = cleanDisplayText(activity.linkLabel || "ดูรายละเอียดกิจกรรม");
+  const popup = document.createElement("section");
+  popup.className = "activity-popup";
+  popup.dataset.activityPopup = "true";
+  popup.dataset.activityKey = key;
+  popup.setAttribute("role", "dialog");
+  popup.setAttribute("aria-modal", "true");
+  popup.setAttribute("aria-labelledby", "activity-popup-title");
+  popup.innerHTML = `
+    <button class="activity-popup__backdrop" type="button" aria-label="ปิดกิจกรรม" data-activity-close></button>
+    <article class="activity-popup__card">
+      <header class="activity-popup__header">
+        <span class="activity-popup__eyebrow"><i data-lucide="sparkles"></i> OLAF EVENT</span>
+        <button class="activity-popup__close" type="button" aria-label="ปิด" data-activity-close><i data-lucide="x"></i></button>
+      </header>
+      <div class="activity-popup__scroll">
+        <div class="activity-popup__media">
+          <img class="activity-popup__image is-desktop" src="${escapeHtml(desktopImage || mobileImage)}" alt="${escapeHtml(title)}" loading="eager" decoding="async" />
+          <img class="activity-popup__image is-mobile" src="${escapeHtml(mobileImage || desktopImage)}" alt="${escapeHtml(title)}" loading="eager" decoding="async" />
+        </div>
+        <div class="activity-popup__content">
+          <h2 id="activity-popup-title">${escapeHtml(title)}</h2>
+          ${message ? `<p>${escapeHtml(message)}</p>` : ""}
+          <div class="activity-popup__actions">
+            ${linkUrl ? `<a class="activity-popup__primary" href="${escapeHtml(linkUrl)}" target="_blank" rel="noopener noreferrer"><span>${escapeHtml(linkLabel)}</span><i data-lucide="arrow-up-right"></i></a>` : ""}
+            <button class="activity-popup__secondary" type="button" data-activity-hide-day><i data-lucide="clock-3"></i><span>ไม่แสดง 24 ชั่วโมง</span></button>
+          </div>
+        </div>
+      </div>
+    </article>
+  `;
+
+  popup.querySelectorAll("[data-activity-close]").forEach((button) => {
+    button.addEventListener("click", () => closeActivityPopup());
+  });
+  popup.querySelector("[data-activity-hide-day]")?.addEventListener("click", () => {
+    closeActivityPopup({ hideFor24Hours: true });
+  });
+  popup.addEventListener("keydown", (event) => {
+    if (event.key === "Escape") closeActivityPopup();
+  });
+  document.body.append(popup);
+  document.documentElement.classList.add("has-activity-popup");
+  document.body.classList.add("has-activity-popup");
+  window.requestAnimationFrame(() => popup.classList.add("is-visible"));
+  createIconSet();
+  popup.querySelector(".activity-popup__close")?.focus({ preventScroll: true });
 }
 
 function renderAccount() {

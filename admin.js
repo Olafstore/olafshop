@@ -1355,13 +1355,15 @@ async function resetFreeRandomSpinCounts() {
     showAdminToast("ยังไม่พบ RPC รีจำนวนสุ่ม กรุณารัน SQL milestone เวอร์ชันล่าสุดก่อน", "error", 8000);
     return;
   }
-  const confirmed = window.confirm(
-    "รีจำนวนสุ่มทั้งหมดของ Premium Spin?\n\nระบบจะไม่ลบประวัติสุ่ม ไม่ลบออเดอร์ และไม่ลบ Point แต่จะเริ่มนับ milestone ใหม่ตั้งแต่เวลานี้"
+  const confirmed = await adminConfirm(
+    "จำนวนสุ่มสะสมสำหรับโบนัสของผู้ใช้ทุกคนจะเริ่มใหม่ที่ 0 ทันที โดยระบบจะไม่ลบประวัติการสุ่ม ออเดอร์ รางวัลที่รับไปแล้ว หรือ Point เดิม",
+    "ยืนยันรีเซ็ตจำนวนสุ่มเป็น 0"
   );
   if (!confirmed) return;
 
   const button = $("#free-random-reset-counts");
   const originalText = button?.innerHTML || "";
+  let resetCompleted = false;
   if (button) {
     button.disabled = true;
     button.innerHTML = '<i data-lucide="loader-circle"></i> กำลังรีเซ็ต';
@@ -1370,6 +1372,7 @@ async function resetFreeRandomSpinCounts() {
   try {
     await window.OlafFreeRandom.adminResetSpinCounts("Reset from admin Premium Spin panel");
     await refreshFreeRandomPanel();
+    resetCompleted = true;
     showAdminToast("รีจำนวนสุ่มทั้งหมดเรียบร้อยแล้ว เริ่มนับโบนัสรอบใหม่โดยไม่ลบประวัติเดิม", "success", 8000);
   } catch (error) {
     showAdminToast(error.message || "รีจำนวนสุ่มไม่สำเร็จ", "error", 9000);
@@ -1379,6 +1382,12 @@ async function resetFreeRandomSpinCounts() {
       button.innerHTML = originalText;
       createIconSet();
     }
+  }
+  if (resetCompleted) {
+    await adminAlert(
+      "จำนวนสุ่มสะสมสำหรับโบนัสถูกตั้งเป็น 0 แล้ว ลูกค้าจะเริ่มนับรอบกิจกรรมใหม่จากการสุ่มครั้งถัดไป ส่วนประวัติ ออเดอร์ รางวัล และ Point เดิมยังอยู่ครบ",
+      "รีเซ็ตจำนวนสุ่มสำเร็จ"
+    );
   }
 }
 

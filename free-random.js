@@ -161,7 +161,7 @@
     const wrap = $("#free-random-milestones");
     const grid = $("#free-random-milestone-grid");
     if (!wrap || !grid) return;
-    const totalSpins = Number(state.milestoneStatus.totalSpins || state.status.totalSpins || state.status.spinsUsedToday || 0);
+    const totalSpins = Number(state.milestoneStatus.totalSpins ?? state.status.totalSpins ?? state.status.spinsUsedToday ?? 0);
     const configured = Array.isArray(state.milestoneStatus.milestones) && state.milestoneStatus.milestones.length
       ? state.milestoneStatus.milestones
       : (state.config.milestones || []);
@@ -217,7 +217,7 @@
   function renderStatus() {
     const settings = state.config.settings || {};
     const cost = spinCost();
-    const spinsUsed = Number(state.milestoneStatus.totalSpins || state.status.totalSpins || state.status.spinsUsedToday || 0);
+    const spinsUsed = Number(state.milestoneStatus.totalSpins ?? state.status.totalSpins ?? state.status.spinsUsedToday ?? 0);
     const hasUser = Boolean(window.OlafStore?.currentUser?.() || state.user);
     const hasPrize = availableSlots().length > 0;
     const canAfford = Number(state.pointBalance || 0) >= cost;
@@ -279,13 +279,13 @@
         state.milestoneStatus = { totalSpins: 0, milestones };
       } else {
         state.milestoneStatus = {
-          totalSpins: Number(state.status.totalSpins || state.status.spinsUsedToday || 0),
+          totalSpins: Number(state.status.totalSpins ?? state.status.spinsUsedToday ?? 0),
           milestones: state.config.milestones || []
         };
       }
     } catch (error) {
       state.milestoneStatus = {
-        totalSpins: Number(state.status.totalSpins || state.status.spinsUsedToday || 0),
+        totalSpins: Number(state.status.totalSpins ?? state.status.spinsUsedToday ?? 0),
         milestones: state.config.milestones || []
       };
     }

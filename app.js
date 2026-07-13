@@ -1892,7 +1892,7 @@ function scheduleSteamStorefrontRotation() {
   }, 6500);
 }
 
-function renderSteamStorefront() {
+function renderSteamStorefrontLegacyV90() {
   const section = document.querySelector("#olaf-steam-storefront");
   if (!section) return;
   const products = steamStorefrontProducts();
@@ -1953,6 +1953,208 @@ function renderSteamStorefront() {
 
   renderSteamSpotlightStage();
   renderSteamDiscoveryContent();
+  scheduleSteamStorefrontRotation();
+  createIconSet();
+  hydrateImages();
+}
+
+function steamEditorialSearchText(product) {
+  return normalizeCatalogSearch([
+    product.name,
+    product.publisher,
+    product.category,
+    ...(product.tags || [])
+  ].filter(Boolean).join(" "));
+}
+
+function steamEditorialCollections(products) {
+  const available = products.filter((product) => product.stock > 0);
+  const used = new Set();
+  const pick = (pattern, count) => {
+    const matched = available.filter((product) => pattern.test(steamEditorialSearchText(product)));
+    const candidates = [...matched, ...available];
+    const selected = [];
+    for (const product of candidates) {
+      if (used.has(product.id) || selected.some((item) => item.id === product.id)) continue;
+      selected.push(product);
+      used.add(product.id);
+      if (selected.length === count) break;
+    }
+    return selected;
+  };
+
+  const fastGames = pick(/race|racing|speed|drive|formula|assetto|forza|f1|แข่ง|รถ/, 2);
+  const actionGames = pick(/action|adventure|shooter|fps|fight|sport|football|controller|แอ็ก|ยิง|ต่อสู้|ผจญภัย|กีฬา/, 4);
+  return [
+    {
+      title: fastGames.some((product) => /race|racing|speed|drive|formula|assetto|forza|f1|แข่ง|รถ/.test(steamEditorialSearchText(product)))
+        ? "เกมแข่งขันความเร็ว"
+        : "เกมยอดนิยมประจำสัปดาห์",
+      subtitle: "เลือกจากสินค้ายอดนิยมและสต็อกพร้อมส่งภายในร้าน",
+      layout: "feature",
+      products: fastGames
+    },
+    {
+      title: "เกมแอ็กชันและคอนโทรลเลอร์",
+      subtitle: "คัดสรรเกมที่เหมาะกับการเล่นต่อเนื่องและการควบคุมที่สนุก",
+      layout: "tiles",
+      products: actionGames
+    }
+  ].filter((collection) => collection.products.length);
+}
+
+function steamEditorialCardMarkup(product, layout = "tiles") {
+  const image = product.heroImage || product.image || "";
+  const discount = getDiscount(product);
+  return `
+    <a class="olaf-steam-editorial-card is-${layout}" href="${productLink(product)}">
+      <span class="olaf-steam-editorial-media">
+        <img ${fastImg(image, cleanDisplayText(product.name), {
+          width: layout === "feature" ? 960 : 560,
+          height: layout === "feature" ? 540 : 315,
+          sizes: layout === "feature"
+            ? "(max-width: 640px) 84vw, 50vw"
+            : "(max-width: 640px) 68vw, 25vw"
+        })} />
+        <span class="olaf-steam-editorial-overlay">
+          <strong>${escapeHtml(cleanDisplayText(product.name))}</strong>
+          <small>${escapeHtml(getCategoryLabel(product.category))}</small>
+        </span>
+      </span>
+      <span class="olaf-steam-editorial-price">
+        ${discount > 0 ? `<b>-${discount}%</b>` : ""}
+        ${discount > 0 ? `<del>${formatPrice(product.compareAt)}</del>` : ""}
+        <strong>${formatPrice(product.price)}</strong>
+      </span>
+    </a>
+  `;
+}
+
+function steamEditorialCollectionsMarkup(products) {
+  const collections = steamEditorialCollections(products);
+  if (!collections.length) return "";
+  return `
+    <section class="olaf-steam-collection-shelves" aria-label="คอลเลกชันเกมแนะนำ">
+      ${collections.map((collection) => `
+        <article class="olaf-steam-collection-row is-${collection.layout}">
+          <header>
+            <h3>${escapeHtml(collection.title)}</h3>
+            <p>${escapeHtml(collection.subtitle)}</p>
+          </header>
+          <div class="olaf-steam-collection-track">
+            ${collection.products.map((product) => steamEditorialCardMarkup(product, collection.layout)).join("")}
+          </div>
+        </article>
+      `).join("")}
+    </section>
+  `;
+}
+
+function steamEditorialImages(product, products) {
+  const ownImages = [
+    product.heroImage,
+    ...(product.gallery || []),
+    product.image
+  ];
+  const relatedImages = products
+    .filter((item) => item.id !== product.id && item.category === product.category)
+    .flatMap((item) => [item.heroImage, item.image]);
+  return [...new Set([...ownImages, ...relatedImages].filter(Boolean))].slice(0, 5);
+}
+
+function steamEditorialFeatureMarkup(product, products) {
+  const images = steamEditorialImages(product, products);
+  const mainImage = images[0] || product.heroImage || product.image || "";
+  const gallery = images.slice(1, 5);
+  const stock = getStockState(product.stock);
+  return `
+    <article class="olaf-steam-taste-row">
+      <header class="olaf-steam-taste-head">
+        <div>
+          <h3>${escapeHtml(cleanDisplayText(product.name))}</h3>
+          <p>แนะนำจากความนิยมในหมวด ${escapeHtml(getCategoryLabel(product.category))}</p>
+        </div>
+        <div class="olaf-steam-taste-actions">
+          <a href="${productLink(product)}">ดูรายละเอียดสินค้า</a>
+          <button type="button" data-steam-category="${escapeHtml(product.category)}">ค้นหาเกมประเภทนี้</button>
+        </div>
+      </header>
+      <div class="olaf-steam-taste-gallery">
+        <a class="olaf-steam-taste-main" href="${productLink(product)}">
+          <img ${fastImg(mainImage, cleanDisplayText(product.name), {
+            width: 1120,
+            height: 630,
+            sizes: "(max-width: 640px) 88vw, 54vw"
+          })} />
+        </a>
+        <div class="olaf-steam-taste-shots">
+          ${gallery.map((image, index) => `
+            <a href="${productLink(product)}" aria-label="ดู ${escapeHtml(cleanDisplayText(product.name))} ภาพที่ ${index + 2}">
+              <img ${fastImg(image, `${cleanDisplayText(product.name)} ${index + 2}`, {
+                width: 520,
+                height: 292,
+                sizes: "(max-width: 640px) 62vw, 24vw"
+              })} />
+            </a>
+          `).join("")}
+        </div>
+      </div>
+      <footer class="olaf-steam-taste-foot">
+        <span class="${stock.className}">${escapeHtml(stock.label)}</span>
+        ${steamPriceMarkup(product, "is-compact")}
+      </footer>
+    </article>
+  `;
+}
+
+function steamEditorialFeaturesMarkup(products) {
+  const featured = products
+    .filter((product) => product.stock > 0)
+    .sort((a, b) => Number(b.sold || 0) - Number(a.sold || 0))
+    .slice(2, 4);
+  if (!featured.length) return "";
+  return `
+    <section class="olaf-steam-taste-stack" aria-label="รายการที่คุณอาจสนใจ">
+      ${featured.map((product) => steamEditorialFeatureMarkup(product, products)).join("")}
+    </section>
+  `;
+}
+
+function renderSteamStorefront() {
+  const section = document.querySelector("#olaf-steam-storefront");
+  if (!section) return;
+  const products = steamStorefrontProducts();
+  if (!products.length) {
+    section.innerHTML = `<div class="olaf-steam-store-loading"><span class="olaf-steam-loading-orbit" aria-hidden="true"></span><span>กำลังโหลดสินค้าจากร้าน...</span></div>`;
+    return;
+  }
+
+  const deals = steamDealsProducts();
+  section.innerHTML = `
+    <header class="olaf-steam-section-head">
+      <div><p>OLAF STORE HIGHLIGHTS</p><h2>สินค้าเด่นและแนะนำ</h2></div>
+      <a href="#catalog">เลือกดูสินค้าทั้งหมด <i data-lucide="arrow-right"></i></a>
+    </header>
+    <div class="olaf-steam-spotlight-stage" data-steam-spotlight-stage></div>
+
+    ${deals.length ? `
+      <div class="olaf-steam-section-head is-deals">
+        <div><p>SPECIAL OFFERS</p><h2>ดีลและสินค้าน่าสนใจ</h2></div>
+        <div class="olaf-steam-track-controls">
+          <button type="button" data-steam-deals-scroll="-1" aria-label="เลื่อนดีลไปทางซ้าย"><i data-lucide="chevron-left"></i></button>
+          <button type="button" data-steam-deals-scroll="1" aria-label="เลื่อนดีลไปทางขวา"><i data-lucide="chevron-right"></i></button>
+        </div>
+      </div>
+      <div class="olaf-steam-deals-track" data-steam-deals-track>
+        ${deals.map(steamDealCardMarkup).join("")}
+      </div>
+    ` : ""}
+
+    ${steamEditorialCollectionsMarkup(products)}
+    ${steamEditorialFeaturesMarkup(products)}
+  `;
+
+  renderSteamSpotlightStage();
   scheduleSteamStorefrontRotation();
   createIconSet();
   hydrateImages();

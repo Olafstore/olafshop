@@ -30865,6 +30865,545 @@ dialog[open].is-closing {
   }
 }
 
+/* v91 — transparent OLAF editorial shelves and balanced recommendation scrolling. */
+body.home-page .olaf-steam-storefront {
+  width: min(1400px, calc(100% - 24px)) !important;
+  margin-top: 30px !important;
+  background: transparent !important;
+}
+
+body.home-page .olaf-steam-storefront::before {
+  display: none !important;
+  content: none !important;
+  background: none !important;
+}
+
+body.home-page .olaf-steam-subnav,
+body.home-page .olaf-steam-discovery {
+  display: none !important;
+}
+
+body.home-page .olaf-steam-collection-shelves,
+body.home-page .olaf-steam-taste-stack {
+  width: 100%;
+  margin-top: 34px;
+}
+
+body.home-page .olaf-steam-collection-row {
+  min-width: 0;
+  margin-top: 25px;
+}
+
+body.home-page .olaf-steam-collection-row:first-child {
+  margin-top: 0;
+}
+
+body.home-page .olaf-steam-collection-row > header {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin: 0 2px 10px;
+}
+
+body.home-page .olaf-steam-collection-row > header h3 {
+  flex: 0 0 auto;
+  margin: 0;
+  color: #69c7f4;
+  font-size: 1.02rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+body.home-page .olaf-steam-collection-row > header p {
+  min-width: 0;
+  margin: 0;
+  overflow: hidden;
+  color: #879aaa;
+  font-size: 0.75rem;
+  font-weight: 300;
+  line-height: 1.35;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.home-page .olaf-steam-collection-track {
+  min-width: 0;
+  display: grid;
+  gap: 14px;
+}
+
+body.home-page .olaf-steam-collection-row.is-feature .olaf-steam-collection-track {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+body.home-page .olaf-steam-collection-row.is-tiles .olaf-steam-collection-track {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+body.home-page .olaf-steam-editorial-card {
+  position: relative;
+  min-width: 0;
+  display: block;
+  color: #fff;
+  text-decoration: none;
+  background: transparent;
+  scroll-snap-align: start;
+  transition: transform 240ms cubic-bezier(0.2, 0.72, 0.24, 1), filter 240ms ease;
+}
+
+body.home-page .olaf-steam-editorial-card:hover {
+  z-index: 2;
+  filter: brightness(1.08) saturate(1.03);
+  transform: translateY(-4px);
+}
+
+body.home-page .olaf-steam-editorial-media {
+  position: relative;
+  aspect-ratio: 16 / 9;
+  display: block;
+  overflow: hidden;
+  border: 1px solid rgba(118, 158, 190, 0.2);
+  border-radius: 4px;
+  background: #091421;
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.2);
+}
+
+body.home-page .olaf-steam-editorial-media img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  object-position: center;
+  transition: transform 520ms cubic-bezier(0.2, 0.72, 0.24, 1);
+}
+
+body.home-page .olaf-steam-editorial-card:hover .olaf-steam-editorial-media img {
+  transform: scale(1.035);
+}
+
+body.home-page .olaf-steam-editorial-overlay {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  padding: 32px 12px 10px;
+  pointer-events: none;
+  background: linear-gradient(180deg, transparent, rgba(3, 10, 18, 0.94));
+  opacity: 0;
+  transform: translateY(8px);
+  transition: opacity 200ms ease, transform 200ms ease;
+}
+
+body.home-page .olaf-steam-editorial-card:hover .olaf-steam-editorial-overlay,
+body.home-page .olaf-steam-editorial-card:focus-visible .olaf-steam-editorial-overlay {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+body.home-page .olaf-steam-editorial-overlay strong {
+  overflow: hidden;
+  font-size: 0.82rem;
+  font-weight: 400;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+body.home-page .olaf-steam-editorial-overlay small {
+  color: #9db6c8;
+  font-size: 0.65rem;
+  font-weight: 300;
+}
+
+body.home-page .olaf-steam-editorial-price {
+  min-height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 5px;
+  margin: 0 2px 0 auto;
+  padding: 4px 9px;
+  color: #d9e7ef;
+  font-size: 0.76rem;
+  background: rgba(8, 20, 31, 0.88);
+}
+
+body.home-page .olaf-steam-editorial-price b {
+  align-self: stretch;
+  display: grid;
+  place-items: center;
+  margin: -4px 3px -4px -9px;
+  padding: 0 8px;
+  color: #bbed43;
+  font-weight: 500;
+  background: #4d6f22;
+}
+
+body.home-page .olaf-steam-editorial-price del {
+  color: #6e7e89;
+  font-size: 0.64rem;
+}
+
+body.home-page .olaf-steam-editorial-price strong {
+  font-weight: 400;
+}
+
+body.home-page .olaf-steam-taste-stack {
+  display: grid;
+  gap: 30px;
+}
+
+body.home-page .olaf-steam-taste-row {
+  min-width: 0;
+  padding: 25px 18px 18px;
+  border-top: 1px solid rgba(115, 155, 187, 0.17);
+  border-bottom: 1px solid rgba(115, 155, 187, 0.1);
+  background: linear-gradient(90deg, rgba(18, 45, 67, 0.14), transparent 64%);
+}
+
+body.home-page .olaf-steam-taste-head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 17px;
+}
+
+body.home-page .olaf-steam-taste-head h3 {
+  margin: 0;
+  color: #f2f7fb;
+  font-size: 1.3rem;
+  font-weight: 500;
+  line-height: 1.3;
+}
+
+body.home-page .olaf-steam-taste-head p {
+  margin: 3px 0 0;
+  color: #879aa9;
+  font-size: 0.78rem;
+  font-weight: 300;
+}
+
+body.home-page .olaf-steam-taste-actions {
+  flex: 0 0 auto;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+body.home-page .olaf-steam-taste-actions a,
+body.home-page .olaf-steam-taste-actions button {
+  min-height: 33px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 14px;
+  border: 1px solid rgba(159, 186, 205, 0.45);
+  border-radius: 2px;
+  color: #dce9f1;
+  font: 300 0.72rem/1.2 "Kanit", sans-serif;
+  text-decoration: none;
+  background: rgba(9, 22, 35, 0.34);
+  cursor: pointer;
+  transition: color 160ms ease, border-color 160ms ease, background-color 160ms ease;
+}
+
+body.home-page .olaf-steam-taste-actions a:hover,
+body.home-page .olaf-steam-taste-actions button:hover {
+  color: #fff;
+  border-color: #65bce9;
+  background: rgba(49, 117, 158, 0.34);
+}
+
+body.home-page .olaf-steam-taste-gallery {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(360px, 0.92fr);
+  gap: 16px;
+}
+
+body.home-page .olaf-steam-taste-main,
+body.home-page .olaf-steam-taste-shots a {
+  min-width: 0;
+  overflow: hidden;
+  border: 1px solid rgba(119, 157, 187, 0.16);
+  background: #07121d;
+}
+
+body.home-page .olaf-steam-taste-main {
+  aspect-ratio: 16 / 9;
+}
+
+body.home-page .olaf-steam-taste-main img,
+body.home-page .olaf-steam-taste-shots img {
+  width: 100%;
+  height: 100%;
+  display: block;
+  object-fit: cover;
+  transition: transform 420ms ease, filter 220ms ease;
+}
+
+body.home-page .olaf-steam-taste-main:hover img,
+body.home-page .olaf-steam-taste-shots a:hover img {
+  filter: brightness(1.08);
+  transform: scale(1.025);
+}
+
+body.home-page .olaf-steam-taste-shots {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-rows: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+body.home-page .olaf-steam-taste-shots a {
+  aspect-ratio: 16 / 9;
+}
+
+body.home-page .olaf-steam-taste-foot {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+body.home-page .olaf-steam-taste-foot > span {
+  color: #6fc7ee;
+  font-size: 0.7rem;
+  font-weight: 300;
+}
+
+@media (min-width: 981px) {
+  body.home-page .olaf-steam-spotlight-stage,
+  body.home-page .olaf-steam-spotlight {
+    width: 100%;
+    height: clamp(470px, 39vw, 570px);
+    min-height: 0 !important;
+  }
+
+  body.home-page .olaf-steam-spotlight {
+    grid-template-columns: minmax(0, 2.08fr) minmax(330px, 0.78fr) !important;
+  }
+
+  body.home-page .olaf-steam-spotlight-cover,
+  body.home-page .olaf-steam-spotlight-info {
+    height: 100%;
+    min-height: 0 !important;
+  }
+
+  body.home-page .olaf-steam-spotlight-cover img {
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+}
+
+@media (max-width: 980px) {
+  body.home-page .olaf-steam-storefront {
+    width: min(100% - 24px, 940px) !important;
+  }
+
+  body.home-page .olaf-steam-collection-row.is-tiles .olaf-steam-collection-track {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  body.home-page .olaf-steam-taste-gallery {
+    grid-template-columns: 1fr;
+  }
+
+  body.home-page .olaf-steam-taste-shots {
+    grid-template-rows: none;
+  }
+}
+
+@media (max-width: 640px) {
+  body.home-page .olaf-steam-storefront {
+    width: 100% !important;
+    padding-inline: 12px !important;
+    overflow: hidden !important;
+  }
+
+  body.home-page .olaf-steam-section-head h2 {
+    font-size: 1.08rem !important;
+  }
+
+  body.home-page .olaf-steam-spotlight-stage,
+  body.home-page .olaf-steam-spotlight {
+    width: 100%;
+  }
+
+  body.home-page .olaf-steam-spotlight-cover {
+    width: 100%;
+    aspect-ratio: 16 / 9 !important;
+  }
+
+  body.home-page .olaf-steam-spotlight-cover img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    object-position: center;
+  }
+
+  body.home-page .olaf-steam-collection-shelves,
+  body.home-page .olaf-steam-taste-stack {
+    margin-top: 28px;
+  }
+
+  body.home-page .olaf-steam-collection-row {
+    margin-top: 22px;
+  }
+
+  body.home-page .olaf-steam-collection-row > header {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  body.home-page .olaf-steam-collection-row > header h3 {
+    font-size: 0.9rem;
+  }
+
+  body.home-page .olaf-steam-collection-row > header p {
+    margin-top: 2px;
+    font-size: 0.68rem;
+    white-space: normal;
+  }
+
+  body.home-page .olaf-steam-collection-track,
+  body.home-page .olaf-steam-collection-row.is-feature .olaf-steam-collection-track,
+  body.home-page .olaf-steam-collection-row.is-tiles .olaf-steam-collection-track {
+    display: grid;
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    gap: 12px;
+    margin-right: -12px;
+    padding: 1px 12px 8px 0;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-padding-inline: 0 12px;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  body.home-page .olaf-steam-collection-track::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.home-page .olaf-steam-collection-row.is-feature .olaf-steam-collection-track {
+    grid-auto-columns: minmax(270px, 84vw);
+  }
+
+  body.home-page .olaf-steam-collection-row.is-tiles .olaf-steam-collection-track {
+    grid-auto-columns: minmax(220px, 69vw);
+  }
+
+  body.home-page .olaf-steam-editorial-card:hover {
+    transform: none;
+  }
+
+  body.home-page .olaf-steam-editorial-overlay {
+    opacity: 1;
+    transform: none;
+  }
+
+  body.home-page .olaf-steam-taste-row {
+    margin-inline: -12px;
+    padding: 18px 12px 16px;
+  }
+
+  body.home-page .olaf-steam-taste-head {
+    display: block;
+    margin-bottom: 12px;
+  }
+
+  body.home-page .olaf-steam-taste-head h3 {
+    font-size: 1.02rem;
+  }
+
+  body.home-page .olaf-steam-taste-head p {
+    font-size: 0.7rem;
+  }
+
+  body.home-page .olaf-steam-taste-actions {
+    justify-content: flex-start;
+    margin-top: 10px;
+  }
+
+  body.home-page .olaf-steam-taste-actions a,
+  body.home-page .olaf-steam-taste-actions button {
+    min-height: 31px;
+    padding: 5px 10px;
+    font-size: 0.66rem;
+  }
+
+  body.home-page .olaf-steam-taste-gallery {
+    display: grid;
+    grid-template-columns: none;
+    grid-auto-columns: minmax(280px, 88vw);
+    grid-auto-flow: column;
+    gap: 11px;
+    margin-right: -12px;
+    padding-right: 12px;
+    overflow-x: auto;
+    overscroll-behavior-inline: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+  }
+
+  body.home-page .olaf-steam-taste-gallery::-webkit-scrollbar {
+    display: none;
+  }
+
+  body.home-page .olaf-steam-taste-main,
+  body.home-page .olaf-steam-taste-shots a {
+    scroll-snap-align: start;
+  }
+
+  body.home-page .olaf-steam-taste-shots {
+    display: contents;
+  }
+
+  body.home-page .olaf-steam-taste-shots a {
+    aspect-ratio: 16 / 9;
+  }
+
+  body.home-page .olaf-steam-taste-foot {
+    justify-content: space-between;
+  }
+
+  body.product-detail-page .pd-related-grid {
+    grid-auto-columns: minmax(0, 86%) !important;
+    gap: 14px !important;
+    padding: 3px 14% 10px 2px !important;
+    scroll-padding-inline: 2px !important;
+    scroll-snap-type: x mandatory !important;
+  }
+
+  body.product-detail-page .pd-related-card {
+    width: 100% !important;
+    scroll-snap-align: start !important;
+  }
+}
+
+@media (max-width: 390px) {
+  body.home-page .olaf-steam-collection-row.is-feature .olaf-steam-collection-track {
+    grid-auto-columns: minmax(255px, 86vw);
+  }
+
+  body.home-page .olaf-steam-collection-row.is-tiles .olaf-steam-collection-track {
+    grid-auto-columns: minmax(210px, 72vw);
+  }
+
+  body.product-detail-page .pd-related-grid {
+    grid-auto-columns: minmax(0, 88%) !important;
+    padding-right: 12% !important;
+  }
+}
+
 /* v90 — OLAF Store Discovery. Steam-store-inspired composition using OLAF assets/data. */
 body.home-page .olaf-steam-storefront {
   --steam-v90-surface: #0d1928;
@@ -32464,10 +33003,11 @@ dialog.point-topup-qr-dialog[open].is-closing .premium-dialog-inner {
 /* v89 final mobile recommendation sizing (kept last to override older compatibility layers). */
 @media (max-width: 640px) {
   body.product-detail-page .pd-related-grid {
-    grid-auto-columns: minmax(0, 100%) !important;
+    grid-auto-columns: minmax(0, 86%) !important;
     align-items: start !important;
-    gap: 10px !important;
-    padding: 2px 0 8px !important;
+    gap: 14px !important;
+    padding: 3px 14% 10px 2px !important;
+    scroll-padding-inline: 2px !important;
     scroll-snap-type: x mandatory !important;
   }
 
@@ -32475,5 +33015,13 @@ dialog.point-topup-qr-dialog[open].is-closing .premium-dialog-inner {
     width: 100% !important;
     min-width: 0 !important;
     height: auto !important;
+    scroll-snap-align: start !important;
+  }
+}
+
+@media (max-width: 390px) {
+  body.product-detail-page .pd-related-grid {
+    grid-auto-columns: minmax(0, 88%) !important;
+    padding-right: 12% !important;
   }
 }

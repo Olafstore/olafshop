@@ -36015,3 +36015,137 @@ dialog.olaf-checkout-v98 .qr-unavailable[hidden] {
     transition-duration: 1ms !important;
   }
 }
+
+/* v99 — one scrollable checkout surface for product orders and Point top-ups. */
+html:has(dialog.olaf-checkout-v98[open]),
+body:has(dialog.olaf-checkout-v98[open]),
+html:has(dialog.order-confirm-dialog[open]),
+body:has(dialog.order-confirm-dialog[open]),
+html.olaf-topup-dialog-open,
+body.olaf-topup-dialog-open {
+  overflow: hidden !important;
+  overscroll-behavior: none !important;
+}
+
+dialog.olaf-checkout-v98[open] {
+  z-index: 2147483000 !important;
+  isolation: isolate !important;
+}
+
+dialog.order-confirm-dialog[open] {
+  position: fixed !important;
+  inset: 0 !important;
+  z-index: 2147483000 !important;
+  isolation: isolate !important;
+  width: min(480px, calc(100vw - 24px)) !important;
+  max-width: calc(100vw - 24px) !important;
+  height: fit-content !important;
+  max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+  margin: auto !important;
+  overflow: hidden !important;
+  transform: none !important;
+  animation: none !important;
+}
+
+dialog.order-confirm-dialog .order-confirm-inner {
+  min-height: 0 !important;
+  max-height: calc(100dvh - 24px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  touch-action: pan-y !important;
+  overscroll-behavior-y: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-gutter: stable !important;
+  opacity: 0 !important;
+  transform: translate3d(0, 16px, 0) scale(0.982) !important;
+  transition: opacity 230ms ease, transform 390ms cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+dialog.order-confirm-dialog[open].is-visible .order-confirm-inner {
+  opacity: 1 !important;
+  transform: translate3d(0, 0, 0) scale(1) !important;
+}
+
+dialog.order-confirm-dialog[open].is-closing .order-confirm-inner {
+  opacity: 0 !important;
+  transform: translate3d(0, 34px, 0) scale(0.982) !important;
+  transition: opacity 220ms ease, transform 300ms cubic-bezier(0.4, 0, 0.7, 0.2) !important;
+}
+
+dialog.order-confirm-dialog[open].is-closing::backdrop {
+  animation: olafCheckoutBackdropOutV99 300ms ease both !important;
+}
+
+body:has(dialog.olaf-checkout-v98[open]) .discord-floating-link,
+body:has(dialog.olaf-checkout-v98[open]) .mobile-menu-panel,
+body:has(dialog.olaf-checkout-v98[open]) .mobile-menu-backdrop,
+body:has(dialog.order-confirm-dialog[open]) .discord-floating-link,
+body:has(dialog.order-confirm-dialog[open]) .mobile-menu-panel,
+body:has(dialog.order-confirm-dialog[open]) .mobile-menu-backdrop {
+  opacity: 0 !important;
+  visibility: hidden !important;
+  pointer-events: none !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-shell {
+  min-height: 0 !important;
+  overscroll-behavior: contain !important;
+}
+
+dialog.checkout-order-dialog.olaf-checkout-v98 .premium-checkout-form {
+  max-height: calc(100dvh - 132px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-payment-content {
+  max-height: calc(100dvh - 28px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+}
+
+dialog.checkout-order-dialog.olaf-checkout-v98 .premium-checkout-form,
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-payment-content {
+  min-height: 0 !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  touch-action: pan-y !important;
+  overscroll-behavior-y: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+  scrollbar-gutter: stable !important;
+}
+
+dialog.checkout-order-dialog.olaf-checkout-v98[open].is-closing .olaf-checkout-shell,
+dialog.olaf-checkout-v98.qr-payment-dialog[open].is-closing .olaf-checkout-shell {
+  opacity: 0 !important;
+  transform: translate3d(0, 34px, 0) scale(0.982) !important;
+  animation: none !important;
+  transition: opacity 220ms ease, transform 300ms cubic-bezier(0.4, 0, 0.7, 0.2) !important;
+}
+
+dialog.olaf-checkout-v98[open].is-closing::backdrop {
+  animation: olafCheckoutBackdropOutV99 300ms ease both !important;
+}
+
+dialog.point-topup-qr-dialog .olaf-checkout-topup-product .premium-product-info h3 span {
+  color: #73aaff !important;
+  font-weight: 600 !important;
+}
+
+@media (max-width: 600px) {
+  dialog.order-confirm-dialog[open],
+  dialog.order-confirm-dialog .order-confirm-inner {
+    max-height: calc(100dvh - 14px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  dialog.checkout-order-dialog.olaf-checkout-v98 .premium-checkout-form {
+    max-height: calc(100dvh - 104px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  dialog.olaf-checkout-v98.qr-payment-dialog .qr-payment-content {
+    max-height: calc(100dvh - 20px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: calc(18px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+}
+
+@keyframes olafCheckoutBackdropOutV99 {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}

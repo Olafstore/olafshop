@@ -26,6 +26,15 @@
       maximumFractionDigits: 0
     }).format(Math.floor(Number(value) || 0));
 
+  function formatCheckoutDateTime(value = null) {
+    const date = value ? new Date(value) : new Date();
+    if (Number.isNaN(date.getTime())) return "-";
+    return new Intl.DateTimeFormat("th-TH", {
+      dateStyle: "short",
+      timeStyle: "medium"
+    }).format(date);
+  }
+
   function escapeHtml(value = "") {
     return String(value)
       .replace(/&/g, "&amp;")
@@ -239,9 +248,16 @@
     }
 
     if (open) {
+      document.querySelectorAll("dialog.olaf-checkout-v98[open]").forEach((openDialog) => {
+        if (openDialog === dialog) return;
+        openDialog.classList.remove("is-visible", "is-closing");
+        openDialog.close();
+      });
       dialog.classList.remove("is-closing");
       if (!dialog.open) dialog.showModal();
-      window.requestAnimationFrame(() => dialog.classList.add("is-visible"));
+      window.requestAnimationFrame(() => {
+        window.requestAnimationFrame(() => dialog.classList.add("is-visible"));
+      });
       document.documentElement.classList.add("olaf-topup-dialog-open");
       document.body.classList.add("olaf-topup-dialog-open");
       return;
@@ -257,7 +273,7 @@
       const hasOpenTopupDialog = Boolean(document.querySelector("dialog.point-topup-qr-dialog[open]"));
       document.documentElement.classList.toggle("olaf-topup-dialog-open", hasOpenTopupDialog);
       document.body.classList.toggle("olaf-topup-dialog-open", hasOpenTopupDialog);
-    }, 220);
+    }, 300);
     dialogCloseTimers.set(dialog, timer);
   }
 
@@ -327,7 +343,9 @@
     $("[data-topup-qr-method]").innerHTML = `<i data-lucide="loader-circle"></i> กำลังเตรียม QR`;
     setQrText("[data-topup-qr-order]", "กำลังสร้างรายการ");
     setQrText("[data-topup-qr-total]", formatPrice(amount));
+    setQrText("[data-topup-qr-total-display]", formatPrice(amount));
     setQrText("[data-topup-qr-credit]", `${formatPoint(amount)} P`);
+    setQrText("[data-topup-qr-created-at]", formatCheckoutDateTime());
     $("[data-topup-qr-status]").innerHTML = `<i data-lucide="loader-circle"></i> กำลังสร้างรายการเติม Point`;
     const note = $("[data-topup-qr-note]");
     if (note) {
@@ -363,7 +381,9 @@
     $("[data-topup-qr-method]").innerHTML = `<i data-lucide="${paymentIcon(method)}"></i> ${escapeHtml(paymentLabel(method))}`;
     setQrText("[data-topup-qr-order]", order.orderNumber || order.id || "#TOPUP");
     setQrText("[data-topup-qr-total]", formatPrice(total));
+    setQrText("[data-topup-qr-total-display]", formatPrice(total));
     setQrText("[data-topup-qr-credit]", `${formatPoint(total)} P`);
+    setQrText("[data-topup-qr-created-at]", formatCheckoutDateTime(order.createdAt || order.created_at));
     $("[data-topup-qr-status]").innerHTML = `<i data-lucide="clock"></i> รอการชำระเงิน`;
 
     const note = $("[data-topup-qr-note]");
@@ -565,6 +585,10 @@
     $("#point-topup-qr-dialog")?.addEventListener("close", () => {
       document.documentElement.classList.remove("olaf-topup-dialog-open");
       document.body.classList.remove("olaf-topup-dialog-open");
+    });
+    $("#point-topup-qr-dialog")?.addEventListener("cancel", (event) => {
+      event.preventDefault();
+      setDialogOpen(event.currentTarget, false);
     });
   }
 

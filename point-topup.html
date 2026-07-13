@@ -11,7 +11,7 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260713-qr-editorial-v97" />
+  <link rel="stylesheet" href="styles.css?v=20260714-checkout-scroll-v99" />
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
@@ -22,7 +22,7 @@
   <script src="image-performance.js?v=20260713-media-brand-v89" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
   <script src="site-navigation.js?v=20260713-media-brand-v89" defer></script>
-  <script src="point-topup.js?v=20260713-activity-payment-v93" defer></script>
+  <script src="point-topup.js?v=20260714-checkout-scroll-v99" defer></script>
 </head>
 
 <body class="point-topup-page">
@@ -178,61 +178,66 @@
       </section>
     </main>
 
-    <dialog class="premium-dialog qr-payment-dialog point-topup-qr-dialog" id="point-topup-qr-dialog">
-      <div class="premium-dialog-inner">
+    <dialog class="premium-dialog qr-payment-dialog point-topup-qr-dialog olaf-checkout-v98" id="point-topup-qr-dialog">
+      <div class="premium-dialog-inner olaf-checkout-shell">
         <button class="dialog-close" type="button" aria-label="ปิด" data-topup-qr-close>
           <i data-lucide="x"></i>
         </button>
-        <div class="premium-dialog-header">
-          <div class="premium-icon-box qr-icon"><i data-lucide="scan-line"></i></div>
-          <h2>สแกน QR เพื่อเติม Point</h2>
-          <p>ชำระเงินตามยอดที่แสดง แล้วแนบสลิปเพื่อให้ระบบตรวจสอบและเติม Point</p>
-        </div>
-
         <div class="qr-payment-content">
-          <div class="qr-method-badge" data-topup-qr-method>
-            <i data-lucide="qr-code"></i> QR พร้อมเพย์
+          <div class="premium-dialog-header olaf-checkout-hero">
+            <div class="premium-icon-box qr-icon"><i data-lucide="circle-check-big"></i></div>
+            <h2>ยืนยันรายการเติม Point</h2>
+            <p>หมายเลขรายการ: <strong data-topup-qr-order>#TOPUP</strong></p>
           </div>
 
-          <div class="qr-image-frame">
-            <div class="qr-loading" data-topup-qr-loading>กำลังโหลด QR สำหรับชำระเงิน...</div>
-            <img alt="คิวอาร์สำหรับเติม Point" class="qr-image" loading="eager" decoding="async" fetchpriority="high" data-topup-qr-image hidden />
-            <div class="qr-unavailable" data-topup-qr-unavailable hidden>ยังไม่พบ QR สำหรับช่องทางนี้</div>
-          </div>
-
-          <div class="qr-order-details">
-            <div class="qr-detail-row">
-              <span>หมายเลขรายการ</span>
-              <strong data-topup-qr-order>#TOPUP</strong>
+          <section class="premium-product-card olaf-checkout-product olaf-checkout-topup-product">
+            <div class="premium-product-info">
+              <span class="olaf-checkout-eyebrow">รายละเอียดรายการ</span>
+              <h3>เติม <span data-topup-qr-credit>0 P</span> เข้ากระเป๋า</h3>
+              <span class="premium-product-label">1 บาท = 1 Point</span>
             </div>
-            <div class="qr-detail-row">
-              <span>ยอดชำระ</span>
-              <strong class="qr-total-highlight" data-topup-qr-total>฿0</strong>
+            <div class="premium-product-price"><strong data-topup-qr-total>฿0</strong></div>
+          </section>
+
+          <section class="olaf-checkout-meta-grid">
+            <article class="olaf-checkout-meta-card">
+              <span>สถานะการชำระเงิน</span>
+              <strong class="qr-status-badge" data-topup-qr-status><i data-lucide="clock-3"></i> รอการชำระเงิน</strong>
+            </article>
+            <article class="olaf-checkout-meta-card">
+              <span>วันที่สร้างรายการ</span>
+              <strong data-topup-qr-created-at>-</strong>
+            </article>
+          </section>
+
+          <section class="olaf-checkout-qr-card">
+            <header>
+              <h3>สแกน QR Code เพื่อชำระเงิน</h3>
+              <p>กรุณาสแกนผ่านแอปธนาคารของคุณ</p>
+            </header>
+            <div class="qr-method-badge" data-topup-qr-method><i data-lucide="qr-code"></i> QR พร้อมเพย์</div>
+            <div class="qr-image-frame">
+              <div class="qr-loading" data-topup-qr-loading>
+                <i data-lucide="loader-circle"></i>
+                <span>กำลังสร้าง QR Code...</span>
+              </div>
+              <img alt="คิวอาร์สำหรับเติม Point" class="qr-image" loading="eager" decoding="async" fetchpriority="high" data-topup-qr-image hidden />
+              <div class="qr-unavailable" data-topup-qr-unavailable hidden>ยังไม่พบ QR สำหรับช่องทางนี้</div>
             </div>
-            <div class="qr-detail-row">
-              <span>Point ที่จะได้รับ</span>
-              <strong data-topup-qr-credit>0 P</strong>
+            <div class="olaf-checkout-qr-total">
+              <span>ยอดชำระทั้งหมด</span>
+              <strong class="qr-total-highlight" data-topup-qr-total-display>฿0</strong>
             </div>
-          </div>
-
-          <div class="qr-store-note" data-topup-qr-note style="width: 100%;"></div>
-
-          <div class="qr-status-badge" data-topup-qr-status>
-            <i data-lucide="clock"></i> รอการชำระเงิน
-          </div>
-        </div>
-
-        <div class="premium-actions" style="padding: 0 24px 24px;">
-          <button class="primary-button submit-order-btn" type="button" data-topup-qr-upload>
-            <i data-lucide="upload-cloud"></i>
-            <span>แนบสลิปการชำระเงิน</span>
-          </button>
-          <button class="secondary-button cancel-order-btn" type="button" data-topup-qr-profile>
-            ดูประวัติ / เช็ค Point
-          </button>
-          <button class="text-button text-danger" type="button" data-topup-qr-cancel style="margin-top: 8px;">
-            ปิดหน้าต่าง
-          </button>
+            <div class="qr-store-note" data-topup-qr-note></div>
+            <div class="premium-actions">
+              <button class="primary-button submit-order-btn" type="button" data-topup-qr-upload>
+                <i data-lucide="upload-cloud"></i>
+                <span>แนบสลิปการชำระเงิน</span>
+              </button>
+              <button class="secondary-button cancel-order-btn" type="button" data-topup-qr-profile>ดูประวัติ / เช็ค Point</button>
+              <button class="text-button text-danger" type="button" data-topup-qr-cancel>ปิดหน้าต่าง</button>
+            </div>
+          </section>
         </div>
       </div>
     </dialog>

@@ -2313,6 +2313,11 @@ function setCheckoutOrderDialogOpen(dialog, open = true, { immediate = false } =
   }
 
   if (open) {
+    document.querySelectorAll("dialog.olaf-checkout-v98[open]").forEach((openDialog) => {
+      if (openDialog === dialog) return;
+      openDialog.classList.remove("is-visible", "is-closing");
+      openDialog.close();
+    });
     dialog.classList.remove("is-closing");
     if (!dialog.open) dialog.showModal();
     syncProductOverlayState();
@@ -2333,7 +2338,7 @@ function setCheckoutOrderDialogOpen(dialog, open = true, { immediate = false } =
     dialog.classList.remove("is-closing");
     checkoutOrderDialogCloseTimers.delete(dialog);
     syncProductOverlayState();
-  }, 210);
+  }, 300);
   checkoutOrderDialogCloseTimers.set(dialog, timer);
 }
 
@@ -2416,6 +2421,55 @@ function openOrderForm() {
   createIconSet();
 }
 
+const orderConfirmDialogCloseTimers = new WeakMap();
+
+function setOrderConfirmDialogOpen(dialog, open = true, { immediate = false, afterClose = null } = {}) {
+  if (!dialog) return;
+  const pendingTimer = orderConfirmDialogCloseTimers.get(dialog);
+  if (pendingTimer) {
+    window.clearTimeout(pendingTimer);
+    orderConfirmDialogCloseTimers.delete(dialog);
+  }
+
+  if (open) {
+    document.querySelectorAll("dialog.order-confirm-dialog[open], dialog.olaf-checkout-v98[open]").forEach((openDialog) => {
+      if (openDialog === dialog) return;
+      openDialog.classList.remove("is-visible", "is-closing");
+      openDialog.close();
+    });
+    dialog.classList.remove("is-closing");
+    if (!dialog.open) dialog.showModal();
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => dialog.classList.add("is-visible"));
+    });
+    syncProductOverlayState();
+    return;
+  }
+
+  if (!dialog.open) {
+    afterClose?.();
+    return;
+  }
+  dialog.classList.remove("is-visible");
+  if (immediate) {
+    dialog.classList.remove("is-closing");
+    dialog.close();
+    syncProductOverlayState();
+    afterClose?.();
+    return;
+  }
+
+  dialog.classList.add("is-closing");
+  const timer = window.setTimeout(() => {
+    if (dialog.open) dialog.close();
+    dialog.classList.remove("is-closing");
+    orderConfirmDialogCloseTimers.delete(dialog);
+    syncProductOverlayState();
+    afterClose?.();
+  }, 300);
+  orderConfirmDialogCloseTimers.set(dialog, timer);
+}
+
 function openOrderConfirmDialog(subtotal, total) {
   const dialog = $("#order-confirm-dialog");
   const checkbox = $("#order-confirm-accept");
@@ -2455,24 +2509,23 @@ function openOrderConfirmDialog(subtotal, total) {
   newSubmitBtn.disabled = !newCheckbox.checked;
   newSubmitBtn.addEventListener("click", () => {
     if (!newCheckbox.checked) return;
-    dialog.close();
-    openOrderForm();
+    setOrderConfirmDialogOpen(dialog, false, { afterClose: openOrderForm });
   });
 
   // Cancel button
   const cancelBtn = $("#order-confirm-cancel-btn");
   const newCancelBtn = cancelBtn.cloneNode(true);
   cancelBtn.parentNode.replaceChild(newCancelBtn, cancelBtn);
-  newCancelBtn.addEventListener("click", () => dialog.close());
+  newCancelBtn.addEventListener("click", () => setOrderConfirmDialogOpen(dialog, false));
 
   // Close X button
   const closeBtn = $("#close-order-confirm");
   const newCloseBtn = closeBtn.cloneNode(true);
   closeBtn.parentNode.replaceChild(newCloseBtn, closeBtn);
-  newCloseBtn.addEventListener("click", () => dialog.close());
+  newCloseBtn.addEventListener("click", () => setOrderConfirmDialogOpen(dialog, false));
 
   createIconSet();
-  dialog.showModal();
+  setOrderConfirmDialogOpen(dialog, true);
 }
 
 function orderErrorMessage(error) {
@@ -2648,9 +2701,16 @@ function setProductQrDialogOpen(dialog, open = true, { immediate = false } = {})
   }
 
   if (open) {
+    document.querySelectorAll("dialog.olaf-checkout-v98[open]").forEach((openDialog) => {
+      if (openDialog === dialog) return;
+      openDialog.classList.remove("is-visible", "is-closing");
+      openDialog.close();
+    });
     dialog.classList.remove("is-closing");
     if (!dialog.open) dialog.showModal();
-    window.requestAnimationFrame(() => dialog.classList.add("is-visible"));
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => dialog.classList.add("is-visible"));
+    });
     syncProductOverlayState();
     return;
   }
@@ -2670,7 +2730,7 @@ function setProductQrDialogOpen(dialog, open = true, { immediate = false } = {})
     dialog.classList.remove("is-closing");
     productQrDialogCloseTimers.delete(dialog);
     syncProductOverlayState();
-  }, 220);
+  }, 300);
   productQrDialogCloseTimers.set(dialog, timer);
 }
 
@@ -3320,6 +3380,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   $("#order-dialog")?.addEventListener("cancel", (event) => {
     event.preventDefault();
     setCheckoutOrderDialogOpen(event.currentTarget, false);
+  });
+  $("#order-confirm-dialog")?.addEventListener("cancel", (event) => {
+    event.preventDefault();
+    setOrderConfirmDialogOpen(event.currentTarget, false);
   });
   $("[data-qr-close-btn]")?.addEventListener("click", () => setProductQrDialogOpen($("#qr-dialog"), false));
   $("#qr-dialog")?.addEventListener("cancel", (event) => {

@@ -36149,3 +36149,58 @@ dialog.point-topup-qr-dialog .olaf-checkout-topup-product .premium-product-info 
   from { opacity: 1; }
   to { opacity: 0; }
 }
+
+/* v100 — compact confirmation product card with no content escaping its frame. */
+dialog.olaf-checkout-v98 .olaf-checkout-product:not(.olaf-checkout-topup-product) {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  min-height: 88px !important;
+  grid-template-columns: minmax(0, 1fr) minmax(min-content, max-content) !important;
+  gap: 12px !important;
+  padding: 14px 16px !important;
+  overflow: hidden !important;
+  contain: inline-size !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-product:not(.olaf-checkout-topup-product) > *,
+dialog.olaf-checkout-v98 .olaf-checkout-product:not(.olaf-checkout-topup-product) .premium-product-info,
+dialog.olaf-checkout-v98 .olaf-checkout-product:not(.olaf-checkout-topup-product) .olaf-checkout-product-meta {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-product:not(.olaf-checkout-topup-product) .olaf-checkout-eyebrow {
+  display: none !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-product:not(.olaf-checkout-topup-product) .premium-product-info h3,
+dialog.olaf-checkout-v98 .olaf-checkout-product:not(.olaf-checkout-topup-product) .premium-product-label,
+dialog.olaf-checkout-v98 .olaf-checkout-product:not(.olaf-checkout-topup-product) .premium-product-qty {
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+  word-break: break-word !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-product:not(.olaf-checkout-topup-product) .premium-product-info h3 {
+  font-size: clamp(0.82rem, 2.2vw, 0.98rem) !important;
+  line-height: 1.34 !important;
+}
+
+dialog.olaf-checkout-v98 .olaf-checkout-product:not(.olaf-checkout-topup-product) .premium-product-price {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  align-self: center !important;
+  justify-self: end !important;
+  font-size: clamp(0.9rem, 2.8vw, 1.08rem) !important;
+  line-height: 1.2 !important;
+}
+
+@media (max-width: 360px) {
+  dialog.olaf-checkout-v98 .olaf-checkout-product:not(.olaf-checkout-topup-product) {
+    grid-template-columns: minmax(0, 1fr) !important;
+  }
+
+  dialog.olaf-checkout-v98 .olaf-checkout-product:not(.olaf-checkout-topup-product) .premium-product-price {
+    justify-self: start !important;
+  }
+}

@@ -2734,6 +2734,22 @@ function setProductQrDialogOpen(dialog, open = true, { immediate = false } = {})
   productQrDialogCloseTimers.set(dialog, timer);
 }
 
+function keepQrTransferActionsVisible(event) {
+  const details = event.target?.closest?.(".qr-manual-transfer");
+  if (!details?.open) return;
+  const dialog = event.currentTarget;
+  const scroller = dialog?.querySelector?.(".qr-payment-content");
+  if (!scroller) return;
+  window.requestAnimationFrame(() => {
+    window.requestAnimationFrame(() => {
+      scroller.scrollTo({
+        top: Math.max(0, scroller.scrollHeight - scroller.clientHeight),
+        behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ? "auto" : "smooth"
+      });
+    });
+  });
+}
+
 function setMobilePaymentStage(dialog, stage) {
   if (!dialog) return;
   dialog.dataset.paymentStage = stage;
@@ -3390,6 +3406,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     event.preventDefault();
     setProductQrDialogOpen(event.currentTarget, false);
   });
+  $("#qr-dialog")?.addEventListener("toggle", keepQrTransferActionsVisible, true);
   document.querySelectorAll("dialog").forEach((dialog) => {
     dialog.addEventListener("close", syncProductOverlayState);
     dialog.addEventListener("cancel", syncProductOverlayState);

@@ -299,6 +299,21 @@
     if (node) node.textContent = text;
   }
 
+  function keepQrTransferActionsVisible(event) {
+    const details = event.target?.closest?.(".qr-manual-transfer");
+    if (!details?.open) return;
+    const scroller = event.currentTarget?.querySelector?.(".qr-payment-content");
+    if (!scroller) return;
+    window.requestAnimationFrame(() => {
+      window.requestAnimationFrame(() => {
+        scroller.scrollTo({
+          top: Math.max(0, scroller.scrollHeight - scroller.clientHeight),
+          behavior: window.matchMedia?.("(prefers-reduced-motion: reduce)")?.matches ? "auto" : "smooth"
+        });
+      });
+    });
+  }
+
   function accountNoteHtml(method = currentPaymentMethod()) {
     const payment = storePayment();
     const rows = [];
@@ -590,6 +605,7 @@
       event.preventDefault();
       setDialogOpen(event.currentTarget, false);
     });
+    $("#point-topup-qr-dialog")?.addEventListener("toggle", keepQrTransferActionsVisible, true);
   }
 
   async function init() {

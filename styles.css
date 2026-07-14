@@ -36204,3 +36204,66 @@ dialog.olaf-checkout-v98 .olaf-checkout-product:not(.olaf-checkout-topup-product
     justify-self: start !important;
   }
 }
+
+/* v101 — expanded bank-transfer details stay scrollable without hiding slip actions. */
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-payment-content {
+  position: relative !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  scroll-behavior: smooth !important;
+  scroll-padding-bottom: calc(118px + env(safe-area-inset-bottom, 0px)) !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-card {
+  min-width: 0 !important;
+  overflow: visible !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-manual-transfer[open] {
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-manual-transfer-body {
+  max-width: 100% !important;
+  max-height: min(190px, 28dvh) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-account-box,
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-account-box * {
+  min-width: 0 !important;
+  max-width: 100% !important;
+  overflow-wrap: anywhere !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-card .premium-actions {
+  position: sticky !important;
+  z-index: 12 !important;
+  bottom: calc(-1 * env(safe-area-inset-bottom, 0px)) !important;
+  margin: 4px -10px -12px !important;
+  padding: 10px 10px calc(12px + env(safe-area-inset-bottom, 0px)) !important;
+  border-top: 1px solid rgba(203, 213, 225, 0.82) !important;
+  border-radius: 0 0 12px 12px !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.94), #ffffff 22%) !important;
+  box-shadow: 0 -12px 24px rgba(15, 23, 42, 0.08) !important;
+}
+
+@media (max-width: 600px) {
+  dialog.olaf-checkout-v98.qr-payment-dialog .qr-payment-content {
+    scroll-padding-bottom: calc(154px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+
+  dialog.olaf-checkout-v98.qr-payment-dialog .qr-manual-transfer-body {
+    max-height: min(164px, 25dvh) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog.olaf-checkout-v98.qr-payment-dialog .qr-payment-content {
+    scroll-behavior: auto !important;
+  }
+}

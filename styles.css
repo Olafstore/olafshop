@@ -56,6 +56,60 @@
   --glow-brand: 0 0 15px rgba(59, 130, 246, 0.4);
 }
 
+/* v104: live 15-minute unpaid-order countdown in customer history */
+.profile-order-countdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  width: fit-content;
+  max-width: 100%;
+  margin-top: 7px;
+  padding: 6px 9px;
+  border: 1px solid rgba(251, 191, 36, 0.24);
+  border-radius: 999px;
+  background: rgba(120, 53, 15, 0.18);
+  color: #fde68a;
+  font-size: 0.74rem;
+  line-height: 1.2;
+  white-space: nowrap;
+}
+
+.profile-order-countdown svg,
+.profile-order-countdown i {
+  width: 14px;
+  height: 14px;
+  flex: 0 0 14px;
+  color: #fbbf24;
+}
+
+.profile-order-countdown strong {
+  color: #fff7d6;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.03em;
+}
+
+.profile-order-countdown.is-expired {
+  border-color: rgba(248, 113, 113, 0.28);
+  background: rgba(127, 29, 29, 0.2);
+  color: #fecaca;
+}
+
+.profile-order-countdown.is-expired svg,
+.profile-order-countdown.is-expired i,
+.profile-order-countdown.is-expired strong {
+  color: #fca5a5;
+}
+
+@media (max-width: 720px) {
+  .profile-order-countdown {
+    width: 100%;
+    justify-content: center;
+    margin-top: 5px;
+    padding: 6px 8px;
+    font-size: 0.7rem;
+  }
+}
+
 /* 2026-07-12: Premium Point Topup refresh */
 .point-topup-page {
   min-height: 100vh;

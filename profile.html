@@ -21,9 +21,9 @@
   <script src="platform-store.js?v=20260619-profile-update-fix" defer></script>
   <script src="image-performance.js?v=20260713-media-brand-v89" defer></script>
 <script src="delivery-payload.js?v=20260620-phase1-12-final" defer></script>
-      <script src="site-navigation.js?v=20260715-user-menu-v103" defer></script>
+      <script src="site-navigation.js?v=20260715-point-countdown-v104" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-      <link rel="stylesheet" href="styles.css?v=20260715-user-menu-v103" />
+      <link rel="stylesheet" href="styles.css?v=20260715-point-countdown-v104" />
   <style>
     body {
       padding-top: 0;
@@ -3178,6 +3178,75 @@
       return '<span class="payment-verified-badge"><i data-lucide="badge-check"></i>ตรวจสลิปแล้ว</span>';
     }
 
+    const UNPAID_ORDER_WINDOW_MS = 15 * 60 * 1000;
+    let profileOrderCountdownTimer = null;
+    const profileOrderExpiryNotified = new Set();
+
+    function unpaidOrderExpiresAt(order) {
+      if (!order || !['awaiting_payment', 'waiting_admin'].includes(String(order.status || ''))) return null;
+      if (String(order.paymentStatus || 'pending') === 'verified' || String(order.paymentSlipPath || '').trim()) return null;
+      const explicitExpiry = new Date(order.expiresAt || '');
+      if (!Number.isNaN(explicitExpiry.getTime())) return explicitExpiry;
+      const createdAt = new Date(order.createdAt || '');
+      if (Number.isNaN(createdAt.getTime())) return null;
+      return new Date(createdAt.getTime() + UNPAID_ORDER_WINDOW_MS);
+    }
+
+    function orderCountdownMarkup(order) {
+      const expiresAt = unpaidOrderExpiresAt(order);
+      if (!expiresAt) return '';
+      return `
+        <span class="profile-order-countdown" role="timer" aria-live="off"
+          data-order-countdown data-order-id="${escape(order.id || '')}"
+          data-order-expires-at="${escape(expiresAt.toISOString())}">
+          <i data-lucide="timer"></i>
+          <span>ยกเลิกอัตโนมัติใน <strong data-order-countdown-value>15:00</strong></span>
+        </span>
+      `;
+    }
+
+    function updateProfileOrderCountdowns() {
+      const countdowns = [...document.querySelectorAll('[data-order-countdown]')];
+      let hasActiveCountdown = false;
+      countdowns.forEach((countdown) => {
+        const expiresAt = new Date(countdown.getAttribute('data-order-expires-at') || '');
+        const value = countdown.querySelector('[data-order-countdown-value]');
+        if (!value || Number.isNaN(expiresAt.getTime())) return;
+        const remaining = expiresAt.getTime() - Date.now();
+        if (remaining <= 0) {
+          value.textContent = 'ครบเวลา · กำลังยกเลิก';
+          countdown.classList.add('is-expired');
+          const orderId = countdown.getAttribute('data-order-id') || '';
+          if (orderId && !profileOrderExpiryNotified.has(orderId)) {
+            profileOrderExpiryNotified.add(orderId);
+            document.dispatchEvent(new CustomEvent('olaf-order-expiry-reached', {
+              detail: { orderId }
+            }));
+          }
+          return;
+        }
+        hasActiveCountdown = true;
+        countdown.classList.remove('is-expired');
+        const totalSeconds = Math.max(0, Math.ceil(remaining / 1000));
+        const minutes = Math.floor(totalSeconds / 60);
+        const seconds = totalSeconds % 60;
+        value.textContent = `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+      });
+      if (!hasActiveCountdown && profileOrderCountdownTimer) {
+        window.clearInterval(profileOrderCountdownTimer);
+        profileOrderCountdownTimer = null;
+      }
+    }
+
+    function startProfileOrderCountdowns() {
+      if (profileOrderCountdownTimer) window.clearInterval(profileOrderCountdownTimer);
+      profileOrderCountdownTimer = null;
+      updateProfileOrderCountdowns();
+      if (document.querySelector('[data-order-countdown]:not(.is-expired)')) {
+        profileOrderCountdownTimer = window.setInterval(updateProfileOrderCountdowns, 1000);
+      }
+    }
+
       function renderProfilePoints(balance = profileState.pointBalance) {
         const card = document.getElementById('profile-points-card');
         const value = document.getElementById('profile-point-balance');
@@ -3427,6 +3496,7 @@
               <div class="profile-order-cell profile-order-status" data-label="สถานะ">
                 <span class="status-badge ${escape(o.status)}">${orderDisplayStatusLabel(o)}</span>
                 ${paymentVerifiedBadge(o)}
+                ${orderCountdownMarkup(o)}
               </div>
               <div class="profile-order-cell profile-order-action" data-label="จัดการ">
                 <button class="profile-order-open" type="button" data-open-order="${escape(o.id)}">
@@ -3444,7 +3514,10 @@
             </article>
           `).join('')}
         `;
+        startProfileOrderCountdowns();
       } else {
+        if (profileOrderCountdownTimer) window.clearInterval(profileOrderCountdownTimer);
+        profileOrderCountdownTimer = null;
         ordersList.innerHTML = `<div class="empty-panel"><i data-lucide="inbox" style="width:40px;height:40px"></i><p>ยังไม่มีออเดอร์</p></div>`;
       }
     }
@@ -4369,6 +4442,14 @@
           setProfileLoadingState(false, { quiet });
         }
       }
+
+      let expiryRefreshTimer = null;
+      document.addEventListener('olaf-order-expiry-reached', () => {
+        if (expiryRefreshTimer) window.clearTimeout(expiryRefreshTimer);
+        expiryRefreshTimer = window.setTimeout(() => {
+          refreshProfileOrders({ quiet: true, preserveModal: false });
+        }, 3500);
+      });
 
       await refreshProfileOrders({ preserveModal: false });
       profileState.refreshTimer = window.setInterval(() => {

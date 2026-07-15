@@ -3,14 +3,14 @@
   const MOBILE_DRAWER_VERSION = "drawer-v68";
   const MOBILE_DRAWER_ID = "olaf-mobile-drawer";
   const MOBILE_BACKDROP_ID = "olaf-mobile-menu-backdrop";
-  const USER_MENU_VERSION = "user-menu-v103";
+  const USER_MENU_VERSION = "user-menu-v104";
   let activeAdminBrandLogo = "";
   const NAV_ITEMS = [
     { href: "index.html", label: "หน้าหลัก", icon: "house", match: ["index.html", ""] },
     { href: "index.html#catalog", label: "สินค้า", icon: "shopping-bag", matchHash: "#catalog" },
     { href: "more-products.html", label: "หมวดหมู่", icon: "layout-grid", match: ["more-products.html"] },
     { href: "point-topup.html", label: "เติม Point", icon: "coins", match: ["point-topup.html"] },
-    { href: "free-random.html", label: "สุ่ม 1 Point", icon: "sparkles", match: ["free-random.html"] },
+    { href: "free-random.html", label: "สุ่ม 1 Point", icon: "dices", match: ["free-random.html"] },
     { href: ORDER_DESTINATION, label: "คลังสินค้า", icon: "archive", match: ["profile.html"], matchHash: "#inventory" },
     { href: "https://www.facebook.com/byOlafshop", label: "ติดต่อเรา", icon: "messages-square", external: true }
   ];
@@ -387,6 +387,7 @@
     },
     unlockMobileNavScroll: () => setMobilePageScrollLock(false),
     refreshAccount: () => document.querySelectorAll(".topbar").forEach(syncHeaderAccountState),
+    refreshPointBalance: () => refreshSharedPointBalance(document.querySelector("#user-popover")),
     closeTopbarPopovers,
     positionTopbarPopover
   };
@@ -617,6 +618,43 @@
     observer.observe(button, { childList: true, subtree: false, attributes: true, attributeFilter: ["class"] });
   }
 
+  let sharedPointBalanceRequest = 0;
+
+  function updateSharedPointBalance(value, popover = document.querySelector("#user-popover")) {
+    const formatted = new Intl.NumberFormat("th-TH", { maximumFractionDigits: 0 })
+      .format(Math.max(0, Math.floor(Number(value) || 0)));
+    const targets = popover
+      ? popover.querySelectorAll("[data-topbar-point-balance]")
+      : document.querySelectorAll("[data-topbar-point-balance]");
+    targets.forEach((target) => {
+      const valueNode = target.querySelector("[data-topbar-point-value]");
+      if (valueNode) valueNode.textContent = `${formatted} Points`;
+      else target.textContent = `${formatted} Points`;
+      target.removeAttribute("aria-busy");
+    });
+  }
+
+  async function refreshSharedPointBalance(popover = document.querySelector("#user-popover")) {
+    if (!popover || !currentNavUser()) return;
+    const requestId = ++sharedPointBalanceRequest;
+    popover.querySelectorAll("[data-topbar-point-balance]").forEach((target) => {
+      target.setAttribute("aria-busy", "true");
+    });
+    try {
+      await window.OlafStore?.ready?.catch?.(() => null);
+      if (!window.OlafOrders?.fetchPointBalance) throw new Error("Point client is not ready");
+      const wallet = await window.OlafOrders.fetchPointBalance();
+      if (requestId !== sharedPointBalanceRequest || !currentNavUser()) return;
+      updateSharedPointBalance(wallet?.balance || 0, popover);
+    } catch (error) {
+      if (requestId !== sharedPointBalanceRequest) return;
+      const valueNode = popover.querySelector("[data-topbar-point-value]");
+      if (valueNode) valueNode.textContent = "โหลด Point ไม่สำเร็จ";
+      popover.querySelector("[data-topbar-point-balance]")?.removeAttribute("aria-busy");
+      console.warn("Unable to load shared User menu Point balance", error);
+    }
+  }
+
   function renderFallbackUserPopover(popover, user) {
     if (!popover || !user) return;
     const displayName = cleanDisplayText(user.displayName || user.username || user.email || "Member");
@@ -634,7 +672,9 @@
         </a>
         <div class="user-popover-badge-row">
           <span class="user-badge-role">${escapeHtml(role)}</span>
-          <a class="user-badge-points" href="profile.html#info" data-topbar-point-balance>0 Points</a>
+          <a class="user-badge-points" href="profile.html#info" data-topbar-point-balance aria-label="ยอด Point คงเหลือ">
+            <i data-lucide="coins"></i><span data-topbar-point-value>กำลังโหลด Point...</span>
+          </a>
         </div>
       </div>
       <div class="user-popover-menu">
@@ -644,7 +684,7 @@
         <a href="point-topup.html"><i data-lucide="coins"></i><span>เติม Point</span></a>
         <a href="profile.html#inventory"><i data-lucide="archive"></i><span>คลังสินค้า</span></a>
         <a href="profile.html#orders"><i data-lucide="receipt-text"></i><span>ประวัติคำสั่งซื้อ</span></a>
-        <a href="free-random.html"><i data-lucide="sparkles"></i><span>สุ่มเกม 1 Point</span></a>
+        <a href="free-random.html"><i data-lucide="dices"></i><span>สุ่มเกม 1 Point</span></a>
         <div class="user-popover-divider"></div>
         <button class="danger-item" type="button" data-olaf-nav-logout><i data-lucide="log-out"></i><span>ออกจากระบบ</span></button>
       </div>
@@ -655,7 +695,16 @@
       closeTopbarPopovers("");
       window.location.href = "index.html";
     });
+    const randomGameIcon = popover.querySelector('a[href="free-random.html"] i');
+    if (randomGameIcon) randomGameIcon.setAttribute("data-lucide", "dices");
+    const textWalker = document.createTreeWalker(popover, NodeFilter.SHOW_TEXT);
+    let textNode = textWalker.nextNode();
+    while (textNode) {
+      textNode.nodeValue = cleanDisplayText(textNode.nodeValue);
+      textNode = textWalker.nextNode();
+    }
     window.lucide?.createIcons?.();
+    refreshSharedPointBalance(popover);
   }
 
   function resolveNode(target) {

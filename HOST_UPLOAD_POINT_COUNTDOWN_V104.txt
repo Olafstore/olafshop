@@ -1,0 +1,20 @@
+OLAF SHOP - Point Menu + Order Countdown v104
+Date: 2026-07-15
+
+Upload every file in this package to the website root and preserve the folder structure.
+Overwrite files with the same names.
+
+What changed:
+- The random-game menu now uses the dices icon consistently.
+- The shared User popup loads the signed-in customer's real Point balance every time it opens.
+- Point loading and errors are shown explicitly instead of displaying a false zero balance.
+- Unpaid orders in Order History display a live 15-minute cancellation countdown.
+- Expired countdowns refresh Order History so the cancelled status appears after the server job completes.
+- Cache version: 20260715-point-countdown-v104.
+
+Database note:
+- This package assumes supabase-order-expiry-15m.sql has already been run successfully.
+- Do not run that migration again unless you are intentionally reinstalling the expiry job.
+
+No environment variables, credentials, TXT account files, SQL files, or reports are included.
+After upload, clear the host/CDN cache or redeploy once, then hard refresh the browser.

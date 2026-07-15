@@ -662,7 +662,7 @@
           <a href="point-topup.html"><i data-lucide="coins"></i><span>เติม Point</span></a>
           <a href="profile.html#inventory"><i data-lucide="archive"></i><span>คลังสินค้า</span></a>
           <a href="profile.html#orders"><i data-lucide="receipt-text"></i><span>ประวัติคำสั่งซื้อ</span></a>
-          <a href="free-random.html"><i data-lucide="sparkles"></i><span>สุ่มเกม 1 Point</span></a>
+          <a href="free-random.html"><i data-lucide="dices"></i><span>สุ่มเกม 1 Point</span></a>
           <div class="user-popover-divider"></div>
           <button class="danger-item" type="button" data-free-auth-logout><i data-lucide="log-out"></i><span>ออกจากระบบ</span></button>
         </div>

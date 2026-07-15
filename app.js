@@ -1333,7 +1333,9 @@ function renderActivityPopup() {
   const existing = document.querySelector("[data-activity-popup]");
   const desktopImage = safeActivityPopupImage(activity.desktopImageUrl || activity.mobileImageUrl);
   const mobileImage = safeActivityPopupImage(activity.mobileImageUrl || desktopImage);
-  const shouldShow = activity.enabled === true && Boolean(desktopImage || mobileImage || activity.discountCode);
+  // Coupon campaigns are delivered through Notifications. The legacy index
+  // activity popup must not expose a reusable discount code publicly.
+  const shouldShow = activity.enabled === true && Boolean(desktopImage || mobileImage) && !activity.discountCode;
 
   if (!shouldShow || activityPopupDismissedKeys.has(key) || activityPopupHiddenUntil(key) > Date.now()) {
     if (existing && existing.dataset.activityKey !== key) existing.remove();
@@ -2770,7 +2772,7 @@ function renderUserPopover() {
       <a href="point-topup.html"><i data-lucide="coins"></i>เติม Point</a>
       <a href="profile.html#inventory"><i data-lucide="package"></i>คลังสินค้า (ID/Pass)</a>
       <a href="profile.html#orders"><i data-lucide="list"></i>ประวัติคำสั่งซื้อ</a>
-      <a href="#"><i data-lucide="ticket"></i>โค้ดส่วนลด</a>
+      <a href="profile.html#coupons"><i data-lucide="ticket-percent"></i>คูปองของฉัน</a>
       
       <div class="user-popover-divider"></div>
       

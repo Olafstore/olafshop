@@ -1648,6 +1648,52 @@
     };
   }
 
+  function mapDiscountCoupon(row = {}) {
+    const value = normalizeObject(row);
+    return {
+      ...value,
+      id: value.id || value.codeId || value.code_id || "",
+      claimId: value.claimId || value.claim_id || "",
+      codeId: value.codeId || value.code_id || value.id || "",
+      code: String(value.code || "").toUpperCase(),
+      discountType: value.discountType || value.discount_type || "fixed",
+      discountValue: Number(value.discountValue ?? value.discount_value ?? 0),
+      startsAt: value.startsAt || value.starts_at || "",
+      expiresAt: value.expiresAt || value.expires_at || "",
+      claimedAt: value.claimedAt || value.claimed_at || "",
+      consumedAt: value.consumedAt || value.consumed_at || "",
+      orderId: value.orderId || value.order_id || "",
+      status: value.status || (value.claimed ? "claimed" : "available"),
+      claimed: value.claimed === true || ["claimed", "pending", "consumed"].includes(value.status),
+      consumed: value.consumed === true || value.status === "consumed",
+      expired: value.expired === true,
+      title: value.title || value.notificationTitle || value.notification_title || "กิจกรรมรับโค้ดส่วนลด",
+      message: value.message || value.notificationMessage || value.notification_message || "",
+      linkUrl: value.linkUrl || value.link_url || value.notificationLinkUrl || ""
+    };
+  }
+
+  async function fetchDiscountCampaigns() {
+    const { data, error } = await requireClient().rpc("list_discount_campaigns");
+    if (error) throw error;
+    const payload = normalizeArray(data);
+    return payload.map(mapDiscountCoupon).filter((item) => item.code);
+  }
+
+  async function claimDiscountCampaign(codeId) {
+    const id = String(codeId || "").trim();
+    if (!id) throw new Error("COUPON_CAMPAIGN_REQUIRED");
+    const { data, error } = await requireClient().rpc("claim_discount_campaign", { p_code_id: id });
+    if (error) throw error;
+    return mapDiscountCoupon(normalizeObject(data));
+  }
+
+  async function fetchMyDiscountCoupons() {
+    const { data, error } = await requireClient().rpc("list_my_discount_coupons");
+    if (error) throw error;
+    return normalizeArray(data).map(mapDiscountCoupon).filter((item) => item.code);
+  }
+
   async function fetchAdminDiscountCodes() {
     const { data, error } = await requireClient().rpc("admin_list_discount_codes");
     if (error) throw error;
@@ -2038,6 +2084,9 @@
   window.OlafCoupons = {
     redeem: redeemDiscountCode,
     preview: previewDiscountCode,
+    fetchCampaigns: fetchDiscountCampaigns,
+    claimCampaign: claimDiscountCampaign,
+    fetchMine: fetchMyDiscountCoupons,
     fetchAdmin: fetchAdminDiscountCodes,
     saveAdmin: saveAdminDiscountCode,
     deactivateAdmin: deactivateAdminDiscountCode

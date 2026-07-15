@@ -16,14 +16,14 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
   <script src="slip-qr-scanner.js?v=20260621-slip-verify-v2" defer></script>
-  <script src="supabase-client.js?v=20260715-variable-stock-coupon-v107" defer></script> 
+  <script src="supabase-client.js?v=20260716-user-coupons-v108" defer></script> 
   <script src="order-action-popup.js?v=20260621-order-animation" defer></script>
   <script src="platform-store.js?v=20260619-profile-update-fix" defer></script>
   <script src="image-performance.js?v=20260713-media-brand-v89" defer></script>
-<script src="delivery-payload.js?v=20260715-variable-stock-coupon-v107" defer></script>
-      <script src="site-navigation.js?v=20260715-variable-stock-coupon-v107" defer></script>
-  <script src="notifications.js?v=20260619-profile-orders" defer></script>
-      <link rel="stylesheet" href="styles.css?v=20260715-variable-stock-coupon-v107" />
+<script src="delivery-payload.js?v=20260716-user-coupons-v108" defer></script>
+      <script src="site-navigation.js?v=20260716-user-coupons-v108" defer></script>
+  <script src="notifications.js?v=20260716-user-coupons-v108" defer></script>
+      <link rel="stylesheet" href="styles.css?v=20260716-user-coupons-v108" />
   <style>
     body {
       padding-top: 0;
@@ -3000,6 +3000,10 @@
               <i data-lucide="shopping-bag" style="width:18px;height:18px"></i>
               ออเดอร์ของฉัน
             </button>
+            <button class="profile-nav-item" type="button" data-panel="coupons">
+              <i data-lucide="ticket-percent" style="width:18px;height:18px"></i>
+              คูปองของฉัน
+            </button>
             <button class="profile-nav-item" type="button" data-panel="reviews">
               <i data-lucide="star" style="width:18px;height:18px"></i>
               รีวิวของฉัน
@@ -3151,6 +3155,24 @@
               <button type="button" class="mini-button" data-panel-jump="inventory">กลับคลังสินค้า</button>
             </div>
             <div id="orders-list"></div>
+          </div>
+        </div>
+
+        <!-- Coupons Panel -->
+        <div class="profile-panel" id="panel-coupons">
+          <div class="panel-card profile-coupons-card">
+            <div class="panel-card-header">
+              <div class="panel-title-copy">
+                <h3><i data-lucide="ticket-percent"></i>คูปองของฉัน</h3>
+                <p>รับ คัดลอก และเลือกใช้โค้ดส่วนลดกับคำสั่งซื้อถัดไป</p>
+              </div>
+              <button type="button" class="mini-button" data-refresh-coupons><i data-lucide="refresh-cw"></i>รีเฟรช</button>
+            </div>
+            <div class="panel-card-body">
+              <div id="profile-coupons-list">
+                <div class="profile-loading-panel" role="status"><span class="profile-loading-orb"><i data-lucide="loader-circle"></i></span><span class="profile-loading-copy"><strong>กำลังโหลดคูปอง</strong><span>ตรวจสอบกิจกรรมและคูปองของคุณ</span></span></div>
+              </div>
+            </div>
           </div>
         </div>
 
@@ -3390,6 +3412,93 @@
       return escape(v).replace(/\n/g, '<br>');
     }
 
+    function formatCouponDate(value) {
+      const date = value ? new Date(value) : null;
+      if (!date || Number.isNaN(date.getTime())) return 'ไม่จำกัดเวลา';
+      return date.toLocaleString('th-TH', { dateStyle: 'medium', timeStyle: 'short' });
+    }
+
+    function couponValueLabel(coupon = {}) {
+      return coupon.discountType === 'percent'
+        ? `ลด ${Number(coupon.discountValue || 0).toLocaleString('th-TH')}%`
+        : `ลด ${formatPrice(coupon.discountValue || 0)}`;
+    }
+
+    function renderProfileCoupons(campaigns = profileState.couponCampaigns, mine = profileState.coupons) {
+      const container = document.getElementById('profile-coupons-list');
+      if (!container) return;
+      const mineByCode = new Map((mine || []).map(item => [String(item.codeId || item.id || item.code), item]));
+      const combined = [];
+      const seen = new Set();
+      (campaigns || []).forEach((campaign) => {
+        const key = String(campaign.codeId || campaign.id || campaign.code);
+        const owned = mineByCode.get(key);
+        combined.push({ ...campaign, ...(owned || {}), claimed: Boolean(owned || campaign.claimed) });
+        seen.add(key);
+      });
+      (mine || []).forEach((coupon) => {
+        const key = String(coupon.codeId || coupon.id || coupon.code);
+        if (!seen.has(key)) combined.push(coupon);
+      });
+
+      if (!combined.length) {
+        container.innerHTML = `<div class="empty-panel"><i data-lucide="ticket-percent" style="width:40px;height:40px"></i><p>ยังไม่มีกิจกรรมคูปองในขณะนี้</p></div>`;
+        lucide.createIcons();
+        return;
+      }
+
+      container.innerHTML = `<div class="profile-coupon-grid">${combined.map((coupon) => {
+        const expired = coupon.expired === true || (coupon.expiresAt && new Date(coupon.expiresAt).getTime() <= Date.now());
+        const consumed = coupon.consumed === true || coupon.status === 'consumed';
+        const claimed = coupon.claimed === true || ['claimed', 'pending', 'consumed'].includes(coupon.status);
+        const statusLabel = expired ? 'หมดเวลากิจกรรม' : consumed ? 'ใช้แล้ว' : claimed ? 'รับแล้ว' : 'รับฟรี';
+        const statusClass = expired ? 'is-expired' : consumed ? 'is-consumed' : claimed ? 'is-claimed' : 'is-available';
+        return `
+          <article class="profile-coupon-card ${statusClass}">
+            <div class="profile-coupon-topline">
+              <span class="profile-coupon-icon"><i data-lucide="ticket-percent"></i></span>
+              <span class="profile-coupon-status ${statusClass}">${statusLabel}</span>
+            </div>
+            <div class="profile-coupon-copy">
+              <small>${escape(coupon.title || 'กิจกรรมรับโค้ดส่วนลด')}</small>
+              <h4>${escape(couponValueLabel(coupon))}</h4>
+              <p>${escape(coupon.message || 'ใช้กับสินค้าที่ร่วมรายการในหน้าชำระเงิน')}</p>
+            </div>
+            <div class="profile-coupon-code"><span>CODE</span><code>${escape(coupon.code)}</code></div>
+            <div class="profile-coupon-expiry"><i data-lucide="clock-3"></i><span>${expired ? 'สิ้นสุดกิจกรรมเมื่อ' : 'ใช้ได้ถึง'} ${escape(formatCouponDate(coupon.expiresAt))}</span></div>
+            <div class="profile-coupon-actions">
+              ${!expired && !claimed ? `<button type="button" class="primary-button" data-claim-profile-coupon="${escape(coupon.codeId || coupon.id)}"><i data-lucide="gift"></i>รับคูปอง</button>` : ''}
+              ${claimed ? `<button type="button" class="secondary-button" data-copy-profile-coupon="${escape(coupon.code)}"><i data-lucide="copy"></i>คัดลอกโค้ด</button>` : ''}
+              ${claimed && !expired && !consumed ? `<button type="button" class="primary-button" data-use-profile-coupon="${escape(coupon.code)}"><i data-lucide="badge-percent"></i>ใช้งานโค้ด</button>` : ''}
+            </div>
+          </article>`;
+      }).join('')}</div>`;
+      lucide.createIcons();
+    }
+
+    async function refreshProfileCoupons({ quiet = false } = {}) {
+      const container = document.getElementById('profile-coupons-list');
+      if (!window.OlafCoupons?.fetchCampaigns || !window.OlafCoupons?.fetchMine) {
+        if (container) container.innerHTML = `<div class="empty-panel"><i data-lucide="alert-circle"></i><p>ระบบคูปองยังไม่พร้อม กรุณารัน SQL คูปองล่าสุด</p></div>`;
+        lucide.createIcons();
+        return;
+      }
+      if (!quiet && container) container.innerHTML = profileLoadingMarkup('กำลังโหลดคูปอง', 'ตรวจสอบสิทธิ์และวันหมดอายุล่าสุด', 'ticket-percent');
+      try {
+        const [campaigns, coupons] = await Promise.all([
+          window.OlafCoupons.fetchCampaigns(),
+          window.OlafCoupons.fetchMine()
+        ]);
+        profileState.couponCampaigns = campaigns || [];
+        profileState.coupons = coupons || [];
+        renderProfileCoupons();
+      } catch (error) {
+        console.warn('Unable to load coupons', error);
+        if (container) container.innerHTML = `<div class="empty-panel"><i data-lucide="alert-circle"></i><p>โหลดคูปองไม่สำเร็จ กรุณาลองใหม่</p></div>`;
+        lucide.createIcons();
+      }
+    }
+
     function profileLoadingMarkup(title = 'กำลังโหลดข้อมูล', detail = 'ระบบกำลังดึงข้อมูลล่าสุดให้คุณ', icon = 'loader-circle') {
       return `
         <div class="profile-loading-panel" role="status" aria-live="polite">
@@ -3422,6 +3531,8 @@
       products: [],
       storeSettings: {},
       pointBalance: 0,
+      coupons: [],
+      couponCampaigns: [],
       refreshTimer: null,
       isRefreshing: false
     };
@@ -4179,6 +4290,7 @@
           <a href="point-topup.html"><i data-lucide="coins"></i>เติม Point</a>
           <a href="profile.html#inventory"><i data-lucide="package"></i>คลังสินค้า (ID/Pass)</a>
           <a href="profile.html#orders"><i data-lucide="receipt-text"></i>ประวัติคำสั่งซื้อ</a>
+          <a href="profile.html#coupons"><i data-lucide="ticket-percent"></i>คูปองของฉัน</a>
           <div class="user-popover-divider"></div>
           <button type="button" class="danger-item" id="topbar-logout-button"><i data-lucide="log-out"></i>ออกจากระบบ</button>
         </div>
@@ -4382,7 +4494,7 @@
       applyTopbarStoreIcon(storeSettings?.siteIconUrl);
       ensureTopbarSearchProducts().catch(() => []);
 
-      const validPanels = ['info', 'password', 'inventory', 'orders', 'reviews'];
+      const validPanels = ['info', 'password', 'inventory', 'orders', 'coupons', 'reviews'];
       const sidebarNav = document.querySelector('.profile-sidebar-nav');
       const topbarSearchInput = document.getElementById('topbar-search-input');
 
@@ -4408,6 +4520,7 @@
         document.querySelectorAll('.profile-panel').forEach((panel) => panel.classList.remove('is-active'));
         document.querySelector(`.profile-nav-item[data-panel="${nextPanel}"]`)?.classList.add('is-active');
         document.getElementById(`panel-${nextPanel}`)?.classList.add('is-active');
+        if (nextPanel === 'coupons') refreshProfileCoupons({ quiet: false });
         return nextPanel;
       }
 
@@ -4613,6 +4726,7 @@
       });
 
       await refreshProfileOrders({ preserveModal: false });
+      await refreshProfileCoupons({ quiet: true });
       profileState.refreshTimer = window.setInterval(() => {
         if (document.visibilityState === 'visible') refreshProfileOrders({ quiet: true });
       }, 15000);
@@ -4622,6 +4736,7 @@
 
       inventorySearch?.addEventListener('input', () => renderInventoryList());
       inventoryLimit?.addEventListener('change', () => renderInventoryList());
+      document.querySelector('[data-refresh-coupons]')?.addEventListener('click', () => refreshProfileCoupons());
 
       document.addEventListener('click', async (event) => {
         const panelJump = event.target.closest('[data-panel-jump]');
@@ -4699,6 +4814,43 @@
             window.setTimeout(() => detailTrigger.classList.remove('is-activating'), 520);
             toggleInventoryModal(true, row);
           }
+          return;
+        }
+
+        const claimCoupon = event.target.closest('[data-claim-profile-coupon]');
+        if (claimCoupon) {
+          const codeId = claimCoupon.getAttribute('data-claim-profile-coupon');
+          claimCoupon.disabled = true;
+          try {
+            if (!window.OlafCoupons?.claimCampaign) throw new Error('COUPON_SYSTEM_NOT_READY');
+            await window.OlafCoupons.claimCampaign(codeId);
+            showToast('รับคูปองแล้ว คูปองถูกเพิ่มในบัญชีของคุณ', 'success');
+            await refreshProfileCoupons({ quiet: true });
+          } catch (error) {
+            const message = String(error?.message || '');
+            showToast(message.includes('COUPON_EXPIRED') ? 'กิจกรรมนี้หมดเวลาแล้ว' : 'รับคูปองไม่สำเร็จ กรุณาลองใหม่', 'error');
+            claimCoupon.disabled = false;
+          }
+          return;
+        }
+
+        const copyCoupon = event.target.closest('[data-copy-profile-coupon]');
+        if (copyCoupon) {
+          try {
+            await copyTextToClipboard(copyCoupon.getAttribute('data-copy-profile-coupon') || '');
+            showToast('คัดลอกโค้ดส่วนลดแล้ว', 'success');
+          } catch (error) {
+            showToast(error.message || 'คัดลอกโค้ดไม่สำเร็จ', 'error');
+          }
+          return;
+        }
+
+        const useCoupon = event.target.closest('[data-use-profile-coupon]');
+        if (useCoupon) {
+          const code = useCoupon.getAttribute('data-use-profile-coupon') || '';
+          try { sessionStorage.setItem('olafshop_pending_coupon', code); } catch (error) { /* storage may be blocked */ }
+          showToast('บันทึกโค้ดแล้ว เลือกสินค้าเพื่อใช้งานโค้ด', 'info');
+          window.setTimeout(() => { window.location.href = 'index.html#catalog'; }, 450);
           return;
         }
 

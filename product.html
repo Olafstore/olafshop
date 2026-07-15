@@ -13,19 +13,19 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260715-variable-stock-coupon-v107" />
+  <link rel="stylesheet" href="styles.css?v=20260716-user-coupons-v108" />
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
   <script src="slip-qr-scanner.js?v=20260621-slip-verify-v2" defer></script>
-  <script src="supabase-client.js?v=20260715-variable-stock-coupon-v107" defer></script>
+  <script src="supabase-client.js?v=20260716-user-coupons-v108" defer></script>
   <script src="order-action-popup.js?v=20260621-order-animation" defer></script>
   <script src="platform-store.js?v=20260605-admin-users" defer></script>
   <script src="image-performance.js?v=20260713-media-brand-v89" defer></script>
-  <script src="notifications.js?v=20260619-profile-orders" defer></script>
-  <script src="site-navigation.js?v=20260715-variable-stock-coupon-v107" defer></script>
+  <script src="notifications.js?v=20260716-user-coupons-v108" defer></script>
+  <script src="site-navigation.js?v=20260716-user-coupons-v108" defer></script>
   <script src="extra-products.js?v=20260712-admin-authority-v86" defer></script>
-  <script src="product.js?v=20260715-variable-stock-coupon-v107" defer></script>
+  <script src="product.js?v=20260716-user-coupons-v108" defer></script>
 </head>
 
 <body class="product-detail-page">
@@ -315,6 +315,9 @@
         </div>
 
         <section class="premium-product-card olaf-checkout-product olaf-checkout-qr-product">
+          <div class="premium-product-thumb qr-product-thumb" aria-hidden="true">
+            <img alt="สินค้า" loading="eager" decoding="async" data-qr-product-image hidden />
+          </div>
           <div class="premium-product-info">
             <h3 data-qr-product-name>ชื่อสินค้า</h3>
             <span class="premium-product-label" data-qr-product-label>ประเภท: -</span>
@@ -406,15 +409,6 @@
             </div>
           </div>
         </div>
-      </div>
-
-      <!-- Coupon Section -->
-      <div class="order-confirm-coupon-block">
-        <div class="order-confirm-coupon-header">
-          <i data-lucide="ticket"></i>
-          <span>โค้ดส่วนลดของคุณ</span>
-        </div>
-        <p class="order-confirm-coupon-empty" id="order-confirm-coupon-text">คุณไม่มีโค้ดส่วนลดที่ใช้ได้</p>
       </div>
 
       <!-- Price Summary -->

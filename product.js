@@ -257,6 +257,13 @@ function syncQrCheckoutSummary(order = null, totalFallback = 0) {
   const product = currentProduct;
   const purchase = product ? getPurchaseOption(product) : null;
   const amount = Number(order?.total ?? totalFallback ?? 0);
+  const image = $("[data-qr-product-image]");
+  if (image) {
+    const imageUrl = productImageForCheckout(product);
+    image.src = imageUrl || "";
+    image.alt = product ? getDisplayProductName(product) : "สินค้า";
+    image.hidden = !imageUrl;
+  }
   setTextContent("[data-qr-product-name]", product ? getDisplayProductName(product) : "กำลังเตรียมสินค้า");
   setTextContent("[data-qr-product-label]", checkoutProductLabel(product, purchase));
   setTextContent("[data-qr-product-price]", formatPrice(Math.max(amount, 0)));
@@ -1982,10 +1989,6 @@ function renderProduct() {
 
     ${brandedProductHero(p)}
 
-    <div class="pd-mobile-cover" aria-label="ภาพปกสินค้า">
-      <img ${fastImg(sidebarCoverImg, displayProductName, { priority: true, fallbacks: productImageFallbacks(p, sidebarCoverImg) })} />
-    </div>
-
     <div class="pd-layout fade-in">
 
       <!-- ══ LEFT COLUMN ══ -->
@@ -2073,6 +2076,10 @@ function renderProduct() {
             <!-- Platform badges -->
             <div class="pd-badges">
               ${productBadgeHtml}
+            </div>
+
+            <div class="pd-mobile-cover" aria-label="ภาพปกสินค้า">
+              <img ${fastImg(sidebarCoverImg, displayProductName, { priority: true, fallbacks: productImageFallbacks(p, sidebarCoverImg) })} />
             </div>
 
             <!-- Title & publisher -->
@@ -2291,6 +2298,11 @@ async function applyCheckoutDiscountCode() {
     checkoutPointState.totalBeforePoints = Math.max(checkoutCouponState.baseTotal - checkoutCouponState.discountAmount, 0);
     renderCheckoutCoupon();
     renderCheckoutPoints();
+    try {
+      window.sessionStorage.removeItem("olafshop_pending_coupon");
+    } catch (storageError) {
+      console.warn("Unable to clear pending coupon", storageError);
+    }
     showToast(`ใช้โค้ด ${checkoutCouponState.code} สำเร็จ`, "success");
   } catch (error) {
     checkoutCouponState.applied = false;
@@ -2331,7 +2343,7 @@ function renderCheckoutPoints() {
   checkoutPointState.pointsToUse = discount;
 
   if (card) {
-    card.hidden = false;
+    card.hidden = checkoutCouponState.applied;
     card.classList.toggle("is-active", Boolean(checkoutPointState.enabled && discount > 0));
     card.classList.toggle("is-unavailable", !hasPoints);
   }
@@ -2471,6 +2483,13 @@ function openOrderForm() {
   renderCheckoutPoints();
   hydrateCheckoutPoints();
 
+  let pendingCoupon = "";
+  try {
+    pendingCoupon = String(window.sessionStorage.getItem("olafshop_pending_coupon") || "").trim();
+  } catch (storageError) {
+    console.warn("Unable to read pending coupon", storageError);
+  }
+
   const pointCheckbox = form.querySelector("[data-checkout-use-points]");
   if (pointCheckbox && !pointCheckbox.dataset.pointBound) {
     pointCheckbox.addEventListener("change", () => {
@@ -2483,6 +2502,14 @@ function openOrderForm() {
   if (couponButton && !couponButton.dataset.couponBound) {
     couponButton.addEventListener("click", applyCheckoutDiscountCode);
     couponButton.dataset.couponBound = "true";
+  }
+
+  if (pendingCoupon) {
+    const couponInput = form.querySelector("#checkout-discount-code");
+    if (couponInput) {
+      couponInput.value = pendingCoupon;
+      window.setTimeout(() => applyCheckoutDiscountCode(), 0);
+    }
   }
 
   const orderNumberWrap = $("[data-checkout-order-container]");
@@ -2713,7 +2740,7 @@ function paymentChannelForMethod(method) {
   const channels = Array.isArray(globalPayload?.store?.paymentChannels)
     ? globalPayload.store.paymentChannels
     : [];
-  return channels.find((channel) => normalizePaymentMethod(channel.method || channel.id) === normalizedMethod) || null;
+  return channels.find((channel) => channel?.isActive !== false && normalizePaymentMethod(channel.method || channel.id) === normalizedMethod) || null;
 }
 
 function paymentQrForOrder(order) {
@@ -2748,7 +2775,10 @@ function paymentQrCandidatesForOrder(order) {
   const method = normalizePaymentMethod(order.paymentMethod);
   const channel = paymentChannelForMethod(method);
   const paymentInfo = globalPayload?.store?.payment ?? {};
-  const orderUrls = paymentUrlFields(order);
+  const orderQrMethod = order?.paymentQrMethod || order?.payment_qr_method;
+  const orderUrls = orderQrMethod && normalizePaymentMethod(orderQrMethod) === method
+    ? paymentUrlFields(order)
+    : [];
   if (method === "wallet") {
     return uniquePaymentUrls([
       ...orderUrls,
@@ -2756,9 +2786,7 @@ function paymentQrCandidatesForOrder(order) {
       paymentInfo.trueMoneyQrUrl,
       paymentInfo.true_money_qr_url,
       paymentInfo.walletQrUrl,
-      paymentInfo.wallet_qr_url,
-      paymentInfo.manualQrUrl,
-      paymentInfo.manual_qr_url
+      paymentInfo.wallet_qr_url
     ]);
   }
   return uniquePaymentUrls([

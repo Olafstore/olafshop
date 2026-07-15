@@ -132,6 +132,7 @@
   function paymentChannelForMethod(method) {
     const wanted = method === "wallet" ? ["wallet", "truemoney", "true_money", "true-money"] : ["promptpay", "qr", "bank"];
     return paymentChannels().find((channel) => {
+      if (channel?.isActive === false) return false;
       const keys = [
         channel?.method,
         channel?.paymentMethod,
@@ -185,7 +186,10 @@
     const payment = storePayment();
     const channel = paymentChannelForMethod(method);
     const total = Number(order?.total || state.amount || 0);
-    const orderUrls = paymentUrlFields(order);
+    const orderQrMethod = order?.paymentQrMethod || order?.payment_qr_method;
+    const orderUrls = orderQrMethod && normalizePaymentMethod(orderQrMethod) === method
+      ? paymentUrlFields(order)
+      : [];
     if (method === "wallet") {
       return uniqueUrls([
         ...orderUrls,
@@ -193,9 +197,7 @@
         payment.trueMoneyQrUrl,
         payment.true_money_qr_url,
         payment.walletQrUrl,
-        payment.wallet_qr_url,
-        payment.manualQrUrl,
-        payment.manual_qr_url
+        payment.wallet_qr_url
       ]);
     }
     return uniqueUrls([

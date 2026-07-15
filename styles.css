@@ -36463,3 +36463,139 @@ dialog.olaf-checkout-v98.qr-payment-dialog .qr-unavailable {
   .premium-coupon-row { grid-template-columns: 1fr; }
   .premium-coupon-apply { width: 100%; }
 }
+
+/* v108 — user coupons and one stable, scrollable QR surface. */
+.profile-coupon-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+.profile-coupon-card {
+  min-width: 0;
+  display: grid;
+  gap: 12px;
+  padding: 16px;
+  border: 1px solid rgba(96, 165, 250, .24);
+  border-radius: 16px;
+  background: linear-gradient(145deg, rgba(15, 31, 62, .94), rgba(8, 14, 30, .96));
+  box-shadow: 0 12px 28px rgba(2, 6, 23, .18);
+}
+.profile-coupon-card.is-expired { border-color: rgba(148, 163, 184, .2); opacity: .72; }
+.profile-coupon-topline,
+.profile-coupon-expiry,
+.profile-coupon-actions { display: flex; align-items: center; gap: 9px; }
+.profile-coupon-topline { justify-content: space-between; }
+.profile-coupon-icon {
+  display: inline-grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border-radius: 10px;
+  color: #bfdbfe;
+  background: rgba(37, 99, 235, .2);
+}
+.profile-coupon-icon svg { width: 18px; height: 18px; }
+.profile-coupon-status,
+.notification-coupon-tag {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  min-height: 23px;
+  padding: 3px 8px;
+  border-radius: 999px;
+  color: #bfdbfe;
+  background: rgba(37, 99, 235, .18);
+  font-size: .72rem;
+  line-height: 1.2;
+}
+.profile-coupon-status.is-expired,
+.notification-coupon-tag.is-expired { color: #cbd5e1; background: rgba(100, 116, 139, .22); }
+.profile-coupon-copy { min-width: 0; }
+.profile-coupon-copy h4,
+.profile-coupon-copy p { overflow-wrap: anywhere; }
+.profile-coupon-copy h4 { margin: 0; color: #f8fbff; font-size: 1rem; }
+.profile-coupon-copy p { margin: 5px 0 0; color: #94a3b8; font-size: .82rem; line-height: 1.5; }
+.profile-coupon-code {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 10px 11px;
+  border: 1px dashed rgba(96, 165, 250, .38);
+  border-radius: 10px;
+  background: rgba(2, 6, 23, .42);
+}
+.profile-coupon-code span { color: #64748b; font-size: .66rem; letter-spacing: .12em; }
+.profile-coupon-code code { min-width: 0; color: #dbeafe; font-size: .86rem; overflow-wrap: anywhere; }
+.profile-coupon-expiry { color: #94a3b8; font-size: .76rem; }
+.profile-coupon-expiry svg { width: 15px; height: 15px; color: #60a5fa; }
+.profile-coupon-actions { flex-wrap: wrap; }
+.profile-coupon-actions button { min-height: 34px; padding: 7px 10px; font-size: .76rem; }
+.notification-coupon .notification-content { min-width: 0; flex: 1; }
+.notification-coupon .notification-icon { color: #bfdbfe; background: rgba(37, 99, 235, .18); }
+.notification-coupon.is-expired { opacity: .7; }
+.notification-coupon-claim,
+.notification-coupon-open {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  min-height: 30px;
+  margin-top: 5px;
+  padding: 6px 10px;
+  border: 1px solid rgba(96, 165, 250, .32);
+  border-radius: 9px;
+  color: #dbeafe !important;
+  background: rgba(37, 99, 235, .16);
+  font: inherit;
+  font-size: .74rem !important;
+  text-decoration: none;
+  cursor: pointer;
+}
+.notification-coupon-claim:hover,
+.notification-coupon-open:hover { background: rgba(37, 99, 235, .28); }
+.notification-coupon-claim:disabled { opacity: .55; cursor: wait; }
+.notification-coupon-claim svg,
+.notification-coupon-open svg { width: 15px; height: 15px; }
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-payment-content {
+  max-height: min(90dvh, 920px) !important;
+  overflow-x: hidden !important;
+  overflow-y: auto !important;
+  overscroll-behavior: contain !important;
+  -webkit-overflow-scrolling: touch !important;
+}
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-product {
+  grid-template-columns: auto minmax(0, 1fr) auto !important;
+}
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-product .qr-product-thumb {
+  display: block !important;
+  width: clamp(54px, 10vw, 82px) !important;
+  aspect-ratio: 16 / 9 !important;
+  overflow: hidden !important;
+  border-radius: 10px !important;
+  background: rgba(30, 41, 59, .7) !important;
+}
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-product .qr-product-thumb img {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+}
+@media (max-width: 600px) {
+  .profile-coupon-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .profile-coupon-card { padding: 13px; border-radius: 13px; }
+  dialog.olaf-checkout-v98.qr-payment-dialog .qr-payment-content {
+    max-height: calc(100dvh - 14px - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)) !important;
+    padding-bottom: calc(26px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-product {
+    grid-template-columns: 62px minmax(0, 1fr) auto !important;
+    gap: 10px !important;
+    padding: 12px !important;
+  }
+  dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-product .qr-product-thumb { width: 62px !important; }
+  dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-product .premium-product-price { grid-column: 3 !important; }
+}

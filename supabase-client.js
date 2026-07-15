@@ -1069,6 +1069,9 @@
 
   async function resolveStoreAssetUrls(settings) {
     const next = normalizeObject(settings);
+    const payment = {
+      ...normalizeObject(next.payment)
+    };
     const activityPopup = {
       ...normalizeObject(next.activityPopup)
     };
@@ -1080,8 +1083,19 @@
       activityPopup.mobileImageUrl = await createPaymentQrSignedUrl(activityPopup.mobileImagePath);
     }
 
+    // Older Admin records may keep the payment QR as a private Storage path
+    // instead of a public/signed URL. Resolve those paths here so every
+    // checkout surface (product and Point top-up) receives a usable image URL.
+    if (payment.manualQrPath && !payment.manualQrUrl) {
+      payment.manualQrUrl = await createPaymentQrSignedUrl(payment.manualQrPath);
+    }
+    if (payment.trueMoneyQrPath && !payment.trueMoneyQrUrl) {
+      payment.trueMoneyQrUrl = await createPaymentQrSignedUrl(payment.trueMoneyQrPath);
+    }
+
     return {
       ...next,
+      payment,
       activityPopup
     };
   }

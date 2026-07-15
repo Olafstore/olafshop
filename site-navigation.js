@@ -79,7 +79,7 @@
     if (!url) return;
     activeAdminBrandLogo = url;
 
-    document.querySelectorAll(".brand-mark, .mobile-menu-brand-mark").forEach((mark) => {
+    document.querySelectorAll(".brand-mark, .mobile-menu-brand-mark, .auth-brand-mark").forEach((mark) => {
       const current = mark.querySelector("img[data-admin-brand-logo]");
       if (current?.getAttribute("src") === url) return;
       const image = document.createElement("img");

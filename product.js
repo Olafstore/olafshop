@@ -1976,6 +1976,10 @@ function renderProduct() {
 
     ${brandedProductHero(p)}
 
+    <div class="pd-mobile-cover" aria-label="ภาพปกสินค้า">
+      <img ${fastImg(sidebarCoverImg, displayProductName, { priority: true, fallbacks: productImageFallbacks(p, sidebarCoverImg) })} />
+    </div>
+
     <div class="pd-layout fade-in">
 
       <!-- ══ LEFT COLUMN ══ -->
@@ -2639,22 +2643,50 @@ function uniquePaymentUrls(values = []) {
   return [...new Set(values.map((value) => String(value || "").trim()).filter(Boolean))];
 }
 
+function paymentUrlFields(source) {
+  if (!source || typeof source !== "object") return [];
+  return [
+    source.qrUrl,
+    source.qr_url,
+    source.qrCodeUrl,
+    source.qr_code_url,
+    source.paymentQrUrl,
+    source.payment_qr_url,
+    source.imageUrl,
+    source.image_url,
+    source.publicUrl,
+    source.public_url,
+    source.signedUrl,
+    source.signed_url,
+    source.dataUrl,
+    source.data_url
+  ];
+}
+
 function paymentQrCandidatesForOrder(order) {
   const method = normalizePaymentMethod(order.paymentMethod);
   const channel = paymentChannelForMethod(method);
   const paymentInfo = globalPayload?.store?.payment ?? {};
+  const orderUrls = paymentUrlFields(order);
   if (method === "wallet") {
     return uniquePaymentUrls([
-      channel?.qrUrl,
+      ...orderUrls,
+      ...paymentUrlFields(channel),
       paymentInfo.trueMoneyQrUrl,
+      paymentInfo.true_money_qr_url,
       paymentInfo.walletQrUrl,
-      paymentInfo.manualQrUrl
+      paymentInfo.wallet_qr_url,
+      paymentInfo.manualQrUrl,
+      paymentInfo.manual_qr_url
     ]);
   }
   return uniquePaymentUrls([
-    channel?.qrUrl,
+    ...orderUrls,
+    ...paymentUrlFields(channel),
     paymentInfo.manualQrUrl,
+    paymentInfo.manual_qr_url,
     paymentInfo.qrUrl,
+    paymentInfo.qr_url,
     createPromptPayUrl(order.total)
   ]);
 }

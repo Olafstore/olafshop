@@ -16,14 +16,14 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
   <script src="slip-qr-scanner.js?v=20260621-slip-verify-v2" defer></script>
-  <script src="supabase-client.js?v=20260711-dg2u-steam-v73" defer></script> 
+  <script src="supabase-client.js?v=20260714-payment-profile-expiry-v102" defer></script> 
   <script src="order-action-popup.js?v=20260621-order-animation" defer></script>
   <script src="platform-store.js?v=20260619-profile-update-fix" defer></script>
   <script src="image-performance.js?v=20260713-media-brand-v89" defer></script>
 <script src="delivery-payload.js?v=20260620-phase1-12-final" defer></script>
-  <script src="site-navigation.js?v=20260713-media-brand-v89" defer></script>
+  <script src="site-navigation.js?v=20260714-payment-profile-expiry-v102" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-  <link rel="stylesheet" href="styles.css?v=20260713-media-brand-v89" />
+  <link rel="stylesheet" href="styles.css?v=20260714-payment-profile-expiry-v102" />
   <style>
     body {
       padding-top: 0;
@@ -2579,6 +2579,169 @@
 
       .profile-page .inventory-card-footer {
         flex-direction: row;
+      }
+    }
+  </style>
+  <style id="profile-responsive-v102">
+    .profile-page .profile-order-cell,
+    .profile-page .profile-order-cell > *,
+    .profile-page .inventory-card,
+    .profile-page .inventory-card-body {
+      min-width: 0;
+      max-width: 100%;
+    }
+
+    .profile-page .profile-order-products .order-item-products,
+    .profile-page .inventory-card-title,
+    .profile-page .inventory-card-note,
+    .profile-page .inventory-card-subtitle {
+      overflow-wrap: anywhere;
+      word-break: break-word;
+    }
+
+    .profile-page .inventory-card-status,
+    .profile-page .inventory-card .status-badge,
+    .profile-page .profile-order-status .status-badge {
+      max-width: 100%;
+      white-space: normal;
+      line-height: 1.35;
+    }
+
+    @media (max-width: 720px) {
+      .profile-page .profile-content {
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 14px !important;
+        padding: 22px 12px 48px !important;
+      }
+
+      .profile-page .profile-sidebar,
+      .profile-page .panel-card,
+      .profile-page .orders-panel,
+      .profile-page .inventory-panel {
+        min-width: 0;
+        max-width: 100%;
+      }
+
+      .profile-page .profile-orders-table-head {
+        display: none !important;
+      }
+
+      .profile-page .profile-order-row {
+        grid-template-columns: minmax(0, 1fr) !important;
+        gap: 10px !important;
+        padding: 13px !important;
+        border-radius: 14px;
+      }
+
+      .profile-page .profile-order-cell {
+        grid-template-columns: 76px minmax(0, 1fr) !important;
+        gap: 8px !important;
+        align-items: start;
+      }
+
+      .profile-page .profile-order-cell::before {
+        font-size: 0.68rem !important;
+        line-height: 1.35;
+      }
+
+      .profile-page .profile-order-main .order-item-id,
+      .profile-page .profile-order-products .order-item-products,
+      .profile-page .profile-order-meta .order-item-price,
+      .profile-page .profile-order-status,
+      .profile-page .profile-order-action {
+        font-size: 0.78rem;
+      }
+
+      .profile-page .profile-order-action {
+        grid-template-columns: 1fr !important;
+      }
+
+      .profile-page .profile-order-action .profile-order-open {
+        width: 100% !important;
+        min-height: 34px;
+        font-size: 0.74rem;
+      }
+
+      .profile-page .inventory-grid {
+        grid-template-columns: 1fr !important;
+        gap: 9px !important;
+      }
+
+      .profile-page .inventory-card {
+        grid-template-columns: 48px minmax(0, 1fr) !important;
+        gap: 10px !important;
+        padding: 10px !important;
+        border-radius: 13px !important;
+      }
+
+      .profile-page .inventory-card-thumb,
+      .profile-page .inventory-card-thumb-empty {
+        width: 48px !important;
+        height: 48px !important;
+        border-radius: 10px !important;
+      }
+
+      .profile-page .inventory-card-top {
+        gap: 7px !important;
+        align-items: flex-start;
+      }
+
+      .profile-page .inventory-card-title {
+        font-size: 0.78rem !important;
+        line-height: 1.3 !important;
+      }
+
+      .profile-page .inventory-card-status,
+      .profile-page .inventory-card-subtitle,
+      .profile-page .inventory-card-note,
+      .profile-page .inventory-card-order {
+        font-size: 0.66rem !important;
+      }
+
+      .profile-page .inventory-card-footer {
+        gap: 6px !important;
+        flex-wrap: wrap;
+      }
+
+      .profile-page .inventory-detail-button {
+        min-height: 29px !important;
+        padding: 0 8px !important;
+        font-size: 0.68rem !important;
+      }
+
+      .profile-page .tags,
+      .profile-page .profile-order-tags {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 4px;
+        min-width: 0;
+      }
+
+      .profile-page .tag,
+      .profile-page .profile-order-tags > * {
+        max-width: 100%;
+        font-size: 0.62rem;
+        line-height: 1.3;
+        overflow-wrap: anywhere;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .profile-page .profile-order-cell {
+        grid-template-columns: 1fr !important;
+      }
+
+      .profile-page .profile-order-cell::before {
+        margin-bottom: -3px;
+      }
+
+      .profile-page .inventory-card-top {
+        display: block;
+      }
+
+      .profile-page .inventory-card-top .status-badge {
+        display: inline-flex;
+        margin-top: 4px;
       }
     }
   </style>

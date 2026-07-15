@@ -36267,3 +36267,121 @@ dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-card .premium-actio
     scroll-behavior: auto !important;
   }
 }
+
+/* v102 — shared payment surface, reliable QR fallback, and responsive product cover. */
+.pd-mobile-cover {
+  display: none;
+  width: 100%;
+  max-width: 760px;
+  margin: 0 auto 18px;
+  overflow: hidden;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  border-radius: 16px;
+  background: rgba(8, 14, 30, 0.82);
+  box-shadow: 0 18px 40px rgba(2, 6, 23, 0.24);
+  aspect-ratio: 16 / 9;
+}
+
+.pd-mobile-cover img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog {
+  isolation: isolate !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-shell,
+dialog.point-topup-qr-dialog.olaf-checkout-v98 .olaf-checkout-shell {
+  backface-visibility: hidden !important;
+  transform: translateZ(0) !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog[open].is-visible .olaf-checkout-shell {
+  animation: olafPaymentSurfaceInV102 320ms cubic-bezier(0.22, 1, 0.36, 1) both !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog[open].is-closing .olaf-checkout-shell {
+  animation: olafPaymentSurfaceOutV102 220ms cubic-bezier(0.4, 0, 0.7, 0.2) both !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog[open]::backdrop {
+  animation: olafPaymentBackdropInV102 260ms ease both !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog[open].is-closing::backdrop {
+  animation: olafPaymentBackdropOutV102 220ms ease both !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-image-frame {
+  min-height: 196px !important;
+  display: grid !important;
+  place-items: center !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-image-frame .qr-image {
+  max-width: min(100%, 320px) !important;
+  max-height: min(52dvh, 320px) !important;
+  object-fit: contain !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-loading,
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-unavailable {
+  grid-area: 1 / 1 !important;
+  text-align: center !important;
+}
+
+@keyframes olafPaymentSurfaceInV102 {
+  from { opacity: 0; transform: translate3d(0, 18px, 0) scale(0.985); }
+  to { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+}
+
+@keyframes olafPaymentSurfaceOutV102 {
+  from { opacity: 1; transform: translate3d(0, 0, 0) scale(1); }
+  to { opacity: 0; transform: translate3d(0, 12px, 0) scale(0.985); }
+}
+
+@keyframes olafPaymentBackdropInV102 {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes olafPaymentBackdropOutV102 {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
+
+@media (max-width: 900px) {
+  .pd-mobile-cover {
+    display: block;
+  }
+
+  .pd-sidebar-card .pd-sidebar-cover {
+    display: none;
+  }
+}
+
+@media (max-width: 600px) {
+  .pd-mobile-cover {
+    margin-bottom: 14px;
+    border-radius: 12px;
+  }
+
+  dialog.olaf-checkout-v98.qr-payment-dialog .qr-image-frame {
+    min-height: 168px !important;
+  }
+
+  dialog.olaf-checkout-v98.qr-payment-dialog .qr-image-frame .qr-image {
+    max-height: min(44dvh, 280px) !important;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog.olaf-checkout-v98.qr-payment-dialog[open] .olaf-checkout-shell,
+  dialog.olaf-checkout-v98.qr-payment-dialog[open]::backdrop {
+    animation-duration: 1ms !important;
+  }
+}

@@ -118,7 +118,7 @@
   }
 
   function storePayment() {
-    return state.settings?.payment || {};
+    return state.settings?.payment || state.settings?.payment_config || {};
   }
 
   function paymentChannels() {
@@ -148,6 +148,26 @@
     return [...new Set(values.map((value) => clean(value)).filter(Boolean))];
   }
 
+  function paymentUrlFields(source) {
+    if (!source || typeof source !== "object") return [];
+    return [
+      source.qrUrl,
+      source.qr_url,
+      source.qrCodeUrl,
+      source.qr_code_url,
+      source.paymentQrUrl,
+      source.payment_qr_url,
+      source.imageUrl,
+      source.image_url,
+      source.publicUrl,
+      source.public_url,
+      source.signedUrl,
+      source.signed_url,
+      source.dataUrl,
+      source.data_url
+    ];
+  }
+
   function createPromptPayUrl(amount) {
     const payment = storePayment();
     const promptPayId = clean(
@@ -165,20 +185,26 @@
     const payment = storePayment();
     const channel = paymentChannelForMethod(method);
     const total = Number(order?.total || state.amount || 0);
+    const orderUrls = paymentUrlFields(order);
     if (method === "wallet") {
       return uniqueUrls([
-        channel?.qrUrl,
-        channel?.qr_url,
+        ...orderUrls,
+        ...paymentUrlFields(channel),
         payment.trueMoneyQrUrl,
+        payment.true_money_qr_url,
         payment.walletQrUrl,
-        payment.manualQrUrl
+        payment.wallet_qr_url,
+        payment.manualQrUrl,
+        payment.manual_qr_url
       ]);
     }
     return uniqueUrls([
-      channel?.qrUrl,
-      channel?.qr_url,
+      ...orderUrls,
+      ...paymentUrlFields(channel),
       payment.manualQrUrl,
+      payment.manual_qr_url,
       payment.qrUrl,
+      payment.qr_url,
       createPromptPayUrl(total)
     ]);
   }
@@ -383,13 +409,32 @@
     createIcons();
   }
 
-  function showPaymentDialog(order) {
+  async function showPaymentDialog(order) {
     const dialog = $("#point-topup-qr-dialog");
     if (!dialog || !order) return;
     state.order = order;
     const method = normalizePaymentMethod(order.paymentMethod || order.payment_method || currentPaymentMethod());
     const total = Number(order.total || state.amount || 0);
-    const qrUrls = qrCandidatesForOrder(order);
+    let qrUrls = qrCandidatesForOrder(order);
+    if (!qrUrls.length && window.OlafStoreSettings?.fetchStoreSettings) {
+      const refreshedSettings = await withTimeout(
+        window.OlafStoreSettings.fetchStoreSettings().catch(() => ({})),
+        8000,
+        {}
+      );
+      if (refreshedSettings && typeof refreshedSettings === "object") {
+        state.settings = {
+          ...state.settings,
+          ...refreshedSettings,
+          payment: {
+            ...(state.settings?.payment || {}),
+            ...(refreshedSettings.payment || {})
+          },
+          paymentChannels: refreshedSettings.paymentChannels || state.settings?.paymentChannels || []
+        };
+        qrUrls = qrCandidatesForOrder(order);
+      }
+    }
     const qrUrl = qrUrls[0] || "";
 
     dialog.dataset.paymentStage = "qr";
@@ -488,7 +533,7 @@
         customerName: state.user.displayName || state.user.username || ""
       });
       state.order = order;
-      showPaymentDialog(order);
+      await showPaymentDialog(order);
       setStatus("สร้างรายการเติม Point แล้ว กรุณาชำระเงินและแนบสลิปจากหน้าต่าง QR", "info", "qr-code");
       showToast("สร้างรายการเติม Point สำเร็จ", "success");
     } catch (error) {
@@ -626,7 +671,7 @@
 
     state.settings = await withTimeout(
       window.OlafStoreSettings?.fetchStoreSettings?.().catch(() => ({})),
-      2200,
+      8000,
       {}
     ) || {};
     await loadBalance();

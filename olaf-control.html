@@ -7,13 +7,13 @@
     <title>หลังบ้าน | OLAF SHOP</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="preconnect" href="https://wtvfgwacodfrzxapwoxj.supabase.co" />
-    <link rel="stylesheet" href="admin.css?v=20260713-admin-pro-v95" />
+    <link rel="stylesheet" href="admin.css?v=20260715-delivery-platforms-v105" />
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
     <script src="supabase-client.js?v=20260714-payment-profile-expiry-v102" defer></script>
     <script src="platform-store.js?v=20260605-admin-users" defer></script>
     <script src="image-performance.js?v=20260607-performance" defer></script>
-<script src="delivery-payload.js?v=20260620-phase1-12-final" defer></script>
+<script src="delivery-payload.js?v=20260715-delivery-platforms-v105" defer></script>
     <script src="admin.js?v=20260713-admin-pro-v95" defer></script>
   </head>
   <body>
@@ -733,6 +733,7 @@
                 <label>
                   ข้อมูลจัดส่ง / Account / Key
                   <textarea name="deliveryNote" rows="7" placeholder="กรอกข้อมูลจัดส่งหลังยืนยันสลิป"></textarea>
+                  <small class="admin-delivery-help">รองรับ platform: STEAM, EA, UBISOFT, WEBMAIL, ROCKSTAR และ MICROSOFT · ใช้ JSON แบบ version 1 หรือรูปแบบหัวข้อ platform + ID/Pass เดิมได้</small>
                 </label>
                 <div class="admin-delivery-preview" id="admin-delivery-preview" hidden></div>
                 <div class="slip-preview" id="slip-preview"></div>

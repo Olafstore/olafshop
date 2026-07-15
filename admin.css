@@ -1471,6 +1471,14 @@ body {
   min-width: 0;
 }
 
+.admin-delivery-help {
+  display: block;
+  margin-top: 7px;
+  color: #8493ad;
+  font-size: 0.72rem;
+  line-height: 1.55;
+}
+
 .admin-delivery-preview {
   padding: 12px;
   border: 1px solid rgba(71, 100, 145, 0.5);
@@ -1500,6 +1508,25 @@ body {
 .admin-account-ubisoft {
   border-left-color: #8b5cf6;
 }
+
+.admin-account-webmail {
+  border-left-color: #22d3ee;
+  background: linear-gradient(135deg, #091427 0%, #06232d 100%);
+}
+
+.admin-account-rockstar {
+  border-left-color: #facc15;
+  background: linear-gradient(135deg, #091427 0%, #2a2106 100%);
+}
+
+.admin-account-microsoft {
+  border-left-color: #22c55e;
+  background: linear-gradient(135deg, #091427 0%, #082616 100%);
+}
+
+.admin-account-webmail h5 { color: #67e8f9; }
+.admin-account-rockstar h5 { color: #fde047; }
+.admin-account-microsoft h5 { color: #86efac; }
 
 .admin-account-card h5 {
   margin: 0;

@@ -20,7 +20,7 @@
   <script src="order-action-popup.js?v=20260621-order-animation" defer></script>
   <script src="platform-store.js?v=20260619-profile-update-fix" defer></script>
   <script src="image-performance.js?v=20260713-media-brand-v89" defer></script>
-<script src="delivery-payload.js?v=20260620-phase1-12-final" defer></script>
+<script src="delivery-payload.js?v=20260715-delivery-platforms-v105" defer></script>
       <script src="site-navigation.js?v=20260715-point-countdown-v104" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
       <link rel="stylesheet" href="styles.css?v=20260715-point-countdown-v104" />
@@ -1337,6 +1337,93 @@
       background: rgba(2, 6, 23, 0.76);
     }
 
+    .inventory-product-number {
+      margin-bottom: 12px;
+    }
+
+    .inventory-product-number-card {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border: 1px solid rgba(96, 165, 250, 0.28);
+      border-radius: 12px;
+      background: linear-gradient(135deg, rgba(30, 64, 175, 0.18), rgba(8, 47, 73, 0.28));
+    }
+
+    .inventory-product-number-copy {
+      display: grid;
+      gap: 4px;
+      min-width: 0;
+    }
+
+    .inventory-product-number-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      color: #93c5fd;
+      font-size: 0.72rem;
+      font-weight: 700;
+    }
+
+    .inventory-product-number-label svg {
+      width: 15px;
+      height: 15px;
+    }
+
+    .inventory-product-number-copy code {
+      overflow-wrap: anywhere;
+      color: #f8fafc;
+      font-size: 0.9rem;
+      font-weight: 700;
+    }
+
+    .inventory-product-number-actions {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .inventory-product-number-actions .inventory-copy-button {
+      min-height: 36px;
+      padding: 0 11px;
+      border-radius: 9px;
+      font-size: 0.72rem;
+      text-decoration: none;
+    }
+
+    .inventory-product-number-actions .inventory-copy-button.compact {
+      border-color: rgba(96, 165, 250, 0.35);
+      background: rgba(37, 99, 235, 0.18);
+      color: #dbeafe;
+    }
+
+    .inventory-product-number-actions .inventory-copy-button.contact {
+      border-color: rgba(34, 211, 238, 0.32);
+      background: rgba(8, 145, 178, 0.16);
+      color: #cffafe;
+    }
+
+    .inventory-order-countdown-wrap {
+      margin: 10px 0;
+    }
+
+    @media (max-width: 560px) {
+      .inventory-product-number-card {
+        grid-template-columns: 1fr;
+      }
+
+      .inventory-product-number-actions {
+        justify-content: stretch;
+      }
+
+      .inventory-product-number-actions .inventory-copy-button {
+        flex: 1 1 140px;
+      }
+    }
+
     .inventory-detail-panel pre {
       margin: 0;
       white-space: pre-wrap;
@@ -1376,6 +1463,25 @@
     .inventory-account-ubisoft {
       border-left-color: #8b5cf6;
     }
+
+    .inventory-account-webmail {
+      border-left-color: #22d3ee;
+      background: linear-gradient(135deg, #071124 0%, #06232d 100%);
+    }
+
+    .inventory-account-rockstar {
+      border-left-color: #facc15;
+      background: linear-gradient(135deg, #071124 0%, #2a2106 100%);
+    }
+
+    .inventory-account-microsoft {
+      border-left-color: #22c55e;
+      background: linear-gradient(135deg, #071124 0%, #082616 100%);
+    }
+
+    .inventory-account-webmail h5 { color: #67e8f9; }
+    .inventory-account-rockstar h5 { color: #fde047; }
+    .inventory-account-microsoft h5 { color: #86efac; }
 
     .inventory-account-card h5 {
       margin: 0;
@@ -3109,6 +3215,7 @@
       <div>
         <div class="inventory-modal-label">Product Delivery Details</div>
         <div class="inventory-detail-panel">
+          <div class="inventory-product-number" id="inventory-product-number" hidden></div>
           <div class="inventory-account-list" id="inventory-account-list" hidden></div>
           <pre id="inventory-modal-note">รอข้อมูลจากแอดมิน</pre>
         </div>
@@ -3408,13 +3515,60 @@
       `).join('');
     }
 
+    function isVerifiedDeliveryRow(row) {
+      return String(row?.paymentStatus || '').toLowerCase() === 'verified'
+        || ['confirmed', 'delivered'].includes(String(row?.status || '').toLowerCase());
+    }
+
+    function isEmailAccountRow(row) {
+      return String(row?.category || '').toLowerCase() === 'steam-account';
+    }
+
+    function renderInventoryProductNumber(row) {
+      if (!isEmailAccountRow(row) || !isVerifiedDeliveryRow(row)) return '';
+      const productNumber = String(row.productId || '').trim();
+      if (!productNumber) return '';
+      return `
+        <div class="inventory-product-number-card">
+          <div class="inventory-product-number-copy">
+            <span class="inventory-product-number-label"><i data-lucide="barcode"></i>หมายเลขสินค้า</span>
+            <code>${escape(productNumber)}</code>
+          </div>
+          <div class="inventory-product-number-actions">
+            <button type="button" class="inventory-copy-button compact" data-copy-product-number="${escape(productNumber)}">
+              <i data-lucide="copy"></i><span>คัดลอกหมายเลข</span>
+            </button>
+            <a class="inventory-copy-button contact" href="https://www.facebook.com/byOlafshop" target="_blank" rel="noopener noreferrer">
+              <i data-lucide="message-circle"></i><span>ติดต่อเพจรับไอดี</span>
+            </a>
+          </div>
+        </div>
+      `;
+    }
+
     function renderOrderDelivery(order) {
       const { rawText, parsed } = parseDeliveredOrder(order);
       if (!rawText) return '';
       const accountSections = renderDeliveryAccountSections(parsed, { orderId: order.id || '' });
+      const emailItem = (order.items || []).find((item) => {
+        const product = profileState.products.find((candidate) => String(candidate.id || '') === String(item.productId || ''));
+        return String(product?.category || '').toLowerCase() === 'steam-account';
+      });
+      const emailProduct = emailItem
+        ? profileState.products.find((candidate) => String(candidate.id || '') === String(emailItem.productId || ''))
+        : null;
+      const productNumberHtml = emailItem && emailProduct
+        ? renderInventoryProductNumber({
+            category: emailProduct.category,
+            productId: emailItem.productId,
+            status: order.status,
+            paymentStatus: order.paymentStatus
+          })
+        : '';
       return `
         <div class="profile-order-delivery">
           <p>ข้อมูลสินค้าที่จัดส่ง</p>
+          ${productNumberHtml}
           ${accountSections || `<pre>${escape(rawText)}</pre>`}
         </div>
       `;
@@ -3779,6 +3933,7 @@
       const slipPreview = order.paymentSlipUrl
         ? `<a class="inventory-slip-preview" href="${escape(order.paymentSlipUrl)}" target="_blank" rel="noreferrer"><i data-lucide="image"></i> ดูสลิปที่แนบแล้ว</a>`
         : '';
+      const countdownMarkup = orderCountdownMarkup(order);
 
       container.innerHTML = `
         <div class="inventory-order-timeline" aria-label="สถานะคำสั่งซื้อ">
@@ -3792,6 +3947,7 @@
           <strong>${formatPrice(order.total)}</strong>
           <em>${escape(orderStatusLabel(order.status))}</em>
         </div>
+        ${countdownMarkup ? `<div class="inventory-order-countdown-wrap">${countdownMarkup}</div>` : ''}
         ${canUpload && (qrUrl || paymentAccount) ? `
           <div class="inventory-payment-box">
             ${qrUrl ? `<img src="${escape(qrUrl)}" alt="QR ชำระเงิน" loading="eager" decoding="async" />` : ''}
@@ -3835,6 +3991,11 @@
       document.getElementById('inventory-modal-date').textContent = formatInventoryDate(row.createdAt);
       const deliveryNote = document.getElementById('inventory-modal-note');
       const accountList = document.getElementById('inventory-account-list');
+      const productNumber = document.getElementById('inventory-product-number');
+      if (productNumber) {
+        productNumber.innerHTML = renderInventoryProductNumber(row);
+        productNumber.hidden = !productNumber.innerHTML;
+      }
       const accountHtml = row.hasDetail ? renderDeliveryAccountSections(row.deliveryPayload) : '';
       if (accountHtml) {
         accountList.innerHTML = accountHtml;
@@ -4561,6 +4722,22 @@
             showToast(field === 'password' ? 'คัดลอกรหัสผ่านแล้ว' : 'คัดลอก ID แล้ว');
           } catch (copyError) {
             showToast(copyError.message || 'คัดลอกไม่สำเร็จ', 'error');
+          }
+          return;
+        }
+
+        const productNumberTrigger = event.target.closest('[data-copy-product-number]');
+        if (productNumberTrigger) {
+          const productNumber = productNumberTrigger.getAttribute('data-copy-product-number') || '';
+          if (!productNumber) {
+            showToast('ไม่พบหมายเลขสินค้า', 'error');
+            return;
+          }
+          try {
+            await copyTextToClipboard(productNumber);
+            showToast('คัดลอกหมายเลขสินค้าแล้ว');
+          } catch (copyError) {
+            showToast(copyError.message || 'คัดลอกหมายเลขสินค้าไม่สำเร็จ', 'error');
           }
           return;
         }

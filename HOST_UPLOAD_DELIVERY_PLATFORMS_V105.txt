@@ -1,0 +1,21 @@
+OLAF SHOP - Delivery Platforms + Product Number + Order Countdown v105
+Date: 2026-07-15
+
+Upload every file in this package to the website root and preserve the folder structure.
+Overwrite files with the same names.
+
+Changes:
+- Delivery payload supports STEAM, EA, UBISOFT, WEBMAIL, ROCKSTAR and MICROSOFT.
+- Legacy platform aliases are normalized: EMAIL/MAIL -> WEBMAIL, FIVEM/ROCKSTAR GAMES -> ROCKSTAR, XBOX/MICROSOFT ACCOUNT -> MICROSOFT.
+- Admin delivery preview displays the new platform colors.
+- Customer inventory and order delivery details display the product number for Steam account products after payment verification.
+- Added copy-product-number and Facebook contact actions for email-account delivery.
+- Order detail modal also shows the live 15-minute unpaid-order countdown.
+- Cache versions: delivery-platforms-v105 and admin delivery-platforms-v105.
+
+Important:
+- The existing 15-minute expiry SQL must already be installed for server-side cancellation, stock return and Point return.
+- No SQL is included or required for this frontend/payload update.
+- No credentials, real account TXT files, or service-role keys are included.
+
+After upload, redeploy or clear the host/CDN cache, then hard refresh.

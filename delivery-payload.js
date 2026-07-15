@@ -1,17 +1,40 @@
 (function () {
-  const SUPPORTED_PLATFORMS = new Set(["STEAM", "EA", "UBISOFT"]);
+  const PLATFORM_ALIASES = new Map([
+    ["STEAM", "STEAM"],
+    ["EA", "EA"],
+    ["UBISOFT", "UBISOFT"],
+    ["WEBMAIL", "WEBMAIL"],
+    ["MAIL", "WEBMAIL"],
+    ["EMAIL", "WEBMAIL"],
+    ["E-MAIL", "WEBMAIL"],
+    ["ROCKSTAR", "ROCKSTAR"],
+    ["ROCKSTAR GAMES", "ROCKSTAR"],
+    ["FIVEM", "ROCKSTAR"],
+    ["MICROSOFT", "MICROSOFT"],
+    ["MICROSOFT ACCOUNT", "MICROSOFT"],
+    ["XBOX", "MICROSOFT"]
+  ]);
+  const SUPPORTED_PLATFORMS = new Set(PLATFORM_ALIASES.values());
   const PLATFORM_ORDER = new Map([
     ["STEAM", 0],
     ["EA", 1],
-    ["UBISOFT", 2]
+    ["UBISOFT", 2],
+    ["WEBMAIL", 3],
+    ["ROCKSTAR", 4],
+    ["MICROSOFT", 5]
   ]);
 
   function clean(value) {
     return String(value ?? "").trim();
   }
 
+  function normalizePlatform(value) {
+    const key = clean(value).replace(/[：:]+$/u, "").toUpperCase();
+    return PLATFORM_ALIASES.get(key) || key;
+  }
+
   function normalizeAccount(account) {
-    const platform = clean(account?.platform).toUpperCase();
+    const platform = normalizePlatform(account?.platform);
     const id = clean(account?.id);
     const password = clean(account?.password);
     if (!SUPPORTED_PLATFORMS.has(platform) || !id || !password) return null;
@@ -34,7 +57,7 @@
   function structuredDelivery(value) {
     if (!value || Number(value.version) !== 1 || !Array.isArray(value.accounts)) return null;
     const accounts = normalizeAccounts(value.accounts);
-    if (!accounts.some((account) => account.platform === "STEAM")) return null;
+    if (!accounts.length) return null;
     return { version: 1, accounts };
   }
 
@@ -67,7 +90,7 @@
     for (const rawLine of text.split(/\r?\n/)) {
       const line = clean(rawLine);
       if (!line) continue;
-      const platform = line.toUpperCase();
+      const platform = normalizePlatform(line);
       if (SUPPORTED_PLATFORMS.has(platform)) {
         activePlatform = platform;
         if (!accounts.has(platform)) accounts.set(platform, { platform, id: "", password: "" });

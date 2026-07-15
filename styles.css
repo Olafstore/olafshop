@@ -36599,3 +36599,89 @@ dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-product .qr-product
   dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-product .qr-product-thumb { width: 62px !important; }
   dialog.olaf-checkout-v98.qr-payment-dialog .olaf-checkout-qr-product .premium-product-price { grid-column: 3 !important; }
 }
+
+/* v109: authoritative QR/Point layout after all legacy checkout layers. */
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-image-frame {
+  width: min(224px, 62vw) !important;
+  min-height: 0 !important;
+  aspect-ratio: 1 / 1 !important;
+  padding: 12px !important;
+  box-sizing: border-box !important;
+  overflow: hidden !important;
+  background: #fff !important;
+}
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-image-frame .qr-image,
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-image-frame img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  padding: 0 !important;
+  box-sizing: border-box !important;
+  object-fit: contain !important;
+}
+dialog.olaf-checkout-v98 .olaf-checkout-points {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) !important;
+  gap: 8px !important;
+  overflow: visible !important;
+  contain: none !important;
+  flex: 0 0 auto !important;
+  box-sizing: border-box !important;
+}
+dialog.olaf-checkout-v98 .olaf-checkout-points[hidden] {
+  display: none !important;
+}
+dialog.olaf-checkout-v98 .olaf-checkout-points .premium-points-copy strong,
+dialog.olaf-checkout-v98 .olaf-checkout-points .premium-points-copy small {
+  overflow: visible !important;
+  text-overflow: clip !important;
+  white-space: normal !important;
+  overflow-wrap: anywhere !important;
+}
+.profile-coupon-code.is-locked {
+  border-style: dashed;
+  color: #8ea2c5;
+  background: rgba(15, 31, 58, 0.72);
+}
+.profile-coupon-code.is-locked strong {
+  min-width: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 7px;
+  color: #b8c7e4;
+  font-size: 0.76rem;
+  font-weight: 450;
+  text-align: right;
+}
+.profile-coupon-code.is-locked svg {
+  width: 15px;
+  height: 15px;
+}
+@media (max-width: 600px) {
+  dialog.olaf-checkout-v98.qr-payment-dialog .qr-image-frame {
+    width: min(208px, 58vw) !important;
+    min-height: 0 !important;
+    padding: 10px !important;
+  }
+  dialog.olaf-checkout-v98 .olaf-checkout-points {
+    margin: 4px 0 0 !important;
+    padding: 10px !important;
+    border-radius: 12px !important;
+  }
+  dialog.olaf-checkout-v98 .olaf-checkout-points-heading {
+    margin: 0 !important;
+  }
+  dialog.olaf-checkout-v98 .olaf-checkout-points .premium-points-toggle {
+    width: 100% !important;
+    min-width: 0 !important;
+    grid-template-columns: 24px minmax(0, 1fr) 34px !important;
+    padding: 8px 10px !important;
+  }
+}

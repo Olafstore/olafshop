@@ -16,14 +16,14 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
   <script src="slip-qr-scanner.js?v=20260621-slip-verify-v2" defer></script>
-  <script src="supabase-client.js?v=20260716-user-coupons-v108" defer></script> 
+  <script src="supabase-client.js?v=20260716-coupon-expiry-qr-v109" defer></script> 
   <script src="order-action-popup.js?v=20260621-order-animation" defer></script>
   <script src="platform-store.js?v=20260619-profile-update-fix" defer></script>
   <script src="image-performance.js?v=20260713-media-brand-v89" defer></script>
-<script src="delivery-payload.js?v=20260716-user-coupons-v108" defer></script>
-      <script src="site-navigation.js?v=20260716-user-coupons-v108" defer></script>
-  <script src="notifications.js?v=20260716-user-coupons-v108" defer></script>
-      <link rel="stylesheet" href="styles.css?v=20260716-user-coupons-v108" />
+<script src="delivery-payload.js?v=20260716-coupon-expiry-qr-v109" defer></script>
+      <script src="site-navigation.js?v=20260716-coupon-expiry-qr-v109" defer></script>
+  <script src="notifications.js?v=20260716-coupon-expiry-qr-v109" defer></script>
+      <link rel="stylesheet" href="styles.css?v=20260716-coupon-expiry-qr-v109" />
   <style>
     body {
       padding-top: 0;
@@ -3464,7 +3464,9 @@
               <h4>${escape(couponValueLabel(coupon))}</h4>
               <p>${escape(coupon.message || 'ใช้กับสินค้าที่ร่วมรายการในหน้าชำระเงิน')}</p>
             </div>
-            <div class="profile-coupon-code"><span>CODE</span><code>${escape(coupon.code)}</code></div>
+            ${claimed
+              ? `<div class="profile-coupon-code"><span>CODE</span><code>${escape(coupon.code)}</code></div>`
+              : `<div class="profile-coupon-code is-locked"><span>LOCKED</span><strong><i data-lucide="lock-keyhole"></i> รับคูปองเพื่อแสดงโค้ด</strong></div>`}
             <div class="profile-coupon-expiry"><i data-lucide="clock-3"></i><span>${expired ? 'สิ้นสุดกิจกรรมเมื่อ' : 'ใช้ได้ถึง'} ${escape(formatCouponDate(coupon.expiresAt))}</span></div>
             <div class="profile-coupon-actions">
               ${!expired && !claimed ? `<button type="button" class="primary-button" data-claim-profile-coupon="${escape(coupon.codeId || coupon.id)}"><i data-lucide="gift"></i>รับคูปอง</button>` : ''}
@@ -3817,7 +3819,11 @@
     function collectInventoryRows(orders, products = []) {
       const productMap = new Map((products || []).map(product => [String(product.id || '').trim(), product]));
       const rows = (orders || [])
-        .filter(order => !['cancelled', 'expired'].includes(order.status))
+        .filter(order => {
+          if (['cancelled', 'expired'].includes(order.status)) return false;
+          const expiresAt = unpaidOrderExpiresAt(order);
+          return !expiresAt || expiresAt.getTime() > Date.now();
+        })
         .flatMap(order => {
           const rawDeliveredText = order.status === 'delivered'
             ? normalizeInventoryText(order.deliveredPayload || order.deliveryNote)
@@ -4718,11 +4724,35 @@
       }
 
       let expiryRefreshTimer = null;
-      document.addEventListener('olaf-order-expiry-reached', () => {
+      document.addEventListener('olaf-order-expiry-reached', async (event) => {
+        const orderId = String(event.detail?.orderId || '').trim();
+        if (orderId) {
+          profileState.inventoryRows = profileState.inventoryRows.filter(row => row.orderId !== orderId);
+          profileState.inventoryLookup = new Map(profileState.inventoryRows.map(row => [row.key, row]));
+          if (profileState.activeInventory?.orderId === orderId) toggleInventoryModal(false);
+          renderInventoryList();
+
+          // Return the owner's reservation immediately. The cron worker remains
+          // the fallback, while database row locking prevents a double return.
+          try {
+            if (window.OlafOrders?.cancelMyOrder) {
+              const cancelledOrder = await window.OlafOrders.cancelMyOrder(orderId);
+              const orderIndex = profileState.orders.findIndex(order => order.id === orderId);
+              if (orderIndex >= 0 && cancelledOrder) profileState.orders[orderIndex] = cancelledOrder;
+              renderOrdersList(profileState.orders);
+              if (Number(cancelledOrder?.pointRefundAmount || 0) > 0) await refreshProfilePoints();
+            }
+          } catch (error) {
+            const message = String(error?.message || '');
+            if (!/ORDER_(?:CANNOT_BE_CANCELLED|NOT_FOUND)/.test(message)) {
+              console.warn('Unable to cancel expired order immediately; cron will retry', error);
+            }
+          }
+        }
         if (expiryRefreshTimer) window.clearTimeout(expiryRefreshTimer);
         expiryRefreshTimer = window.setTimeout(() => {
           refreshProfileOrders({ quiet: true, preserveModal: false });
-        }, 3500);
+        }, 800);
       });
 
       await refreshProfileOrders({ preserveModal: false });

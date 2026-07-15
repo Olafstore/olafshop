@@ -4715,6 +4715,7 @@ function resetDiscountCodeForm() {
   form.elements.id.value = "";
   form.elements.discountType.value = "fixed";
   form.elements.isActive.value = "true";
+  form.elements.freeCampaign.checked = true;
   form.elements.startsAt.value = discountDateTimeLocal(new Date().toISOString());
 }
 
@@ -5692,6 +5693,7 @@ function bindEvents() {
   $("#activity-popup-form")?.addEventListener("submit", saveActivityPopupSettings);
   $("#discount-code-form")?.addEventListener("submit", saveDiscountCodeSettings);
   $("#clear-discount-code-form")?.addEventListener("click", resetDiscountCodeForm);
+  resetDiscountCodeForm();
   $("#refresh-discount-codes")?.addEventListener("click", async () => {
     try { await refreshDiscountCodes(); showAdminToast("โหลดโค้ดส่วนลดแล้ว", "success"); }
     catch (error) { showAdminToast(error.message || "โหลดโค้ดส่วนลดไม่สำเร็จ", "error"); }

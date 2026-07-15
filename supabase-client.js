@@ -1677,7 +1677,9 @@
     const { data, error } = await requireClient().rpc("list_discount_campaigns");
     if (error) throw error;
     const payload = normalizeArray(data);
-    return payload.map(mapDiscountCoupon).filter((item) => item.code);
+    // Campaigns intentionally omit the real code until the signed-in owner
+    // claims them. Keep rows by id so Profile can render a locked card.
+    return payload.map(mapDiscountCoupon).filter((item) => item.codeId || item.id);
   }
 
   async function claimDiscountCampaign(codeId) {

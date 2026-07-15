@@ -3,6 +3,7 @@
   const MOBILE_DRAWER_VERSION = "drawer-v68";
   const MOBILE_DRAWER_ID = "olaf-mobile-drawer";
   const MOBILE_BACKDROP_ID = "olaf-mobile-menu-backdrop";
+  const USER_MENU_VERSION = "user-menu-v103";
   let activeAdminBrandLogo = "";
   const NAV_ITEMS = [
     { href: "index.html", label: "หน้าหลัก", icon: "house", match: ["index.html", ""] },
@@ -362,6 +363,8 @@
 
   window.OlafNavigation = {
     ...(window.OlafNavigation || {}),
+    ownsUserMenu: true,
+    userMenuVersion: USER_MENU_VERSION,
     closeMobileMenus: () => {
       document.querySelectorAll(".topbar.is-mobile-nav-open, .topbar.site-topbar-unified.is-mobile-nav-open").forEach((header) => {
         header.classList.remove("is-mobile-nav-open");
@@ -541,24 +544,40 @@
 
   function ensureAccountButtonIcon(button = document.querySelector("#open-auth")) {
     if (!button) return;
-    const prefersIconOnly = window.matchMedia?.("(max-width: 768px)")?.matches;
-    const hasIcon = button.querySelector("svg, i");
-    const hasVisual = button.querySelector("svg, i, .free-auth-avatar, .user-avatar, .account-avatar");
+    const isLoading = button.classList.contains("is-auth-loading") || button.getAttribute("aria-busy") === "true";
+    const iconName = isLoading ? "loader-circle" : currentNavUser() ? "circle-user-round" : "log-in";
+    const hasIcon = button.querySelector("[data-olaf-account-icon], svg, i");
     let needsIconRefresh = false;
-    if (!hasVisual || (prefersIconOnly && !hasIcon)) {
+    if (!hasIcon) {
       const icon = document.createElement("i");
       icon.dataset.olafAccountIcon = "true";
-      icon.setAttribute("data-lucide", currentNavUser() ? "circle-user-round" : "log-in");
+      icon.dataset.olafIconName = iconName;
+      icon.setAttribute("data-lucide", iconName);
       button.prepend(icon);
       needsIconRefresh = true;
-    }
-    if (button.classList.contains("is-auth-loading")) {
-      const icon = button.querySelector("i, svg");
-      if (icon?.tagName?.toLowerCase() === "i" && icon.getAttribute("data-lucide") !== "circle-user-round") {
-        icon.setAttribute("data-lucide", "circle-user-round");
+    } else {
+      const icon = button.querySelector("[data-olaf-account-icon], svg, i");
+      if (icon.tagName.toLowerCase() === "svg" && icon.dataset.olafIconName === iconName) {
+        button.querySelectorAll(".free-auth-avatar").forEach((avatar) => avatar.remove());
+        return;
+      }
+      if (icon.tagName.toLowerCase() === "svg") {
+        const replacement = document.createElement("i");
+        replacement.dataset.olafAccountIcon = "true";
+        replacement.dataset.olafIconName = iconName;
+        replacement.setAttribute("data-lucide", iconName);
+        icon.replaceWith(replacement);
         needsIconRefresh = true;
+      } else {
+        icon.dataset.olafAccountIcon = "true";
+        icon.dataset.olafIconName = iconName;
+        if (icon.getAttribute("data-lucide") !== iconName) {
+          icon.setAttribute("data-lucide", iconName);
+          needsIconRefresh = true;
+        }
       }
     }
+    button.querySelectorAll(".free-auth-avatar").forEach((avatar) => avatar.remove());
     if (needsIconRefresh) window.lucide?.createIcons?.();
   }
 
@@ -599,10 +618,11 @@
   }
 
   function renderFallbackUserPopover(popover, user) {
-    if (!popover || !user || popover.children.length) return;
+    if (!popover || !user) return;
     const displayName = cleanDisplayText(user.displayName || user.username || user.email || "Member");
     const initial = displayName.trim().charAt(0).toUpperCase() || "U";
     const role = cleanDisplayText(user.role || "member");
+    popover.dataset.olafUserMenuVersion = USER_MENU_VERSION;
     popover.innerHTML = `
       <div class="user-profile-card">
         <a class="user-popover-header user-popover-header-link" href="profile.html#info">

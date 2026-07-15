@@ -21,9 +21,9 @@
   <script src="platform-store.js?v=20260619-profile-update-fix" defer></script>
   <script src="image-performance.js?v=20260713-media-brand-v89" defer></script>
 <script src="delivery-payload.js?v=20260620-phase1-12-final" defer></script>
-  <script src="site-navigation.js?v=20260714-payment-profile-expiry-v102" defer></script>
+      <script src="site-navigation.js?v=20260715-user-menu-v103" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-  <link rel="stylesheet" href="styles.css?v=20260714-payment-profile-expiry-v102" />
+      <link rel="stylesheet" href="styles.css?v=20260715-user-menu-v103" />
   <style>
     body {
       padding-top: 0;
@@ -3958,6 +3958,10 @@
     }
 
     function syncTopbarAccountChrome(user) {
+      if (window.OlafNavigation?.ownsUserMenu) {
+        window.OlafNavigation.refreshAccount?.();
+        return;
+      }
       const accountLabel = document.getElementById('account-label');
       if (accountLabel) {
         accountLabel.textContent = user ? (user.displayName || user.username || 'สมาชิก') : 'เข้าสู่ระบบ';
@@ -4214,23 +4218,25 @@
         if (notificationPopover) notificationPopover.hidden = !nextOpen;
       });
 
-      document.getElementById('open-auth')?.addEventListener('click', (event) => {
-        event.stopPropagation();
-        const currentUser = window.OlafStore?.currentUser?.();
-        if (!currentUser) {
-          const returnPath = `${window.location.pathname.split('/').pop() || 'profile.html'}${window.location.search}${window.location.hash}`;
-          window.location.href = `login.html?return=${encodeURIComponent(returnPath)}`;
-          return;
-        }
+      if (!window.OlafNavigation?.ownsUserMenu) {
+        document.getElementById('open-auth')?.addEventListener('click', (event) => {
+          event.stopPropagation();
+          const currentUser = window.OlafStore?.currentUser?.();
+          if (!currentUser) {
+            const returnPath = `${window.location.pathname.split('/').pop() || 'profile.html'}${window.location.search}${window.location.hash}`;
+            window.location.href = `login.html?return=${encodeURIComponent(returnPath)}`;
+            return;
+          }
 
-        const userPopover = document.getElementById('user-popover');
-        if (!userPopover) return;
-        const nextOpen = userPopover.hidden;
-        closeTopbarMenus('user');
-        userPopover.hidden = !nextOpen;
-        event.currentTarget.classList.toggle('is-active', nextOpen);
-        if (nextOpen) refreshProfilePoints().catch(() => null);
-      });
+          const userPopover = document.getElementById('user-popover');
+          if (!userPopover) return;
+          const nextOpen = userPopover.hidden;
+          closeTopbarMenus('user');
+          userPopover.hidden = !nextOpen;
+          event.currentTarget.classList.toggle('is-active', nextOpen);
+          if (nextOpen) refreshProfilePoints().catch(() => null);
+        });
+      }
 
       document.addEventListener('click', async (event) => {
         const trigger = event.target.closest('[data-refresh-points]');
@@ -4289,7 +4295,7 @@
           if (notificationPopover) notificationPopover.hidden = true;
         }
 
-        if (!event.target.closest('.user-popover-wrap') && !event.target.closest('#user-popover')) {
+        if (!window.OlafNavigation?.ownsUserMenu && !event.target.closest('.user-popover-wrap') && !event.target.closest('#user-popover')) {
           const userPopover = document.getElementById('user-popover');
           if (userPopover) userPopover.hidden = true;
           document.getElementById('open-auth')?.classList.remove('is-active');

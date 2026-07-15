@@ -257,7 +257,11 @@
         authIcon.setAttribute("data-lucide", nextIcon);
       }
     }
-    if (user) renderUserPopover(user);
+    if (user && window.OlafNavigation?.ownsUserMenu) {
+      window.OlafNavigation.refreshAccount?.();
+    } else if (user) {
+      renderUserPopover(user);
+    }
     refreshIcons();
   }
 
@@ -271,6 +275,7 @@
     await loadExtraProducts();
 
     $("#open-auth")?.addEventListener("click", (event) => {
+      if (window.OlafNavigation?.ownsUserMenu) return;
       event.stopPropagation();
       const user = window.OlafStore?.currentUser?.();
       if (!user) {

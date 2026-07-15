@@ -3374,7 +3374,8 @@ function updateAccountChrome() {
     accountLabelEl.textContent = user ? cleanDisplayText(user.displayName || user.username) : "เข้าสู่ระบบ";
   }
   if (user) {
-    renderUserPopover();
+    if (window.OlafNavigation?.ownsUserMenu) window.OlafNavigation.refreshAccount?.();
+    else renderUserPopover();
   } else {
     const popover = document.querySelector("#user-popover");
     if (popover) popover.innerHTML = "";
@@ -3383,7 +3384,7 @@ function updateAccountChrome() {
   if (registerBtn) registerBtn.style.display = user ? "none" : "";
   const authIcon = document.querySelector("#open-auth")?.querySelector("svg, i");
   if (authIcon) {
-    const newIcon = user ? "user" : "log-in";
+    const newIcon = user ? "circle-user-round" : "log-in";
     if (authIcon.tagName.toLowerCase() === "svg") {
       const newI = document.createElement("i");
       newI.setAttribute("data-lucide", newIcon);

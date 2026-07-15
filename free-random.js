@@ -607,6 +607,13 @@
     const user = window.OlafStore?.currentUser?.() || state.user || null;
     if (!button || !label) return;
 
+    if (window.OlafNavigation?.ownsUserMenu) {
+      button.onclick = null;
+      if (register) register.style.display = user ? "none" : "inline-flex";
+      window.OlafNavigation.refreshAccount?.();
+      return;
+    }
+
     button.classList.remove("is-auth-loading");
     button.removeAttribute("aria-busy");
 
@@ -674,6 +681,7 @@
   }
 
   function bindAuthHeader() {
+    if (window.OlafNavigation?.ownsUserMenu) return;
     if (document.body.dataset.freeRandomAuthBound === "true") return;
     document.body.dataset.freeRandomAuthBound = "true";
     document.addEventListener("click", (event) => {

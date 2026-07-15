@@ -27627,9 +27627,6 @@ body.free-random-result-open {
     z-index: 12083 !important;
   }
 
-  #user-mini-card {
-    display: none !important;
-  }
 }
 
 /* v49: product page can set --olaf-popover-top for anchored panels; mobile search must always live below the header */

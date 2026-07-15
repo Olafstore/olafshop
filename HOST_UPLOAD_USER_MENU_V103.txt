@@ -1,0 +1,16 @@
+OLAF SHOP - Shared User Menu v103
+Date: 2026-07-15
+
+Upload every file in this package to the website root and preserve the folder structure.
+Overwrite files with the same names.
+
+What changed:
+- One shared User popup controller from site-navigation.js on mobile, tablet, and desktop.
+- Page-specific User popup handlers now defer to the shared controller.
+- Removed obsolete user-mini-card markup.
+- User button icon is loader-circle while loading, log-in for guests, and circle-user-round for signed-in users.
+- Cache version: 20260715-user-menu-v103.
+
+No SQL is required for this update.
+No environment variables or credentials are included.
+After upload, clear the host/CDN cache or redeploy once, then hard refresh the browser.

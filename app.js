@@ -3503,6 +3503,7 @@ function bindEvents() {
     showToast("ระบบตะกร้าถูกปิดใช้งาน", "info");
   });
   $(selectors.openAuth).addEventListener("click", (event) => {
+    if (window.OlafNavigation?.ownsUserMenu) return;
     event.stopPropagation();
     closeNotificationMenu();
     if (state.currentUser) {
@@ -3517,8 +3518,9 @@ function bindEvents() {
       window.location.href = "login.html?return=" + encodeURIComponent(window.location.pathname + window.location.search);
     }
   });
-  // Close user popover on outside click
+  // The unified site-navigation owner handles this on every viewport.
   document.addEventListener("click", (event) => {
+    if (window.OlafNavigation?.ownsUserMenu) return;
     if (!event.target.closest(".user-popover-wrap")) closeUserPopover();
   });
   $(selectors.openDashboard)?.addEventListener("click", renderMemberDashboard);

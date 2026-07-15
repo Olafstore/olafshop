@@ -17,6 +17,12 @@ let checkoutPointState = {
   subtotal: 0,
   totalBeforePoints: 0
 };
+let checkoutCouponState = {
+  code: "",
+  discountAmount: 0,
+  applied: false,
+  baseTotal: 0
+};
 
 const isLocalProductHost = ["localhost", "127.0.0.1", "::1"].includes(window.location.hostname);
 const productEndpoints = [
@@ -2233,8 +2239,73 @@ function renderProduct() {
 }
 
 
+function couponErrorMessage(error) {
+  const message = String(error?.message || "");
+  if (message.includes("COUPON_NOT_FOUND")) return "ไม่พบโค้ดส่วนลดนี้";
+  if (message.includes("COUPON_INACTIVE")) return "โค้ดส่วนลดนี้ถูกปิดใช้งาน";
+  if (message.includes("COUPON_NOT_STARTED")) return "โค้ดส่วนลดนี้ยังไม่เริ่มกิจกรรม";
+  if (message.includes("COUPON_EXPIRED")) return "โค้ดส่วนลดนี้หมดอายุแล้ว";
+  if (message.includes("COUPON_USAGE_LIMIT")) return "โค้ดส่วนลดนี้ถูกใช้ครบจำนวนแล้ว";
+  if (message.includes("COUPON_POINTS_COMBINATION")) return "ไม่สามารถใช้โค้ดส่วนลดพร้อม Point ได้";
+  return "ตรวจสอบโค้ดส่วนลดไม่สำเร็จ กรุณาลองใหม่";
+}
+
+function renderCheckoutCoupon() {
+  const card = $("[data-checkout-coupon-card]");
+  const input = $("#checkout-discount-code");
+  const note = $("[data-checkout-coupon-note]");
+  const summary = $("[data-checkout-coupon-summary]");
+  const discount = $("[data-checkout-coupon-discount]");
+  card?.classList.toggle("is-applied", checkoutCouponState.applied);
+  if (summary) summary.hidden = !checkoutCouponState.applied;
+  if (discount) discount.textContent = `-${formatPrice(checkoutCouponState.discountAmount || 0)}`;
+  if (note) note.textContent = checkoutCouponState.applied
+    ? `ใช้โค้ด ${checkoutCouponState.code} แล้ว ไม่สามารถใช้ Point พร้อมกันได้`
+    : "มีโค้ดส่วนลด? กรอกแล้วกดใช้โค้ด";
+  if (input && checkoutCouponState.applied) input.value = checkoutCouponState.code;
+}
+
+function resetCheckoutCoupon(baseTotal = 0) {
+  checkoutCouponState = { code: "", discountAmount: 0, applied: false, baseTotal: Number(baseTotal || 0) };
+  const input = $("#checkout-discount-code");
+  if (input) input.value = "";
+  renderCheckoutCoupon();
+}
+
+async function applyCheckoutDiscountCode() {
+  const input = $("#checkout-discount-code");
+  const button = $("[data-apply-discount-code]");
+  const code = String(input?.value || "").trim();
+  if (!code) { showToast("กรุณากรอกโค้ดส่วนลด", "warning"); return; }
+  if (!window.OlafStore.currentUser()) { showToast("กรุณาเข้าสู่ระบบก่อนใช้โค้ดส่วนลด", "info"); return; }
+  if (!window.OlafCoupons?.preview) { showToast("ระบบโค้ดส่วนลดยังไม่พร้อม กรุณารัน migration ก่อน", "error"); return; }
+  const original = button?.innerHTML || "";
+  if (button) { button.disabled = true; button.innerHTML = '<i data-lucide="loader-circle"></i> ตรวจสอบ'; createIconSet(); }
+  try {
+    const preview = await window.OlafCoupons.preview({ code, subtotal: checkoutPointState.subtotal });
+    checkoutCouponState.code = String(preview.code || code).toUpperCase();
+    checkoutCouponState.discountAmount = Math.max(Number(preview.discountAmount || 0), 0);
+    checkoutCouponState.applied = true;
+    checkoutPointState.enabled = false;
+    checkoutPointState.pointsToUse = 0;
+    checkoutPointState.totalBeforePoints = Math.max(checkoutCouponState.baseTotal - checkoutCouponState.discountAmount, 0);
+    renderCheckoutCoupon();
+    renderCheckoutPoints();
+    showToast(`ใช้โค้ด ${checkoutCouponState.code} สำเร็จ`, "success");
+  } catch (error) {
+    checkoutCouponState.applied = false;
+    checkoutCouponState.discountAmount = 0;
+    checkoutPointState.totalBeforePoints = checkoutCouponState.baseTotal;
+    renderCheckoutCoupon();
+    renderCheckoutPoints();
+    showToast(couponErrorMessage(error), "error");
+  } finally {
+    if (button) { button.disabled = false; button.innerHTML = original; createIconSet(); }
+  }
+}
+
 function checkoutPointDiscount() {
-  if (!checkoutPointState.enabled) return 0;
+  if (!checkoutPointState.enabled || checkoutCouponState.applied) return 0;
   return Math.min(
     Math.max(Number(checkoutPointState.balance || 0), 0),
     Math.max(Number(checkoutPointState.totalBeforePoints || 0), 0)
@@ -2254,7 +2325,7 @@ function renderCheckoutPoints() {
 
   const balance = Math.max(Number(checkoutPointState.balance || 0), 0);
   const totalBeforePoints = Math.max(Number(checkoutPointState.totalBeforePoints || 0), 0);
-  const hasPoints = balance > 0 && totalBeforePoints > 0;
+  const hasPoints = !checkoutCouponState.applied && balance > 0 && totalBeforePoints > 0;
   const discount = checkoutPointDiscount();
   const finalTotal = Math.max(totalBeforePoints - discount, 0);
   checkoutPointState.pointsToUse = discount;
@@ -2273,7 +2344,9 @@ function renderCheckoutPoints() {
   if (discountEl) discountEl.textContent = `-${formatPrice(discount)}`;
   if (finalEl) finalEl.textContent = formatPrice(finalTotal);
   if (noteEl) {
-    noteEl.textContent = !hasPoints
+    noteEl.textContent = checkoutCouponState.applied
+      ? "ใช้โค้ดส่วนลดแล้ว ไม่สามารถใช้ Point ซ้ำในคำสั่งซื้อเดียวกัน"
+      : !hasPoints
       ? `Points ไม่เพียงพอ (ต้องการ ${formatPointAmount(totalBeforePoints)} Point)`
       : finalTotal <= 0 && discount > 0
       ? "Point ครอบคลุมยอดทั้งหมด ระบบจะยืนยันออเดอร์ทันทีโดยไม่ต้องแนบสลิป"
@@ -2394,6 +2467,7 @@ function openOrderForm() {
     subtotal,
     totalBeforePoints: total
   };
+  resetCheckoutCoupon(total);
   renderCheckoutPoints();
   hydrateCheckoutPoints();
 
@@ -2404,6 +2478,11 @@ function openOrderForm() {
       renderCheckoutPoints();
     });
     pointCheckbox.dataset.pointBound = "true";
+  }
+  const couponButton = form.querySelector("[data-apply-discount-code]");
+  if (couponButton && !couponButton.dataset.couponBound) {
+    couponButton.addEventListener("click", applyCheckoutDiscountCode);
+    couponButton.dataset.couponBound = "true";
   }
 
   const orderNumberWrap = $("[data-checkout-order-container]");
@@ -2564,7 +2643,9 @@ async function submitOrder(formData) {
       paymentMethod: normalizePaymentMethod(formData.get("paymentMethod")),
       customerName: formData.get("customerName") || window.OlafStore.currentUser()?.displayName || window.OlafStore.currentUser()?.username || "",
       packageId: purchase.packageId || null,
-      pointsToUse: checkoutPointState.pointsToUse || 0
+      pointsToUse: checkoutPointState.pointsToUse || 0,
+      couponCode: checkoutCouponState.applied ? checkoutCouponState.code : "",
+      couponSubtotal: checkoutPointState.subtotal || 0
     });
 
     await refreshCurrentProduct();

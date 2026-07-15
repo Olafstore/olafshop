@@ -35,10 +35,11 @@
 
   function normalizeAccount(account) {
     const platform = normalizePlatform(account?.platform);
+    const login = clean(account?.login || account?.username || account?.email);
     const id = clean(account?.id);
     const password = clean(account?.password);
-    if (!SUPPORTED_PLATFORMS.has(platform) || !id || !password) return null;
-    return { platform, id, password };
+    if (!SUPPORTED_PLATFORMS.has(platform) || (!login && !id) || !password) return null;
+    return { platform, login, id, password };
   }
 
   function normalizeAccounts(accounts) {
@@ -93,20 +94,22 @@
       const platform = normalizePlatform(line);
       if (SUPPORTED_PLATFORMS.has(platform)) {
         activePlatform = platform;
-        if (!accounts.has(platform)) accounts.set(platform, { platform, id: "", password: "" });
+        if (!accounts.has(platform)) accounts.set(platform, { platform, login: "", id: "", password: "" });
         continue;
       }
 
-      const match = line.match(/^(id|passs?|password)\s*[:：=]\s*(.+)$/iu);
+      const match = line.match(/^(login|user(?:name)?|id|passs?|password)\s*[:：=]\s*(.+)$/iu);
       if (!match) continue;
-      const account = accounts.get(activePlatform) || { platform: activePlatform, id: "", password: "" };
-      if (match[1].toLowerCase() === "id") account.id = clean(match[2]);
+      const account = accounts.get(activePlatform) || { platform: activePlatform, login: "", id: "", password: "" };
+      const field = match[1].toLowerCase();
+      if (["login", "user", "username"].includes(field)) account.login = clean(match[2]);
+      else if (field === "id") account.id = clean(match[2]);
       else account.password = clean(match[2]);
       accounts.set(activePlatform, account);
     }
 
     return [...accounts.values()]
-      .filter((account) => account.id || account.password)
+      .filter((account) => account.login || account.id || account.password)
       .sort(
         (left, right) =>
           (PLATFORM_ORDER.get(left.platform) ?? 99) - (PLATFORM_ORDER.get(right.platform) ?? 99)
@@ -141,7 +144,7 @@
   }
 
   function fieldValue(account, field) {
-    if (!account || !["id", "password"].includes(field)) return "";
+    if (!account || !["login", "id", "password"].includes(field)) return "";
     return clean(account[field]);
   }
 
@@ -149,6 +152,7 @@
     if (!account) return "";
     return [
       clean(account.platform),
+      account.login ? `Login: ${clean(account.login)}` : "",
       account.id ? `ID: ${clean(account.id)}` : "",
       account.password ? `Pass: ${clean(account.password)}` : ""
     ].filter(Boolean).join("\n");

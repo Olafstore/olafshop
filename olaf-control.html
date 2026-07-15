@@ -7,14 +7,14 @@
     <title>หลังบ้าน | OLAF SHOP</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="preconnect" href="https://wtvfgwacodfrzxapwoxj.supabase.co" />
-    <link rel="stylesheet" href="admin.css?v=20260715-delivery-platforms-v105" />
+    <link rel="stylesheet" href="admin.css?v=20260715-variable-stock-coupon-v107" />
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="supabase-client.js?v=20260714-payment-profile-expiry-v102" defer></script>
+    <script src="supabase-client.js?v=20260715-variable-stock-coupon-v107" defer></script>
     <script src="platform-store.js?v=20260605-admin-users" defer></script>
     <script src="image-performance.js?v=20260607-performance" defer></script>
-<script src="delivery-payload.js?v=20260715-delivery-platforms-v105" defer></script>
-    <script src="admin.js?v=20260713-admin-pro-v95" defer></script>
+<script src="delivery-payload.js?v=20260715-variable-stock-coupon-v107" defer></script>
+    <script src="admin.js?v=20260715-variable-stock-coupon-v107" defer></script>
   </head>
   <body>
     <section class="admin-login-screen" id="admin-login-screen">
@@ -97,6 +97,10 @@
             <button type="button" data-panel-target="activity">
               <i data-lucide="megaphone"></i>
               กิจกรรมหน้าเว็บ
+            </button>
+            <button type="button" data-panel-target="coupons">
+              <i data-lucide="ticket-percent"></i>
+              โค้ดส่วนลด
             </button>
             <button type="button" data-panel-target="data">
               <i data-lucide="database"></i>
@@ -457,6 +461,41 @@
                       <p>ใส่ข้อมูลสินค้า 1 บรรทัดต่อ 1 ชิ้น ระบบจะจองรายการไว้ตอนลูกค้าสั่งซื้อ และส่งให้ลูกค้าเมื่อแอดมินกดจัดส่งเท่านั้น</p>
                     </div>
                     <span class="offline-stock-count" id="offline-stock-count">0 ชิ้นพร้อมขาย</span>
+                  </div>
+                  <div class="stock-variable-builder" id="stock-variable-builder">
+                    <div class="stock-variable-builder-head">
+                      <div>
+                        <strong><i data-lucide="braces"></i> สร้างสต็อคแบบตัวแปร</strong>
+                        <small>กรอก Login / ID / Pass แล้วเพิ่มหลายแพลตฟอร์มไว้ในสต็อคหน่วยเดียวได้</small>
+                      </div>
+                      <button class="ghost-button compact" id="clear-managed-stock-draft" type="button"><i data-lucide="rotate-ccw"></i> ล้างแบบร่าง</button>
+                    </div>
+                    <div class="stock-variable-fields">
+                      <label>Platform
+                        <select id="managed-stock-platform">
+                          <option value="STEAM">STEAM</option>
+                          <option value="EA">EA</option>
+                          <option value="UBISOFT">UBISOFT</option>
+                          <option value="WEBMAIL">WEBMAIL</option>
+                          <option value="ROCKSTAR">ROCKSTAR</option>
+                          <option value="MICROSOFT">MICROSOFT</option>
+                        </select>
+                      </label>
+                      <label>Login
+                        <input id="managed-stock-login" type="text" autocomplete="off" placeholder="email / username / login" />
+                      </label>
+                      <label>ID
+                        <input id="managed-stock-id" type="text" autocomplete="off" placeholder="ID หรือ Product Key" />
+                      </label>
+                      <label>Pass
+                        <input id="managed-stock-password" type="text" autocomplete="new-password" placeholder="Password" />
+                      </label>
+                    </div>
+                    <div class="stock-variable-actions">
+                      <button class="ghost-button" id="add-managed-stock-account" type="button"><i data-lucide="plus"></i> เพิ่มบัญชีในหน่วยนี้</button>
+                      <button class="primary-button" id="commit-managed-stock-unit" type="button"><i data-lucide="package-plus"></i> เพิ่มเป็น 1 สต็อค</button>
+                    </div>
+                    <div class="stock-variable-preview" id="managed-stock-draft-preview"><span>ยังไม่มีบัญชีในแบบร่าง</span></div>
                   </div>
                   <label>
                     รายการที่พร้อมขาย
@@ -1405,6 +1444,50 @@
                   <figcaption>Mobile</figcaption>
                 </figure>
               </div>
+            </section>
+          </div>
+        </section>
+
+        <section class="admin-panel" data-panel="coupons">
+          <div class="admin-grid two-cols coupon-admin-grid">
+            <section class="admin-card">
+              <div class="card-heading">
+                <div>
+                  <h2>โค้ดส่วนลด</h2>
+                  <span>กำหนดส่วนลด วันหมดอายุ จำนวนสิทธิ์ และเปิดเป็นกิจกรรมแจกโค้ดฟรีได้</span>
+                </div>
+              </div>
+              <form class="admin-form" id="discount-code-form">
+                <input type="hidden" name="id" />
+                <div class="form-row">
+                  <label>โค้ดส่วนลด<input name="code" required maxlength="40" placeholder="เช่น SUMMER50" /></label>
+                  <label>ประเภทส่วนลด<select name="discountType"><option value="fixed">ลดเป็นบาท</option><option value="percent">ลดเป็นเปอร์เซ็นต์</option></select></label>
+                </div>
+                <div class="form-row">
+                  <label>มูลค่าส่วนลด<input name="discountValue" required type="number" min="0.01" step="0.01" /></label>
+                  <label>จำนวนสิทธิ์<input name="usageLimit" type="number" min="1" step="1" placeholder="เว้นว่าง = ไม่จำกัด" /></label>
+                </div>
+                <div class="form-row">
+                  <label>เริ่มใช้<input name="startsAt" type="datetime-local" /></label>
+                  <label>หมดอายุ<input name="expiresAt" type="datetime-local" /></label>
+                </div>
+                <label>สถานะ<select name="isActive"><option value="true">เปิดใช้งาน</option><option value="false">ปิดใช้งาน</option></select></label>
+                <label class="admin-check-row"><input name="freeCampaign" type="checkbox" /> แสดงเป็นกิจกรรมแจกโค้ดฟรีใน Popup หน้า Index</label>
+                <label>หัวข้อกิจกรรม<input name="notificationTitle" maxlength="120" placeholder="รับโค้ดส่วนลดฟรี" /></label>
+                <label>ข้อความกิจกรรม<textarea name="notificationMessage" rows="3" maxlength="360" placeholder="รายละเอียดกิจกรรมและเงื่อนไข"></textarea></label>
+                <label>ลิงก์กิจกรรม (ถ้ามี)<input name="notificationLinkUrl" type="url" placeholder="https://..." /></label>
+                <div class="form-actions">
+                  <button class="primary-button" type="submit"><i data-lucide="save"></i> บันทึกโค้ด</button>
+                  <button class="ghost-button" id="clear-discount-code-form" type="button"><i data-lucide="rotate-ccw"></i> เริ่มโค้ดใหม่</button>
+                </div>
+              </form>
+            </section>
+            <section class="admin-card">
+              <div class="card-heading">
+                <div><h2>รายการโค้ด</h2><span>โค้ดที่ปิดใช้งานจะใช้ไม่ได้ทันที แต่ประวัติการใช้ยังคงอยู่</span></div>
+                <button class="ghost-button" id="refresh-discount-codes" type="button"><i data-lucide="refresh-cw"></i> รีเฟรช</button>
+              </div>
+              <div class="coupon-admin-list" id="discount-code-list"><div class="empty-state">กำลังโหลดโค้ดส่วนลด...</div></div>
             </section>
           </div>
         </section>

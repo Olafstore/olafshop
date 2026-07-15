@@ -13,19 +13,19 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260715-point-countdown-v104" />
+  <link rel="stylesheet" href="styles.css?v=20260715-variable-stock-coupon-v107" />
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
   <script src="slip-qr-scanner.js?v=20260621-slip-verify-v2" defer></script>
-  <script src="supabase-client.js?v=20260714-payment-profile-expiry-v102" defer></script>
+  <script src="supabase-client.js?v=20260715-variable-stock-coupon-v107" defer></script>
   <script src="order-action-popup.js?v=20260621-order-animation" defer></script>
   <script src="platform-store.js?v=20260605-admin-users" defer></script>
   <script src="image-performance.js?v=20260713-media-brand-v89" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-  <script src="site-navigation.js?v=20260715-point-countdown-v104" defer></script>
+  <script src="site-navigation.js?v=20260715-variable-stock-coupon-v107" defer></script>
   <script src="extra-products.js?v=20260712-admin-authority-v86" defer></script>
-  <script src="product.js?v=20260715-user-menu-v103" defer></script>
+  <script src="product.js?v=20260715-variable-stock-coupon-v107" defer></script>
 </head>
 
 <body class="product-detail-page">
@@ -245,6 +245,21 @@
             <b data-checkout-points-final>฿0</b>
           </div>
         </div>
+
+        <section class="premium-coupon-card" data-checkout-coupon-card>
+          <div class="premium-coupon-heading">
+            <span><i data-lucide="ticket-percent"></i> โค้ดส่วนลด</span>
+            <small>ใช้ได้ 1 โค้ดต่อคำสั่งซื้อ</small>
+          </div>
+          <div class="premium-coupon-row">
+            <input id="checkout-discount-code" type="text" maxlength="40" autocomplete="off" placeholder="กรอกโค้ดส่วนลด" aria-label="โค้ดส่วนลด" />
+            <button class="premium-coupon-apply" type="button" data-apply-discount-code><i data-lucide="check"></i> ใช้โค้ด</button>
+          </div>
+          <p class="premium-coupon-note" data-checkout-coupon-note>มีโค้ดส่วนลด? กรอกแล้วกดใช้โค้ด</p>
+          <div class="premium-coupon-summary" data-checkout-coupon-summary hidden>
+            <span>ส่วนลดจากโค้ด</span><strong data-checkout-coupon-discount>-฿0</strong>
+          </div>
+        </section>
 
         <div class="premium-payment-section" data-checkout-payment-section>
           <div class="premium-payment-header">

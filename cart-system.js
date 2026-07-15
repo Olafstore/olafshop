@@ -564,9 +564,9 @@
   async function fetchProductJsonStoreSettings() {
     const endpoints = [
       window.OLAF_CONFIG?.productsEndpoint,
-      "api/products.json",
-      "/api/products.json",
-      "./api/products.json"
+      "api/products.json?v=20260710-thai-text-fix-v51",
+      "/api/products.json?v=20260710-thai-text-fix-v51",
+      "./api/products.json?v=20260710-thai-text-fix-v51"
     ].filter(Boolean);
     for (const endpoint of [...new Set(endpoints)]) {
       try {

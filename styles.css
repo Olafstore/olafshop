@@ -36436,3 +36436,30 @@ dialog.olaf-checkout-v98.qr-payment-dialog .qr-unavailable {
     animation-duration: 1ms !important;
   }
 }
+/* Coupon checkout card: shared by product checkout and future cart checkout. */
+.premium-coupon-card {
+  display: grid;
+  gap: 11px;
+  padding: 16px;
+  border: 1px solid rgba(96, 165, 250, .28);
+  border-radius: 18px;
+  background: linear-gradient(135deg, rgba(30, 64, 175, .16), rgba(15, 23, 42, .72));
+}
+.premium-coupon-heading,
+.premium-coupon-summary { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.premium-coupon-heading span { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; color: #dbeafe; }
+.premium-coupon-heading svg { width: 18px; color: #93c5fd; }
+.premium-coupon-heading small,
+.premium-coupon-note { color: var(--muted, #94a3b8); font-size: .8rem; }
+.premium-coupon-note { margin: 0; min-height: 1.2em; }
+.premium-coupon-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px; }
+.premium-coupon-row input { min-width: 0; width: 100%; }
+.premium-coupon-apply { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 42px; padding: 0 15px; border: 0; border-radius: 11px; color: #fff; background: linear-gradient(135deg, #2563eb, #4f46e5); cursor: pointer; }
+.premium-coupon-apply:disabled { opacity: .65; cursor: wait; }
+.premium-coupon-summary { padding-top: 9px; border-top: 1px solid rgba(148, 163, 184, .16); color: #bfdbfe; }
+.premium-coupon-summary strong { color: #86efac; }
+.premium-coupon-card.is-applied { border-color: rgba(74, 222, 128, .4); }
+@media (max-width: 560px) {
+  .premium-coupon-row { grid-template-columns: 1fr; }
+  .premium-coupon-apply { width: 100%; }
+}

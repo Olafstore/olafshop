@@ -51,6 +51,7 @@ const state = {
     slots: [],
     claims: []
   },
+  discountCodes: [],
   selectedUserId: null,
   selectedReviewId: null,
   selectedOrderId: null,
@@ -65,6 +66,7 @@ const state = {
 let adminSessionUser = null;
 let packageDraftCounter = 0;
 let iconRefreshQueued = false;
+let managedStockDraftAccounts = [];
 const packageLoadingProductIds = new Set();
 const offlineStockLoadingProductIds = new Set();
 const ADMIN_NOTICE_KEY = "olafshop_admin_notice";
@@ -248,10 +250,10 @@ function adminDeliveryPreviewHtml(order) {
       ${delivery.accounts.map((account, accountIndex) => `
         <article class="admin-account-card admin-account-${escapeHtml(String(account.platform || "").toLowerCase())}">
           <h5>${escapeHtml(account.platform || "ACCOUNT")}</h5>
-          ${["id", "password"].map((field) => {
+          ${["login", "id", "password"].map((field) => {
             const value = String(account[field] || "").trim();
             if (!value) return "";
-            const label = field === "id" ? "ID" : "Password";
+            const label = field === "login" ? "Login" : field === "id" ? "ID" : "Password";
             return `
               <div class="admin-account-field">
                 <span>${label}</span>
@@ -967,7 +969,7 @@ async function loadData() {
   state.users = adminUsers;
   state.reviews = window.OlafStore?.getReviews() ?? [];
   state.widgets = window.OlafStore?.getWidgets() ?? [];
-  const [adminOrders, inventorySummaries, financeOverview, freeRandomOverview] = await Promise.all([
+  const [adminOrders, inventorySummaries, financeOverview, freeRandomOverview, discountCodes] = await Promise.all([
     window.OlafOrders.fetchAdminOrders().catch((error) => {
       console.warn("Admin orders unavailable while loading products", {
         code: error?.code,
@@ -1006,11 +1008,18 @@ async function loadData() {
         slots: [],
         claims: []
       };
-    })
+    }),
+    window.OlafCoupons?.fetchAdmin
+      ? window.OlafCoupons.fetchAdmin().catch((error) => {
+          console.warn("Discount codes unavailable", { code: error?.code, message: error?.message });
+          return [];
+        })
+      : Promise.resolve([])
   ]);
   state.orders = adminOrders;
   state.finance = normalizeFinanceOverview(financeOverview);
   state.freeRandom = freeRandomOverview;
+  state.discountCodes = Array.isArray(discountCodes) ? discountCodes : [];
   setInventorySummaries(inventorySummaries);
   const productNames = new Map(state.payload.products.map((product) => [product.id, product.name]));
   state.stockLog = (await window.OlafOrders.fetchStockMovements().catch(() => [])).map((movement) => ({
@@ -1725,13 +1734,31 @@ async function deletePackageFromEditor(button) {
 }
 
 function isOfflineProductCategory(category) {
-  return ["offline", "rockstar"].includes(String(category || "").trim().toLowerCase());
+  return ["offline", "rockstar", "rockstar-fivem", "rockstar-games", "minecraft", "minecraft-account", "minecraft-key"].includes(String(category || "").trim().toLowerCase());
 }
 
 function managedStockCategoryLabel(category) {
-  return String(category || "").trim().toLowerCase() === "rockstar"
-    ? "Rockstar / FiveM"
-    : "Steam Offline";
+  const normalized = String(category || "").trim().toLowerCase();
+  if (normalized === "rockstar") return "Rockstar / FiveM";
+  if (normalized === "rockstar-fivem" || normalized === "rockstar-games") return "Rockstar / FiveM";
+  if (normalized === "minecraft") return "Minecraft / Microsoft";
+  if (normalized === "minecraft-account") return "Minecraft / Microsoft Account";
+  if (normalized === "minecraft-key") return "Minecraft Key";
+  return "Steam Offline";
+}
+
+function managedStockPlaceholder(category) {
+  const normalized = String(category || "").trim().toLowerCase();
+  if (["rockstar", "rockstar-fivem", "rockstar-games"].includes(normalized)) {
+    return '{"version":1,"accounts":[{"platform":"ROCKSTAR","login":"email@example.com","id":"rockstar-id","password":"password"}]}';
+  }
+  if (["minecraft", "minecraft-account"].includes(normalized)) {
+    return '{"version":1,"accounts":[{"platform":"MICROSOFT","login":"email@example.com","id":"minecraft-id","password":"password"},{"platform":"WEBMAIL","login":"mail@example.com","password":"mail-password"}]}';
+  }
+  if (normalized === "minecraft-key") {
+    return '{"version":1,"accounts":[{"platform":"MICROSOFT","login":"redeem-key","id":"product-key","password":"-"}]}';
+  }
+  return '{"version":1,"accounts":[{"platform":"STEAM","login":"steam-login","id":"steam-id","password":"password"}]}';
 }
 
 function offlineStockCacheKey(productId) {
@@ -1767,6 +1794,77 @@ function setCachedOfflineStockItems(productId, items) {
 
 function offlineStockLinesFromEditor() {
   return compactLines($("#offline-stock-lines")?.value || "");
+}
+
+function renderManagedStockDraft() {
+  const preview = $("#managed-stock-draft-preview");
+  if (!preview) return;
+  if (!managedStockDraftAccounts.length) {
+    preview.innerHTML = "<span>ยังไม่มีบัญชีในแบบร่าง</span>";
+    return;
+  }
+  preview.innerHTML = managedStockDraftAccounts.map((account, index) => `
+    <span class="stock-variable-chip">
+      <strong>${escapeHtml(account.platform)}</strong>
+      <span>${escapeHtml(account.login || account.id || "credential")}</span>
+      <button type="button" data-remove-managed-stock-account="${index}" aria-label="ลบ ${escapeHtml(account.platform)}"><i data-lucide="x"></i></button>
+    </span>
+  `).join("");
+  createIconSet();
+}
+
+function clearManagedStockDraft() {
+  managedStockDraftAccounts = [];
+  ["#managed-stock-login", "#managed-stock-id", "#managed-stock-password"].forEach((selector) => {
+    const input = $(selector);
+    if (input) input.value = "";
+  });
+  renderManagedStockDraft();
+}
+
+function readManagedStockAccountDraft() {
+  const platform = String($("#managed-stock-platform")?.value || "STEAM").trim().toUpperCase();
+  const login = String($("#managed-stock-login")?.value || "").trim();
+  const id = String($("#managed-stock-id")?.value || "").trim();
+  const password = String($("#managed-stock-password")?.value || "").trim();
+  if ((!login && !id) || !password) {
+    showAdminToast("กรุณากรอก Login หรือ ID และ Pass ให้ครบก่อนเพิ่มบัญชี", "warning");
+    return null;
+  }
+  return { platform, login, id, password };
+}
+
+function addManagedStockAccountDraft() {
+  const account = readManagedStockAccountDraft();
+  if (!account) return;
+  managedStockDraftAccounts = [
+    ...managedStockDraftAccounts.filter((item) => item.platform !== account.platform),
+    account
+  ];
+  ["#managed-stock-login", "#managed-stock-id", "#managed-stock-password"].forEach((selector) => {
+    const input = $(selector);
+    if (input) input.value = "";
+  });
+  renderManagedStockDraft();
+}
+
+function commitManagedStockUnit() {
+  const textarea = $("#offline-stock-lines");
+  if (!textarea) return;
+  const typed = readManagedStockAccountDraft();
+  if (typed) managedStockDraftAccounts = [
+    ...managedStockDraftAccounts.filter((item) => item.platform !== typed.platform),
+    typed
+  ];
+  if (!managedStockDraftAccounts.length) {
+    showAdminToast("กรุณาเพิ่มบัญชีอย่างน้อย 1 แพลตฟอร์ม", "warning");
+    return;
+  }
+  const unit = JSON.stringify({ version: 1, accounts: managedStockDraftAccounts });
+  textarea.value = [textarea.value.trim(), unit].filter(Boolean).join("\n");
+  textarea.dispatchEvent(new Event("input", { bubbles: true }));
+  clearManagedStockDraft();
+  showAdminToast("เพิ่มสต็อคตัวแปร 1 หน่วยแล้ว กดบันทึกสินค้าเพื่อยืนยัน", "success");
 }
 
 function offlineStatusCounts(items = []) {
@@ -1854,9 +1952,7 @@ function renderOfflineStockEditor(product) {
         .then((items) => {
           if (selectedProduct()?.id === product.id) {
             textarea.disabled = false;
-            textarea.placeholder = category === "rockstar"
-              ? "rockstar-email | password | email access | note"
-              : "email@example.com | password | note";
+            textarea.placeholder = managedStockPlaceholder(category);
             textarea.value = items
               .filter((item) => item.status === "available")
               .map((item) => item.content)
@@ -1880,9 +1976,7 @@ function renderOfflineStockEditor(product) {
 
   const items = Array.isArray(cached) ? cached : [];
   textarea.disabled = false;
-  textarea.placeholder = category === "rockstar"
-    ? "rockstar-email | password | email access | note"
-    : "email@example.com | password | note";
+  textarea.placeholder = managedStockPlaceholder(category);
   textarea.value = items
     .filter((item) => item.status === "available")
     .map((item) => item.content)
@@ -1984,6 +2078,7 @@ function renderAll() {
   renderAdminSection("stock board", renderStockBoard, errors);
   renderAdminSection("payment form", renderPaymentForm, errors);
   renderAdminSection("activity popup form", renderActivityPopupForm, errors);
+  renderAdminSection("discount codes", renderDiscountCodesPanel, errors);
   renderAdminSection("data preview", renderDataPreview, errors);
   renderAdminSection("admin category tabs", () => renderCategoryTabs("admin-category-tabs"), errors);
   renderAdminSection("stock category tabs", () => renderCategoryTabs("stock-category-tabs"), errors);
@@ -4605,6 +4700,127 @@ async function changeStock(productId, nextStock, action) {
   }
 }
 
+function discountDateTimeLocal(value) {
+  if (!value) return "";
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "";
+  const offset = date.getTimezoneOffset() * 60000;
+  return new Date(date.getTime() - offset).toISOString().slice(0, 16);
+}
+
+function resetDiscountCodeForm() {
+  const form = $("#discount-code-form");
+  if (!form) return;
+  form.reset();
+  form.elements.id.value = "";
+  form.elements.discountType.value = "fixed";
+  form.elements.isActive.value = "true";
+  form.elements.startsAt.value = discountDateTimeLocal(new Date().toISOString());
+}
+
+function renderDiscountCodesPanel() {
+  const list = $("#discount-code-list");
+  if (!list) return;
+  const codes = Array.isArray(state.discountCodes) ? state.discountCodes : [];
+  if (!codes.length) {
+    list.innerHTML = '<div class="empty-state">ยังไม่มีโค้ดส่วนลด กรอกแบบฟอร์มเพื่อสร้างโค้ดแรก</div>';
+    return;
+  }
+  list.innerHTML = codes.map((item) => {
+    const type = item.discountType || item.discount_type || "fixed";
+    const value = Number(item.discountValue ?? item.discount_value ?? 0);
+    const expiresAt = item.expiresAt || item.expires_at || "";
+    const usageLimit = item.usageLimit ?? item.usage_limit;
+    const usedCount = Number(item.usedCount ?? item.used_count ?? 0);
+    const isActive = item.isActive !== false && item.is_active !== false;
+    return `
+      <article class="coupon-admin-card ${isActive ? "" : "is-inactive"}">
+        <div>
+          <div class="coupon-admin-code"><i data-lucide="ticket-percent"></i><strong>${escapeHtml(item.code || "-")}</strong><span class="status-pill ${isActive ? "success" : "danger"}">${isActive ? "เปิดใช้" : "ปิดใช้"}</span></div>
+          <p>${type === "percent" ? `ลด ${value.toLocaleString("th-TH", { maximumFractionDigits: 2 })}%` : `ลด ${formatPrice(value)}`} · ใช้แล้ว ${usedCount.toLocaleString("th-TH")}${usageLimit ? ` / ${Number(usageLimit).toLocaleString("th-TH")}` : " / ไม่จำกัด"}</p>
+          <p>${expiresAt ? `หมดอายุ ${formatAdminDateTime(expiresAt)}` : "ไม่มีวันหมดอายุ"}${item.freeCampaign || item.free_campaign ? " · กิจกรรมแจกฟรี" : ""}</p>
+        </div>
+        <div class="coupon-admin-card-actions">
+          <button class="ghost-button" type="button" data-edit-discount-code="${escapeHtml(item.id)}"><i data-lucide="pencil"></i> แก้ไข</button>
+          ${isActive ? `<button class="danger-button" type="button" data-disable-discount-code="${escapeHtml(item.id)}"><i data-lucide="ban"></i> ปิด</button>` : ""}
+        </div>
+      </article>`;
+  }).join("");
+}
+
+function editDiscountCode(id) {
+  const item = state.discountCodes.find((entry) => entry.id === id);
+  const form = $("#discount-code-form");
+  if (!item || !form) return;
+  form.elements.id.value = item.id || "";
+  form.elements.code.value = item.code || "";
+  form.elements.discountType.value = item.discountType || item.discount_type || "fixed";
+  form.elements.discountValue.value = Number(item.discountValue ?? item.discount_value ?? 0) || "";
+  form.elements.usageLimit.value = item.usageLimit ?? item.usage_limit ?? "";
+  form.elements.startsAt.value = discountDateTimeLocal(item.startsAt || item.starts_at);
+  form.elements.expiresAt.value = discountDateTimeLocal(item.expiresAt || item.expires_at);
+  form.elements.isActive.value = item.isActive !== false && item.is_active !== false ? "true" : "false";
+  form.elements.freeCampaign.checked = item.freeCampaign === true || item.free_campaign === true;
+  form.elements.notificationTitle.value = item.notificationTitle || item.notification_title || "";
+  form.elements.notificationMessage.value = item.notificationMessage || item.notification_message || "";
+  form.elements.notificationLinkUrl.value = item.notificationLinkUrl || item.notification_link_url || "";
+  form.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+async function refreshDiscountCodes() {
+  if (!window.OlafCoupons?.fetchAdmin) throw new Error("DISCOUNT_CODE_MIGRATION_REQUIRED");
+  state.discountCodes = await window.OlafCoupons.fetchAdmin();
+  renderDiscountCodesPanel();
+  createIconSet();
+}
+
+async function saveDiscountCodeSettings(event) {
+  event.preventDefault();
+  const form = event.currentTarget;
+  const button = form.querySelector('button[type="submit"]');
+  const original = button?.innerHTML || "";
+  if (button) { button.disabled = true; button.innerHTML = '<i data-lucide="loader-circle"></i> กำลังบันทึก'; createIconSet(); }
+  try {
+    const saved = await window.OlafCoupons.saveAdmin({
+      id: form.elements.id.value || null,
+      code: form.elements.code.value.trim(),
+      discountType: form.elements.discountType.value,
+      discountValue: Number(form.elements.discountValue.value || 0),
+      usageLimit: form.elements.usageLimit.value || null,
+      startsAt: form.elements.startsAt.value ? new Date(form.elements.startsAt.value).toISOString() : null,
+      expiresAt: form.elements.expiresAt.value ? new Date(form.elements.expiresAt.value).toISOString() : null,
+      isActive: form.elements.isActive.value === "true",
+      freeCampaign: form.elements.freeCampaign.checked,
+      notificationTitle: form.elements.notificationTitle.value.trim(),
+      notificationMessage: form.elements.notificationMessage.value.trim(),
+      notificationLinkUrl: form.elements.notificationLinkUrl.value.trim()
+    });
+    await refreshDiscountCodes();
+    if (saved?.free_campaign === true) {
+      const settings = await fetchOnlineStoreSettings(true);
+      state.payload.store = mergeStoreSettings(state.payload.store, settings);
+      renderActivityPopupForm();
+    }
+    resetDiscountCodeForm();
+    showAdminToast("บันทึกโค้ดส่วนลดแล้ว", "success");
+  } catch (error) {
+    showAdminToast(error.message || "บันทึกโค้ดส่วนลดไม่สำเร็จ", "error", 7000);
+  } finally {
+    if (button) { button.disabled = false; button.innerHTML = original; createIconSet(); }
+  }
+}
+
+async function deactivateDiscountCode(id) {
+  if (!id || !window.confirm("ปิดใช้งานโค้ดนี้ใช่หรือไม่? ประวัติการใช้จะไม่ถูกลบ")) return;
+  try {
+    await window.OlafCoupons.deactivateAdmin(id);
+    await refreshDiscountCodes();
+    showAdminToast("ปิดใช้งานโค้ดแล้ว", "success");
+  } catch (error) {
+    showAdminToast(error.message || "ปิดโค้ดไม่สำเร็จ", "error");
+  }
+}
+
 function renderActivityPopupForm() {
   const form = $("#activity-popup-form");
   if (!form) return;
@@ -4685,6 +4901,7 @@ async function saveActivityPopupSettings(event) {
     }
 
     state.payload.store.activityPopup = {
+      ...existing,
       enabled: form.elements.enabled.value === "true",
       campaignId: form.elements.campaignId.value.trim() || existing.campaignId || "main-activity",
       title: form.elements.title.value.trim() || "กิจกรรมพิเศษจาก OLAF SHOP",
@@ -5023,6 +5240,7 @@ const ADMIN_PANEL_META = {
   widgets: ["ส่วนประกอบหน้าร้าน", "Storefront / Widgets"],
   payment: ["ตั้งค่าการชำระเงิน", "System / Payment"],
   activity: ["กิจกรรมหน้าเว็บ", "System / Campaign"],
+  coupons: ["โค้ดส่วนลด", "Commerce / Promotions"],
   data: ["ข้อมูลระบบ", "System / Data"],
 };
 
@@ -5115,6 +5333,12 @@ function bindEvents() {
   });
 
   document.body.addEventListener("click", async (event) => {
+    const removeManagedStockAccount = event.target.closest("[data-remove-managed-stock-account]");
+    if (removeManagedStockAccount) {
+      managedStockDraftAccounts.splice(Number(removeManagedStockAccount.dataset.removeManagedStockAccount), 1);
+      renderManagedStockDraft();
+      return;
+    }
     const adminCopyButton = event.target.closest("[data-admin-copy-field]");
     if (adminCopyButton) {
       const order = selectedOrder();
@@ -5127,7 +5351,7 @@ function bindEvents() {
       const value = window.OlafDeliveryPayload?.fieldValue?.(account, field) || "";
       try {
         await copyAdminText(value);
-        showAdminToast(field === "password" ? "คัดลอกรหัสผ่านแล้ว" : "คัดลอก ID แล้ว", "success");
+        showAdminToast(field === "password" ? "คัดลอกรหัสผ่านแล้ว" : field === "login" ? "คัดลอก Login แล้ว" : "คัดลอก ID แล้ว", "success");
       } catch (error) {
         showAdminToast(error.message || "คัดลอกไม่สำเร็จ", "error");
       }
@@ -5147,6 +5371,8 @@ function bindEvents() {
     const financePageButton = event.target.closest("[data-finance-page]");
     const financePageMoveButton = event.target.closest("[data-finance-page-move]");
     const editWidgetButton = event.target.closest("[data-edit-widget]");
+    const editDiscountCodeButton = event.target.closest("[data-edit-discount-code]");
+    const disableDiscountCodeButton = event.target.closest("[data-disable-discount-code]");
     const addPackageButton = event.target.closest("#add-product-package");
     const deletePackageButton = event.target.closest("[data-package-delete]");
     const categoryTab = event.target.closest(".category-tab");
@@ -5269,6 +5495,17 @@ function bindEvents() {
       switchPanel("widgets");
       renderWidgetForm();
       createIconSet();
+      return;
+    }
+
+    if (editDiscountCodeButton) {
+      editDiscountCode(editDiscountCodeButton.dataset.editDiscountCode);
+      return;
+    }
+
+    if (disableDiscountCodeButton) {
+      await deactivateDiscountCode(disableDiscountCodeButton.dataset.disableDiscountCode);
+      return;
     }
   });
 
@@ -5373,6 +5610,10 @@ function bindEvents() {
     renderOfflineStockEditor(product);
   });
 
+  $("#add-managed-stock-account")?.addEventListener("click", addManagedStockAccountDraft);
+  $("#commit-managed-stock-unit")?.addEventListener("click", commitManagedStockUnit);
+  $("#clear-managed-stock-draft")?.addEventListener("click", clearManagedStockDraft);
+
   $("#offline-stock-lines")?.addEventListener("input", () => {
     const product = selectedProduct();
     syncOfflineStockCacheFromEditor(product?.id);
@@ -5449,6 +5690,12 @@ function bindEvents() {
   });
   $("#payment-form").addEventListener("submit", savePaymentSettings);
   $("#activity-popup-form")?.addEventListener("submit", saveActivityPopupSettings);
+  $("#discount-code-form")?.addEventListener("submit", saveDiscountCodeSettings);
+  $("#clear-discount-code-form")?.addEventListener("click", resetDiscountCodeForm);
+  $("#refresh-discount-codes")?.addEventListener("click", async () => {
+    try { await refreshDiscountCodes(); showAdminToast("โหลดโค้ดส่วนลดแล้ว", "success"); }
+    catch (error) { showAdminToast(error.message || "โหลดโค้ดส่วนลดไม่สำเร็จ", "error"); }
+  });
   $("#activity-desktop-upload")?.addEventListener("change", (event) => handleActivityImageUpload("desktop", event));
   $("#activity-mobile-upload")?.addEventListener("change", (event) => handleActivityImageUpload("mobile", event));
   $("#clear-activity-images")?.addEventListener("click", () => {

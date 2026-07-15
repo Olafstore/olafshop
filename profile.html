@@ -16,14 +16,14 @@
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
   <script src="slip-qr-scanner.js?v=20260621-slip-verify-v2" defer></script>
-  <script src="supabase-client.js?v=20260714-payment-profile-expiry-v102" defer></script> 
+  <script src="supabase-client.js?v=20260715-variable-stock-coupon-v107" defer></script> 
   <script src="order-action-popup.js?v=20260621-order-animation" defer></script>
   <script src="platform-store.js?v=20260619-profile-update-fix" defer></script>
   <script src="image-performance.js?v=20260713-media-brand-v89" defer></script>
-<script src="delivery-payload.js?v=20260715-delivery-platforms-v105" defer></script>
-      <script src="site-navigation.js?v=20260715-point-countdown-v104" defer></script>
+<script src="delivery-payload.js?v=20260715-variable-stock-coupon-v107" defer></script>
+      <script src="site-navigation.js?v=20260715-variable-stock-coupon-v107" defer></script>
   <script src="notifications.js?v=20260619-profile-orders" defer></script>
-      <link rel="stylesheet" href="styles.css?v=20260715-point-countdown-v104" />
+      <link rel="stylesheet" href="styles.css?v=20260715-variable-stock-coupon-v107" />
   <style>
     body {
       padding-top: 0;
@@ -3495,8 +3495,8 @@
           ${delivery.accounts.map((account, accountIndex) => `
             <article class="inventory-account-card inventory-account-${escape(String(account.platform || '').toLowerCase())}">
               <h5>${escape(account.platform || 'ACCOUNT')}</h5>
-              ${['id', 'password'].map(field => {
-                const label = field === 'id' ? 'ID' : 'Password';
+              ${['login', 'id', 'password'].map(field => {
+                const label = field === 'login' ? 'Login' : field === 'id' ? 'ID' : 'Password';
                 const value = String(account[field] || '').trim();
                 if (!value) return '';
                 return `
@@ -4719,7 +4719,7 @@
           }
           try {
             await copyTextToClipboard(value);
-            showToast(field === 'password' ? 'คัดลอกรหัสผ่านแล้ว' : 'คัดลอก ID แล้ว');
+            showToast(field === 'password' ? 'คัดลอกรหัสผ่านแล้ว' : field === 'login' ? 'คัดลอก Login แล้ว' : 'คัดลอก ID แล้ว');
           } catch (copyError) {
             showToast(copyError.message || 'คัดลอกไม่สำเร็จ', 'error');
           }

@@ -1333,7 +1333,7 @@ function renderActivityPopup() {
   const existing = document.querySelector("[data-activity-popup]");
   const desktopImage = safeActivityPopupImage(activity.desktopImageUrl || activity.mobileImageUrl);
   const mobileImage = safeActivityPopupImage(activity.mobileImageUrl || desktopImage);
-  const shouldShow = activity.enabled === true && Boolean(desktopImage || mobileImage);
+  const shouldShow = activity.enabled === true && Boolean(desktopImage || mobileImage || activity.discountCode);
 
   if (!shouldShow || activityPopupDismissedKeys.has(key) || activityPopupHiddenUntil(key) > Date.now()) {
     if (existing && existing.dataset.activityKey !== key) existing.remove();
@@ -1344,6 +1344,7 @@ function renderActivityPopup() {
 
   const title = cleanDisplayText(activity.title || "กิจกรรมพิเศษจาก OLAF SHOP");
   const message = cleanDisplayText(activity.message || "");
+  const discountCode = cleanDisplayText(activity.discountCode || "");
   const linkUrl = safeActivityPopupLink(activity.linkUrl);
   const linkLabel = cleanDisplayText(activity.linkLabel || "ดูรายละเอียดกิจกรรม");
   const popup = document.createElement("section");
@@ -1361,15 +1362,16 @@ function renderActivityPopup() {
         <button class="activity-popup__close" type="button" aria-label="ปิด" data-activity-close><i data-lucide="x"></i></button>
       </header>
       <div class="activity-popup__scroll">
-        <div class="activity-popup__media">
+        ${(desktopImage || mobileImage) ? `<div class="activity-popup__media">
           <img class="activity-popup__image is-desktop" src="${escapeHtml(desktopImage || mobileImage)}" alt="${escapeHtml(title)}" loading="eager" decoding="async" />
           <img class="activity-popup__image is-mobile" src="${escapeHtml(mobileImage || desktopImage)}" alt="${escapeHtml(title)}" loading="eager" decoding="async" />
-        </div>
+        </div>` : ""}
         <div class="activity-popup__content">
           <h2 id="activity-popup-title">${escapeHtml(title)}</h2>
           ${message ? `<p>${escapeHtml(message)}</p>` : ""}
           <div class="activity-popup__actions">
             ${linkUrl ? `<a class="activity-popup__primary" href="${escapeHtml(linkUrl)}" target="_blank" rel="noopener noreferrer"><span>${escapeHtml(linkLabel)}</span><i data-lucide="arrow-up-right"></i></a>` : ""}
+            ${discountCode ? `<button class="activity-popup__primary" type="button" data-activity-copy-code="${escapeHtml(discountCode)}"><i data-lucide="copy"></i><span>คัดลอกโค้ด ${escapeHtml(discountCode)}</span></button>` : ""}
             <button class="activity-popup__secondary" type="button" data-activity-hide-day><i data-lucide="clock-3"></i><span>ไม่แสดง 24 ชั่วโมง</span></button>
           </div>
         </div>
@@ -1382,6 +1384,15 @@ function renderActivityPopup() {
   });
   popup.querySelector("[data-activity-hide-day]")?.addEventListener("click", () => {
     closeActivityPopup({ hideFor24Hours: true });
+  });
+  popup.querySelector("[data-activity-copy-code]")?.addEventListener("click", async (event) => {
+    const code = event.currentTarget.dataset.activityCopyCode || "";
+    try {
+      await navigator.clipboard.writeText(code);
+      event.currentTarget.querySelector("span")?.replaceChildren(document.createTextNode("คัดลอกโค้ดแล้ว"));
+    } catch {
+      showToast("คัดลอกโค้ดไม่สำเร็จ กรุณากดค้างเพื่อคัดลอก", "warning");
+    }
   });
   popup.addEventListener("keydown", (event) => {
     if (event.key === "Escape") closeActivityPopup();

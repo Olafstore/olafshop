@@ -1415,14 +1415,14 @@
 
   function hideUniversalSearchResults(wrapper) {
     universalSearchRequest += 1;
-    const panel = wrapper.querySelector(".site-global-search-results");
+    const panel = wrapper.querySelector(".site-global-search-results, .search-suggestions");
     if (!panel) return;
     panel.hidden = true;
     panel.innerHTML = "";
   }
 
   async function renderUniversalSearchResults(wrapper, query) {
-    const panel = wrapper.querySelector(".site-global-search-results");
+    const panel = wrapper.querySelector(".site-global-search-results, .search-suggestions");
     const keyword = query.trim();
     if (!panel || !keyword) {
       hideUniversalSearchResults(wrapper);
@@ -1657,11 +1657,36 @@
       legacySearch.classList.add("site-unified-search");
       const input = legacySearch.querySelector('input[type="search"]');
       const toggle = legacySearch.querySelector(".topbar-search-toggle");
+      const form = legacySearch.querySelector("form");
       if (input) {
         input.placeholder = "ค้นหาเกม...";
         input.setAttribute("aria-label", "ค้นหาสินค้า");
       }
       if (toggle) toggle.setAttribute("aria-label", "เปิดช่องค้นหาสินค้า");
+      if (input && !legacySearch.dataset.universalSearchBound) {
+        const update = () => {
+          const query = input.value.trim();
+          syncIndexCatalogSearch(query);
+          renderUniversalSearchResults(legacySearch, query);
+        };
+        input.addEventListener("input", update);
+        input.addEventListener("focus", () => renderUniversalSearchResults(legacySearch, input.value));
+        form?.addEventListener("submit", (event) => {
+          event.preventDefault();
+          const query = input.value.trim();
+          if (!query) {
+            hideUniversalSearchResults(legacySearch);
+            return;
+          }
+          if (syncIndexCatalogSearch(query, true)) {
+            hideUniversalSearchResults(legacySearch);
+            document.querySelector("#catalog")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            return;
+          }
+          window.location.href = `index.html?search=${encodeURIComponent(query)}#catalog`;
+        });
+        legacySearch.dataset.universalSearchBound = "true";
+      }
       return;
     }
     if (header.querySelector(".site-global-search")) return;

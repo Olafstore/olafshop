@@ -871,10 +871,14 @@
   async function adminFetchOfflineStockItems(productId) {
     const normalizedProductId = String(productId || "").trim();
     if (!normalizedProductId) throw new Error("PRODUCT_REQUIRED");
-    const { data, error } = await requireClient().rpc("admin_fetch_offline_stock_items", {
+    const { data, error } = await requireClient().rpc("admin_fetch_variable_stock_items", {
       p_product_id: normalizedProductId
     });
-    if (error) throw error;
+    if (error) {
+      const legacy = await requireClient().rpc("admin_fetch_offline_stock_items", { p_product_id: normalizedProductId });
+      if (legacy.error) throw error;
+      return normalizeArray(legacy.data).map(mapOfflineStockItemRow).filter(Boolean);
+    }
     return normalizeArray(data).map(mapOfflineStockItemRow).filter(Boolean);
   }
 
@@ -884,11 +888,23 @@
     const items = normalizeArray(lines)
       .map((line) => String(line || "").trim())
       .filter(Boolean);
-    const { data, error } = await requireClient().rpc("admin_replace_offline_stock_items", {
+    const { data, error } = await requireClient().rpc("admin_replace_variable_stock_items", {
       p_product_id: normalizedProductId,
       p_items: items
     });
-    if (error) throw error;
+    if (error) {
+      const legacy = await requireClient().rpc("admin_replace_offline_stock_items", {
+        p_product_id: normalizedProductId,
+        p_items: items
+      });
+      if (legacy.error) throw error;
+      const legacyPayload = normalizeObject(legacy.data);
+      return {
+        product: mapProductRow(legacyPayload.product),
+        items: normalizeArray(legacyPayload.items).map(mapOfflineStockItemRow).filter(Boolean),
+        availableCount: Number(legacyPayload.availableCount || legacyPayload.available_count || 0)
+      };
+    }
     const payload = normalizeObject(data);
     return {
       product: mapProductRow(payload.product),
@@ -898,9 +914,11 @@
   }
 
   async function adminFetchInventorySummary() {
-    const { data, error } = await requireClient().rpc("admin_inventory_summary");
-    if (error) throw error;
-    return normalizeArray(data).map(mapInventorySummaryRow).filter((item) => item?.productId);
+    const { data, error } = await requireClient().rpc("admin_inventory_summary_variable");
+    if (!error) return normalizeArray(data).map(mapInventorySummaryRow).filter((item) => item?.productId);
+    const legacy = await requireClient().rpc("admin_inventory_summary");
+    if (legacy.error) throw error;
+    return normalizeArray(legacy.data).map(mapInventorySummaryRow).filter((item) => item?.productId);
   }
 
   async function adminResizeOfflineStock({ productId, stock, templateContent = "", note = "" }) {
@@ -910,13 +928,27 @@
     if (!Number.isInteger(normalizedStock) || normalizedStock < 0 || normalizedStock > 10000) {
       throw new Error("INVALID_STOCK");
     }
-    const { data, error } = await requireClient().rpc("admin_resize_offline_stock", {
+    const { data, error } = await requireClient().rpc("admin_resize_variable_stock", {
       p_product_id: normalizedProductId,
       p_stock: normalizedStock,
       p_template_content: String(templateContent || "").trim() || null,
       p_note: String(note || "").trim() || "Admin resized managed stock"
     });
-    if (error) throw error;
+    if (error) {
+      const legacy = await requireClient().rpc("admin_resize_offline_stock", {
+        p_product_id: normalizedProductId,
+        p_stock: normalizedStock,
+        p_template_content: String(templateContent || "").trim() || null,
+        p_note: String(note || "").trim() || "Admin resized managed stock"
+      });
+      if (legacy.error) throw error;
+      const legacyPayload = normalizeObject(legacy.data);
+      return {
+        product: mapProductRow(legacyPayload.product),
+        items: normalizeArray(legacyPayload.items).map(mapOfflineStockItemRow).filter(Boolean),
+        availableCount: Number(legacyPayload.availableCount || legacyPayload.available_count || 0)
+      };
+    }
     const payload = normalizeObject(data);
     return {
       product: mapProductRow(payload.product),
@@ -971,6 +1003,9 @@
       paymentVerificationNote: row.payment_verification_note || "",
       pointsRedeemedAmount: Number(row.points_redeemed_amount || 0),
       pointCreditAmount: Number(row.point_credit_amount || 0),
+      discountCodeId: row.discount_code_id || "",
+      discountCode: row.discount_code || "",
+      discountAmount: Number(row.discount_amount || 0),
       paymentSlipPath: row.payment_slip_path || "",
       paymentSlipUrl: row.payment_slip_url || "",
       expiresAt: row.expires_at || "",
@@ -1580,7 +1615,84 @@
     return normalizeArray(data).map(mapFreeRandomClaim);
   }
 
-  async function createOrder({ productId, quantity, paymentMethod, customerName, packageId, pointsToUse = 0 }) {
+  async function redeemDiscountCode({ code, subtotal = 0 }) {
+    const normalizedCode = String(code || "").trim();
+    if (!normalizedCode) throw new Error("COUPON_REQUIRED");
+    const { data, error } = await requireClient().rpc("redeem_discount_code", {
+      p_code: normalizedCode,
+      p_subtotal: Number(subtotal || 0)
+    });
+    if (error) throw error;
+    const value = normalizeObject(data);
+    return {
+      ...value,
+      discountAmount: Number(value.discountAmount ?? value.discount_amount ?? 0),
+      discountValue: Number(value.discountValue ?? value.discount_value ?? 0),
+      expiresAt: value.expiresAt || value.expires_at || ""
+    };
+  }
+
+  async function previewDiscountCode({ code, subtotal = 0 }) {
+    const normalizedCode = String(code || "").trim();
+    if (!normalizedCode) throw new Error("COUPON_REQUIRED");
+    const { data, error } = await requireClient().rpc("preview_discount_code", {
+      p_code: normalizedCode,
+      p_subtotal: Number(subtotal || 0)
+    });
+    if (error) throw error;
+    const value = normalizeObject(data);
+    return {
+      ...value,
+      discountAmount: Number(value.discountAmount ?? value.discount_amount ?? 0),
+      discountValue: Number(value.discountValue ?? value.discount_value ?? 0)
+    };
+  }
+
+  async function fetchAdminDiscountCodes() {
+    const { data, error } = await requireClient().rpc("admin_list_discount_codes");
+    if (error) throw error;
+    return normalizeArray(data).map((row) => ({
+      ...normalizeObject(row),
+      id: row.id || "",
+      code: row.code || "",
+      discountType: row.discount_type || row.discountType || "fixed",
+      discountValue: Number(row.discount_value ?? row.discountValue ?? 0),
+      startsAt: row.starts_at || row.startsAt || "",
+      expiresAt: row.expires_at || row.expiresAt || "",
+      usageLimit: row.usage_limit == null ? null : Number(row.usage_limit),
+      usedCount: Number(row.used_count || 0),
+      isActive: row.is_active !== false,
+      freeCampaign: row.free_campaign === true
+    }));
+  }
+
+  async function saveAdminDiscountCode(code = {}) {
+    const { data, error } = await requireClient().rpc("admin_save_discount_code", {
+      p_id: code.id || null,
+      p_code: code.code || "",
+      p_discount_type: code.discountType || code.discount_type || "fixed",
+      p_discount_value: Number(code.discountValue ?? code.discount_value ?? 0),
+      p_starts_at: code.startsAt || code.starts_at || null,
+      p_expires_at: code.expiresAt || code.expires_at || null,
+      p_usage_limit: code.usageLimit == null || code.usageLimit === "" ? null : Number(code.usageLimit),
+      p_is_active: code.isActive !== false,
+      p_free_campaign: code.freeCampaign === true,
+      p_notification_title: code.notificationTitle || code.notification_title || null,
+      p_notification_message: code.notificationMessage || code.notification_message || null,
+      p_notification_link_url: code.notificationLinkUrl || code.notification_link_url || null
+    });
+    if (error) throw error;
+    return normalizeObject(data);
+  }
+
+  async function deactivateAdminDiscountCode(id) {
+    const { data, error } = await requireClient().rpc("admin_deactivate_discount_code", { p_id: id });
+    if (error) throw error;
+    return normalizeObject(data);
+  }
+
+  async function createOrder({ productId, quantity, paymentMethod, customerName, packageId, pointsToUse = 0, couponCode = "", couponSubtotal = 0 }) {
+    const normalizedCouponCode = String(couponCode || "").trim();
     const payload = {
       p_product_id: productId,
       p_quantity: Number(quantity || 1),
@@ -1593,12 +1705,17 @@
       payload.p_points_to_use = normalizedPoints;
     }
 
-    const { data, error } = await requireClient().rpc("create_order", payload);
+    if (normalizedCouponCode) {
+      payload.p_discount_code = normalizedCouponCode;
+      payload.p_coupon_subtotal = Number(couponSubtotal || 0);
+    }
+    const rpcName = normalizedCouponCode ? "create_order_with_discount" : "create_order";
+    const { data, error } = await requireClient().rpc(rpcName, payload);
     if (error) throw error;
     return withPaymentSlipUrl(mapOrderRpcPayload(data));
   }
 
-  async function createCartOrder({ items, paymentMethod, customerName, pointsToUse = 0 }) {
+  async function createCartOrder({ items, paymentMethod, customerName, pointsToUse = 0, couponCode = "", couponSubtotal = 0 }) {
     const normalizedItems = normalizeArray(items)
       .map((item) => ({
         product_id: item.productId || item.product_id || item.id || "",
@@ -1608,6 +1725,8 @@
       .filter((item) => item.product_id);
 
     if (!normalizedItems.length) throw new Error("CART_ITEMS_REQUIRED");
+
+    const normalizedCouponCode = String(couponCode || "").trim();
 
     const payload = {
       p_items: normalizedItems,
@@ -1619,7 +1738,12 @@
       payload.p_points_to_use = normalizedPoints;
     }
 
-    const { data, error } = await requireClient().rpc("create_cart_order", payload);
+    if (normalizedCouponCode) {
+      payload.p_discount_code = normalizedCouponCode;
+      payload.p_coupon_subtotal = Number(couponSubtotal || 0);
+    }
+    const rpcName = normalizedCouponCode ? "create_cart_order_with_discount" : "create_cart_order";
+    const { data, error } = await requireClient().rpc(rpcName, payload);
     if (error) throw error;
     return withPaymentSlipUrl(mapOrderRpcPayload(data));
   }
@@ -1910,6 +2034,13 @@
     uploadPaymentQr,
     uploadStoreAsset,
     createPaymentQrSignedUrl
+  };
+  window.OlafCoupons = {
+    redeem: redeemDiscountCode,
+    preview: previewDiscountCode,
+    fetchAdmin: fetchAdminDiscountCodes,
+    saveAdmin: saveAdminDiscountCode,
+    deactivateAdmin: deactivateAdminDiscountCode
   };
   window.OlafOrders = {
     mapOrderRow,

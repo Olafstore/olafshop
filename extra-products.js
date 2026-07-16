@@ -350,6 +350,23 @@
     minecraftAccountProduct.label = "MICROSOFT ID";
   }
 
+  const minecraftKeyProduct = products.find((product) => product.id === "minecraft-java-bedrock-key");
+  if (minecraftKeyProduct) {
+    minecraftKeyProduct.delivery = "จัดส่งโดยแอดมิน — แอดมินตรวจสอบสลิปและส่ง Redeem Key ให้ลูกค้าแบบเดียวกับ Minecraft Microsoft Account";
+  }
+
+  const galleryFallbacks = new Map([
+    ["minecraft-java-bedrock-key", MINECRAFT_HERO],
+    ["rockstar-fivem-account", ROCKSTAR_HERO],
+    ["rockstar-gta-v-download", GTA_V_HERO]
+  ]);
+  galleryFallbacks.forEach((fallbackImage, productId) => {
+    const product = products.find((item) => item.id === productId);
+    if (!product) return;
+    const gallery = Array.isArray(product.gallery) ? product.gallery.filter(Boolean) : [];
+    product.gallery = gallery.length ? gallery : [fallbackImage];
+  });
+
   const windowsFeatureBlocks = [
     { icon: "shopping-cart", title: "สั่งซื้อเลย", text: "สร้างออเดอร์และชำระเงินผ่านระบบร้าน" },
     { icon: "send", title: "แอดมินจัดส่ง", text: "ส่งคีย์หลังตรวจสอบสลิป" },

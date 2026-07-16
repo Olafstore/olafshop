@@ -1027,6 +1027,9 @@ function getLocalizedDelivery(product) {
   if (String(product?.category || "").toLowerCase() === "minecraft-account") {
     return "จัดส่งแบบไอดียกเมล — แอดมินตรวจสอบสลิปและส่งบัญชี Microsoft พร้อมข้อมูลอีเมลให้ลูกค้า";
   }
+  if (String(product?.category || "").toLowerCase() === "minecraft-key") {
+    return "จัดส่งโดยแอดมิน — แอดมินตรวจสอบสลิปและส่ง Redeem Key ให้ลูกค้าแบบเดียวกับ Minecraft Microsoft Account";
+  }
   if (String(product?.category || "").startsWith("minecraft-")) {
     return "พรีออเดอร์ — แอดมินตรวจสอบและจัดส่งสินค้าให้ด้วยตนเอง";
   }

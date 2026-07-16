@@ -50,6 +50,8 @@
   function productCard(product) {
     const isMinecraft = String(product.category || "").startsWith("minecraft-");
     const isRockstar = product.category === "rockstar";
+    const gallery = Array.isArray(product.gallery) ? product.gallery.filter(Boolean) : [];
+    const cover = gallery[0] || product.image || product.heroImage || "assets/placeholder.svg";
     const stock = Number(product.stock || 0);
     const disabled = stock <= 0;
     const description = String(product.description || "").split("\n")[0];
@@ -57,7 +59,7 @@
     return `
       <article class="extras-product-card ${isMinecraft ? "is-minecraft" : ""} ${isRockstar ? "is-rockstar" : ""} ${disabled ? "is-out-of-stock" : ""}">
         <a class="extras-product-cover" href="product.html?id=${encodeURIComponent(product.id)}">
-          <img src="${escapeHtml(product.image || product.heroImage || "")}" alt="${escapeHtml(product.name)}" loading="lazy" decoding="async" />
+          <img src="${escapeHtml(cover)}" alt="${escapeHtml(product.name)}" loading="lazy" decoding="async" />
           <span class="extras-product-label">${escapeHtml(product.label || (isMinecraft ? "PRE-ORDER" : "STOCK"))}</span>
         </a>
         <div class="extras-product-body">

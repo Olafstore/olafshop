@@ -1734,7 +1734,7 @@ async function deletePackageFromEditor(button) {
 }
 
 function isOfflineProductCategory(category) {
-  return ["offline", "rockstar", "rockstar-fivem", "rockstar-games", "minecraft", "minecraft-key"].includes(String(category || "").trim().toLowerCase());
+  return ["offline", "rockstar", "rockstar-fivem", "rockstar-games", "minecraft"].includes(String(category || "").trim().toLowerCase());
 }
 
 function managedStockCategoryLabel(category) {

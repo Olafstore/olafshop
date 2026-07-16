@@ -4863,6 +4863,7 @@ async function saveActivityPopupSettings(event) {
   const button = form.querySelector('button[type="submit"]');
   const originalHtml = button?.innerHTML || "";
   const existing = state.payload.store.activityPopup ?? {};
+  const { discountCode: _legacyDiscountCode, ...safeExisting } = existing;
   const typedDesktopUrl = form.elements.desktopImageUrl.value.trim();
   const typedMobileUrl = form.elements.mobileImageUrl.value.trim();
 
@@ -4907,7 +4908,7 @@ async function saveActivityPopupSettings(event) {
     }
 
     state.payload.store.activityPopup = {
-      ...existing,
+      ...safeExisting,
       enabled: form.elements.enabled.value === "true",
       campaignId: form.elements.campaignId.value.trim() || existing.campaignId || "main-activity",
       title: form.elements.title.value.trim() || "กิจกรรมพิเศษจาก OLAF SHOP",

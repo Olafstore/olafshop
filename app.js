@@ -1358,9 +1358,10 @@ function renderActivityPopup() {
   const existing = document.querySelector("[data-activity-popup]");
   const desktopImage = safeActivityPopupImage(activity.desktopImageUrl || activity.mobileImageUrl);
   const mobileImage = safeActivityPopupImage(activity.mobileImageUrl || desktopImage);
-  // Coupon campaigns are delivered through Notifications. The legacy index
-  // activity popup must not expose a reusable discount code publicly.
-  const shouldShow = activity.enabled === true && Boolean(desktopImage || mobileImage) && !activity.discountCode;
+  // Coupon campaigns are delivered through Notifications. Legacy activity
+  // records may still contain discountCode, so it must never block a normal
+  // activity popup and it must never be rendered publicly below.
+  const shouldShow = activity.enabled === true;
 
   if (!shouldShow || activityPopupDismissedKeys.has(key) || activityPopupHiddenUntil(key) > Date.now()) {
     if (existing && existing.dataset.activityKey !== key) existing.remove();
@@ -1371,7 +1372,7 @@ function renderActivityPopup() {
 
   const title = cleanDisplayText(activity.title || "กิจกรรมพิเศษจาก OLAF SHOP");
   const message = cleanDisplayText(activity.message || "");
-  const discountCode = cleanDisplayText(activity.discountCode || "");
+  const discountCode = "";
   const linkUrl = safeActivityPopupLink(activity.linkUrl);
   const linkLabel = cleanDisplayText(activity.linkLabel || "ดูรายละเอียดกิจกรรม");
   const popup = document.createElement("section");

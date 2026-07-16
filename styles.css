@@ -36685,3 +36685,37 @@ dialog.olaf-checkout-v98 .olaf-checkout-points .premium-points-copy small {
     padding: 8px 10px !important;
   }
 }
+
+/* v111: one authoritative QR alignment for product, Point and Wallet checkout.
+   Older checkout layers positioned the image absolutely with an inset, which
+   offset the QR toward the bottom-right after the frame gained padding. */
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-image-frame {
+  display: grid !important;
+  place-items: center !important;
+  line-height: 0 !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-image-frame > .qr-image,
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-image-frame > img.qr-image {
+  position: static !important;
+  inset: auto !important;
+  grid-area: 1 / 1 !important;
+  place-self: center !important;
+  width: 100% !important;
+  height: 100% !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  transform: none !important;
+  object-fit: contain !important;
+  object-position: 50% 50% !important;
+  border-radius: 0 !important;
+}
+
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-image-frame > .qr-loading,
+dialog.olaf-checkout-v98.qr-payment-dialog .qr-image-frame > .qr-unavailable {
+  inset: 0 !important;
+  grid-area: 1 / 1 !important;
+  place-self: stretch !important;
+  margin: 0 !important;
+  transform: none !important;
+}

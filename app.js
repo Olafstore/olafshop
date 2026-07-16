@@ -1386,7 +1386,7 @@ function renderActivityPopup() {
     <button class="activity-popup__backdrop" type="button" aria-label="ปิดกิจกรรม" data-activity-close></button>
     <article class="activity-popup__card">
       <header class="activity-popup__header">
-        <span class="activity-popup__eyebrow"><i data-lucide="sparkles"></i> OLAF EVENT</span>
+        <span class="activity-popup__eyebrow"><i data-lucide="party-popper"></i> EVENT</span>
         <button class="activity-popup__close" type="button" aria-label="ปิด" data-activity-close><i data-lucide="x"></i></button>
       </header>
       <div class="activity-popup__scroll">

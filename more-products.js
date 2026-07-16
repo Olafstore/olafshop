@@ -88,12 +88,17 @@
   function windowsProductCard(product) {
     const stock = Number(product.stock || 0);
     const features = (Array.isArray(product.tags) ? product.tags : []).slice(0, 4);
+    const gallery = Array.isArray(product.gallery) ? product.gallery.filter(Boolean) : [];
+    const cover = gallery[0] || product.image || product.heroImage || "assets/placeholder.svg";
     const isHighlighted = /\bpro\b/i.test(product.name || "");
     const stockText = stock > 0
       ? `พร้อมขาย ${stock.toLocaleString("th-TH")} ชิ้น`
       : "รอแอดมินอัปเดตสต็อก";
     return `
       <article class="olaf-license-card ${isHighlighted ? "is-highlight" : ""} ${stock <= 0 ? "is-out-of-stock" : ""}">
+        <a class="license-card-media" href="product.html?id=${encodeURIComponent(product.id)}" aria-label="ดูรายละเอียด ${escapeHtml(product.name)}">
+          <img src="${escapeHtml(cover)}" alt="${escapeHtml(product.name)}" loading="lazy" decoding="async" />
+        </a>
         <div class="license-card-top">
           <div class="license-type-badges">
             <span class="license-type-badge">${escapeHtml(product.label || "Key")}</span>
@@ -113,11 +118,11 @@
         </ul>
         <div class="license-card-actions">
           <a class="license-card-action" href="product.html?id=${encodeURIComponent(product.id)}">
-            <i data-lucide="receipt-text"></i>
-            <span>${stock > 0 ? "ชำระเงินในเว็บ" : "ดูรายละเอียด"}</span>
+            <i data-lucide="${stock > 0 ? "shopping-cart" : "circle-help"}"></i>
+            <span>${stock > 0 ? "สั่งซื้อเลย" : "ดูรายละเอียด"}</span>
           </a>
           <small class="license-ready-note ${stock <= 0 ? "is-out" : ""}">
-            <i data-lucide="${stock > 0 ? "shield-check" : "clock-3"}"></i>${escapeHtml(stockText)}
+            <i data-lucide="${stock > 0 ? "package-check" : "clock-3"}"></i>${escapeHtml(stockText)}
           </small>
         </div>
       </article>

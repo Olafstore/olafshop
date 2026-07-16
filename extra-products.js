@@ -344,6 +344,23 @@
     }
   ];
 
+  const minecraftAccountProduct = products.find((product) => product.id === "minecraft-microsoft-account");
+  if (minecraftAccountProduct) {
+    minecraftAccountProduct.delivery = "จัดส่งแบบไอดียกเมล — แอดมินตรวจสอบสลิปและส่งบัญชี Microsoft พร้อมข้อมูลอีเมลให้ลูกค้า";
+    minecraftAccountProduct.label = "MICROSOFT ID";
+  }
+
+  const windowsFeatureBlocks = [
+    { icon: "shopping-cart", title: "สั่งซื้อเลย", text: "สร้างออเดอร์และชำระเงินผ่านระบบร้าน" },
+    { icon: "send", title: "แอดมินจัดส่ง", text: "ส่งคีย์หลังตรวจสอบสลิป" },
+    { icon: "key-round", title: "License Key", text: "คีย์ตรงตามรุ่น Windows ที่เลือก" },
+    { icon: "badge-check", title: "ช่วยแนะนำ", text: "สอบถามขั้นตอนเปิดใช้งานได้" }
+  ];
+  products.filter((product) => product.category === "windows").forEach((product) => {
+    product.featureBlocks = windowsFeatureBlocks.map((feature) => ({ ...feature }));
+    product.tags = ["Windows Key", "Pre-order", "สั่งซื้อเลย", "แอดมินจัดส่ง"];
+  });
+
   function isExtraCategory(category) {
     return ["windows", "minecraft-account", "minecraft-key", "rockstar"].includes(
       String(category || "").trim().toLowerCase()

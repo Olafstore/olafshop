@@ -220,7 +220,7 @@ const categoryTagFallbacks = {
   "steam-account": ["ไอดียกเมล", "พร้อมเล่น", "เข้าเล่นได้", "เกมพีซี", "คุ้มค่า"],
   offline: ["ออฟไลน์", "พร้อมใช้งาน", "ติดตั้งง่าย", "เกมพีซี", "เล่นได้ต่อเนื่อง"],
   bundle: ["แพ็กเกม", "หลายรายการ", "คุ้มราคา", "พร้อมใช้งาน", "เกมพีซี"],
-  windows: ["Windows Key", "พรีออเดอร์", "ชำระเงินในเว็บ", "แอดมินจัดส่ง"],
+  windows: ["Windows Key", "พรีออเดอร์", "สั่งซื้อเลย", "แอดมินจัดส่ง"],
   "minecraft-account": ["Minecraft", "Microsoft ID", "Java + Bedrock", "พรีออเดอร์"],
   "minecraft-key": ["Minecraft", "Redeem Key", "Java + Bedrock", "พรีออเดอร์"],
   rockstar: ["Rockstar Games", "FiveM / GTA V", "สต็อกจากระบบ", "จัดส่งหลังตรวจสลิป"]

@@ -36719,3 +36719,178 @@ dialog.olaf-checkout-v98.qr-payment-dialog .qr-image-frame > .qr-unavailable {
   margin: 0 !important;
   transform: none !important;
 }
+
+/* 2026-07-16 v112: Windows gallery cards and category-specific product surfaces. */
+.extras-license-grid .olaf-license-card {
+  min-width: 0;
+}
+
+.extras-license-grid .license-card-media {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border: 1px solid rgba(96, 165, 250, 0.2);
+  border-radius: 14px;
+  background:
+    radial-gradient(circle at 50% 35%, rgba(59, 130, 246, 0.2), transparent 54%),
+    rgba(5, 12, 28, 0.82);
+}
+
+.extras-license-grid .license-card-media img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  padding: 12%;
+  object-fit: contain;
+  object-position: center;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1), filter 260ms ease;
+}
+
+.extras-license-grid .olaf-license-card:hover .license-card-media img {
+  transform: scale(1.06);
+  filter: drop-shadow(0 10px 22px rgba(59, 130, 246, 0.28));
+}
+
+body.product-detail-page .pd-brand-hero-windows,
+body.product-detail-page .pd-brand-hero-minecraft,
+body.product-detail-page .pd-brand-hero-rockstar {
+  isolation: isolate;
+  overflow: hidden;
+  border-radius: 20px;
+  background-clip: padding-box;
+}
+
+body.product-detail-page .pd-brand-hero-windows::before,
+body.product-detail-page .pd-brand-hero-minecraft::before,
+body.product-detail-page .pd-brand-hero-rockstar::before {
+  position: absolute;
+  inset: -18px;
+  z-index: 0;
+  content: "";
+  pointer-events: none;
+  background: inherit;
+  filter: blur(13px) saturate(1.08);
+  opacity: 0.52;
+  transform: scale(1.045);
+}
+
+body.product-detail-page .pd-brand-hero::after {
+  z-index: 1;
+  border-radius: inherit;
+}
+
+body.product-detail-page .pd-brand-hero > * {
+  z-index: 2;
+}
+
+body.product-detail-page .pd-feature-item[class*="pd-feature-"] {
+  border-color: color-mix(in srgb, currentColor 24%, var(--border));
+  background: linear-gradient(145deg, color-mix(in srgb, currentColor 9%, transparent), rgba(255, 255, 255, 0.018));
+}
+
+body.product-detail-page .pd-feature-windows,
+body.product-detail-page .pd-feature-icon-windows { color: #60a5fa; }
+body.product-detail-page .pd-feature-minecraft,
+body.product-detail-page .pd-feature-icon-minecraft { color: #84cc16; }
+body.product-detail-page .pd-feature-rockstar,
+body.product-detail-page .pd-feature-icon-rockstar { color: #facc15; }
+body.product-detail-page .pd-feature-account,
+body.product-detail-page .pd-feature-icon-account { color: #22d3ee; }
+body.product-detail-page .pd-feature-key,
+body.product-detail-page .pd-feature-icon-key { color: #c4b5fd; }
+body.product-detail-page .pd-feature-support,
+body.product-detail-page .pd-feature-icon-support { color: #fb7185; }
+
+body.product-detail-page .pd-feature-icon-windows,
+body.product-detail-page .pd-feature-icon-minecraft,
+body.product-detail-page .pd-feature-icon-rockstar,
+body.product-detail-page .pd-feature-icon-account,
+body.product-detail-page .pd-feature-icon-key,
+body.product-detail-page .pd-feature-icon-support {
+  border: 1px solid color-mix(in srgb, currentColor 34%, transparent);
+  background: color-mix(in srgb, currentColor 14%, rgba(2, 6, 23, 0.7));
+  box-shadow: 0 10px 24px color-mix(in srgb, currentColor 13%, transparent);
+}
+
+@media (max-width: 700px) {
+  #windows-keys .extras-license-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 10px !important;
+  }
+
+  #windows-keys .extras-license-grid .olaf-license-card {
+    min-width: 0;
+    padding: 11px;
+    gap: 9px;
+    border-radius: 16px;
+  }
+
+  #windows-keys .extras-license-grid .license-card-media {
+    border-radius: 11px;
+  }
+
+  #windows-keys .extras-license-grid .license-card-top h3 {
+    min-height: 2.5em;
+    margin: 6px 0 4px;
+    font-size: 0.9rem;
+    line-height: 1.25;
+  }
+
+  #windows-keys .extras-license-grid .license-card-top p,
+  #windows-keys .extras-license-grid li,
+  #windows-keys .extras-license-grid .license-ready-note {
+    font-size: 0.68rem;
+    line-height: 1.35;
+  }
+
+  #windows-keys .extras-license-grid ul {
+    gap: 5px;
+  }
+
+  #windows-keys .extras-license-grid .license-price strong {
+    font-size: 1.18rem;
+  }
+
+  #windows-keys .extras-license-grid .license-card-action {
+    min-height: 40px;
+    padding: 8px;
+    font-size: 0.74rem;
+  }
+
+  #windows-keys .extras-license-grid .license-card-action svg,
+  #windows-keys .extras-license-grid .license-ready-note svg {
+    width: 15px;
+    height: 15px;
+  }
+
+  body.product-detail-page .pd-brand-hero-windows,
+  body.product-detail-page .pd-brand-hero-minecraft,
+  body.product-detail-page .pd-brand-hero-rockstar {
+    min-height: 176px;
+    border-radius: 16px;
+  }
+}
+
+@media (max-width: 380px) {
+  #windows-keys .extras-license-grid {
+    gap: 7px !important;
+  }
+
+  #windows-keys .extras-license-grid .olaf-license-card {
+    padding: 9px;
+  }
+
+  #windows-keys .extras-license-grid .license-card-top p,
+  #windows-keys .extras-license-grid li {
+    font-size: 0.63rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .extras-license-grid .license-card-media img {
+    transition: none !important;
+  }
+}

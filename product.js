@@ -1024,6 +1024,9 @@ function getLocalizedDelivery(product) {
   if (isWindowsProduct(product)) {
     return "พรีออเดอร์ — ชำระเงินในเว็บและแอดมินจัดส่งคีย์หลังตรวจสอบสลิป";
   }
+  if (String(product?.category || "").toLowerCase() === "minecraft-account") {
+    return "จัดส่งแบบไอดียกเมล — แอดมินตรวจสอบสลิปและส่งบัญชี Microsoft พร้อมข้อมูลอีเมลให้ลูกค้า";
+  }
   if (String(product?.category || "").startsWith("minecraft-")) {
     return "พรีออเดอร์ — แอดมินตรวจสอบและจัดส่งสินค้าให้ด้วยตนเอง";
   }
@@ -1091,7 +1094,8 @@ function productPlatformLinks(product = {}) {
 }
 
 function productFeatureBlocks(product = {}) {
-  if (String(product.category || "").toLowerCase() === "steam-key") {
+  const category = String(product.category || "").toLowerCase();
+  if (category === "steam-key") {
     return [
       {
         icon: "shield-check",
@@ -1107,7 +1111,17 @@ function productFeatureBlocks(product = {}) {
       }
     ];
   }
-  return Array.isArray(product.featureBlocks) ? product.featureBlocks : [];
+  const toneSets = {
+    windows: ["windows", "delivery", "secure", "support"],
+    "minecraft-account": ["minecraft", "account", "delivery", "secure"],
+    "minecraft-key": ["minecraft", "key", "delivery", "secure"],
+    rockstar: ["rockstar", "account", "delivery", "secure"]
+  };
+  const fallbackTones = toneSets[category] || ["default", "delivery", "secure", "support"];
+  return (Array.isArray(product.featureBlocks) ? product.featureBlocks : []).map((feature, index) => ({
+    ...feature,
+    tone: feature?.tone || fallbackTones[index % fallbackTones.length]
+  }));
 }
 
 function localizeSectionBody(body, product = null, title = "") {

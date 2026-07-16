@@ -1734,7 +1734,7 @@ async function deletePackageFromEditor(button) {
 }
 
 function isOfflineProductCategory(category) {
-  return ["offline", "rockstar", "rockstar-fivem", "rockstar-games", "minecraft", "minecraft-account", "minecraft-key"].includes(String(category || "").trim().toLowerCase());
+  return ["offline", "rockstar", "rockstar-fivem", "rockstar-games", "minecraft", "minecraft-key"].includes(String(category || "").trim().toLowerCase());
 }
 
 function managedStockCategoryLabel(category) {
@@ -3426,6 +3426,7 @@ async function saveUserFromForm(event) {
     createIconSet();
     setStatus(`บันทึก user ${savedUser.email} แล้ว`);
     showAdminToast("บันทึก user ไปที่ Supabase แล้ว", "success");
+    closeMobileAdminEditor();
   } catch (error) {
     console.error("Supabase admin user save failed", {
       code: error?.code,
@@ -3510,6 +3511,7 @@ async function deleteSelectedUser() {
     createIconSet();
     setStatus(`ระงับ user ${updatedUser.email} แล้ว`);
     showAdminToast("เปลี่ยนสถานะ user เป็น banned แล้ว", "success");
+    closeMobileAdminEditor();
   } catch (error) {
     console.error("Supabase admin user disable failed", {
       code: error?.code,
@@ -3529,7 +3531,8 @@ function adminResetPassword(userId) {
   state.selectedUserId = user.id;
   switchPanel("users");
   renderUserForm();
-  $("#user-form")?.elements?.password?.focus();
+  openAdminEditorForCurrentViewport("user");
+  requestAnimationFrame(() => $("#user-form")?.elements?.password?.focus({ preventScroll: true }));
   setStatus(`กรอกรหัสผ่านใหม่สำหรับ ${user.email || user.username} แล้วกดบันทึก user`);
   showAdminToast("กรอกรหัสผ่านใหม่ในฟอร์ม แล้วกดบันทึก user เพื่อเปลี่ยนผ่าน server-side API", "success", 6500);
 }
@@ -4442,6 +4445,7 @@ async function saveOrderFromForm(event) {
     renderAll();
     setStatus("บันทึกสถานะออเดอร์ออนไลน์แล้ว");
     showAdminToast("บันทึกออเดอร์ใน Supabase เรียบร้อยแล้ว", "success");
+    closeMobileAdminEditor();
   } catch (error) {
     setStatus(error.message || "บันทึกออเดอร์ไม่สำเร็จ");
     showAdminToast(error.message || "บันทึกออเดอร์ไม่สำเร็จ", "error");
@@ -4465,6 +4469,7 @@ async function deleteSelectedOrder() {
     renderAll();
     setStatus("ยกเลิกออเดอร์แล้ว");
     showAdminToast("ยกเลิกออเดอร์เรียบร้อยแล้ว", "success");
+    closeMobileAdminEditor();
   } catch (error) {
     setStatus(error.message || "ยกเลิกออเดอร์ไม่สำเร็จ");
     showAdminToast(error.message || "ยกเลิกออเดอร์ไม่สำเร็จ", "error");
@@ -5261,25 +5266,44 @@ function setAdminSidebarOpen(open) {
   trigger?.setAttribute("aria-expanded", String(shouldOpen));
 }
 
-function openMobileProductEditor() {
-  const editor = $("#admin-product-editor");
+function adminEditorElement(kind) {
+  const editorByKind = {
+    product: "#admin-product-editor",
+    user: "#admin-user-editor",
+    order: "#admin-order-editor"
+  };
+  return $(editorByKind[kind] || "");
+}
+
+function closeMobileAdminEditor() {
+  ["product", "user", "order"].forEach((kind) => {
+    const editor = adminEditorElement(kind);
+    editor?.classList.remove("is-open");
+    editor?.setAttribute("aria-modal", "false");
+    document.body.classList.remove(`admin-${kind}-editor-open`);
+  });
+  const backdrop = $("#admin-product-editor-backdrop");
+  if (backdrop) backdrop.hidden = true;
+}
+
+function openMobileAdminEditor(kind) {
+  const editor = adminEditorElement(kind);
   const backdrop = $("#admin-product-editor-backdrop");
   if (!editor || !backdrop || !isAdminMobileViewport()) return;
+  closeMobileAdminEditor();
   editor.classList.add("is-open");
   editor.setAttribute("aria-modal", "true");
   backdrop.hidden = false;
-  document.body.classList.add("admin-product-editor-open");
+  document.body.classList.add(`admin-${kind}-editor-open`);
   requestAnimationFrame(() => editor.querySelector("input, select, textarea, button")?.focus({ preventScroll: true }));
 }
 
+function openMobileProductEditor() {
+  openMobileAdminEditor("product");
+}
+
 function closeMobileProductEditor() {
-  const editor = $("#admin-product-editor");
-  const backdrop = $("#admin-product-editor-backdrop");
-  if (!editor || !backdrop) return;
-  editor.classList.remove("is-open");
-  editor.setAttribute("aria-modal", "false");
-  backdrop.hidden = true;
-  document.body.classList.remove("admin-product-editor-open");
+  closeMobileAdminEditor();
 }
 
 function openProductEditorForCurrentViewport({ focusOfflineStock = false } = {}) {
@@ -5296,6 +5320,13 @@ function openProductEditorForCurrentViewport({ focusOfflineStock = false } = {})
   }
 }
 
+function openAdminEditorForCurrentViewport(kind) {
+  const editor = adminEditorElement(kind);
+  if (!editor) return;
+  if (isAdminMobileViewport()) openMobileAdminEditor(kind);
+  else editor.scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
 function switchPanel(panelName) {
   document.body.dataset.adminPanel = panelName;
   $$(".admin-nav button").forEach((button) => {
@@ -5308,7 +5339,7 @@ function switchPanel(panelName) {
   setTextSafe("#admin-panel-title", title);
   setTextSafe("#admin-panel-eyebrow", eyebrow);
   setAdminSidebarOpen(false);
-  if (panelName !== "products") closeMobileProductEditor();
+  closeMobileAdminEditor();
   if (panelName === "dashboard") {
     requestAnimationFrame(() => {
       renderAnalyticsCharts();
@@ -5324,8 +5355,8 @@ function bindEvents() {
   $("#admin-mobile-menu")?.addEventListener("click", () => setAdminSidebarOpen(true));
   $("#admin-sidebar-close")?.addEventListener("click", () => setAdminSidebarOpen(false));
   $("#admin-shell-backdrop")?.addEventListener("click", () => setAdminSidebarOpen(false));
-  $("#close-product-editor")?.addEventListener("click", closeMobileProductEditor);
-  $("#admin-product-editor-backdrop")?.addEventListener("click", closeMobileProductEditor);
+  $("#close-product-editor")?.addEventListener("click", closeMobileAdminEditor);
+  $("#admin-product-editor-backdrop")?.addEventListener("click", closeMobileAdminEditor);
 
   $(".admin-nav").addEventListener("click", (event) => {
     const button = event.target.closest("[data-panel-target]");
@@ -5334,6 +5365,11 @@ function bindEvents() {
   });
 
   document.body.addEventListener("click", async (event) => {
+    const closeAdminEditorButton = event.target.closest("[data-close-admin-editor]");
+    if (closeAdminEditorButton) {
+      closeMobileAdminEditor();
+      return;
+    }
     const removeManagedStockAccount = event.target.closest("[data-remove-managed-stock-account]");
     if (removeManagedStockAccount) {
       managedStockDraftAccounts.splice(Number(removeManagedStockAccount.dataset.removeManagedStockAccount), 1);
@@ -5467,6 +5503,7 @@ function bindEvents() {
       switchPanel("users");
       renderUserForm();
       createIconSet();
+      openAdminEditorForCurrentViewport("user");
       return;
     }
 
@@ -5498,6 +5535,7 @@ function bindEvents() {
       switchPanel("orders");
       renderOrderForm();
       createIconSet();
+      openAdminEditorForCurrentViewport("order");
       return;
     }
 
@@ -5647,6 +5685,7 @@ function bindEvents() {
   $("#new-user").addEventListener("click", () => {
     state.selectedUserId = null;
     fillUserForm(null);
+    openAdminEditorForCurrentViewport("user");
   });
 
   $("#new-widget").addEventListener("click", () => {
@@ -5773,7 +5812,7 @@ function bindEvents() {
   window.addEventListener("resize", () => {
     if (!isAdminMobileViewport()) {
       setAdminSidebarOpen(false);
-      closeMobileProductEditor();
+      closeMobileAdminEditor();
     }
     clearTimeout(chartResizeTimer);
     chartResizeTimer = setTimeout(() => {
@@ -5783,8 +5822,8 @@ function bindEvents() {
 
   document.addEventListener("keydown", (event) => {
     if (event.key !== "Escape") return;
-    if (document.body.classList.contains("admin-product-editor-open")) {
-      closeMobileProductEditor();
+    if (["product", "user", "order"].some((kind) => document.body.classList.contains(`admin-${kind}-editor-open`))) {
+      closeMobileAdminEditor();
       return;
     }
     if (document.body.classList.contains("admin-sidebar-open")) setAdminSidebarOpen(false);

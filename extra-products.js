@@ -392,7 +392,24 @@
     const onlineExtraProducts = (Array.isArray(onlineProducts) ? onlineProducts : [])
       .filter((product) => product?.id && isExtraCategory(product.category));
     const source = onlineExtraProducts.length ? onlineExtraProducts : products;
-    return source.filter((product) => product.isActive !== false);
+    if (!onlineExtraProducts.length) return source.filter((product) => product.isActive !== false);
+    const fallbackById = new Map(products.filter((product) => product?.id).map((product) => [product.id, product]));
+    const detailFields = ["description", "gallery", "platformLinks", "featureBlocks", "detailSections", "steamRelatedLinks", "systemRequirements", "sourceMetadata"];
+    return source
+      .map((product) => {
+        const fallback = fallbackById.get(product.id) || {};
+        const merged = { ...fallback, ...product };
+        detailFields.forEach((field) => {
+          const value = product[field];
+          const emptyArray = Array.isArray(value) && value.length === 0;
+          const emptyObject = value && typeof value === "object" && !Array.isArray(value)
+            ? Object.values(value).every((entry) => !Array.isArray(entry) || entry.length === 0)
+            : false;
+          if (value == null || value === "" || emptyArray || emptyObject) merged[field] = fallback[field];
+        });
+        return merged;
+      })
+      .filter((product) => product.isActive !== false);
   }
 
   window.OlafExtraProducts = {

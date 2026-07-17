@@ -751,7 +751,9 @@ async function fetchSupabaseProducts() {
   if (!window.OlafProducts?.fetchActiveProducts) {
     throw new Error("Supabase product client is not ready");
   }
-  const products = await window.OlafProducts.fetchActiveProducts();
+  // One compact refresh per Index load keeps Admin-edited name, price, stock
+  // and images current without fetching product descriptions or galleries.
+  const products = await window.OlafProducts.fetchActiveProducts({ forceRefresh: true });
   if (!products.length) {
     throw new Error("Supabase returned no active products");
   }

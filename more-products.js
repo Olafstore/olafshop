@@ -133,7 +133,7 @@
 
   async function loadExtraProducts() {
     const onlineProducts = window.OlafProducts?.fetchActiveProducts
-      ? await window.OlafProducts.fetchActiveProducts().catch((error) => {
+      ? await window.OlafProducts.fetchActiveProducts({ forceRefresh: true }).catch((error) => {
           console.warn("Extra products from Supabase unavailable", error);
           return [];
         })

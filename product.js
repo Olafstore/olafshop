@@ -1653,7 +1653,9 @@ function relatedCandidateProducts(product, sourceProducts = globalPayload?.produ
   const extraProducts = Array.isArray(window.OlafExtraProducts?.products)
     ? window.OlafExtraProducts.products
     : [];
-  return mergeRelatedProductSources(sourceProducts, extraProducts)
+  // Static extras provide missing presentation fields only; live Supabase rows
+  // are merged last so Admin-edited name, price, stock and images always win.
+  return mergeRelatedProductSources(extraProducts, sourceProducts)
     .filter((item) => {
       if (!item?.id || item.id === product?.id) return false;
       if (!item.name && !item.title) return false;
@@ -1781,8 +1783,8 @@ async function hydrateRelatedProductsFallback(product) {
     ? null
     : await fetchStorePayload(true).catch(() => null);
   const products = mergeRelatedProductSources(
-    onlineProducts,
-    Array.isArray(payload?.products) ? payload.products : []
+    Array.isArray(payload?.products) ? payload.products : [],
+    onlineProducts
   );
   const relatedProducts = pickRelatedProducts(product, products, 8);
   if (!relatedProducts.length) return;

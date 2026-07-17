@@ -7,14 +7,14 @@
     <title>หลังบ้าน | OLAF SHOP</title>
     <link rel="preconnect" href="https://cdn.jsdelivr.net" />
     <link rel="preconnect" href="https://wtvfgwacodfrzxapwoxj.supabase.co" />
-    <link rel="stylesheet" href="admin.css?v=20260716-admin-minecraft-v112" />
+    <link rel="stylesheet" href="admin.css?v=20260717-admin-history-v116" />
     <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
-    <script src="supabase-client.js?v=20260716-qr-alignment-v111" defer></script>
+    <script src="supabase-client.js?v=20260717-admin-history-v116" defer></script>
     <script src="platform-store.js?v=20260605-admin-users" defer></script>
     <script src="image-performance.js?v=20260607-performance" defer></script>
 <script src="delivery-payload.js?v=20260716-qr-alignment-v111" defer></script>
-    <script src="admin.js?v=20260716-activity-glass-v114" defer></script>
+    <script src="admin.js?v=20260717-admin-history-v116" defer></script>
   </head>
   <body>
     <section class="admin-login-screen" id="admin-login-screen">
@@ -609,11 +609,20 @@
           <div class="admin-grid products-grid">
             <section class="admin-card">
               <div class="card-heading">
-                <h2>สมาชิกและพาร์ทเนอร์</h2>
-                <button class="primary-button" id="new-user" type="button">
-                  <i data-lucide="user-plus"></i>
-                  เพิ่ม user
-                </button>
+                <div>
+                  <h2>สมาชิกและพาร์ทเนอร์</h2>
+                  <span id="users-count">0 users</span>
+                </div>
+                <div class="admin-heading-tools">
+                  <label class="search-control admin-inline-search">
+                    <i data-lucide="search"></i>
+                    <input id="users-search" type="search" placeholder="ค้นหา username, email, ชื่อ, role" aria-label="ค้นหา user" />
+                  </label>
+                  <button class="primary-button" id="new-user" type="button">
+                    <i data-lucide="user-plus"></i>
+                    เพิ่ม user
+                  </button>
+                </div>
               </div>
               <div class="table-wrap">
                 <table class="admin-table">
@@ -949,15 +958,21 @@
                   <h2>ประวัติซื้อสินค้า</h2>
                   <span id="finance-orders-count">0 ออเดอร์</span>
                 </div>
-                <label class="mini-filter">
-                  <span>ช่วงเวลา</span>
-                  <select id="finance-order-period">
-                    <option value="all">ทั้งหมด</option>
-                    <option value="day">รายวัน</option>
-                    <option value="week">รายสัปดาห์</option>
-                    <option value="year">รายปี</option>
-                  </select>
-                </label>
+                <div class="admin-heading-tools finance-order-tools">
+                  <label class="search-control admin-inline-search">
+                    <i data-lucide="search"></i>
+                    <input id="finance-orders-search" type="search" placeholder="ค้นหาเกม, หมวด, user, payment, order" aria-label="ค้นหาประวัติซื้อสินค้า" />
+                  </label>
+                  <label class="mini-filter">
+                    <span>ช่วงเวลา</span>
+                    <select id="finance-order-period">
+                      <option value="all">ทั้งหมด</option>
+                      <option value="day">รายวัน</option>
+                      <option value="week">รายสัปดาห์</option>
+                      <option value="year">รายปี</option>
+                    </select>
+                  </label>
+                </div>
               </div>
               <div class="table-wrap">
                 <table class="admin-table finance-table compact-finance-table">

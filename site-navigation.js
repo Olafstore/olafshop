@@ -1340,35 +1340,38 @@
 
     searchableProductsPromise = (async () => {
       const endpoints = [
-        "api/products-index?v=20260712-search-v85",
-        "assets/products-index.json?v=20260712-search-v85",
-        "api/products.json?v=20260712-search-v85"
+        "api/products-index?v=20260717-live-catalog-v116",
+        "assets/products-index.json?v=20260717-live-catalog-v116",
+        "api/products.json?v=20260717-live-catalog-v116"
       ];
-      for (const endpoint of endpoints) {
-        try {
-          const response = await fetch(endpoint, { cache: "default" });
-          if (!response.ok) continue;
-          const payload = await response.json();
-          const products = Array.isArray(payload) ? payload : Array.isArray(payload?.products) ? payload.products : [];
-          if (products.length) return products;
-        } catch (error) {
-          // Continue to the next compact catalog source.
+      const hostCatalogPromise = (async () => {
+        for (const endpoint of endpoints) {
+          try {
+            const response = await fetch(endpoint, { cache: "default" });
+            if (!response.ok) continue;
+            const payload = await response.json();
+            const products = Array.isArray(payload) ? payload : Array.isArray(payload?.products) ? payload.products : [];
+            if (products.length) return products;
+          } catch (error) {
+            // Continue to the next compact host catalog source.
+          }
         }
-      }
+        return [];
+      })();
 
-      // Supabase is a last-resort source for search only. The static catalog is
-      // served by the host CDN and avoids spending database egress on every
-      // page's topbar search initialization.
-      try {
-        if (window.OlafProducts?.fetchActiveProducts) {
-          const products = await window.OlafProducts.fetchActiveProducts();
-          if (Array.isArray(products) && products.length) return products;
-        }
-      } catch (error) {
-        console.warn("Topbar search catalog unavailable.", error);
-      }
-
-      return [];
+      // Search is opened on demand. Refresh its compact Supabase catalog once
+      // so Admin changes to name/price/stock/image are authoritative while the
+      // host catalog remains a fast fallback if the live request is unavailable.
+      const liveCatalogPromise = window.OlafProducts?.fetchActiveProducts
+        ? window.OlafProducts.fetchActiveProducts({ forceRefresh: true }).catch((error) => {
+            console.warn("Live topbar search catalog unavailable.", error);
+            return [];
+          })
+        : Promise.resolve([]);
+      const [hostProducts, liveProducts] = await Promise.all([hostCatalogPromise, liveCatalogPromise]);
+      if (!Array.isArray(liveProducts) || !liveProducts.length) return hostProducts;
+      const hostById = new Map(hostProducts.filter((product) => product?.id).map((product) => [String(product.id), product]));
+      return liveProducts.map((product) => ({ ...(hostById.get(String(product.id)) || {}), ...product }));
     })();
 
     return searchableProductsPromise;

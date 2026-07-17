@@ -2023,6 +2023,55 @@ body {
   margin: 0;
 }
 
+.admin-heading-tools {
+  display: flex;
+  align-items: flex-end;
+  justify-content: flex-end;
+  gap: 10px;
+  min-width: 0;
+}
+
+.admin-inline-search {
+  width: min(390px, 48vw);
+  min-width: 230px;
+  margin: 0;
+}
+
+.finance-order-tools .mini-filter {
+  min-width: 150px;
+}
+
+.admin-history-delivery {
+  min-width: 210px;
+}
+
+.admin-history-delivery summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  min-height: 34px;
+  padding: 6px 10px;
+  border: 1px solid rgba(96, 165, 250, 0.22);
+  border-radius: 10px;
+  background: rgba(30, 64, 175, 0.12);
+  color: #bfdbfe;
+  cursor: pointer;
+  list-style: none;
+}
+
+.admin-history-delivery summary::-webkit-details-marker { display: none; }
+.admin-history-delivery summary svg { width: 15px; height: 15px; }
+.admin-history-delivery > div { display: grid; gap: 8px; margin-top: 8px; }
+.admin-history-delivery-set,
+.admin-history-account { display: grid; gap: 6px; }
+.admin-history-account { padding: 9px; border: 1px solid rgba(148, 163, 184, 0.14); border-radius: 10px; background: rgba(2, 6, 23, 0.52); }
+.admin-history-account > span { display: grid; grid-template-columns: 62px minmax(0, 1fr); gap: 7px; align-items: start; }
+.admin-history-account em { color: var(--text-secondary); font-style: normal; font-size: 0.72rem; }
+.admin-history-account code,
+.admin-history-delivery pre { overflow-wrap: anywhere; white-space: pre-wrap; color: #e2e8f0; font-family: "Kanit", sans-serif; }
+.admin-history-delivery pre { max-width: 320px; margin: 0; padding: 9px; border-radius: 10px; background: rgba(2, 6, 23, 0.52); }
+.admin-history-empty { color: var(--text-secondary); font-size: 0.78rem; }
+
 .mini-filter {
   display: grid;
   gap: 5px;
@@ -2123,6 +2172,19 @@ body {
 
   .admin-table .numeric {
     text-align: left;
+  }
+
+  .admin-heading-tools,
+  .finance-order-tools {
+    width: 100%;
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .admin-inline-search,
+  .finance-order-tools .mini-filter {
+    width: 100%;
+    min-width: 0;
   }
 }
 

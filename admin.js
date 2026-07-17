@@ -24,6 +24,7 @@ const state = {
   activityDesktopCleared: false,
   activityMobileCleared: false,
   users: [],
+  userSearch: "",
   reviews: [],
   orders: [],
   widgets: [],
@@ -37,6 +38,7 @@ const state = {
     summary: {}
   },
   financeSearch: "",
+  financeOrderSearch: "",
   financeTypeFilter: "all",
   financeOrderPeriod: "all",
   financeActivePage: "wallets",
@@ -3304,8 +3306,23 @@ async function deleteSelectedProduct() {
 
 function renderUsersTable() {
   const walletRows = new Map(financeWalletRows().map((row) => [row.userId, row]));
-  $("#users-table").innerHTML = state.users.length
-    ? state.users
+  const term = String(state.userSearch || "").trim().toLowerCase();
+  const rows = state.users.filter((user) => !term || [
+    user.id,
+    user.email,
+    user.username,
+    user.displayName,
+    user.fullName,
+    user.role,
+    user.position,
+    user.partnerLevel,
+    user.status
+  ].some((value) => String(value || "").toLowerCase().includes(term)));
+  setTextSafe("#users-count", term
+    ? `${rows.length.toLocaleString("th-TH")} จาก ${state.users.length.toLocaleString("th-TH")} users`
+    : `${state.users.length.toLocaleString("th-TH")} users`);
+  $("#users-table").innerHTML = rows.length
+    ? rows
         .map(
           (user) => {
             const wallet = walletRows.get(user.id) || {};
@@ -3341,7 +3358,7 @@ function renderUsersTable() {
           }
         )
         .join("")
-    : `<tr><td colspan="8">ยังไม่มี user</td></tr>`;
+    : `<tr><td colspan="8">${term ? "ไม่พบ user ที่ตรงกับคำค้นหา" : "ยังไม่มี user"}</td></tr>`;
 }
 
 function userFromForm(form) {
@@ -4044,16 +4061,80 @@ function renderFinanceOrdersTableLegacy() {
 
 function financeOrderItemSummary(order) {
   const items = Array.isArray(order?.items) ? order.items : [];
-  if (!items.length) return { title: "-", detail: "0 รายการ" };
+  if (!items.length) return { title: "-", detail: "0 รายการ", categories: "-", searchText: "" };
+  const productsById = new Map(products().map((product) => [String(product.id || ""), product]));
+  const itemRows = items.map((item) => {
+    const currentProduct = productsById.get(String(item.productId || "")) || {};
+    const name = item.productName || item.name || currentProduct.name || item.productId || "สินค้า";
+    const category = currentProduct.category ? categoryLabel(currentProduct.category) : "ไม่ระบุหมวด";
+    return { item, currentProduct, name, category };
+  });
   const title = items
     .slice(0, 3)
-    .map((item) => `${item.productName || item.name || item.productId || "สินค้า"}${Number(item.quantity || 0) > 1 ? ` x${item.quantity}` : ""}`)
+    .map((item, index) => `${itemRows[index].name}${Number(item.quantity || 0) > 1 ? ` x${item.quantity}` : ""}`)
     .join(", ");
   const more = items.length > 3 ? ` +${items.length - 3} รายการ` : "";
+  const categories = [...new Set(itemRows.map((row) => row.category).filter(Boolean))].join(", ") || "-";
   return {
     title: `${title}${more}`,
-    detail: `${items.length.toLocaleString("th-TH")} รายการ`
+    detail: `${items.length.toLocaleString("th-TH")} รายการ`,
+    categories,
+    searchText: itemRows.map((row) => [row.name, row.category, row.item.productId].join(" ")).join(" ")
   };
+}
+
+function financeOrderSearchValue() {
+  return String(state.financeOrderSearch || "").trim().toLowerCase();
+}
+
+function financeOrderMatches(values) {
+  const term = financeOrderSearchValue();
+  if (!term) return true;
+  return values.some((value) => String(value || "").toLowerCase().includes(term));
+}
+
+function adminPaymentMethodLabel(order = {}) {
+  const labels = {
+    promptpay: "PromptPay QR",
+    qr: "PromptPay QR",
+    truemoney: "TrueMoney Wallet",
+    wallet: "TrueMoney Wallet",
+    points: "Point"
+  };
+  const method = String(order.paymentMethod || "").trim().toLowerCase();
+  const base = labels[method] || order.paymentMethod || "ไม่ระบุ";
+  const usedPoints = Number(order.pointsRedeemedAmount || 0);
+  if (usedPoints > 0 && Number(order.total || 0) > 0 && method !== "points") return `${base} + Point`;
+  if (usedPoints > 0 && Number(order.total || 0) <= 0) return "Point";
+  return base;
+}
+
+function adminDeliveryHistoryHtml(order = {}) {
+  const raw = String(order.deliveredPayload || order.deliveryNote || "").trim();
+  if (!raw) return '<span class="admin-history-empty">ยังไม่มีข้อมูลจัดส่ง</span>';
+  const parsed = window.OlafDeliveryPayload?.parse?.(raw);
+  let body = "";
+  if (parsed?.deliveries?.length) {
+    body = parsed.deliveries.map((delivery, deliveryIndex) => `
+      <div class="admin-history-delivery-set">
+        ${parsed.deliveries.length > 1 ? `<strong>ชุดที่ ${deliveryIndex + 1}</strong>` : ""}
+        ${(delivery.accounts || []).map((account) => `
+          <div class="admin-history-account">
+            <b>${escapeHtml(account.platform || "ACCOUNT")}</b>
+            ${["login", "id", "password"].map((field) => {
+              const value = String(account[field] || "").trim();
+              if (!value) return "";
+              const label = field === "password" ? "Password" : field === "login" ? "Login" : "ID";
+              return `<span><em>${label}</em><code>${escapeHtml(value)}</code></span>`;
+            }).join("")}
+          </div>
+        `).join("")}
+      </div>
+    `).join("");
+  } else {
+    body = `<pre>${escapeHtml(raw)}</pre>`;
+  }
+  return `<details class="admin-history-delivery"><summary><i data-lucide="package-check"></i> ดูข้อมูลจัดส่ง</summary><div>${body}</div></details>`;
 }
 
 function paymentStatusClass(status) {
@@ -4130,16 +4211,21 @@ function renderFinanceOrdersTable() {
       itemSummary: financeOrderItemSummary(order)
     }))
     .filter((order) =>
-      financeMatches([
+      financeOrderMatches([
         order.orderNumber,
         order.id,
         order.user.displayName,
         order.user.email,
         order.customerName,
         order.itemSummary.title,
+        order.itemSummary.categories,
+        order.itemSummary.searchText,
         order.status,
         order.paymentStatus,
-        order.paymentMethod
+        order.paymentMethod,
+        adminPaymentMethodLabel(order),
+        order.deliveredPayload,
+        order.deliveryNote
       ])
     )
     .sort((a, b) => new Date(b.createdAt || 0) - new Date(a.createdAt || 0));
@@ -4150,13 +4236,13 @@ function renderFinanceOrdersTable() {
   if (head) {
     head.innerHTML = `
       <tr>
-        <th>Order / วันที่</th>
-        <th>User</th>
-        <th>สินค้า</th>
-        <th>ชำระเงิน</th>
-        <th>Point</th>
-        <th>ยอด / สถานะ</th>
-        <th>จัดการ</th>
+        <th>เกม / หมวดหมู่</th>
+        <th>User ผู้ซื้อ</th>
+        <th>ราคา</th>
+        <th>ชำระด้วย</th>
+        <th>เวลาสั่งซื้อ</th>
+        <th>ข้อมูลสินค้าที่จัดส่ง</th>
+        <th>สถานะ / จัดการ</th>
       </tr>
     `;
   }
@@ -4169,8 +4255,9 @@ function renderFinanceOrdersTable() {
           (order) => `
             <tr class="finance-detail-row">
               <td>
-                <strong>${escapeHtml(order.orderNumber || order.id)}</strong>
-                <span>${formatAdminDateTime(order.createdAt)}</span>
+                <strong>${escapeHtml(order.itemSummary.title)}</strong>
+                <span>${escapeHtml(order.itemSummary.categories)}</span>
+                <small>${escapeHtml(order.orderNumber || order.id)}</small>
               </td>
               <td>
                 <div class="finance-mini-user">
@@ -4179,22 +4266,23 @@ function renderFinanceOrdersTable() {
                 </div>
               </td>
               <td>
-                <strong>${escapeHtml(order.itemSummary.title)}</strong>
-                <span>${escapeHtml(order.itemSummary.detail)}</span>
+                <strong>${formatPrice(order.total)}</strong>
+                ${Number(order.discountAmount || 0) > 0 ? `<span>ส่วนลด ${formatPrice(order.discountAmount)}</span>` : ""}
+              </td>
+              <td>
+                <strong>${escapeHtml(adminPaymentMethodLabel(order))}</strong>
+                ${Number(order.pointsRedeemedAmount || 0) > 0 ? `<span>ใช้ ${formatPointAmount(order.pointsRedeemedAmount)} P</span>` : ""}
+              </td>
+              <td>
+                <strong>${formatAdminDateTime(order.createdAt)}</strong>
+                ${order.paymentVerifiedAt ? `<span>ตรวจชำระ ${formatAdminDateTime(order.paymentVerifiedAt)}</span>` : ""}
+              </td>
+              <td>
+                ${adminDeliveryHistoryHtml(order)}
               </td>
               <td>
                 <span class="status-pill ${paymentStatusClass(order.paymentStatus)}">${escapeHtml(order.paymentStatus || "pending")}</span>
-                <span>${escapeHtml(order.paymentMethod || "-")} ${order.paymentVerifiedAt ? `· ${formatAdminDateTime(order.paymentVerifiedAt)}` : ""}</span>
-              </td>
-              <td>
-                <strong>${formatPointAmount(order.pointsRedeemedAmount || 0)} P</strong>
-                <span>เครดิต ${formatPointAmount(order.pointCreditAmount || 0)} P</span>
-              </td>
-              <td>
-                <strong>${formatPrice(order.total)}</strong>
                 <span class="status-pill ${orderStatusClass(order.status)}">${escapeHtml(order.status || "-")}</span>
-              </td>
-              <td>
                 <button class="mini-button finance-link-button" type="button" data-edit-order="${escapeHtml(order.id)}">
                   <i data-lucide="pencil"></i>
                   จัดการ
@@ -5597,6 +5685,19 @@ function bindEvents() {
   $("#finance-search")?.addEventListener("input", (event) => {
     state.financeSearch = event.target.value;
     resetFinancePage();
+    renderFinancePanel();
+    createIconSet();
+  });
+
+  $("#users-search")?.addEventListener("input", (event) => {
+    state.userSearch = event.target.value;
+    renderUsersTable();
+    createIconSet();
+  });
+
+  $("#finance-orders-search")?.addEventListener("input", (event) => {
+    state.financeOrderSearch = event.target.value;
+    resetFinancePage("orders");
     renderFinancePanel();
     createIconSet();
   });

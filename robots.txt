@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://www.olafshop.com/sitemap.xml
+Sitemap: https://olafshop.com/sitemap.xml

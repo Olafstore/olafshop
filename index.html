@@ -2,6 +2,25 @@
 <html lang="th">
 
 <head>
+  <!-- Meta Pixel Code -->
+  <script>
+    !function (f, b, e, v, n, t, s) {
+      if (f.fbq) return; n = f.fbq = function () {
+        n.callMethod ?
+          n.callMethod.apply(n, arguments) : n.queue.push(arguments)
+      }
+        ; if (!f._fbq) f._fbq = n; n.push = n; n.loaded = !0; n.version = '2.0';
+      n.queue = []; t = b.createElement(e); t.async = !0;
+      t.src = v; s = b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t, s)
+    }
+      (window, document, 'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+
+    fbq('init', '2168623267033618');
+    fbq('track', 'PageView');
+  </script>
+  <!-- End Meta Pixel Code -->
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
 
@@ -34,6 +53,11 @@
 </head>
 
 <body class="home-page">
+
+  <noscript>
+    <img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=2168623267033618&ev=PageView&noscript=1" />
+  </noscript>
   <div class="app-shell">
     <header class="topbar">
       <a class="brand" href="#home" aria-label="OLAF SHOP">
@@ -282,7 +306,8 @@
               </div>
 
               <div class="filter-section">
-                <h4><i data-lucide="arrow-down-up" style="width: 14px; height: 14px; margin-right: 4px;"></i> เรียงลำดับ
+                <h4><i data-lucide="arrow-down-up" style="width: 14px; height: 14px; margin-right: 4px;"></i>
+                  เรียงลำดับ
                 </h4>
                 <div class="filter-options" id="sort-options">
                   <label class="filter-radio-label">

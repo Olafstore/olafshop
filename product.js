@@ -3,6 +3,47 @@ const params = new URLSearchParams(location.search);
 const productId = params.get("id");
 let globalPayload = null;
 let currentProduct = null;
+
+function showProductTagResults(tag) {
+  let dialog = document.getElementById('product-tag-results');
+  if (!dialog) {
+    dialog = document.createElement('dialog');
+    dialog.id = 'product-tag-results';
+    dialog.className = 'tag-results-dialog';
+    dialog.setAttribute('aria-labelledby', 'product-tag-results-title');
+    document.body.append(dialog);
+    dialog.addEventListener('click', event => {
+      if (event.target.closest('[data-close-tag-results]')) dialog.close();
+      if (event.target === dialog) {
+        const bounds = dialog.getBoundingClientRect();
+        if (event.clientX < bounds.left || event.clientX > bounds.right || event.clientY < bounds.top || event.clientY > bounds.bottom) dialog.close();
+      }
+    });
+  }
+  const normalize = value => cleanDisplayText(value).normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[™®©]/g,'').replace(/&/g,' and ').replace(/[^a-z0-9\u0E00-\u0E7F]+/gi,' ').trim().toLowerCase();
+  const matches = (globalPayload?.products || []).filter(product => product.status !== 'inactive' && getDisplayTags(product, 100).some(value => normalize(value) === normalize(tag)));
+  dialog.innerHTML = `<header class="tag-results-head"><h2 id="product-tag-results-title">${escapeHtml(tag)} · ${matches.length} เกม</h2><button type="button" data-close-tag-results aria-label="ปิดรายการเกม"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+    <div class="tag-results-grid">${matches.map(product => {
+      const price = Math.max(0, Number(product.price) || 0);
+      const original = Math.max(0, Number(product.compareAt) || 0);
+      const discount = original > price ? Math.round((original-price)/original*100) : 0;
+      const href = `product.html?id=${encodeURIComponent(product.id)}`;
+      const tags = getDisplayTags(product, 4).slice(0, 4).map(value => `<a class="pd-genre-tag" href="index.html?tag=${encodeURIComponent(value)}#catalog">${escapeHtml(value)}</a>`).join('');
+      return `<article class="tag-results-game"><a class="tag-result-image" href="${href}"><img src="${escapeHtml(product.image || product.heroImage || '')}" alt="${escapeHtml(product.name)}" loading="lazy"></a><strong><a href="${href}">${escapeHtml(product.name)}</a></strong><div class="pd-genre-tags tag-result-tags">${tags}</div><div class="tag-result-footer"><small>${Number(product.stock || 0) > 0 ? `พร้อมส่ง ${Number(product.stock).toLocaleString('th-TH')} ชิ้น` : 'สินค้าหมด'}</small><div class="tag-result-price">${discount > 0 ? `<b>-${discount}%</b>` : ''}<div>${original > price ? `<del>฿${original.toLocaleString('th-TH')}</del>` : ''}<em>฿${price.toLocaleString('th-TH')}</em></div></div></div></article>`;
+    }).join('')}</div>
+    ${matches.length ? '' : '<p>ไม่พบเกมในแท็กนี้</p>'}`;
+  if (!dialog.open) dialog.showModal();
+  dialog.scrollTop = 0;
+}
+
+document.addEventListener('click', event => {
+  const link = event.target.closest('a.pd-genre-tag');
+  if (!link || event.button !== 0 || event.ctrlKey || event.metaKey || event.shiftKey || event.altKey) return;
+  const tag = new URL(link.href).searchParams.get('tag');
+  if (!tag) return;
+  event.preventDefault();
+  showProductTagResults(tag);
+});
 let detailQuantity = 1;
 let currentLang = localStorage.getItem("olafshop_lang") || "th";
 let currentQrOrder = null;
@@ -10,6 +51,8 @@ let qrSlipInput = null;
 let currentProductPackages = [];
 let selectedPackageId = null;
 let iconRefreshQueued = false;
+const productFavoritesStorageKey = "olafshop_favorite_products";
+let productFavoriteIds = new Set(loadProductFavoriteIds());
 let checkoutPointState = {
   balance: 0,
   enabled: false,
@@ -180,6 +223,126 @@ function fastImg(src, alt = "", options = {}) {
   return `${className} src="${escapeHtml(src || "")}" alt="${escapeHtml(alt)}" loading="${loading}" decoding="async" fetchpriority="${fetchPriority}"${fallbackAttr}`;
 }
 
+function loadProductFavoriteIds() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(productFavoritesStorageKey) || "[]");
+    return Array.isArray(saved) ? saved.map(String).filter(Boolean) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveProductFavoriteIds() {
+  try {
+    localStorage.setItem(productFavoritesStorageKey, JSON.stringify([...productFavoriteIds]));
+  } catch {
+    // Keep the selection available for this visit when browser storage is unavailable.
+  }
+}
+
+function isProductFavorite(productId) {
+  return productFavoriteIds.has(String(productId));
+}
+
+function productFavoriteButtonMarkup(product) {
+  const saved = isProductFavorite(product.id);
+  const label = saved ? "ลบออกจากรายการโปรด" : "บันทึกในรายการโปรด";
+  return `
+    <button class="pd-favorite-btn ${saved ? "is-favorite" : ""}" type="button" data-product-favorite="${escapeHtml(product.id)}" aria-pressed="${saved}">
+      <i data-lucide="${saved ? "bookmark-check" : "bookmark-plus"}"></i><span>${label}</span>
+    </button>
+  `;
+}
+
+function productFavoriteProducts() {
+  const products = Array.isArray(globalPayload?.products) ? globalPayload.products : [];
+  const productMap = new Map(products.map((product) => [String(product.id), product]));
+  return [...productFavoriteIds].map((id) => productMap.get(id)).filter(Boolean);
+}
+
+function syncProductFavoriteControls() {
+  document.querySelectorAll("[data-product-favorite]").forEach((button) => {
+    const saved = isProductFavorite(button.dataset.productFavorite);
+    button.classList.toggle("is-favorite", saved);
+    button.setAttribute("aria-pressed", String(saved));
+    const text = button.querySelector("span");
+    if (text) text.textContent = saved ? "ลบออกจากรายการโปรด" : "บันทึกในรายการโปรด";
+    const icon = button.querySelector("svg, i");
+    if (icon) {
+      const nextIcon = saved ? "bookmark-check" : "bookmark-plus";
+      if (icon.tagName.toLowerCase() === "svg") {
+        const next = document.createElement("i");
+        next.setAttribute("data-lucide", nextIcon);
+        icon.replaceWith(next);
+      } else {
+        icon.setAttribute("data-lucide", nextIcon);
+      }
+    }
+  });
+  const count = productFavoriteProducts().length;
+  const badge = $("#product-favorites-badge");
+  if (badge) {
+    badge.hidden = count === 0;
+    badge.textContent = count > 99 ? "99+" : String(count);
+    badge.setAttribute('aria-label', `รายการโปรด ${count} รายการ`);
+  }
+}
+
+function renderProductFavorites() {
+  const list = $("#product-favorites-list");
+  const countLabel = $("#product-favorites-count");
+  const products = productFavoriteProducts();
+  if (countLabel) countLabel.textContent = `${products.length} เกม`;
+  if (list) {
+    list.innerHTML = products.length
+      ? products.map((product) => `
+          <article class="favorite-list-item">
+            <a href="product.html?id=${encodeURIComponent(product.id)}">
+              <img ${fastImg(product.image || product.heroImage, getDisplayProductName(product))} />
+              <span><strong>${escapeHtml(getDisplayProductName(product))}</strong><small>${formatPrice(product.price)}</small></span>
+            </a>
+            <button class="favorite-toggle is-favorite favorite-list-remove" type="button" data-product-favorite="${escapeHtml(product.id)}" aria-label="ลบออกจากรายการโปรด" aria-pressed="true"><i data-lucide="bookmark-check"></i></button>
+          </article>
+        `).join("")
+      : `<div class="favorites-empty"><i data-lucide="bookmark"></i><strong>ยังไม่มีเกมที่บันทึกไว้</strong><p>กดปุ่มบุ๊กมาร์กบนหน้ารายละเอียดสินค้า เพื่อเก็บไว้ดูภายหลัง</p></div>`;
+  }
+  syncProductFavoriteControls();
+  createIconSet();
+  hydrateImages();
+}
+
+async function toggleProductFavorite(productId) {
+  const product = (globalPayload?.products || []).find((item) => String(item.id) === String(productId));
+  if (!product) return;
+  const id = String(product.id);
+  const saved = productFavoriteIds.has(id);
+  if (window.OlafFavorites?.toggle) {
+    productFavoriteIds = new Set(await window.OlafFavorites.toggle(id));
+  } else {
+    if (saved) productFavoriteIds.delete(id);
+    else productFavoriteIds.add(id);
+    saveProductFavoriteIds();
+  }
+  renderProductFavorites();
+  syncProductFavoriteControls();
+  createIconSet();
+  showToast(saved ? "ลบออกจากรายการโปรดแล้ว" : "บันทึกในรายการโปรดแล้ว", "success");
+}
+
+function initializeSharedProductFavorites() {
+  const favoriteStore = window.OlafFavorites;
+  if (!favoriteStore) return;
+  productFavoriteIds = new Set(favoriteStore.getIds());
+  favoriteStore.subscribe((ids) => {
+    productFavoriteIds = new Set(ids);
+    renderProductFavorites();
+  });
+  favoriteStore.sync().then((ids) => {
+    productFavoriteIds = new Set(ids);
+    renderProductFavorites();
+  });
+}
+
 function fastBg(src, options = {}) {
   const source = String(src || "").trim();
   if (!source) return "";
@@ -305,6 +468,7 @@ function showToast(message, type = "success", duration = 3500, action = null) {
 }
 
 function applySiteIcon(iconUrl) {
+  if (window.OlafApplyFavicon) { window.OlafApplyFavicon(iconUrl); return; }
   const url = String(iconUrl || "").trim();
   if (!url) {
     document.querySelector("#dynamic-favicon")?.remove();
@@ -425,11 +589,20 @@ async function fetchSupabaseProductPayload() {
         return [];
       })
     : Promise.resolve([]);
+  // The favorites drawer must have the same full catalog as Index, not only
+  // the current product plus its related recommendations.
+  const activeCatalogPromise = window.OlafProducts?.fetchActiveProducts
+    ? withTimeout(window.OlafProducts.fetchActiveProducts(), 3200, []).catch((error) => {
+        console.warn("Full catalog unavailable for product favorites", error);
+        return [];
+      })
+    : Promise.resolve([]);
 
-  const [jsonPayload, onlineProductResult, activePackages] = await Promise.all([
+  const [jsonPayload, onlineProductResult, activePackages, activeCatalog] = await Promise.all([
     jsonPayloadPromise,
     onlineProductPromise,
-    activePackagesPromise
+    activePackagesPromise,
+    activeCatalogPromise
   ]);
   const onlineProduct = onlineProductResult.product;
   const jsonProduct = Array.isArray(jsonPayload?.products)
@@ -462,7 +635,15 @@ async function fetchSupabaseProductPayload() {
           return [];
         })
       : [];
-    products = [enrichedProduct, ...relatedProducts.filter((item) => item?.id !== product.id)];
+    const productsById = new Map();
+    [enrichedProduct, ...(Array.isArray(activeCatalog) ? activeCatalog : []), ...relatedProducts].forEach((item) => {
+      if (!item?.id || item.isActive === false || productsById.has(item.id)) return;
+      productsById.set(item.id, item);
+    });
+    // Keep the detail payload (including packages) authoritative for the game
+    // being viewed while all other active products remain available to the menu.
+    productsById.set(enrichedProduct.id, enrichedProduct);
+    products = [...productsById.values()];
   } else {
     const jsonProducts = Array.isArray(jsonPayload?.products) ? jsonPayload.products : [];
     const extraProducts = Array.isArray(window.OlafExtraProducts?.products)
@@ -1077,6 +1258,22 @@ function getLocalizedPlatformLabel(link = {}) {
 }
 
 function productPlatformLinks(product = {}) {
+  if (String(product.category || "").toLowerCase() === "steam-account") {
+    const links = Array.isArray(product.platformLinks) ? product.platformLinks : [];
+    // Only replace guide links for full-email Steam accounts. Keep store and
+    // other product links intact, including custom links supplied by Admin.
+    const otherLinks = links.filter((link) => !(
+      String(link.icon || "").toLowerCase().includes("book") ||
+      String(link.url || "").toLowerCase().includes("gitbook") ||
+      /คู่มือ|manual|guide/i.test(String(link.label || ""))
+    ));
+    return [...otherLinks, {
+      label: "คู่มือ",
+      url: STEAM_ACCOUNT_GUIDE_URL,
+      icon: "book-open-check",
+      lockLabel: true
+    }];
+  }
   if (String(product.category || "").toLowerCase() === "steam-key") {
     return [
       {
@@ -1460,7 +1657,7 @@ function brandedProductHero(product) {
   if (isWindowsProduct(product)) {
     return `
       <section class="pd-brand-hero pd-brand-hero-windows">
-        <span class="pd-brand-kicker">Windows 10 &amp; 11 Keys</span>
+        <span class="pd-brand-kicker">${String(product.id||'').startsWith('microsoft-office-') ? 'Microsoft Office 2024 Keys' : 'Windows 10 &amp; 11 Keys'}</span>
         <h2>PRE-ORDER LICENSE</h2>
         <p>ชำระเงินผ่านระบบเว็บ และรอแอดมินจัดส่งคีย์หลังตรวจสอบสลิป</p>
       </section>
@@ -1518,6 +1715,7 @@ function productImageFallbacks(product = {}, primary = "") {
 const STEAM_OFFLINE_GUIDE_URL = "https://olaf-shop.gitbook.io/manual-olaf-shop";
 const STEAM_OFFLINE_CONDITIONS_URL = "https://olaf-shop.gitbook.io/manual-olaf-shop/undefined/undefined";
 const STEAM_KEY_GUIDE_URL = "https://olaf-shop.gitbook.io/manual-olaf-shop/undefined/key-steam";
+const STEAM_ACCOUNT_GUIDE_URL = "https://olaf-shop.gitbook.io/manual-olaf-shop/undefined/1";
 const OFFLINE_SUPPORT_PAGE_URL = "https://www.facebook.com/byOlafshop";
 
 function rockstarUsageAccordion(product) {
@@ -1545,6 +1743,31 @@ function rockstarUsageAccordion(product) {
 
 function categoryGuideAccordion(product) {
   const category = String(product?.category || "").toLowerCase();
+
+  if (category === "steam-account") {
+    return `
+      <section class="pd-arrow-accordion pd-category-guide pd-category-guide-panel pd-category-guide-account">
+        <div class="pd-guide-panel-head">
+          <span class="pd-arrow-summary-title">
+            <span class="pd-section-icon-box"><i data-lucide="book-open-check"></i></span>
+            คู่มือการใช้งานไอดียกเมล
+          </span>
+          <span class="pd-arrow-summary-meta">คู่มือจาก OLAF SHOP</span>
+        </div>
+        <div class="pd-arrow-accordion-body">
+          <div class="pd-offline-guide-list pd-account-guide-list">
+            <details data-smooth-details data-accordion-group="steam-account-guide">
+              <summary>คู่มือไอดียกเมลฉบับเต็ม <i data-lucide="chevron-down"></i></summary>
+              <div>
+                <p>เปิดอ่านรายละเอียดและขั้นตอนการใช้งานไอดียกเมลจากคู่มือของร้านตามลิงก์ด้านล่าง</p>
+                <a href="${STEAM_ACCOUNT_GUIDE_URL}" target="_blank" rel="noopener noreferrer">เปิดคู่มือไอดียกเมล <i data-lucide="arrow-up-right"></i></a>
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+    `;
+  }
 
   if (category === "offline") {
     return `
@@ -1727,7 +1950,7 @@ function relatedSectionMarkup(product, relatedProducts = []) {
       <div class="pd-related-heading">
         <div>
           <h3 class="pd-section-title">
-            <span class="pd-section-icon-box"><i data-lucide="sparkles"></i></span>
+            <span class="pd-section-icon-box"><i data-lucide="gamepad-2" aria-hidden="true"></i></span>
             เกมแนะนำหมวด ${escapeHtml(categoryLabel)}
           </h3>
           <p>${crossCategory ? "สินค้าในหมวดนี้มีจำนวนจำกัด จึงเพิ่มเกมยอดนิยมที่น่าสนใจให้ด้วย" : `คัดเกมจากหมวด ${escapeHtml(categoryLabel)} ที่คุณกำลังดู`}</p>
@@ -1838,7 +2061,7 @@ function renderProduct() {
   const displayProductName = getDisplayProductName(p);
 
   const genreTags = getSidebarDisplayTags(p)
-    .map((t) => `<span class="pd-genre-tag">${escapeHtml(t)}</span>`)
+    .map((t) => `<a class="pd-genre-tag" href="index.html?tag=${encodeURIComponent(t)}#catalog">${escapeHtml(t)}</a>`)
     .join("");
 
   // Gallery images from admin gallery field (left column main image)
@@ -2127,6 +2350,7 @@ function renderProduct() {
               <i data-lucide="${purchaseButtonIcon(p)}"></i>
               ${buyButtonText}
             </button>
+            ${productFavoriteButtonMarkup(p)}
             <!-- Feature info row -->
             <div class="pd-features-row">
               ${displayFeatureBlocks.length > 0 ? displayFeatureBlocks.map(f => `
@@ -2203,6 +2427,7 @@ function renderProduct() {
 
   createIconSet();
   hydrateImages();
+  renderProductFavorites();
   setupSmoothDetails(container);
   setupRelatedScroller(container);
   hydrateSteamRelatedMetadata();
@@ -3531,7 +3756,23 @@ document.addEventListener("DOMContentLoaded", async () => {
   });
 
   await loadStore();
+  initializeSharedProductFavorites();
   renderProduct();
+  renderProductFavorites();
+
+  document.addEventListener("click", (event) => {
+    const favoriteButton = event.target.closest("[data-product-favorite]");
+    if (!favoriteButton) return;
+    event.preventDefault();
+    toggleProductFavorite(favoriteButton.dataset.productFavorite);
+  });
+  $("#product-open-favorites")?.addEventListener("click", () => {
+    renderProductFavorites();
+    $("#product-favorites-dialog")?.showModal();
+  });
+  $("#product-close-favorites")?.addEventListener("click", () => {
+    $("#product-favorites-dialog")?.close();
+  });
 
   document.querySelectorAll("[data-lang-option]").forEach((button) => {
     button.classList.toggle("is-active", button.dataset.langOption === currentLang);

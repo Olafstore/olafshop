@@ -13,19 +13,34 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet" />
-  <link rel="stylesheet" href="styles.css?v=20260716-admin-minecraft-v112" />
+  <link rel="stylesheet" href="styles.css?v=20260908-badges-v223" />
   <script src="https://cdn.jsdelivr.net/npm/lucide@latest/dist/umd/lucide.min.js" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2" defer></script>
   <script src="https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js" defer></script>
   <script src="slip-qr-scanner.js?v=20260621-slip-verify-v2" defer></script>
-  <script src="supabase-client.js?v=20260717-live-catalog-v116" defer></script>
+  <script src="supabase-client.js?v=20260909-updates-v224" defer></script>
   <script src="order-action-popup.js?v=20260621-order-animation" defer></script>
   <script src="platform-store.js?v=20260605-admin-users" defer></script>
-  <script src="image-performance.js?v=20260713-media-brand-v89" defer></script>
-  <script src="notifications.js?v=20260716-qr-alignment-v111" defer></script>
-  <script src="site-navigation.js?v=20260717-live-catalog-v116" defer></script>
-  <script src="extra-products.js?v=20260717-live-catalog-v116" defer></script>
-  <script src="product.js?v=20260717-live-catalog-v116" defer></script>
+  <link rel="stylesheet" href="friends.css?v=20260910-mobile-launch-v242" />
+  <script src="friends.js?v=20260913-v259" defer></script>
+  <script src="favorites-store.js?v=20260904-realtime-favorites-v141" defer></script>
+  <script src="image-performance.js?v=20260907-store-updates-v199" defer></script>
+  <script src="notifications.js?v=20260909-updates-v224" defer></script>
+    <script src="site-navigation.js?v=20260912-product-search-v251" defer></script>
+  <script src="extra-products.js?v=20260919-office-v260" defer></script>
+  <script src="product.js?v=20260919-office-v260" defer></script>
+    <link rel="stylesheet" href="product-hover.css?v=20260908-v219" />
+    <script src="product-hover.js?v=20260912-spotlight-v247" defer></script>
+  <script src="site-theme.js?v=20260912-original-v249"></script>
+  <link rel="stylesheet" href="site-theme-surfaces.css?v=20260913-v255" />
+  <link rel="stylesheet" href="site-theme-picker.css?v=20260910-three-themes-v243" />
+  <link rel="stylesheet" href="site-theme-light.css?v=20260910-daylight-v244" />
+  <link rel="stylesheet" href="site-mobile-friends.css?v=20260911-mobile-friends-v245" />
+  <link rel="stylesheet" href="site-refinements.css?v=20260912-width-search-v250" />
+  <link rel="stylesheet" href="product-surface-fix.css?v=20260912-v252" />
+    <link rel="stylesheet" href="friends-premium.css?v=20260913-v258" />
+  <script src="friends-social.js?v=20260913-v259" defer></script>
+  <link rel="stylesheet" href="friends-layout.css?v=20260913-v259" />
 </head>
 
 <body class="product-detail-page">
@@ -87,6 +102,10 @@
             </div>
           </div>
         </div>
+        <button class="icon-button favorites-button" id="product-open-favorites" type="button" aria-label="เปิดรายการโปรด">
+          <i data-lucide="bookmark"></i>
+          <span class="favorites-badge" id="product-favorites-badge" hidden></span>
+        </button>
         <div class="user-popover-wrap" style="position:relative">
           <button class="account-button is-auth-loading" id="open-auth" type="button" aria-busy="true">
             <i data-lucide="loader-circle"></i>
@@ -459,6 +478,16 @@
         </button>
       </div>
     </div>
+  </dialog>
+
+  <dialog class="favorites-dialog" id="product-favorites-dialog">
+    <button class="dialog-close" id="product-close-favorites" type="button" aria-label="ปิดรายการโปรด"><i data-lucide="x"></i></button>
+    <div class="favorites-dialog-head">
+      <p>OLAF COLLECTION</p>
+      <h2>รายการโปรด</h2>
+      <span id="product-favorites-count">0 เกม</span>
+    </div>
+    <div class="favorites-list" id="product-favorites-list"></div>
   </dialog>
 
   <a class="discord-floating-link" href="https://discord.gg/6axb2QbDHN" target="_blank" rel="noopener noreferrer" aria-label="ติดต่อ Discord" data-discord-link>
